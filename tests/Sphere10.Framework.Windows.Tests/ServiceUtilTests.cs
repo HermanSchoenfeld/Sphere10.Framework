@@ -19,8 +19,43 @@ namespace Sphere10.Framework.Windows.Tests;
 [TestFixture]
 public class ServiceUtilTests {
 	[Test]
+	public async Task OptionalConfigurationReadsPreserveNativeRecoveryAndPrivilegeDataWithoutChangingServiceState() {
+		using var service = new ServiceController("EventLog");
+		var before = service.Status;
+		var configuration = await Tools.Windows.Services.ReadAdvancedConfigurationAsync(service.ServiceName);
+		Assert.That(configuration.Name, Is.EqualTo(service.ServiceName));
+		Assert.That(configuration.FailureResetPeriodSeconds, Is.Not.Null);
+		Assert.That(configuration.DelayedAutoStart, Is.Not.Null);
+		Assert.That(configuration.ServiceSidType, Is.Not.Null);
+		Assert.That(configuration.RequiredPrivileges, Does.Contain("SeChangeNotifyPrivilege"));
+		Assert.That(configuration.Issues.Select(issue => issue.InformationLevel).Distinct().Count(), Is.EqualTo(configuration.Issues.Length));
+		Assert.That(configuration.Triggers.SelectMany(trigger => trigger.DataItems).All(item => item.Data.Length <= 1024), Is.True);
+		service.Refresh();
+		Assert.That(service.Status, Is.EqualTo(before));
+	}
+
+	[Test]
+	public async Task MissingAndCancelledOptionalConfigurationReadsAreNotSuccessfulEmptyConfiguration() {
+		await Assert.ThatAsync(async () => await Tools.Windows.Services.ReadAdvancedConfigurationAsync("Sphere10-Missing-" + Guid.NewGuid().ToString("N")),
+			Throws.TypeOf<System.ComponentModel.Win32Exception>().With.Property("NativeErrorCode").EqualTo(1060));
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		await Assert.ThatAsync(async () => await Tools.Windows.Services.ReadAdvancedConfigurationAsync("EventLog", cancellation.Token),
+			Throws.InstanceOf<OperationCanceledException>());
+	}
+
+	[TestCase("\"C:\\Windows\\System32\\svchost.exe\" -k LocalService", "C:\\Windows\\System32\\svchost.exe")]
+	[TestCase("C:\\Windows\\System32\\svchost.exe -k LocalService", "C:\\Windows\\System32\\svchost.exe")]
+	public void ServiceImageResolutionUsesTheExistingCommandParserAndDoesNotIncludeArguments(string command, string expected)
+		=> Assert.That(Tools.Windows.Services.ResolveExecutablePath(command), Is.EqualTo(expected));
+
+	[TestCase("svchost.exe -k LocalService")]
+	[TestCase("\"C:\\Windows\\System32\\svchost.exe -k LocalService")]
+	public void ServiceImageResolutionRejectsImplicitSearchAndMalformedQuotedRegistrations(string command)
+		=> Assert.That(() => Tools.Windows.Services.ResolveExecutablePath(command), Throws.InstanceOf<ArgumentException>());
+
+	[Test]
 	public void ExistingFacadeQueriesUseTheNativeUtilityAndReturnOwnedControllers() {
-		Assert.That(Tools.Windows.Services, Is.TypeOf<ServiceUtil>());
 		Assert.That(Tools.Windows.Services.IsServiceInstalled("eventlog"), Is.True);
 		Assert.That(Tools.Windows.Services.TryGetServiceController("EventLog", out var controller), Is.True);
 		using (controller)
@@ -35,7 +70,7 @@ public class ServiceUtilTests {
 		var before = controller.Status;
 		var desired = before == ServiceControllerStatus.Stopped ? ServiceControllerStatus.Running : ServiceControllerStatus.Stopped;
 		using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
-		await Assert.ThatAsync(async () => await new ServiceUtil().WaitForStatusAsync("EventLog", desired, TimeSpan.FromSeconds(5), cancellation.Token),
+		await Assert.ThatAsync(async () => await Tools.Windows.Services.WaitForStatusAsync("EventLog", desired, TimeSpan.FromSeconds(5), cancellation.Token),
 			Throws.InstanceOf<OperationCanceledException>());
 		controller.Refresh();
 		Assert.That(controller.Status, Is.EqualTo(before));
@@ -45,14 +80,13 @@ public class ServiceUtilTests {
 	public async Task ObservingAnUnreachedStateHonorsTheSuppliedTimeout() {
 		using var controller = new ServiceController("EventLog");
 		var desired = controller.Status == ServiceControllerStatus.Stopped ? ServiceControllerStatus.Running : ServiceControllerStatus.Stopped;
-		await Assert.ThatAsync(async () => await new ServiceUtil().WaitForStatusAsync("EventLog", desired, TimeSpan.FromMilliseconds(50)),
+		await Assert.ThatAsync(async () => await Tools.Windows.Services.WaitForStatusAsync("EventLog", desired, TimeSpan.FromMilliseconds(50)),
 			Throws.TypeOf<System.ServiceProcess.TimeoutException>());
 	}
 	[Test]
 	public async Task ARealServiceQueryReturnsNativeConfigurationStateAndDescriptionWithoutChangingIt() {
-		var scm = new ServiceUtil();
-		var config = await scm.ReadConfigurationAsync("EventLog");
-		var info = await scm.ReadServiceAsync("EventLog");
+		var config = await Tools.Windows.Services.ReadConfigurationAsync("EventLog");
+		var info = await Tools.Windows.Services.ReadServiceAsync("EventLog");
 		Assert.That(config.Name, Is.EqualTo("EventLog"));
 		Assert.That(config.BinaryPath, Is.Not.Empty);
 		Assert.That(info.ConfigurationErrorCode, Is.Zero);
@@ -65,7 +99,7 @@ public class ServiceUtilTests {
 
 	[Test]
 	public async Task MissingServiceQueriesKeepNativeErrorsInsteadOfInventingState() {
-		var info = await new ServiceUtil().ReadServiceAsync("Sphere10-Nonexistent-Service-" + Guid.NewGuid().ToString("N"));
+		var info = await Tools.Windows.Services.ReadServiceAsync("Sphere10-Nonexistent-Service-" + Guid.NewGuid().ToString("N"));
 		Assert.That(info.Status, Is.Null);
 		Assert.That(info.StartMode, Is.Null);
 		Assert.That(info.CanStop, Is.Null);
@@ -85,25 +119,24 @@ public class ServiceUtilTests {
 	public async Task CancelledNativeOperationsNeverDispatchAControlOrConfigurationChange(string operation) {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		var scm = new ServiceUtil();
 		var name = "Sphere10-Nonexistent-Test-Service";
 		Task task = operation switch {
-			"Enumerate" => scm.GetServicesAsync(cancellation.Token),
-			"Drivers" => scm.GetDriversAsync(cancellation.Token),
-			"Read" => scm.ReadServiceAsync(name, cancellation.Token),
-			"Config" => scm.ReadConfigurationAsync(name, cancellation.Token),
-			"Start" => scm.StartServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
-			"Stop" => scm.StopServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
-			"Pause" => scm.PauseServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
-			"Resume" => scm.ResumeServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
-			_ => scm.SetStartModeAsync(name, ServiceStartMode.Manual, cancellation.Token)
+			"Enumerate" => Tools.Windows.Services.GetServicesAsync(cancellation.Token),
+			"Drivers" => Tools.Windows.Services.GetDriversAsync(cancellation.Token),
+			"Read" => Tools.Windows.Services.ReadServiceAsync(name, cancellation.Token),
+			"Config" => Tools.Windows.Services.ReadConfigurationAsync(name, cancellation.Token),
+			"Start" => Tools.Windows.Services.StartServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
+			"Stop" => Tools.Windows.Services.StopServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
+			"Pause" => Tools.Windows.Services.PauseServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
+			"Resume" => Tools.Windows.Services.ResumeServiceAsync(name, TimeSpan.FromSeconds(1), cancellation.Token),
+			_ => Tools.Windows.Services.SetStartModeAsync(name, ServiceStartMode.Manual, cancellation.Token)
 		};
 		await Assert.ThatAsync(async () => await task, Throws.InstanceOf<OperationCanceledException>());
 	}
 
 	[Test]
 	public async Task NativeDriverEnumerationReturnsOnlyDriverServiceTypes() {
-		var rows = await new ServiceUtil().GetDriversAsync();
+		var rows = await Tools.Windows.Services.GetDriversAsync();
 		Assert.That(rows, Is.Not.Empty);
 		Assert.That(rows.Where(row => row.ConfigurationErrorCode == 0).All(row => (row.ServiceType & (ServiceType.KernelDriver | ServiceType.FileSystemDriver | ServiceType.RecognizerDriver)) != 0), Is.True);
 	}

@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework.Maths.Compiler;
 
-public class CompilerUtil {
+public static class CompilerUtil {
 
 	public static bool IsValidVariable(string var) {
 		bool retval = false;

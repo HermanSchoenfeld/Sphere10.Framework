@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
@@ -27,13 +28,12 @@ public class Cell : ViewBase {
 	/// </summary>
 	public readonly static Cell Default = new Cell();
 
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
-	public Cell() {
-		ElementsDrawMode = Sphere10.Framework.Windows.Forms.Drawing.ElementsDrawMode.Align;
-	}
+	public Cell() => ElementsDrawMode = Sphere10.Framework.Windows.Forms.Drawing.ElementsDrawMode.Align;
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -45,17 +45,15 @@ public class Cell : ViewBase {
 		ElementText = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IText)source.ElementText.Clone();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the IText visual element used to draw the cell text.
 	/// Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.TextGDI
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IText ElementText {
-		get {
-			return _elementText;
-		}
-		set {
-			_elementText = value;
-		}
+		get => _elementText;
+		set => _elementText = value;
 	}
 
 	/// <summary>
@@ -63,24 +61,22 @@ public class Cell : ViewBase {
 	/// Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.Image
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IImage ElementImage {
-		get {
-			return _elementImage;
-		}
-		set {
-			_elementImage = value;
-		}
+		get => _elementImage;
+		set => _elementImage = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Cell(this);
-	}
+	public override object Clone() => new Cell(this);
 
-	// Visual elements
+	#endregion
+
+	#region Visual elements
+
 	protected override IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementImage != null)
 			yield return ElementImage;
@@ -152,4 +148,6 @@ public class Cell : ViewBase {
 		ElementImage.Value = img;
 		//ElementImage.AnchorArea = AnchorArea.HasBottom
 	}
+
+	#endregion
 }

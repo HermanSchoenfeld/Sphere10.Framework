@@ -19,6 +19,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using FormsApplication = System.Windows.Forms.Application;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 

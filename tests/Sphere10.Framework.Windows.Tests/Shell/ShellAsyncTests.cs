@@ -29,43 +29,46 @@ public class ShellAsyncTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task WorkerRetainsAndPumpsItsVisibleSheetAfterDispatchButDoesNotRetainHiddenInfrastructure(bool visible) {
-		var shell = new OwnedSheetShell(visible);
-		using var cleanup = Tools.Scope.ExecuteOnDispose(shell.CloseAndJoin);
-		await shell.ShowPropertiesAsync("Owned Native Fixture");
+		var sheet = new OwnedSheet(visible);
+		using var cleanup = Tools.Scope.ExecuteOnDispose(sheet.CloseAndJoin);
+		await Tools.Windows.Shell.RunShellQueryAsync(() => { sheet.Create(); return true; }, CancellationToken.None, false);
 		if (visible) {
-			Assert.That(shell.Worker.IsAlive, Is.True, "Returning from Shell dispatch must not terminate the sheet's STA.");
-			Assert.That(WinAPI.USER32.IsWindowVisible(shell.Window), Is.True);
-			Assert.That(WinAPI.USER32.SendMessageTimeoutW(shell.Window, WinAPI.USER32.WM_NULL, UIntPtr.Zero, IntPtr.Zero,
+			Assert.That(sheet.Worker.IsAlive, Is.True, "Returning from Shell dispatch must not terminate the sheet's STA.");
+			Assert.That(WinAPI.USER32.IsWindowVisible(sheet.Window), Is.True);
+			Assert.That(WinAPI.USER32.SendMessageTimeoutW(sheet.Window, WinAPI.USER32.WM_NULL, UIntPtr.Zero, IntPtr.Zero,
 				WinAPI.USER32.SendMessageTimeoutFlags.AbortIfHung, 2000, out _), Is.Not.EqualTo(IntPtr.Zero),
 				"The retained STA must dispatch native messages after the caller's Task has completed.");
-			shell.CloseAndJoin();
+			sheet.CloseAndJoin();
 		} else {
-			Assert.That(await Task.Run(() => shell.Worker.Join(TimeSpan.FromSeconds(3))), Is.True,
+			Assert.That(await Task.Run(() => sheet.Worker.Join(TimeSpan.FromSeconds(3))), Is.True,
 				"A hidden COM-style helper window must not keep the background worker alive.");
 		}
-		Assert.That(shell.Worker.IsAlive, Is.False);
+		Assert.That(sheet.Worker.IsAlive, Is.False);
 		var destruction = Stopwatch.StartNew();
-		while (shell.OriginalWindowExists && destruction.Elapsed < TimeSpan.FromSeconds(3))
+		while (sheet.OriginalWindowExists && destruction.Elapsed < TimeSpan.FromSeconds(3))
 			await Task.Delay(10);
-		Assert.That(shell.OriginalWindowExists, Is.False,
-			$"The original native fixture window must be destroyed after its worker exits: {shell.WindowTitle} (HWND {shell.Window}, native thread {shell.NativeThreadId}).");
+		Assert.That(sheet.OriginalWindowExists, Is.False,
+			$"The original native fixture window must be destroyed after its worker exits: {sheet.WindowTitle} (HWND {sheet.Window}, native thread {sheet.NativeThreadId}).");
 	}
 
-	[TestCase("Launch")]
-	[TestCase("Open Item")]
-	[TestCase("Open Directory")]
-	[TestCase("Highlight")]
-	[TestCase("Properties")]
-	[TestCase("Empty")]
-	[TestCase("Invoke Verb")]
-	public async Task NativeOperationExecutesOnAnotherStaAndItsCompletionIsAwaited(string operation) {
+	[Test]
+	public async Task NativeOperationExecutesOnAnotherStaAndItsCompletionIsAwaited() {
 		var caller = Environment.CurrentManagedThreadId;
-		var shell = new RecordingShell();
-		await InvokeAsync(shell, operation, CancellationToken.None);
-		Assert.That(shell.Calls, Is.EqualTo(1));
-		Assert.That(shell.OperationThreadId, Is.Not.EqualTo(caller));
-		Assert.That(shell.OperationApartment, Is.EqualTo(ApartmentState.STA));
-		Assert.That(shell.ComInitializationResult, Is.EqualTo(1), "The worker must initialize native COM before dispatching the Shell operation (S_FALSE means already initialized).");
+		var operation = new RecordedOperation();
+		await Tools.Windows.Shell.RunShellQueryAsync(operation.Run, CancellationToken.None, false);
+		Assert.That(operation.Calls, Is.EqualTo(1));
+		Assert.That(operation.ThreadId, Is.Not.EqualTo(caller));
+		Assert.That(operation.Apartment, Is.EqualTo(ApartmentState.STA));
+		Assert.That(operation.ComInitializationResult, Is.EqualTo(1), "The worker must initialize native COM before dispatching the Shell operation (S_FALSE means already initialized).");
+	}
+
+	[Test]
+	public async Task CancellationBeforeAdmissionDoesNotInvokeTheNativeOperation() {
+		var operation = new RecordedOperation();
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		await Assert.ThatAsync(async () => await Tools.Windows.Shell.RunShellQueryAsync(operation.Run, cancellation.Token, false), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(operation.Calls, Is.Zero);
 	}
 
 	[TestCase("Launch")]
@@ -77,21 +80,21 @@ public class ShellAsyncTests {
 	[TestCase("Invoke Verb")]
 	[TestCase("System Tool")]
 	[TestCase("URI")]
-	public async Task CancellationBeforeAdmissionDoesNotInvokeTheNativeOperation(string operation) {
-		var shell = new RecordingShell();
+	public async Task CanceledPublicOperationIsRejectedBeforeItReachesTheShell(string operation) {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(async () => await InvokeAsync(shell, operation, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		Assert.That(shell.Calls, Is.Zero);
+		await Assert.ThatAsync(async () => await InvokeAsync(operation, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 	}
 
 	[Test]
-	public async Task CancellationAfterLaunchRetainsTheCallerOwnedObservationInsteadOfLosingItsHandle() {
+	public async Task CancellationAfterDispatchRetainsTheCallerOwnedObservationInsteadOfLosingItsHandle() {
 		using var cancellation = new CancellationTokenSource();
 		using var observation = Process.GetCurrentProcess();
 		var handle = observation.SafeHandle;
-		var shell = new RecordingShell { Observation = observation, BeforeReturn = cancellation.Cancel };
-		var result = await shell.LaunchAsync("fixture.exe", cancellationToken: cancellation.Token);
+		var result = await Tools.Windows.Shell.RunShellQueryAsync(() => {
+			cancellation.Cancel();
+			return observation;
+		}, cancellation.Token, false);
 		Assert.That(result, Is.SameAs(observation));
 		Assert.That(cancellation.IsCancellationRequested, Is.True);
 		Assert.That(handle.IsClosed, Is.False, "Once launch is admitted, the observation must reach its caller for disposal.");
@@ -99,29 +102,31 @@ public class ShellAsyncTests {
 
 	[Test]
 	public async Task NativeFailureIsPropagatedFromTheWorker() {
-		var shell = new RecordingShell { BeforeReturn = () => throw new InvalidOperationException("Owned Shell failure") };
-		await Assert.ThatAsync(async () => await shell.OpenShellItemAsync("fixture"), Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("Owned Shell failure"));
+		await Assert.ThatAsync(async () => await Tools.Windows.Shell.RunShellQueryAsync<bool>(() => throw new InvalidOperationException("Owned Shell failure"), CancellationToken.None, false),
+			Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("Owned Shell failure"));
 	}
 
-	private static Task InvokeAsync(ShellUtility shell, string operation, CancellationToken token) => operation switch {
-		"Launch" => shell.LaunchAsync("fixture.exe", cancellationToken: token),
-		"Open Item" => shell.OpenShellItemAsync("fixture", cancellationToken: token),
-		"Open Directory" => shell.OpenDirectoryAsync("fixture", token),
-		"Highlight" => shell.HighlightFileInExplorerAsync("fixture", token),
-		"Properties" => shell.ShowPropertiesAsync("fixture", cancellationToken: token),
-		"Empty" => shell.EmptyRecycleBinAsync(cancellationToken: token),
-		"Invoke Verb" => shell.InvokeShellItemVerbAsync(new WindowsShellItemInfo(), "Fixture Verb", token),
-		"System Tool" => shell.OpenSystemToolAsync("fixture.exe", Array.Empty<string>(), token),
-		"URI" => shell.OpenUriAsync(new Uri("fixture:operation"), token),
+	private static Task InvokeAsync(string operation, CancellationToken token) => operation switch {
+		"Launch" => Tools.Windows.Shell.LaunchAsync("fixture.exe", cancellationToken: token),
+		"Open Item" => Tools.Windows.Shell.OpenShellItemAsync("fixture", cancellationToken: token),
+		"Open Directory" => Tools.Windows.Shell.OpenDirectoryAsync("fixture", token),
+		"Highlight" => Tools.Windows.Shell.HighlightFileInExplorerAsync("fixture", token),
+		"Properties" => Tools.Windows.Shell.ShowPropertiesAsync("fixture", cancellationToken: token),
+		"Empty" => Tools.Windows.Shell.EmptyRecycleBinAsync(cancellationToken: token),
+		"Invoke Verb" => Tools.Windows.Shell.InvokeShellItemVerbAsync(new WindowsShellItemInfo(), "Fixture Verb", token),
+		"System Tool" => Tools.Windows.Shell.OpenSystemToolAsync("fixture.exe", Array.Empty<string>(), token),
+		"URI" => Tools.Windows.Shell.OpenUriAsync(new Uri("fixture:operation"), token),
 		_ => throw new ArgumentOutOfRangeException(nameof(operation))
 	};
 
-	private sealed class OwnedSheetShell : ShellUtility {
+	#region Inner Types
+
+	private sealed class OwnedSheet {
 		private static int _nextWindowMarker;
 		private readonly bool _visible;
 		private readonly IntPtr _windowMarker = new(Interlocked.Increment(ref _nextWindowMarker));
 
-		public OwnedSheetShell(bool visible) => _visible = visible;
+		public OwnedSheet(bool visible) => _visible = visible;
 
 		public Thread Worker { get; private set; }
 		public uint NativeThreadId { get; private set; }
@@ -131,7 +136,7 @@ public class ShellAsyncTests {
 			&& WinAPI.USER32.GetWindowThreadProcessId(Window, out _) == NativeThreadId
 			&& WinAPI.USER32.GetWindowLong(Window, -21) == _windowMarker;
 
-		public override void ShowProperties(string path, IntPtr ownerWindow = default) {
+		public void Create() {
 			Worker = Thread.CurrentThread;
 			NativeThreadId = WinAPI.KERNEL32.GetCurrentThreadId();
 			Window = WinAPI.USER32.CreateWindowExW((uint)(WinAPI.USER32.WS_EX_NOACTIVATE | WinAPI.USER32.WS_EX_TOOLWINDOW), "STATIC", WindowTitle,
@@ -151,36 +156,22 @@ public class ShellAsyncTests {
 		}
 	}
 
-	private sealed class RecordingShell : ShellUtility {
+	private sealed class RecordedOperation {
 		public int Calls { get; private set; }
-		public int OperationThreadId { get; private set; }
-		public ApartmentState OperationApartment { get; private set; }
+		public int ThreadId { get; private set; }
+		public ApartmentState Apartment { get; private set; }
 		public int ComInitializationResult { get; private set; }
-		public Action BeforeReturn { get; init; }
-		public Process Observation { get; init; }
 
-		public override Process Launch(string target, string arguments = null, string workingDirectory = null, string verb = null,
-			IntPtr ownerWindow = default, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal) {
-			Record();
-			return Observation;
-		}
-
-		public override void OpenShellItem(string parsingName, IntPtr ownerWindow = default) => Record();
-		public override void OpenDirectory(string path) => Record();
-		public override void HighlightFileInExplorer(string filePath) => Record();
-		public override void ShowProperties(string path, IntPtr ownerWindow = default) => Record();
-		public override void EmptyRecycleBin(string driveRoot = null, IntPtr ownerWindow = default, bool showConfirmation = true,
-			bool showProgress = true, bool playSound = false) => Record();
-		public override void InvokeShellItemVerb(WindowsShellItemInfo expected, string verbName) => Record();
-
-		private void Record() {
+		public bool Run() {
 			ComInitializationResult = WinAPI.OLE32.CoInitializeEx(IntPtr.Zero, WinAPI.OLE32.COINIT_APARTMENTTHREADED | WinAPI.OLE32.COINIT_DISABLE_OLE1DDE);
 			Marshal.ThrowExceptionForHR(ComInitializationResult);
 			using var balance = Tools.Scope.ExecuteOnDispose(WinAPI.OLE32.CoUninitialize);
 			Calls++;
-			OperationThreadId = Environment.CurrentManagedThreadId;
-			OperationApartment = Thread.CurrentThread.GetApartmentState();
-			BeforeReturn?.Invoke();
+			ThreadId = Environment.CurrentManagedThreadId;
+			Apartment = Thread.CurrentThread.GetApartmentState();
+			return true;
 		}
 	}
+
+	#endregion
 }

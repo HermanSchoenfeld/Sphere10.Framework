@@ -26,17 +26,16 @@ public class ComputerHardwareInventoryTests {
 	[TestCase("monitors")]
 	[TestCase("printers")]
 	public async Task ReadOnlyHardwareInventoryReturnsDetachedDataWithoutRequiringOptionalDevices(string query) {
-		var computer = Tools.Windows.Computer;
 		Array result;
 		try {
 			result = query switch {
-				"memory-modules" => await computer.GetMemoryModulesAsync(),
-				"memory-arrays" => await computer.GetMemoryArraysAsync(),
-				"enclosures" => await computer.GetEnclosuresAsync(),
-				"video-controllers" => await computer.GetVideoControllersAsync(),
-				"devices" => await computer.GetDevicesAsync(),
-				"monitors" => await computer.GetMonitorsAsync(),
-				_ => await computer.GetPrintersAsync()
+				"memory-modules" => await Tools.Windows.Computer.GetMemoryModulesAsync(),
+				"memory-arrays" => await Tools.Windows.Computer.GetMemoryArraysAsync(),
+				"enclosures" => await Tools.Windows.Computer.GetEnclosuresAsync(),
+				"video-controllers" => await Tools.Windows.Computer.GetVideoControllersAsync(),
+				"devices" => await Tools.Windows.Computer.GetDevicesAsync(),
+				"monitors" => await Tools.Windows.Computer.GetMonitorsAsync(),
+				_ => await Tools.Windows.Computer.GetPrintersAsync()
 			};
 		} catch (ManagementException error) when (error.ErrorCode is ManagementStatus.InvalidClass or ManagementStatus.InvalidNamespace or ManagementStatus.AccessDenied) {
 			Assert.Ignore($"Windows provider unavailable for {query}: {error.ErrorCode}. No inventory was manufactured.");
@@ -86,17 +85,16 @@ public class ComputerHardwareInventoryTests {
 	[TestCase("monitors")]
 	[TestCase("printers")]
 	public async Task PreCanceledHardwareQueriesDoNotEnterTheProvider(string query) {
-		var computer = Tools.Windows.Computer;
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
 		var pending = query switch {
-			"memory-modules" => (Task)computer.GetMemoryModulesAsync(cancellation.Token),
-			"memory-arrays" => computer.GetMemoryArraysAsync(cancellation.Token),
-			"enclosures" => computer.GetEnclosuresAsync(cancellation.Token),
-			"video-controllers" => computer.GetVideoControllersAsync(cancellation.Token),
-			"devices" => computer.GetDevicesAsync(cancellation.Token),
-			"monitors" => computer.GetMonitorsAsync(cancellation.Token),
-			_ => computer.GetPrintersAsync(cancellation.Token)
+			"memory-modules" => (Task)Tools.Windows.Computer.GetMemoryModulesAsync(cancellation.Token),
+			"memory-arrays" => Tools.Windows.Computer.GetMemoryArraysAsync(cancellation.Token),
+			"enclosures" => Tools.Windows.Computer.GetEnclosuresAsync(cancellation.Token),
+			"video-controllers" => Tools.Windows.Computer.GetVideoControllersAsync(cancellation.Token),
+			"devices" => Tools.Windows.Computer.GetDevicesAsync(cancellation.Token),
+			"monitors" => Tools.Windows.Computer.GetMonitorsAsync(cancellation.Token),
+			_ => Tools.Windows.Computer.GetPrintersAsync(cancellation.Token)
 		};
 		await Assert.ThatAsync(async () => await pending, Throws.InstanceOf<OperationCanceledException>());
 		Assert.That(pending.IsCanceled, Is.True);
@@ -131,9 +129,7 @@ public class ComputerHardwareInventoryTests {
 	[TestCase("")]
 	[TestCase("**************.******+***")]
 	[TestCase("invalid")]
-	public void UnavailableDriverDatesStayUnavailable(string text) {
-		Assert.That(WindowsComputer.ParseDmtfDate(text), Is.Null);
-	}
+	public void UnavailableDriverDatesStayUnavailable(string text) => Assert.That(WindowsComputer.ParseDmtfDate(text), Is.Null);
 
 	[Test]
 	public void DriverDatesUseTheirDeclaredOffsetWhenConvertedToUtc() {

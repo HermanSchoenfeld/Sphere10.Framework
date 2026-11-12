@@ -100,7 +100,7 @@ public class WindowsNetworkUtilTests {
 		Task<WindowsNetworkInterface[]> pending;
 		AppDomain.CurrentDomain.FirstChanceException += observe;
 		using (Tools.Scope.ExecuteOnDispose(() => AppDomain.CurrentDomain.FirstChanceException -= observe)) {
-			pending = new WindowsNetworkUtil().GetInterfacesAsync(() => {
+			pending = Tools.Windows.Network.GetInterfacesAsync(() => {
 				Volatile.Write(ref workerThread, Environment.CurrentManagedThreadId);
 				using var cleanup = Tools.Scope.ExecuteOnDispose(() => cleanedUp = true);
 				entered.TrySetResult();
@@ -123,7 +123,7 @@ public class WindowsNetworkUtilTests {
 	[Test]
 	public async Task NativeReadFailuresRemainFaultedWithTheOriginalException() {
 		var expected = new NetworkInformationException(5);
-		var pending = new WindowsNetworkUtil().GetInterfacesAsync(() => throw expected, CancellationToken.None);
+		var pending = Tools.Windows.Network.GetInterfacesAsync(() => throw expected, CancellationToken.None);
 		await Assert.ThatAsync(async () => await pending, Throws.Exception.SameAs(expected));
 		Assert.That(pending.Status, Is.EqualTo(TaskStatus.Faulted));
 	}

@@ -31,6 +31,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	// Identifies one route request without storing presentation state.
 	private readonly record struct NavigationRequest(string BlockId, string ScreenId, Guid? InstanceId);
 
+	private const string ScreensMenuId = "sphere10-screens-menu";
+
 	private NavigationRequest? _lastRequest;
 	private readonly CancellationTokenSource _lifetimeCancellation = new();
 	private CancellationTokenSource _routeCancellation;
@@ -121,31 +123,74 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 
 	// The host's user interaction services.
-	private IUserInterfaceServices UserInterfaceServices {
-		get {
-			return ScreenHost.UserInterfaceServices;
-		}
-	}
+	private IUserInterfaceServices UserInterfaceServices => ScreenHost.UserInterfaceServices;
 
 	// The navigation block currently being browsed.
-	private IApplicationBlock SelectedBlock {
-		get {
-			return ScreenHost.SelectedBlock;
-		}
-	}
+	private IApplicationBlock SelectedBlock => ScreenHost.SelectedBlock;
 
 	// The blocks exposed by the current application.
-	private IApplicationBlock[] Blocks {
-		get {
-			return Application.Blocks;
+	private IApplicationBlock[] Blocks => Application.Blocks;
+
+	// The toolbar composition for the active command owners.
+	private IApplicationMenuItem[] MergedToolBarItems
+		=> ApplicationHelper.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
+
+	/// <summary>Cancels pending navigation and removes subscriptions.</summary>
+	public void Dispose() {
+		if (_disposed)
+			return;
+		_disposed = true;
+		_lifetimeCancellation.Cancel();
+		_lifetimeCancellation.Dispose();
+		CancelRouteRequest();
+		Application.Changed -= OnHostChanged;
+		ScreenHost.ScreenSelected -= OnScreenSelected;
+		_controllerScope?.Dispose();
+	}
+
+	/// <summary>Releases the legacy browser reader after outstanding restoration.</summary>
+	public async ValueTask DisposeAsync() {
+		Dispose();
+		await _startupSettingsLoad;
+		if (_legacyStartupModule != null)
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => {
+				await _legacyStartupModule.DisposeAsync();
+			});
+	}
+
+	/// <summary>Saves a restorable retained screen as this browser's startup choice, retaining the previous choice if storage fails.</summary>
+	public async Task MakeStartupScreenAsync(Guid id) {
+		var screen = ScreenHost.Screens.FirstOrDefault(candidate => candidate.Id == id);
+		if (_disposed || _savingStartupScreen || StartupScreenUnavailableReason(screen) != null)
+			return;
+		_savingStartupScreen = true;
+		var key = _startupSettingsKey;
+		var identity = ScreenHost.GetStartupScreenIdentity(screen);
+		try {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+				var settings = await UserSettings.GetAsync<StartupSettings>(key);
+				settings.StartupScreen = identity;
+				await settings.SaveAsync();
+				if (!_disposed && key == _startupSettingsKey) {
+					ScreenHost.SetStartupScreen(identity);
+					_startupSettingsError = null;
+				}
+			}, exception => exception is JSException or InvalidOperationException or Newtonsoft.Json.JsonException);
+			if (error != null && !_disposed)
+				_startupSettingsError = "The startup screen preference could not be saved. The previous choice is unchanged.";
+		} finally {
+			_savingStartupScreen = false;
+			if (!_disposed)
+				StateHasChanged();
 		}
 	}
 
-	// The toolbar composition for the active command owners.
-	private IApplicationMenuItem[] MergedToolBarItems {
-		get {
-			return ApplicationHelper.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
-		}
+	/// <summary>Executes a custom navigation command through the shell's guarded interaction and browser-history path.</summary>
+	/// <remarks>Await this from custom sidebar controls. Successful commands close the navigation drawer and synchronize the active screen URL.</remarks>
+	public Task ExecuteCommandAsync(IApplicationMenuItem item) {
+		if (item is ScreensMenuCommand screens)
+			return ExecuteScreensCommandAsync(screens);
+		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 	}
 
 	/// <summary>Subscribes to retained screen and navigation changes.</summary>
@@ -263,29 +308,6 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}
 	}
 
-	/// <summary>Cancels pending navigation and removes subscriptions.</summary>
-	public void Dispose() {
-		if (_disposed)
-			return;
-		_disposed = true;
-		_lifetimeCancellation.Cancel();
-		_lifetimeCancellation.Dispose();
-		CancelRouteRequest();
-		Application.Changed -= OnHostChanged;
-		ScreenHost.ScreenSelected -= OnScreenSelected;
-		_controllerScope?.Dispose();
-	}
-
-	/// <summary>Releases the legacy browser reader after outstanding restoration.</summary>
-	public async ValueTask DisposeAsync() {
-		Dispose();
-		await _startupSettingsLoad;
-		if (_legacyStartupModule != null)
-			await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => {
-				await _legacyStartupModule.DisposeAsync();
-			});
-	}
-
 	// Restores the typed startup choice, with an existing legacy key as fallback.
 	private async Task LoadStartupScreenAsync() {
 		_readingStartupSettings = true;
@@ -338,37 +360,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			: ScreenHost.GetStartupScreenUnavailableReason(screen);
 	}
 
-	/// <summary>Saves a restorable retained screen as this browser's startup choice, retaining the previous choice if storage fails.</summary>
-	public async Task MakeStartupScreenAsync(Guid id) {
-		var screen = ScreenHost.Screens.FirstOrDefault(candidate => candidate.Id == id);
-		if (_disposed || _savingStartupScreen || StartupScreenUnavailableReason(screen) != null)
-			return;
-		_savingStartupScreen = true;
-		var key = _startupSettingsKey;
-		var identity = ScreenHost.GetStartupScreenIdentity(screen);
-		try {
-			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
-				var settings = await UserSettings.GetAsync<StartupSettings>(key);
-				settings.StartupScreen = identity;
-				await settings.SaveAsync();
-				if (!_disposed && key == _startupSettingsKey) {
-					ScreenHost.SetStartupScreen(identity);
-					_startupSettingsError = null;
-				}
-			}, exception => exception is JSException or InvalidOperationException or Newtonsoft.Json.JsonException);
-			if (error != null && !_disposed)
-				_startupSettingsError = "The startup screen preference could not be saved. The previous choice is unchanged.";
-		} finally {
-			_savingStartupScreen = false;
-			if (!_disposed)
-				StateHasChanged();
-		}
-	}
-
 	// Toggles the narrow-layout navigation drawer.
-	private void ToggleNavigation() {
-		_navigationOpen = !_navigationOpen;
-	}
+	private void ToggleNavigation() => _navigationOpen = !_navigationOpen;
 
 	// Closes the navigation drawer.
 	private void CloseNavigation() {
@@ -403,9 +396,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Executes a command through guarded navigation.
-	private Task ExecuteMenuItemAsync(IApplicationMenuItem item) {
-		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
-	}
+	private Task ExecuteMenuItemAsync(IApplicationMenuItem item) => RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 
 	// Keep existing menu order and reuse a contextual Options heading before adding a heading of our own.
 	private IApplicationMenu[] MergedMenus {
@@ -414,28 +405,75 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 				(menu, items) => new ApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
 				menu => menu.Id, item => item.Id, GetApplicationCommandLayers()).ToList();
 			var settings = menus.FirstOrDefault(menu => menu.Id == global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.SettingsMenuId);
-			if (settings == null)
-				return menus.ToArray();
+			if (settings != null) {
+				menus.Remove(settings);
+				var existing = menus.FindIndex(menu => IsMenuHeading(menu, "Options"));
+				if (existing >= 0) {
+					var menu = menus[existing];
+					menus[existing] = new ApplicationMenu(ownsItems: false) {
+						Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = menu.Items.Concat(settings.Items).ToArray()
+					};
+				} else {
+					var help = menus.FindIndex(menu => IsMenuHeading(menu, "Help"));
+					menus.Insert(help < 0 ? menus.Count : help, settings);
+				}
+			}
 
-			menus.Remove(settings);
-			var existing = menus.FindIndex(menu => IsMenuHeading(menu, "Options"));
-			if (existing >= 0) {
-				var menu = menus[existing];
-				menus[existing] = new ApplicationMenu(ownsItems: false) {
-					Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = menu.Items.Concat(settings.Items).ToArray()
-				};
-			} else {
+			// The Screens menu follows the native main form: File, Screens, Options, Help. It appears once a screen is open.
+			var screens = CreateScreensMenu();
+			if (screens != null) {
+				var options = menus.FindIndex(menu => IsMenuHeading(menu, "Options"));
 				var help = menus.FindIndex(menu => IsMenuHeading(menu, "Help"));
-				menus.Insert(help < 0 ? menus.Count : help, settings);
+				menus.Insert(options >= 0 ? options : help >= 0 ? help : menus.Count, screens);
 			}
 			return menus.ToArray();
 		}
 	}
 
-	// Menu accelerators and surrounding whitespace do not change a heading's purpose.
-	private static bool IsMenuHeading(IApplicationMenu menu, string heading) {
-		return string.Equals(menu.Text?.Replace("&", string.Empty).Trim(), heading, StringComparison.OrdinalIgnoreCase);
+	// Lists every open normal screen with the active one checked, then the batch closure commands, like the native Screens menu.
+	private ApplicationMenu CreateScreensMenu() {
+		var screens = ScreenHost.OpenScreens.Where(screen => screen.ScreenKind == SharedUI.ScreenKind.Normal).ToArray();
+		if (screens.Length == 0)
+			return null;
+		var active = ScreenHost.ActiveScreen;
+		var items = new List<IApplicationMenuItem>();
+		var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
+		foreach (var screen in screens) {
+			var title = string.IsNullOrWhiteSpace(screen.Title) ? "Untitled Screen" : screen.Title;
+			occurrences.TryGetValue(title, out var count);
+			occurrences[title] = ++count;
+			items.Add(new ScreenSelectionCommand(screen.Id) { Title = count == 1 ? title : $"{title} ({count})", IsChecked = ReferenceEquals(screen, active) });
+		}
+		var closable = screens.Any(screen => !screen.IsPermanent);
+		var closableOthers = active != null && screens.Any(screen => !ReferenceEquals(screen, active) && !screen.IsPermanent);
+		items.Add(new BlazorMenuSeparator());
+		items.Add(new ScreensMenuCommand(ScreensMenuAction.CloseAll) { Title = "Close All", CanExecute = () => closable });
+		items.Add(new ScreensMenuCommand(ScreensMenuAction.CloseOthers) { Title = "Close All Others", CanExecute = () => closableOthers });
+		return new ApplicationMenu(ownsItems: false) { Id = ScreensMenuId, Text = "Screens", Items = items.ToArray() };
 	}
+
+	// Screens menu commands belong to the shell, so they run through its own guarded screen paths rather than the command graph.
+	private Task ExecuteScreensCommandAsync(ScreensMenuCommand command) {
+		var closable = ScreenHost.OpenScreens.Where(screen => screen.ScreenKind == SharedUI.ScreenKind.Normal && !screen.IsPermanent);
+		switch (command.Action) {
+			case ScreensMenuAction.ShowScreen:
+				return command.SessionId.HasValue && ScreenHost.OpenScreens.Any(screen => screen.Id == command.SessionId.Value)
+					? ShowScreenAsync(command.SessionId.Value) : Task.CompletedTask;
+			case ScreensMenuAction.CloseAll:
+				return CloseScreensIfAnyAsync(closable.Select(screen => screen.Id).ToArray());
+			case ScreensMenuAction.CloseOthers:
+				var active = ScreenHost.ActiveScreen;
+				return CloseScreensIfAnyAsync(closable.Where(screen => !ReferenceEquals(screen, active)).Select(screen => screen.Id).ToArray());
+			default:
+				return Task.CompletedTask;
+		}
+	}
+
+	private Task CloseScreensIfAnyAsync(Guid[] ids) => ids.Length == 0 ? Task.CompletedTask : CloseScreensAsync(ids);
+
+	// Menu accelerators and surrounding whitespace do not change a heading's purpose.
+	private static bool IsMenuHeading(IApplicationMenu menu, string heading)
+		=> string.Equals(menu.Text?.Replace("&", string.Empty).Trim(), heading, StringComparison.OrdinalIgnoreCase);
 
 	// Commands follow the visible screen's owners; sidebar browsing contributes no presentation commands.
 	private ApplicationCommandLayer[] GetApplicationCommandLayers() {
@@ -450,20 +488,11 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Checks whether a command belongs to a visible menu branch.
-	private static bool ContainsCommand(IEnumerable<IApplicationMenuItem> items, IApplicationMenuItem command) {
-		return items.Any(item => ReferenceEquals(item, command) || item is ApplicationMenuGroup group && ContainsCommand(group.Items, command));
-	}
-
-	/// <summary>Executes a custom navigation command through the shell's guarded interaction and browser-history path.</summary>
-	/// <remarks>Await this from custom sidebar controls. Successful commands close the navigation drawer and synchronize the active screen URL.</remarks>
-	public Task ExecuteCommandAsync(IApplicationMenuItem item) {
-		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
-	}
+	private static bool ContainsCommand(IEnumerable<IApplicationMenuItem> items, IApplicationMenuItem command)
+		=> items.Any(item => ReferenceEquals(item, command) || item is ApplicationMenuGroup group && ContainsCommand(group.Items, command));
 
 	// Accepted batch closure captures preferences after every screen guard has approved removal.
-	private Task CloseScreensAsync(Guid[] ids) {
-		return RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreensAsync(ids, token)), true);
-	}
+	private Task CloseScreensAsync(Guid[] ids) => RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreensAsync(ids, token)), true);
 
 	// Updates the host's visual screen order.
 	private async Task ReorderScreenAsync((Guid SessionId, int Index) request) {
@@ -479,14 +508,10 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Selects a retained screen through guarded navigation.
-	private Task ShowScreenAsync(Guid id) {
-		return RunInteractionAsync(token => ScreenHost.ShowScreenAsync(id, token), false);
-	}
+	private Task ShowScreenAsync(Guid id) => RunInteractionAsync(token => ScreenHost.ShowScreenAsync(id, token), false);
 
 	// A preference-save failure keeps the retained screen available for correction and retry.
-	private Task CloseScreenAsync(Guid id) {
-		return RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreenAsync(id, token)), true);
-	}
+	private Task CloseScreenAsync(Guid id) => RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreenAsync(id, token)), true);
 
 	// An expected persistence failure preserves the host's live screens and leaves an observable retry path.
 	private async Task<bool> CloseWithPreferencesAsync(Func<Task<bool>> close) {

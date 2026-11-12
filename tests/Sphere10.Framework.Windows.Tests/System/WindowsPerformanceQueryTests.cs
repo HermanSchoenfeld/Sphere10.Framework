@@ -23,7 +23,7 @@ public class WindowsPerformanceQueryTests {
 	public async Task ScalarAndWildcardCountersKeepRawIdentityAndUseNativeCalculations() {
 		const string scalarPath = @"\System\Processes";
 		const string wildcardPath = @"\Process(*)\ID Process";
-		using var query = await new PerformanceCounterUtil().OpenQueryAsync(new[] { scalarPath, wildcardPath });
+		using var query = await Tools.Windows.PerformanceCounters.OpenQueryAsync(new[] { scalarPath, wildcardPath });
 		var samples = await query.ReadRawSamplesAsync();
 		var scalar = samples.Single(item => item.CounterPath == scalarPath);
 		Assert.That(scalar.IsValid, Is.True, $"Native PDH status: 0x{scalar.Status:X8}");

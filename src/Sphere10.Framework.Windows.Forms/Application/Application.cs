@@ -80,56 +80,24 @@ public class Application : AsyncApplicationBase, IApplication {
 		_mainForm.CaptureApplicationCommands();
 	}
 
-	public IBlockManager BlockManager {
-		get {
-			return _mainForm;
-		}
-	}
+	public IBlockManager BlockManager => _mainForm;
 
-	public override IApplicationScreenHost ScreenHost {
-		get {
-			return _mainForm.ScreenHost;
-		}
-	}
+	public override IApplicationScreenHost ScreenHost => _mainForm.ScreenHost;
 
-	public override IApplicationPlugin[] LoadedPlugins {
-		get {
-			return Tools.Array.Clone(_loadedPlugins);
-		}
-	}
+	public override IApplicationPlugin[] LoadedPlugins => Tools.Array.Clone(_loadedPlugins);
 
-	public override IApplicationBlock[] Blocks {
-		get {
-			return ScreenHost.Blocks;
-		}
-	}
+	public override IApplicationBlock[] Blocks => ScreenHost.Blocks;
 
-	public override bool HasUnsavedChanges {
-		get {
-			return ScreenHost.HasUnsavedChanges;
-		}
-	}
+	public override bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 
 	/// <summary>Activates this application's fixed commands, including its actual main form's native commands.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_cachedMenus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_cachedMenus ??= GetMenus());
 
 	/// <summary>Activates the application's fixed toolbar command collection.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
 
 	/// <summary>The actual provider captured by the application's existing lifecycle owner.</summary>
-	internal IServiceProvider ApplicationServices {
-		get {
-			return Services;
-		}
-	}
+	internal IServiceProvider ApplicationServices => Services;
 
 	// The main form already displays its designer controls; only these additional definitions need generated views.
 	internal IApplicationMenu[] AdditionalMenus {
@@ -147,16 +115,6 @@ public class Application : AsyncApplicationBase, IApplication {
 	}
 
 	internal Func<Task> ShutdownAsync { get; set; }
-
-	/// <summary>Creates the application command definitions once after configuration.</summary>
-	protected virtual IApplicationMenu[] GetMenus() {
-		return _mainForm.Menus.Concat(_menus).ToArray();
-	}
-
-	/// <summary>Creates toolbar definitions while retaining the main form's original native items.</summary>
-	protected virtual IApplicationMenuItem[] GetToolBarItems() {
-		return _mainForm.ToolBarItems.Concat(_toolBarItems).ToArray();
-	}
 
 	/// <summary>Runs application initialization on its owning UI thread.</summary>
 	public override void Initialize() {
@@ -194,7 +152,6 @@ public class Application : AsyncApplicationBase, IApplication {
 		EnsureExitIsNotReentrant();
 		var exit = ExitAsync(force, cancellationToken);
 		WaitOnUIThread(exit);
-		// Sync-over-async pattern
 		return exit.GetAwaiter().GetResult();
 	}
 
@@ -234,6 +191,12 @@ public class Application : AsyncApplicationBase, IApplication {
 		OnChanged();
 	}
 
+	/// <summary>Creates the application command definitions once after configuration.</summary>
+	protected virtual IApplicationMenu[] GetMenus() => _mainForm.Menus.Concat(_menus).ToArray();
+
+	/// <summary>Creates toolbar definitions while retaining the main form's original native items.</summary>
+	protected virtual IApplicationMenuItem[] GetToolBarItems() => _mainForm.ToolBarItems.Concat(_toolBarItems).ToArray();
+
 	/// <summary>Completes native cleanup using the established synchronous UI pump.</summary>
 	protected override void DisposeInternal() {
 		EnsureCanDisposeSynchronously();
@@ -241,9 +204,8 @@ public class Application : AsyncApplicationBase, IApplication {
 	}
 
 	/// <summary>Releases application resources on the owning UI thread.</summary>
-	protected override ValueTask DisposeInternalAsync() {
-		return new(Environment.CurrentManagedThreadId == _uiThread || IsDisposed || _mainForm.IsDisposed && HasExited ? DisposeOnUIThreadAsync() : DisposeFromWorkerAsync());
-	}
+	protected override ValueTask DisposeInternalAsync()
+		=> new(Environment.CurrentManagedThreadId == _uiThread || IsDisposed || _mainForm.IsDisposed && HasExited ? DisposeOnUIThreadAsync() : DisposeFromWorkerAsync());
 
 	/// <summary>Restores actual settings before registering blocks and activating screens.</summary>
 	protected override async Task<bool> OnInitializeAsync(CancellationToken cancellationToken) {
@@ -267,14 +229,10 @@ public class Application : AsyncApplicationBase, IApplication {
 	}
 
 	/// <summary>Delegates exit confirmation to the actual main form.</summary>
-	protected override Task<bool> ConfirmExitAsync(CancellationToken cancellationToken) {
-		return _mainForm.ConfirmApplicationExitAsync(cancellationToken);
-	}
+	protected override Task<bool> ConfirmExitAsync(CancellationToken cancellationToken) => _mainForm.ConfirmApplicationExitAsync(cancellationToken);
 
 	/// <summary>Combines application lifecycle checks with native form exit guards.</summary>
-	protected override async Task<bool> CanExitAsync(CancellationToken cancellationToken) {
-		return await base.CanExitAsync(cancellationToken) && _mainForm.CanApplicationExit();
-	}
+	protected override async Task<bool> CanExitAsync(CancellationToken cancellationToken) => await base.CanExitAsync(cancellationToken) && _mainForm.CanApplicationExit();
 
 	/// <summary>Closes the actual main form after its approved shutdown completes.</summary>
 	protected override async Task<bool> OnExitAsync(bool force, CancellationToken cancellationToken) {
@@ -343,7 +301,6 @@ public class Application : AsyncApplicationBase, IApplication {
 				if (!operation.IsCompleted)
 					Thread.Sleep(1);
 			}
-		// Sync-over-async pattern
 		operation.GetAwaiter().GetResult();
 	}
 
@@ -408,14 +365,10 @@ public class Application : AsyncApplicationBase, IApplication {
 	}
 
 	/// <summary>Uses the application's existing user provider, including manually hosted native applications.</summary>
-	protected override ISettingsProvider GetSettingsProvider() {
-		return ApplicationSettingsExtensions.ResolveSettingsProvider(Services);
-	}
+	protected override ISettingsProvider GetSettingsProvider() => ApplicationSettingsExtensions.ResolveSettingsProvider(Services);
 
 	// Commands are configuration; an activated owner has a stable collection for all window presentations.
-	private void EnsureCommandsNotActivated() {
-		Guard.Ensure(_cachedMenus == null && _cachedToolBarItems == null, "Command membership is read-only after activation.");
-	}
+	private void EnsureCommandsNotActivated() => Guard.Ensure(_cachedMenus == null && _cachedToolBarItems == null, "Command membership is read-only after activation.");
 
 	// Native views can execute actions and separators; navigation commands retain their canonical block registration.
 	private static void ValidateCommands(IApplicationMenuItem[] items, string argumentName) {

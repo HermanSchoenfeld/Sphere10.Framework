@@ -9,6 +9,7 @@
 using System;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms;
 

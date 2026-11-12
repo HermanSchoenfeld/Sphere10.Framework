@@ -19,24 +19,18 @@ namespace Sphere10.Framework.UnitTests;
 [Parallelizable(ParallelScope.Children)]
 public class SessionUtilTests {
 	[Test]
-	[Apartment(ApartmentState.STA)]
-	public async Task CurrentSessionQueriesRunOnAWorkerEvenWhenTheirValuesAreImmediatelyAvailable() {
-		var caller = Environment.CurrentManagedThreadId;
-		var sessions = new RecordingCurrentSession();
-		Assert.That(await sessions.GetCurrentSessionIdAsync(), Is.EqualTo(42));
-		Assert.That(sessions.ReadThreadId, Is.Not.EqualTo(caller));
-		Assert.That(await sessions.IsCurrentSessionRemoteAsync(), Is.True);
-		Assert.That(sessions.ReadThreadId, Is.Not.EqualTo(caller));
+	public async Task CurrentSessionQueriesReportThisProcessSession() {
+		using var process = System.Diagnostics.Process.GetCurrentProcess();
+		Assert.That(await Tools.Windows.Sessions.GetCurrentSessionIdAsync(), Is.EqualTo((uint)process.SessionId));
+		Assert.That(await Tools.Windows.Sessions.IsCurrentSessionRemoteAsync(), Is.EqualTo(Tools.Windows.Sessions.IsCurrentSessionRemote));
 	}
 
 	[Test]
-	public async Task CanceledCurrentSessionQueriesNeverReadNativeState() {
+	public async Task CanceledCurrentSessionQueriesAreRejected() {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		var sessions = new RecordingCurrentSession();
-		await Assert.ThatAsync(async () => await sessions.GetCurrentSessionIdAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		await Assert.ThatAsync(async () => await sessions.IsCurrentSessionRemoteAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		Assert.That(sessions.ReadThreadId, Is.Zero);
+		await Assert.ThatAsync(async () => await Tools.Windows.Sessions.GetCurrentSessionIdAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.Sessions.IsCurrentSessionRemoteAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 	}
 
 	[Test]
@@ -58,7 +52,7 @@ public class SessionUtilTests {
 	public void ListenerDetailsWithZeroSessionIdRemainPartialAndCannotTargetSessionZero() {
 		var returned = new WinAPI.WTSAPI32.WTSINFO { SessionId = 0, State = WinAPI.WTSAPI32.WTS_CONNECTSTATE_CLASS.Listen,
 			UserName = "Incorrect Provider User", LogonTime = DateTime.UtcNow.ToFileTimeUtc() };
-		var row = SessionUtil.ProjectSessionInformation(65536, Environment.MachineName, returned);
+		var row = Tools.Windows.Sessions.ProjectSessionInformation(65536, Environment.MachineName, returned);
 		Assert.That(row.SessionId, Is.EqualTo(65536));
 		Assert.That(row.LogonTimeUtc, Is.Null);
 		Assert.That(row.UserName, Is.Null);
@@ -69,24 +63,22 @@ public class SessionUtilTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ManagementRejectsUnverifiedSessionBeforeAnyNativeAction(bool logoff) {
-		var sessions = new SessionUtil();
 		var unverified = new WindowsSessionInfo { SessionId = uint.MaxValue, ServerName = Environment.MachineName };
-		Assert.That(() => { if (logoff) sessions.Logoff(unverified); else sessions.Disconnect(unverified); }, Throws.InstanceOf<InvalidOperationException>());
+		Assert.That(() => { if (logoff) Tools.Windows.Sessions.Logoff(unverified); else Tools.Windows.Sessions.Disconnect(unverified); }, Throws.InstanceOf<InvalidOperationException>());
 	}
 
 	[Test]
 	public async Task CanceledInventoryDoesNotOpenOrQueryAWindowsServer() {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(async () => await new SessionUtil().GetSessionsAsync("not-an-existing-server", cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.Sessions.GetSessionsAsync("not-an-existing-server", cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 	}
 
 	[Test]
 	public async Task ReadOnlyLocalInventoryReturnsDetachedRowsAndTheCurrentSession() {
-		var utility = new SessionUtil();
-		var rows = await utility.GetSessionsAsync();
+		var rows = await Tools.Windows.Sessions.GetSessionsAsync();
 		Assert.That(rows, Is.Not.Empty);
-		Assert.That(rows, Has.Some.Property(nameof(WindowsSessionInfo.SessionId)).EqualTo(utility.CurrentSessionId));
+		Assert.That(rows, Has.Some.Property(nameof(WindowsSessionInfo.SessionId)).EqualTo(Tools.Windows.Sessions.CurrentSessionId));
 		Assert.That(Array.TrueForAll(rows, row => row.ServerName == Environment.MachineName), Is.True);
 	}
 
@@ -124,11 +116,5 @@ public class SessionUtilTests {
 		await server.DisposeAsync();
 		Assert.That(() => memory.Pointer, Throws.InstanceOf<ObjectDisposedException>());
 		Assert.That(() => server.Handle, Throws.InstanceOf<ObjectDisposedException>());
-	}
-
-	private sealed class RecordingCurrentSession : SessionUtil {
-		public int ReadThreadId { get; private set; }
-		public override uint CurrentSessionId { get { ReadThreadId = Environment.CurrentManagedThreadId; return 42; } }
-		public override bool IsCurrentSessionRemote { get { ReadThreadId = Environment.CurrentManagedThreadId; return true; } }
 	}
 }

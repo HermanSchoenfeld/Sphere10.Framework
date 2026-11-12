@@ -11,6 +11,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Sphere10.Framework.Drawing;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 
@@ -32,9 +33,7 @@ public class RichTextGDI : RichText {
 	}
 
 	/// <summary>Copies the visual without sharing a render control.</summary>
-	public override object Clone() {
-		return new RichTextGDI(this);
-	}
+	public override object Clone() => new RichTextGDI(this);
 
 	/// <summary>Draws rich text without retaining a native editor between visual elements.</summary>
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {

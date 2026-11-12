@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Principal;
@@ -91,15 +92,6 @@ public sealed class WindowsProcess : IDisposable {
 		throw new Win32Exception(error);
 	}
 
-	internal static bool HasSignaledExit(WinAPI.KERNEL32.KernelHandle handle) {
-		// GetProcessTimes' exit FILETIME is undefined while a process is alive; its signaled state is authoritative.
-		var result = WinAPI.KERNEL32.WaitForSingleObject(handle, 0);
-		if (result == WinAPI.KERNEL32.WaitFailed)
-			throw new Win32Exception(Marshal.GetLastPInvokeError(), "The process liveness could not be checked.");
-		Guard.Ensure(result == WinAPI.KERNEL32.WaitObject0 || result == WinAPI.KERNEL32.WaitTimeout, "Windows returned an unexpected process wait state.");
-		return result == WinAPI.KERNEL32.WaitObject0;
-	}
-
 	/// <summary>Unavailable counters are null; no sampling, deltas or display policy is applied.</summary>
 	public WindowsProcessCounters ReadCounters() {
 		EnsureOpen();
@@ -115,6 +107,7 @@ public sealed class WindowsProcess : IDisposable {
 			ReadBytes = hasIo ? io.ReadTransferCount : null, WriteBytes = hasIo ? io.WriteTransferCount : null, OtherBytes = hasIo ? io.OtherTransferCount : null,
 			WorkingSetBytes = hasMemory ? checked((long)memory.WorkingSetSize.ToUInt64()) : null,
 			PrivateMemoryBytes = hasMemory ? checked((long)memory.PrivateUsage.ToUInt64()) : null,
+			PageFaultCount = hasMemory ? memory.PageFaultCount : null,
 			HandleCount = hasHandles ? checked((int)handles) : null, SessionId = hasSession ? checked((int)session) : null,
 			Priority = priority > 0 ? (ProcessPriorityClass)priority : null
 		};
@@ -125,73 +118,29 @@ public sealed class WindowsProcess : IDisposable {
 	public Task<WindowsThreadInfo[]> GetThreadsAsync(CancellationToken cancellationToken = default)
 		=> Task.Run(() => GetThreadsCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
-	private WindowsThreadInfo[] GetThreadsCore(Action checkpoint) {
-		checkpoint?.Invoke();
-		using var process = OpenManaged();
-		var threads = process.Threads;
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
-			foreach (ProcessThread thread in threads)
-				thread.Dispose();
-		});
-		var result = new List<WindowsThreadInfo>();
-		foreach (ProcessThread thread in threads) {
-			checkpoint?.Invoke();
-			var state = Read(() => thread.ThreadState, (System.Diagnostics.ThreadState?)null);
-			result.Add(new WindowsThreadInfo(Read(() => thread.Id, 0), state,
-				state == System.Diagnostics.ThreadState.Wait ? Read(() => thread.WaitReason, (ThreadWaitReason?)null) : null,
-				Read(() => thread.BasePriority, (int?)null), Read(() => thread.CurrentPriority, (int?)null),
-				Read(() => thread.TotalProcessorTime, (TimeSpan?)null), Read(() => thread.StartTime.ToUniversalTime(), (DateTime?)null)));
-		}
-		checkpoint?.Invoke();
-		return result.ToArray();
-	}
+	public WindowsProcessMetadata ReadMetadata() => ReadMetadataCore(null);
+
+	public Task<WindowsProcessMetadata> ReadMetadataAsync(CancellationToken cancellationToken = default)
+		=> Task.Run(() => ReadMetadataCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+
+	public WindowsProcessMitigation[] GetMitigations() => GetMitigationsCore(null);
+
+	public Task<WindowsProcessMitigation[]> GetMitigationsAsync(CancellationToken cancellationToken = default)
+		=> Task.Run(() => GetMitigationsCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
 	public WindowsModuleInfo[] GetModules() => GetModulesCore(null);
 
 	public Task<WindowsModuleInfo[]> GetModulesAsync(CancellationToken cancellationToken = default)
 		=> Task.Run(() => GetModulesCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
-	private WindowsModuleInfo[] GetModulesCore(Action checkpoint) {
-		checkpoint?.Invoke();
-		using var process = OpenManaged();
-		var modules = process.Modules;
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
-			foreach (ProcessModule module in modules)
-				module.Dispose();
-		});
-		var result = new List<WindowsModuleInfo>();
-		foreach (ProcessModule module in modules) {
-			checkpoint?.Invoke();
-			result.Add(new WindowsModuleInfo(Read(() => module.ModuleName, string.Empty), Read(() => module.FileName, string.Empty),
-				Read(() => module.BaseAddress, (IntPtr?)null), Read(() => module.ModuleMemorySize, (int?)null)));
-		}
-		checkpoint?.Invoke();
-		return result.ToArray();
-	}
+	/// <summary>Explicitly reads PE headers from current loader-listed mappings. Ordinary module inventory never performs these memory reads.</summary>
+	public Task<WindowsModuleInfo[]> GetModulesWithDetailsAsync(CancellationToken cancellationToken = default)
+		=> Task.Run(() => GetModulesWithDetailsCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
 	public string GetCommandLine() => GetCommandLineCore(null);
 
 	public Task<string> GetCommandLineAsync(CancellationToken cancellationToken = default)
 		=> Task.Run(() => GetCommandLineCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
-
-	private string GetCommandLineCore(Action checkpoint) {
-		checkpoint?.Invoke();
-		var identity = Identity;
-		Guard.Ensure(identity.IsVerified && !HasExited, "The process identity is unavailable or has exited.");
-		checkpoint?.Invoke();
-		var options = new System.Management.EnumerationOptions { Timeout = TimeSpan.FromSeconds(3), ReturnImmediately = false, Rewindable = false };
-		using var searcher = new ManagementObjectSearcher("root\\cimv2", $"SELECT CommandLine, CreationDate FROM Win32_Process WHERE ProcessId = {ProcessId}", options);
-		using var matches = searcher.Get();
-		foreach (ManagementObject match in matches) {
-			using (match) {
-				checkpoint?.Invoke();
-				var creation = match["CreationDate"] as string;
-				if (!string.IsNullOrEmpty(creation) && Math.Abs((ManagementDateTimeConverter.ToDateTime(creation).ToUniversalTime() - identity.StartTimeUtc.Value).Ticks) < 10)
-					return match["CommandLine"] as string ?? string.Empty;
-			}
-		}
-		throw new InvalidOperationException("The process identity no longer matches the command-line query.");
-	}
 
 	public WindowsProcessEnvironmentVariable[] GetEnvironment(int maximumBytes = 1048576) => GetEnvironmentCore(maximumBytes, null);
 
@@ -220,6 +169,56 @@ public sealed class WindowsProcess : IDisposable {
 
 	public Task<WindowsProcessJobInfo> GetJobInformationAsync(CancellationToken cancellationToken = default) => Task.Run(GetJobInformation, cancellationToken);
 
+
+	public WindowsProcessMemoryRegion[] GetMemoryRegions(int maximumRegions = 100000) => GetMemoryRegionsCore(maximumRegions, null);
+
+	public Task<WindowsProcessMemoryRegion[]> GetMemoryRegionsAsync(int maximumRegions = 100000, CancellationToken cancellationToken = default)
+		=> Task.Run(() => GetMemoryRegionsCore(maximumRegions, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+
+	/// <summary>Queries at most 65,536 supplied addresses without enabling target monitoring or touching target pages.</summary>
+	public Task<WindowsWorkingSetPage[]> QueryWorkingSetAsync(ulong[] addresses, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(addresses, nameof(addresses));
+		Guard.ArgumentInRange(addresses.Length, 1, 65536, nameof(addresses));
+		var captured = (ulong[])addresses.Clone();
+		return Task.Run(() => {
+			Debug.AssertNotMainThread();
+			return ProcessCommandService.ExecuteNative(Identity, WinAPI.KERNEL32.ProcessQueryInformation, handle => {
+				var buffer = captured.Select(address => {
+					Guard.Argument(IntPtr.Size == 8 || address <= uint.MaxValue, nameof(addresses), "A supplied address exceeds this inspector's pointer width.");
+					return new WinAPI.PSAPI.WORKING_SET_EX_INFORMATION {
+						VirtualAddress = ToPointer(address)
+					};
+				}).ToArray();
+				if (!WinAPI.PSAPI.QueryWorkingSetEx(handle, buffer, checked((uint)(buffer.Length * Marshal.SizeOf<WinAPI.PSAPI.WORKING_SET_EX_INFORMATION>()))))
+					throw new Win32Exception(Marshal.GetLastPInvokeError());
+				cancellationToken.ThrowIfCancellationRequested();
+				var sampled = DateTime.UtcNow;
+				var identity = Identity;
+				return buffer.Select((page, index) => new WindowsWorkingSetPage(identity, sampled, captured[index], page.Flags.ToUInt64())).ToArray();
+			}, cancellationToken.ThrowIfCancellationRequested);
+		}, cancellationToken);
+	}
+
+	public WindowsProcessMemoryRead ReadMemory(ulong address, int count) => ReadMemoryCore(address, count, null);
+
+	public Task<WindowsProcessMemoryRead> ReadMemoryAsync(ulong address, int count, CancellationToken cancellationToken = default)
+		=> Task.Run(() => ReadMemoryCore(address, count, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+
+	public Task<WindowsProcessStringScan> GetMemoryStringsInRangeAsync(ulong address, ulong length, int minimumLength = 4, int maximumResults = 2000,
+		long maximumBytes = 33554432, CancellationToken cancellationToken = default) {
+		Guard.Argument(length > 0, nameof(length), "Specify a nonempty memory range.");
+		Guard.Argument(address <= ulong.MaxValue - length, nameof(length), "The memory range overflows its address space.");
+		return Task.Run(() => GetMemoryStringsCore(minimumLength, maximumResults, maximumBytes, cancellationToken.ThrowIfCancellationRequested, address, length), cancellationToken);
+	}
+
+	public Task<WindowsProcessStringScan> GetImageStringsInRangeAsync(long offset, long length, int minimumLength = 4, int maximumResults = 2000,
+		long maximumBytes = 33554432, CancellationToken cancellationToken = default) {
+		Guard.ArgumentGTE(offset, 0, nameof(offset));
+		Guard.ArgumentGT(length, 0, nameof(length));
+		Guard.Argument(offset <= long.MaxValue - length, nameof(length), "The image range overflows its file offset.");
+		return Task.Run(() => GetImageStringsCore(minimumLength, maximumResults, maximumBytes, cancellationToken.ThrowIfCancellationRequested, offset, length), cancellationToken);
+	}
+
 	public WindowsProcessStringScan GetMemoryStrings(int minimumLength = 4, int maximumResults = 2000, long maximumBytes = 33554432)
 		=> GetMemoryStringsCore(minimumLength, maximumResults, maximumBytes, null);
 
@@ -233,6 +232,194 @@ public sealed class WindowsProcess : IDisposable {
 		CancellationToken cancellationToken = default) => Task.Run(() => GetImageStringsCore(minimumLength, maximumResults, maximumBytes, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
 	public void Dispose() => _handle.Dispose();
+
+
+	internal static bool HasSignaledExit(WinAPI.KERNEL32.KernelHandle handle) {
+		// GetProcessTimes' exit FILETIME is undefined while a process is alive; its signaled state is authoritative.
+		var result = WinAPI.KERNEL32.WaitForSingleObject(handle, 0);
+		if (result == WinAPI.KERNEL32.WaitFailed)
+			throw new Win32Exception(Marshal.GetLastPInvokeError(), "The process liveness could not be checked.");
+		Guard.Ensure(result == WinAPI.KERNEL32.WaitObject0 || result == WinAPI.KERNEL32.WaitTimeout, "Windows returned an unexpected process wait state.");
+		return result == WinAPI.KERNEL32.WaitObject0;
+	}
+
+	internal static WindowsProcessEnvironmentVariable[] ParseEnvironment(string block) {
+		var result = new List<WindowsProcessEnvironmentVariable>();
+		foreach (var entry in block.Split('\0', StringSplitOptions.RemoveEmptyEntries)) {
+			var separator = entry.IndexOf('=', entry[0] == '=' ? 1 : 0);
+			if (separator < 0)
+				throw new InvalidDataException("The process environment contains a malformed entry.");
+			result.Add(new(entry[..separator], entry[(separator + 1)..]));
+		}
+		return result.ToArray();
+	}
+
+	private WindowsProcessMetadata ReadMetadataCore(Action checkpoint) {
+		Debug.AssertNotMainThread();
+		EnsureOpen();
+		checkpoint?.Invoke();
+		Guard.Ensure(!HasExited, "The process has exited.");
+		var result = new WindowsProcessMetadata { Identity = Identity, CapturedAtUtc = DateTime.UtcNow };
+		var errors = new List<string>();
+		Tools.Exceptions.ExecuteCapturingException(() => {
+			if (!WinAPI.KERNEL32.IsWow64Process2(_handle, out var machine, out var nativeMachine))
+				throw new Win32Exception(Marshal.GetLastPInvokeError());
+			result = result with { Architecture = MachineName(machine == 0 ? nativeMachine : machine) };
+		}, out var architectureError, error => error is Win32Exception or EntryPointNotFoundException);
+		if (architectureError != null)
+			errors.Add("Architecture: " + architectureError.Message);
+		Tools.Exceptions.ExecuteCapturingException(() => {
+			var token = GetTokenInformationCore(checkpoint);
+			result = result with { UserSid = token.UserSid, IntegritySid = token.IntegritySid };
+			Tools.Exceptions.ExecuteCapturingException(() => result = result with { UserName = new SecurityIdentifier(token.UserSid).Translate(typeof(NTAccount)).Value },
+				out var accountError, error => error is IdentityNotMappedException or SecurityException);
+			if (accountError != null)
+				errors.Add("Account Name: " + accountError.Message);
+		}, out var tokenError, error => error is Win32Exception or InvalidOperationException);
+		if (tokenError != null)
+			errors.Add("Token: " + tokenError.Message);
+		Tools.Exceptions.ExecuteCapturingException(() => result = result with { Mitigations = GetMitigationsCore(checkpoint) }, out var mitigationError,
+			error => error is Win32Exception or InvalidOperationException);
+		if (mitigationError != null)
+			errors.Add("Mitigations: " + mitigationError.Message);
+		Guard.Ensure(!HasExited, "The process exited while its metadata was being read.");
+		return result with { Availability = string.Join(" ", errors) };
+	}
+
+	private WindowsProcessMitigation[] GetMitigationsCore(Action checkpoint) {
+		Debug.AssertNotMainThread();
+		EnsureOpen();
+		var policies = new WindowsMitigationPolicyDescription[] {
+			new(0, "DEP"), new(1, "ASLR"), new(2, "Dynamic Code"), new(3, "Strict Handles"), new(4, "System Calls"),
+			new(6, "Extension Points"), new(7, "Control Flow Guard"), new(8, "Binary Signatures"), new(9, "Fonts"), new(10, "Image Loading"),
+			new(11, "System Call Filter"), new(12, "Payload Restrictions"), new(13, "Child Processes"), new(14, "Side Channels"),
+			new(15, "User Shadow Stack"), new(16, "Redirection Trust"), new(17, "User Pointer Authentication"), new(18, "SEHOP")
+		};
+		return ProcessCommandService.ExecuteNative(Identity, WinAPI.KERNEL32.ProcessQueryInformation, query => {
+			using var buffer = new UnmanagedMemoryScope(8);
+			return policies.Select(policy => {
+				checkpoint?.Invoke();
+				if (!WinAPI.KERNEL32.GetProcessMitigationPolicy(query, policy.InformationClass, buffer.Item, (UIntPtr)(policy.InformationClass == 0 ? 8U : 4U)))
+					return new WindowsProcessMitigation(policy.Name, null, Marshal.GetLastPInvokeError());
+				return new WindowsProcessMitigation(policy.Name, unchecked((uint)Marshal.ReadInt32(buffer.Item)), null) {
+					Permanent = policy.InformationClass == 0 ? Marshal.ReadByte(buffer.Item, 4) != 0 : null
+				};
+			}).ToArray();
+		}, checkpoint);
+	}
+
+	private static string MachineName(ushort machine)
+		=> machine switch { 0x014c => "x86", 0x8664 => "x64", 0x01c4 => "ARM32", 0xaa64 => "ARM64", 0xa641 => "ARM64EC", _ => $"Machine 0x{machine:X4}" };
+
+	private WindowsThreadInfo[] GetThreadsCore(Action checkpoint) {
+		Debug.AssertNotMainThread();
+		checkpoint?.Invoke();
+		var identity = Identity;
+		using var process = OpenManaged();
+		var threads = process.Threads;
+		using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
+			foreach (ProcessThread thread in threads)
+				thread.Dispose();
+		});
+		var result = new List<WindowsThreadInfo>();
+		foreach (ProcessThread thread in threads) {
+			checkpoint?.Invoke();
+			var state = Read(() => thread.ThreadState, (System.Diagnostics.ThreadState?)null);
+			var snapshot = new WindowsThreadInfo(Read(() => thread.Id, 0), state,
+				state == System.Diagnostics.ThreadState.Wait ? Read(() => thread.WaitReason, (ThreadWaitReason?)null) : null,
+				Read(() => thread.BasePriority, (int?)null), Read(() => thread.CurrentPriority, (int?)null),
+				Read(() => thread.TotalProcessorTime, (TimeSpan?)null), Read(() => thread.StartTime.ToUniversalTime(), (DateTime?)null));
+			result.Add(Tools.Windows.Threads.ReadCounters(identity, snapshot));
+		}
+		checkpoint?.Invoke();
+		return result.ToArray();
+	}
+
+	private WindowsModuleInfo[] GetModulesCore(Action checkpoint) {
+		Debug.AssertNotMainThread();
+		checkpoint?.Invoke();
+		using var process = OpenManaged();
+		var modules = process.Modules;
+		using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
+			foreach (ProcessModule module in modules)
+				module.Dispose();
+		});
+		var result = new List<WindowsModuleInfo>();
+		foreach (ProcessModule module in modules) {
+			checkpoint?.Invoke();
+			result.Add(new WindowsModuleInfo(Read(() => module.ModuleName, string.Empty), Read(() => module.FileName, string.Empty),
+				Read(() => module.BaseAddress, (IntPtr?)null), Read(() => module.ModuleMemorySize, (int?)null)));
+		}
+		checkpoint?.Invoke();
+		return result.ToArray();
+	}
+
+	private WindowsModuleInfo[] GetModulesWithDetailsCore(Action checkpoint) {
+		Debug.AssertNotMainThread();
+		var modules = GetModulesCore(checkpoint);
+		Guard.Ensure(modules.Length <= 32768, "The module inventory exceeds the explicit inspection limit.");
+		var remainingBytes = 16 * 1024 * 1024;
+		void Consume(int count) {
+			Guard.Ensure(count <= remainingBytes, "The module detail query reached its 16 MiB aggregate read budget.");
+			remainingBytes -= count;
+		}
+		return ProcessCommandService.ExecuteNative(Identity, WinAPI.KERNEL32.ProcessQueryInformation | 0x0010, handle => {
+			return modules.Select(module => ReadModuleDetails(handle, module, checkpoint, Consume)).ToArray();
+		}, checkpoint);
+	}
+
+	private static WindowsModuleInfo ReadModuleDetails(WinAPI.KERNEL32.KernelHandle handle, WindowsModuleInfo module, Action checkpoint, Action<int> consume) {
+		checkpoint?.Invoke();
+		var result = module with {
+			CapturedAtUtc = DateTime.UtcNow
+		};
+		Tools.Exceptions.ExecuteCapturingException(() => {
+			Guard.Ensure(module.BaseAddress.HasValue && module.SizeBytes > 0, "The loader did not supply a mapped module range.");
+			var address = ToAddress(module.BaseAddress.Value);
+			var mapping = QueryMemory(handle, address);
+			result = result with {
+				MappingType = mapping.Type
+			};
+			Guard.Ensure(ToAddress(mapping.AllocationBase) == address && mapping.State == 0x1000, "The loader mapping changed before header inspection.");
+			using var stream = new ModuleHeaderStream(handle, address, module.SizeBytes.Value, checkpoint, consume);
+			using var reader = new PEReader(stream, PEStreamOptions.IsLoadedImage | PEStreamOptions.LeaveOpen);
+			var headers = reader.PEHeaders;
+			Guard.Ensure(headers.PEHeader != null, "The loader mapping has no PE optional header.");
+			var machine = (ushort)headers.CoffHeader.Machine;
+			var managed = headers.CorHeader != null;
+			result = result with {
+				Machine = machine,
+				ImageHeaderArchitecture = MachineName(machine),
+				CoffCharacteristics = (ushort)headers.CoffHeader.Characteristics,
+				CorFlags = managed ? (uint)headers.CorHeader.Flags : null,
+				Classification = managed ? ((headers.CorHeader.Flags & CorFlags.ILOnly) != 0 ? "Managed IL" : "Mixed Managed / Native") : "Native PE"
+			};
+			var current = QueryMemory(handle, address);
+			Guard.Ensure(ToAddress(current.AllocationBase) == address && current.Type == mapping.Type && current.State == 0x1000, "The module was unmapped during header inspection.");
+		}, out var error, error => error is Win32Exception or InvalidOperationException or IOException or BadImageFormatException or NotSupportedException or ArgumentException);
+		return error == null ? result : result with {
+			Availability = error.Message
+		};
+	}
+
+	private string GetCommandLineCore(Action checkpoint) {
+		checkpoint?.Invoke();
+		var identity = Identity;
+		Guard.Ensure(identity.IsVerified && !HasExited, "The process identity is unavailable or has exited.");
+		checkpoint?.Invoke();
+		var options = new System.Management.EnumerationOptions { Timeout = TimeSpan.FromSeconds(3), ReturnImmediately = false, Rewindable = false };
+		using var searcher = new ManagementObjectSearcher("root\\cimv2", $"SELECT CommandLine, CreationDate FROM Win32_Process WHERE ProcessId = {ProcessId}", options);
+		using var matches = searcher.Get();
+		foreach (ManagementObject match in matches) {
+			using (match) {
+				checkpoint?.Invoke();
+				var creation = match["CreationDate"] as string;
+				if (!string.IsNullOrEmpty(creation) && Math.Abs((ManagementDateTimeConverter.ToDateTime(creation).ToUniversalTime() - identity.StartTimeUtc.Value).Ticks) < 10)
+					return match["CommandLine"] as string ?? string.Empty;
+			}
+		}
+		throw new InvalidOperationException("The process identity no longer matches the command-line query.");
+	}
 
 	private WindowsProcessEnvironmentVariable[] GetEnvironmentCore(int maximumBytes, Action checkpoint) {
 		Guard.Argument(maximumBytes is >= 4 and <= 16 * 1024 * 1024 && maximumBytes % 2 == 0, nameof(maximumBytes), "Choose an even byte limit from 4 bytes to 16 MiB.");
@@ -284,19 +471,10 @@ public sealed class WindowsProcess : IDisposable {
 		throw new InvalidDataException("The environment did not terminate within the requested byte limit.");
 	}
 
-	internal static WindowsProcessEnvironmentVariable[] ParseEnvironment(string block) {
-		var result = new List<WindowsProcessEnvironmentVariable>();
-		foreach (var entry in block.Split('\0', StringSplitOptions.RemoveEmptyEntries)) {
-			var separator = entry.IndexOf('=', entry[0] == '=' ? 1 : 0);
-			if (separator < 0)
-				throw new InvalidDataException("The process environment contains a malformed entry.");
-			result.Add(new(entry[..separator], entry[(separator + 1)..]));
-		}
-		return result.ToArray();
-	}
-
 	private WindowsProcessTokenInfo GetTokenInformationCore(Action checkpoint) {
+		Debug.AssertNotMainThread();
 		EnsureOpen();
+		var identity = Identity;
 		checkpoint?.Invoke();
 		if (!WinAPI.ADVAPI32.OpenProcessToken(_handle, WinAPI.ADVAPI32.TokenQuery, out var token)) {
 			var error = Marshal.GetLastWin32Error();
@@ -304,19 +482,7 @@ public sealed class WindowsProcess : IDisposable {
 			throw new Win32Exception(error);
 		}
 		using (token) {
-			var groups = new List<WindowsTokenGroup>();
-			using (var buffer = ReadToken(token, 2)) {
-				var count = unchecked((uint)Marshal.ReadInt32(buffer.Item));
-				var first = Marshal.OffsetOf<WinAPI.ADVAPI32.TOKEN_GROUPS_HEADER>(nameof(WinAPI.ADVAPI32.TOKEN_GROUPS_HEADER.FirstGroup)).ToInt32();
-				var size = Marshal.SizeOf<WinAPI.ADVAPI32.SID_AND_ATTRIBUTES>();
-				if (count > (buffer.Size - first) / size)
-					throw new InvalidDataException("The token group array exceeds its native buffer.");
-				for (var index = 0; index < count; index++) {
-					checkpoint?.Invoke();
-					var group = Marshal.PtrToStructure<WinAPI.ADVAPI32.SID_AND_ATTRIBUTES>(IntPtr.Add(buffer.Item, checked(first + (int)index * size)));
-					groups.Add(new(ReadSid(buffer, group.Sid), group.Attributes));
-				}
-			}
+			var groups = ReadTokenGroups(token, 2, checkpoint);
 			var privileges = new List<WindowsTokenPrivilege>();
 			using (var buffer = ReadToken(token, 3)) {
 				var count = unchecked((uint)Marshal.ReadInt32(buffer.Item));
@@ -334,12 +500,63 @@ public sealed class WindowsProcess : IDisposable {
 				}
 			}
 			checkpoint?.Invoke();
-			return new WindowsProcessTokenInfo {
+			var result = new WindowsProcessTokenInfo {
+				Process = identity, CapturedAtUtc = DateTime.UtcNow,
 				UserSid = ReadTokenSid(token, 1), OwnerSid = ReadTokenSid(token, 4), PrimaryGroupSid = ReadTokenSid(token, 5), IntegritySid = ReadTokenSid(token, 25),
 				SessionId = ReadTokenInteger(token, 12), IsElevated = ReadTokenInteger(token, 20) != 0, ElevationType = ReadTokenInteger(token, 18),
-				TokenType = ReadTokenInteger(token, 8), Groups = groups.ToArray(), Privileges = privileges.ToArray()
+				TokenType = ReadTokenInteger(token, 8), Groups = groups, Privileges = privileges.ToArray()
 			};
+			var issues = new List<string>();
+			T Optional<T>(string field, Func<T> read, T unavailable = default) {
+				checkpoint?.Invoke();
+				var value = unavailable;
+				Tools.Exceptions.ExecuteCapturingException(() => value = read(), out var error,
+					error => error is Win32Exception or NotSupportedException or InvalidDataException);
+				if (error != null)
+					issues.Add(field + ": " + error.Message);
+				return value;
+			}
+			result = result with {
+				RestrictedSids = Optional("Restricted SIDs", () => ReadTokenGroups(token, 11, checkpoint), Array.Empty<WindowsTokenGroup>()),
+				HasRestrictions = Optional<bool?>("Has Restrictions", () => ReadTokenInteger(token, 21) != 0),
+				IsRestricted = Optional<bool?>("Is Restricted", () => ReadTokenInteger(token, 40) != 0),
+				VirtualizationAllowed = Optional<bool?>("Virtualization Allowed", () => ReadTokenInteger(token, 23) != 0),
+				VirtualizationEnabled = Optional<bool?>("Virtualization Enabled", () => ReadTokenInteger(token, 24) != 0),
+				UIAccess = Optional<bool?>("UI Access", () => ReadTokenInteger(token, 26) != 0),
+				MandatoryPolicyFlags = Optional<uint?>("Mandatory Policy", () => unchecked((uint)ReadTokenInteger(token, 27))),
+				IsAppContainer = Optional<bool?>("AppContainer", () => ReadTokenInteger(token, 29) != 0),
+				Capabilities = Optional("Capabilities", () => ReadTokenGroups(token, 30, checkpoint), Array.Empty<WindowsTokenGroup>()),
+				AppContainerSid = Optional("AppContainer SID", () => ReadOptionalTokenSid(token, 31), string.Empty),
+				AppContainerNumber = Optional<uint?>("AppContainer Number", () => unchecked((uint)ReadTokenInteger(token, 32))),
+				IsLessPrivilegedAppContainer = Optional<bool?>("Less Privileged AppContainer", () => ReadTokenInteger(token, 46) != 0),
+				IsSandboxed = Optional<bool?>("Sandboxed", () => ReadTokenInteger(token, 47) != 0)
+			};
+			checkpoint?.Invoke();
+			return result with { Issues = issues.ToArray() };
 		}
+	}
+
+	private static WindowsTokenGroup[] ReadTokenGroups(SafeAccessTokenHandle token, int informationClass, Action checkpoint) {
+		using var buffer = ReadToken(token, informationClass);
+		var count = unchecked((uint)Marshal.ReadInt32(buffer.Item));
+		var first = Marshal.OffsetOf<WinAPI.ADVAPI32.TOKEN_GROUPS_HEADER>(nameof(WinAPI.ADVAPI32.TOKEN_GROUPS_HEADER.FirstGroup)).ToInt32();
+		var size = Marshal.SizeOf<WinAPI.ADVAPI32.SID_AND_ATTRIBUTES>();
+		if (count > 65536 || count > (buffer.Size - first) / size)
+			throw new InvalidDataException("The token SID array exceeds its native buffer or capture limit.");
+		var groups = new WindowsTokenGroup[count];
+		for (var index = 0; index < count; index++) {
+			checkpoint?.Invoke();
+			var group = Marshal.PtrToStructure<WinAPI.ADVAPI32.SID_AND_ATTRIBUTES>(IntPtr.Add(buffer.Item, checked(first + index * size)));
+			groups[index] = new WindowsTokenGroup(ReadSid(buffer, group.Sid), group.Attributes);
+		}
+		return groups;
+	}
+
+	private static string ReadOptionalTokenSid(SafeAccessTokenHandle token, int informationClass) {
+		using var buffer = ReadToken(token, informationClass);
+		Guard.Ensure(buffer.Size >= IntPtr.Size, "The token SID pointer exceeds its native buffer.");
+		var sid = Marshal.ReadIntPtr(buffer.Item);
+		return sid == IntPtr.Zero ? string.Empty : ReadSid(buffer, sid);
 	}
 
 	private static UnmanagedMemoryScope ReadToken(SafeAccessTokenHandle token, int informationClass) {
@@ -380,51 +597,53 @@ public sealed class WindowsProcess : IDisposable {
 		return new SecurityIdentifier(sid).Value;
 	}
 
-	private WindowsProcessStringScan GetImageStringsCore(int minimumLength, int maximumResults, long maximumBytes, Action checkpoint) {
+	private WindowsProcessStringScan GetImageStringsCore(int minimumLength, int maximumResults, long maximumBytes, Action checkpoint, long startOffset = 0, long? length = null) {
+		Debug.AssertNotMainThread();
 		ValidateStringLimits(minimumLength, maximumResults, maximumBytes);
 		EnsureOpen();
 		checkpoint?.Invoke();
 		using var image = new FileStream(ExecutablePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 65536, FileOptions.SequentialScan);
+		Guard.Argument(startOffset <= image.Length && (!length.HasValue || length.Value <= image.Length - startOffset), nameof(startOffset), "The selected range exceeds the image file.");
+		image.Position = startOffset;
+		var rangeLength = length ?? image.Length - startOffset;
 		var scanner = new ProcessStringScanner(minimumLength, maximumResults);
 		var buffer = new byte[65536];
 		long examined = 0;
-		while (!scanner.IsFull && examined < maximumBytes) {
+		while (!scanner.IsFull && examined < maximumBytes && examined < rangeLength) {
 			checkpoint?.Invoke();
-			var read = image.Read(buffer, 0, (int)Math.Min(buffer.Length, maximumBytes - examined));
+			var read = image.Read(buffer, 0, (int)Math.Min(buffer.Length, Math.Min(maximumBytes - examined, rangeLength - examined)));
 			if (read == 0)
 				break;
-			scanner.Feed(buffer, read, (ulong)examined, checkpoint);
+			scanner.Feed(buffer, read, (ulong)(startOffset + examined), checkpoint);
 			examined += read;
 		}
 		scanner.EndRegion();
-		return new WindowsProcessStringScan { Strings = scanner.Strings, BytesExamined = examined, Truncated = scanner.IsFull || image.Position < image.Length };
+		return new WindowsProcessStringScan { Strings = scanner.Strings, BytesExamined = examined, Truncated = scanner.IsFull || examined < rangeLength };
 	}
 
-	private WindowsProcessStringScan GetMemoryStringsCore(int minimumLength, int maximumResults, long maximumBytes, Action checkpoint) {
+	private WindowsProcessStringScan GetMemoryStringsCore(int minimumLength, int maximumResults, long maximumBytes, Action checkpoint, ulong startAddress = 0, ulong? length = null) {
+		Debug.AssertNotMainThread();
 		ValidateStringLimits(minimumLength, maximumResults, maximumBytes);
 		checkpoint?.Invoke();
 		using var memory = OpenReadHandle();
 		var pointerSize = GetTargetPointerSize(memory);
-		var maximumAddress = pointerSize == 4 ? uint.MaxValue : (ulong)long.MaxValue;
+		var maximumAddress = pointerSize == 4 ? (ulong)uint.MaxValue + 1 : (ulong)long.MaxValue;
+		Guard.Argument(startAddress < maximumAddress && (!length.HasValue || length.Value <= maximumAddress - startAddress), nameof(startAddress), "The selected range exceeds the target address space.");
+		maximumAddress = length.HasValue ? startAddress + length.Value : maximumAddress;
 		var scanner = new ProcessStringScanner(minimumLength, maximumResults);
 		var buffer = new byte[65536];
-		ulong address = 0;
 		long examined = 0;
 		var skipped = 0;
-		while (address < maximumAddress && examined < maximumBytes && !scanner.IsFull) {
-			checkpoint?.Invoke();
-			var returned = WinAPI.KERNEL32.VirtualQueryEx(memory, ToPointer(address), out var region, (UIntPtr)(uint)Marshal.SizeOf<WinAPI.KERNEL32.MEMORY_BASIC_INFORMATION>());
-			if (returned == UIntPtr.Zero) {
-				var error = Marshal.GetLastWin32Error();
-				if (error == 87)
-					break;
-				throw new Win32Exception(error);
+		var traversalComplete = true;
+		foreach (var region in EnumerateMemoryRegions(memory, startAddress, maximumAddress, checkpoint)) {
+			if (examined >= maximumBytes || scanner.IsFull) {
+				traversalComplete = false;
+				break;
 			}
-			var end = checked(ToAddress(region.BaseAddress) + region.RegionSize.ToUInt64());
-			Guard.Ensure(end > address, "Windows returned a nonadvancing memory region.");
+			var address = Math.Max(startAddress, ToAddress(region.BaseAddress));
+			var end = Math.Min(maximumAddress, checked(ToAddress(region.BaseAddress) + region.RegionSize.ToUInt64()));
 			if (!IsReadable(region)) {
 				skipped++;
-				address = end;
 				continue;
 			}
 			while (address < end && examined < maximumBytes && !scanner.IsFull) {
@@ -444,10 +663,64 @@ public sealed class WindowsProcess : IDisposable {
 					break;
 				}
 			}
+			if (address < end)
+				traversalComplete = false;
 			scanner.EndRegion();
 		}
 		checkpoint?.Invoke();
-		return new WindowsProcessStringScan { Strings = scanner.Strings, BytesExamined = examined, SkippedRegions = skipped, Truncated = scanner.IsFull || examined >= maximumBytes };
+		return new WindowsProcessStringScan { Strings = scanner.Strings, BytesExamined = examined, SkippedRegions = skipped, Truncated = scanner.IsFull || !traversalComplete };
+	}
+
+	private WindowsProcessMemoryRegion[] GetMemoryRegionsCore(int maximumRegions, Action checkpoint) {
+		Debug.AssertNotMainThread();
+		Guard.ArgumentInRange(maximumRegions, 1, 1000000, nameof(maximumRegions));
+		checkpoint?.Invoke();
+		using var memory = OpenReadHandle();
+		var maximumAddress = GetTargetPointerSize(memory) == 4 ? (ulong)uint.MaxValue + 1 : (ulong)long.MaxValue;
+		var regions = new List<WindowsProcessMemoryRegion>();
+		foreach (var region in EnumerateMemoryRegions(memory, 0, maximumAddress, checkpoint)) {
+			Guard.Ensure(regions.Count < maximumRegions, "The memory-region inventory exceeds its requested bound.");
+			regions.Add(new WindowsProcessMemoryRegion(ToAddress(region.BaseAddress), ToAddress(region.AllocationBase), region.RegionSize.ToUInt64(),
+				region.State, region.Protect, region.AllocationProtect, region.Type, IsReadable(region)));
+		}
+		return regions.ToArray();
+	}
+
+	private WindowsProcessMemoryRead ReadMemoryCore(ulong address, int count, Action checkpoint) {
+		Debug.AssertNotMainThread();
+		Guard.ArgumentInRange(count, 1, 1048576, nameof(count));
+		checkpoint?.Invoke();
+		using var memory = OpenReadHandle();
+		var maximumAddress = GetTargetPointerSize(memory) == 4 ? (ulong)uint.MaxValue + 1 : (ulong)long.MaxValue;
+		Guard.Argument(address < maximumAddress && (ulong)count <= maximumAddress - address, nameof(address), "The read exceeds the target address space.");
+		var bytes = new byte[count];
+		var success = WinAPI.KERNEL32.ReadProcessMemory(memory, ToPointer(address), bytes, (UIntPtr)(uint)count, out var transferred);
+		var error = success ? 0 : Marshal.GetLastWin32Error();
+		var actual = checked((int)transferred.ToUInt64());
+		Guard.Ensure(actual <= count, "Windows returned an invalid memory-read length.");
+		if (actual != count)
+			Array.Resize(ref bytes, actual);
+		checkpoint?.Invoke();
+		return new WindowsProcessMemoryRead(Identity, address, count, bytes, error);
+	}
+
+	private static IEnumerable<WinAPI.KERNEL32.MEMORY_BASIC_INFORMATION> EnumerateMemoryRegions(WinAPI.KERNEL32.KernelHandle memory, ulong start,
+		ulong maximumAddress, Action checkpoint) {
+		var address = start;
+		while (address < maximumAddress) {
+			checkpoint?.Invoke();
+			var returned = WinAPI.KERNEL32.VirtualQueryEx(memory, ToPointer(address), out var region, (UIntPtr)(uint)Marshal.SizeOf<WinAPI.KERNEL32.MEMORY_BASIC_INFORMATION>());
+			if (returned == UIntPtr.Zero) {
+				var error = Marshal.GetLastWin32Error();
+				if (error == 87)
+					yield break;
+				throw new Win32Exception(error);
+			}
+			var end = checked(ToAddress(region.BaseAddress) + region.RegionSize.ToUInt64());
+			Guard.Ensure(end > address, "Windows returned a nonadvancing memory region.");
+			yield return region;
+			address = end;
+		}
 	}
 
 	private static void ValidateStringLimits(int minimumLength, int maximumResults, long maximumBytes) {
@@ -537,4 +810,78 @@ public sealed class WindowsProcess : IDisposable {
 			error => error is Win32Exception or InvalidOperationException or NotSupportedException or ArgumentException or UnauthorizedAccessException or SecurityException);
 		return value;
 	}
+
+	#region Inner Types
+
+	/// <summary>Seekable view used only by PEReader, with a per-image read budget and no implicit full image copy.</summary>
+	private sealed class ModuleHeaderStream : Stream {
+		private readonly WinAPI.KERNEL32.KernelHandle _handle;
+		private readonly ulong _address;
+		private readonly long _length;
+		private readonly Action _checkpoint;
+		private readonly Action<int> _consume;
+		private long _position;
+		private int _remaining = 64 * 1024;
+
+		public ModuleHeaderStream(WinAPI.KERNEL32.KernelHandle handle, ulong address, int length, Action checkpoint, Action<int> consume) {
+			_handle = handle;
+			_address = address;
+			_length = length;
+			_checkpoint = checkpoint;
+			_consume = consume;
+		}
+
+		public override bool CanRead => true;
+
+		public override bool CanSeek => true;
+
+		public override bool CanWrite => false;
+
+		public override long Length => _length;
+
+		public override long Position {
+			get => _position;
+
+			set {
+				Guard.ArgumentInRange(value, 0, _length, nameof(value));
+				_position = value;
+			}
+		}
+
+		public override int Read(byte[] buffer, int offset, int count) {
+			Guard.ArgumentNotNull(buffer, nameof(buffer));
+			Guard.ArgumentInRange(offset, 0, buffer.Length, nameof(offset));
+			Guard.ArgumentInRange(count, 0, buffer.Length - offset, nameof(count));
+			_checkpoint?.Invoke();
+			var length = (int)Math.Min(count, _length - _position);
+			Guard.Ensure(length <= _remaining, "The module header read exceeds its 64 KiB inspection budget.");
+			if (length == 0)
+				return 0;
+			_consume(length);
+			var bytes = ReadRemoteExact(_handle, checked(_address + (ulong)_position), length);
+			Array.Copy(bytes, 0, buffer, offset, length);
+			_position += length;
+			_remaining -= length;
+			return length;
+		}
+
+		public override long Seek(long offset, SeekOrigin origin) {
+			Position = checked((origin switch {
+				SeekOrigin.Begin => 0,
+				SeekOrigin.Current => _position,
+				SeekOrigin.End => _length,
+				_ => throw new ArgumentOutOfRangeException(nameof(origin))}) + offset);
+			return Position;
+		}
+
+		public override void Flush() {
+		}
+
+		public override void SetLength(long value) => throw new NotSupportedException();
+
+		public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+	}
+
+	#endregion
+
 }

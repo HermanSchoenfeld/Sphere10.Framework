@@ -30,13 +30,13 @@ public class EtwTraceUtilTests {
 	public async Task PreCanceledEnumerationDoesNotEnterNativeQuery() {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(() => new EtwTraceUtil().GetSessionsAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(() => Tools.Windows.TraceSessions.GetSessionsAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 	}
 
 	[Test]
 	public async Task NativeSessionEnumerationIsReadOnlyAndReturnsDetachedNamesOrRawAccessFailure() {
 		try {
-			var sessions = await new EtwTraceUtil().GetSessionsAsync();
+			var sessions = await Tools.Windows.TraceSessions.GetSessionsAsync();
 			Assert.That(sessions.Select(session => session.Name), Is.All.Not.Null);
 			Assert.That(sessions.Select(session => session.LogFilePath), Is.All.Not.Null);
 		} catch (Win32Exception error) {

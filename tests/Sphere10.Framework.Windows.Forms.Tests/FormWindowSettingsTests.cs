@@ -14,6 +14,7 @@ using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 

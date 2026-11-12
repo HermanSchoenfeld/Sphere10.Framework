@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.ComponentModel;
 using SourceGrid = Sphere10.Framework.Windows.Forms.SourceGrid;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -267,9 +268,8 @@ public class MigratedNativeEditorTests {
 	}
 
 	// Observe the optional component owner without activating the public property.
-	private static PlaceHolderTextExtender GetPlaceholderComponent(TextBoxEx editor) {
-		return (PlaceHolderTextExtender)typeof(TextBoxEx).GetField("_placeHolderTextExtender", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(editor);
-	}
+	private static PlaceHolderTextExtender GetPlaceholderComponent(TextBoxEx editor)
+		=> (PlaceHolderTextExtender)typeof(TextBoxEx).GetField("_placeHolderTextExtender", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(editor);
 
 	// Read the actual Windows cue banner rather than only checking the stored property.
 	private static string ReadNativeCueBanner(TextBoxEx editor) {
@@ -338,9 +338,7 @@ public class MigratedNativeEditorTests {
 		public int RuleChanges { get; private set; }
 
 		// Exercise the real native recreation path without adding production API.
-		public void RecreateNativeHandle() {
-			RecreateHandle();
-		}
+		public void RecreateNativeHandle() => RecreateHandle();
 
 		public CancelEventArgs ValidateInput() {
 			var result = new CancelEventArgs();

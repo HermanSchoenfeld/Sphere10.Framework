@@ -26,31 +26,58 @@ public class ThreadUtilTests {
 		using var owned = new OwnedWaitingThread();
 		var value = Tools.Windows.Threads.Read(owned.Identity);
 		Assert.That(value.ThreadId, Is.EqualTo(owned.Identity.ThreadId));
+		Assert.That(value.IdentityVerified, Is.True);
 		Assert.That(value.StartTimeUtc, Is.EqualTo(owned.Identity.StartTimeUtc));
 		Assert.That(value.CpuTime, Is.GreaterThanOrEqualTo(TimeSpan.Zero));
 		Assert.That(value.PriorityLevel, Is.EqualTo(ThreadPriorityLevel.Normal));
 		Assert.That(value.PriorityBoostEnabled.HasValue, Is.True);
 		Assert.That(value.BasePriority, Is.Not.Null);
 		Assert.That(value.CurrentPriority, Is.Not.Null);
+		Assert.That(value.CycleTime, Is.Not.Null);
+		Assert.That(value.StartAddress, Is.GreaterThan(0));
+	}
+
+	[Test]
+	public void FailedOptionalCountersNeverInheritAnEarlierVerificationOrNativeCounter() {
+		using var owned = new OwnedWaitingThread();
+		var initial = Tools.Windows.Threads.Read(owned.Identity);
+		var stale = initial with { StartTimeUtc = initial.StartTimeUtc.Value.AddTicks(1) };
+		var failed = Tools.Windows.Threads.ReadCounters(owned.Identity.Process, stale);
+		Assert.That(failed.IdentityVerified, Is.False);
+		Assert.That(failed.CycleTime, Is.Null);
+		Assert.That(failed.StartAddress, Is.Null);
+	}
+
+	[Test]
+	public async Task WaitChainIsBoundedAndRejectsStaleIdentity() {
+		using var owned = new OwnedWaitingThread();
+		Assert.That(Marshal.SizeOf<WinAPI.ADVAPI32.WAITCHAIN_NODE_INFO>(), Is.EqualTo(280));
+		var chain = await Tools.Windows.Threads.ReadWaitChainAsync(owned.Identity);
+		Assert.That(chain.Identity, Is.EqualTo(owned.Identity));
+		Assert.That(chain.Nodes.Length, Is.InRange(1, 16));
+		Assert.That(chain.Nodes[0].ThreadId, Is.EqualTo((uint)owned.Identity.ThreadId));
+		Assert.That(chain.Nodes[0].ProcessId, Is.EqualTo((uint)Environment.ProcessId));
+		Assert.That(chain.CycleDetected, Is.False);
+		var stale = owned.Identity with { StartTimeUtc = owned.Identity.StartTimeUtc.Value.AddTicks(1) };
+		Assert.That(() => Tools.Windows.Threads.ReadWaitChain(stale), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
 	public async Task PriorityAndBoostRoundTripThroughSyncAndAsyncOnTheOwnedWaitingThread() {
 		using var owned = new OwnedWaitingThread();
-		var utility = Tools.Windows.Threads;
-		var original = utility.Read(owned.Identity);
+		var original = Tools.Windows.Threads.Read(owned.Identity);
 		using var restore = Tools.Scope.ExecuteOnDispose(() => {
-			utility.SetPriority(owned.Identity, original.PriorityLevel.Value);
-			utility.SetPriorityBoost(owned.Identity, original.PriorityBoostEnabled.Value);
+			Tools.Windows.Threads.SetPriority(owned.Identity, original.PriorityLevel.Value);
+			Tools.Windows.Threads.SetPriorityBoost(owned.Identity, original.PriorityBoostEnabled.Value);
 		});
-		utility.SetPriority(owned.Identity, ThreadPriorityLevel.BelowNormal);
-		utility.SetPriorityBoost(owned.Identity, false);
-		var changed = await utility.ReadAsync(owned.Identity);
+		Tools.Windows.Threads.SetPriority(owned.Identity, ThreadPriorityLevel.BelowNormal);
+		Tools.Windows.Threads.SetPriorityBoost(owned.Identity, false);
+		var changed = await Tools.Windows.Threads.ReadAsync(owned.Identity);
 		Assert.That(changed.PriorityLevel, Is.EqualTo(ThreadPriorityLevel.BelowNormal));
 		Assert.That(changed.PriorityBoostEnabled, Is.False);
-		await utility.SetPriorityAsync(owned.Identity, ThreadPriorityLevel.Normal);
-		await utility.SetPriorityBoostAsync(owned.Identity, true);
-		changed = utility.Read(owned.Identity);
+		await Tools.Windows.Threads.SetPriorityAsync(owned.Identity, ThreadPriorityLevel.Normal);
+		await Tools.Windows.Threads.SetPriorityBoostAsync(owned.Identity, true);
+		changed = Tools.Windows.Threads.Read(owned.Identity);
 		Assert.That(changed.PriorityLevel, Is.EqualTo(ThreadPriorityLevel.Normal));
 		Assert.That(changed.PriorityBoostEnabled, Is.True);
 	}

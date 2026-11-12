@@ -76,6 +76,8 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 		}
 	}
 
+	public ValueTask DisposeAsync() => new(_disposalTask ??= DisposeCoreAsync());
+
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Items, nameof(Items));
 		_items = ApplicationHelper.MergeMenuItems<IApplicationMenuItem>(item => item.Id, Items);
@@ -110,8 +112,6 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 			_initializationTask = null;
 		}
 	}
-
-	public ValueTask DisposeAsync() => new(_disposalTask ??= DisposeCoreAsync());
 
 	protected void ToggleMenu() {
 		if (_executing || _disposed)

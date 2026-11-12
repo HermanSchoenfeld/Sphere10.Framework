@@ -11,6 +11,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 

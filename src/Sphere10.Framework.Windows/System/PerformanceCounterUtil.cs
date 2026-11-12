@@ -8,17 +8,22 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Sphere10.Framework.Windows;
+using Sphere10.Framework;
 
-namespace Sphere10.Framework.Windows;
+namespace Tools;
 
-/// <summary>Creates caller-owned PDH queries. Sampling, counter selection and aggregation belong to the consumer.</summary>
-public class PerformanceCounterUtil {
-	public virtual WindowsPerformanceQuery OpenQuery(string[] englishCounterPaths) => new(englishCounterPaths);
+public static partial class Windows {
 
-	public virtual Task<WindowsPerformanceQuery> OpenQueryAsync(string[] englishCounterPaths, CancellationToken cancellationToken = default) {
-		Guard.ArgumentNotNull(englishCounterPaths, nameof(englishCounterPaths));
-		var paths = (string[])englishCounterPaths.Clone();
-		return Task.Run(() => OpenQuery(paths), cancellationToken);
+	/// <summary>Creates caller-owned PDH queries. Sampling, counter selection and aggregation belong to the consumer.</summary>
+	public static class PerformanceCounters {
+		public static WindowsPerformanceQuery OpenQuery(string[] englishCounterPaths) => new(englishCounterPaths);
+
+		public static Task<WindowsPerformanceQuery> OpenQueryAsync(string[] englishCounterPaths, CancellationToken cancellationToken = default) {
+			Guard.ArgumentNotNull(englishCounterPaths, nameof(englishCounterPaths));
+			var paths = (string[])englishCounterPaths.Clone();
+			return Task.Run(() => OpenQuery(paths), cancellationToken);
+		}
 	}
 }
 

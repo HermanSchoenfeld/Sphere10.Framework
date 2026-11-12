@@ -17,7 +17,7 @@ using System.Text;
 
 namespace Sphere10.Framework.Windows.Security;
 
-public class SecurityTool {
+public static class SecurityTool {
 	/// <summary>
 	/// Changes the owner of an object or directory. Make sure SeRestore security is on.
 	/// </summary>
@@ -87,9 +87,7 @@ public class SecurityTool {
 	}
 
 
-	public static RawSecurityDescriptor ConvertSecurityDescriptor(WinAPI.ADVAPI32.SECURITY_DESCRIPTOR descriptor) {
-		throw new NotImplementedException();
-	}
+	public static RawSecurityDescriptor ConvertSecurityDescriptor(WinAPI.ADVAPI32.SECURITY_DESCRIPTOR descriptor) => throw new NotImplementedException();
 
 
 

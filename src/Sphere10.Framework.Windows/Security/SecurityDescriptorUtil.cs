@@ -11,76 +11,82 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Sphere10.Framework.Windows.Security;
+using Sphere10.Framework.Windows;
+using Sphere10.Framework;
 
-namespace Sphere10.Framework.Windows.Security;
+namespace Tools;
 
-/// <summary>Reads and translates exact SID identities without changing the descriptor's other security data.</summary>
-public class SecurityDescriptorUtil {
-	public SecurityDescriptorSidReference[] GetSidReferences(byte[] descriptor, AccessControlSections sections = AccessControlSections.All) {
-		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
-		var security = new RawSecurityDescriptor(descriptor, 0);
-		var references = new Dictionary<SecurityIdentifier, AccessControlSections>();
-		void Add(SecurityIdentifier sid, AccessControlSections section) {
-			if (sid != null)
-				references[sid] = references.GetValueOrDefault(sid) | section;
-		}
-		if (sections.HasFlag(AccessControlSections.Owner))
-			Add(security.Owner, AccessControlSections.Owner);
-		if (sections.HasFlag(AccessControlSections.Group))
-			Add(security.Group, AccessControlSections.Group);
-		void AddAcl(RawAcl acl, AccessControlSections section) {
-			if (acl != null && sections.HasFlag(section))
-				foreach (GenericAce ace in acl)
-					if (ace is KnownAce known)
-						Add(known.SecurityIdentifier, section);
-		}
-		AddAcl(security.DiscretionaryAcl, AccessControlSections.Access);
-		AddAcl(security.SystemAcl, AccessControlSections.Audit);
-		return references.Select(item => new SecurityDescriptorSidReference(item.Key, item.Value)).ToArray();
-	}
+public static partial class Windows {
 
-	/// <summary>Translates every original SID at most once. A null translation retains its original SID.</summary>
-	public byte[] TranslateSecurityDescriptor(byte[] descriptor, Func<SecurityIdentifier, SecurityIdentifier> translate)
-		=> TranslateSecurityDescriptor(descriptor, translate, AccessControlSections.All, out _);
-
-	/// <summary>Returns the original bytes when unchanged. Owner, group, ACL order, masks, inheritance, object GUIDs and opaque ACE data are preserved.</summary>
-	public byte[] TranslateSecurityDescriptor(byte[] descriptor, Func<SecurityIdentifier, SecurityIdentifier> translate,
-		AccessControlSections sections, out AccessControlSections changedSections) {
-		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
-		Guard.ArgumentNotNull(translate, nameof(translate));
-		var security = new RawSecurityDescriptor(descriptor, 0);
-		var translations = new Dictionary<SecurityIdentifier, SecurityIdentifier>();
-		var changed = AccessControlSections.None;
-		SecurityIdentifier Translate(SecurityIdentifier original, AccessControlSections section) {
-			if (original == null || !sections.HasFlag(section))
-				return original;
-			if (!translations.TryGetValue(original, out var replacement)) {
-				replacement = translate(original) ?? original;
-				translations.Add(original, replacement);
+	/// <summary>Reads and translates exact SID identities without changing the descriptor's other security data.</summary>
+	public static class SecurityDescriptors {
+		public static SecurityDescriptorSidReference[] GetSidReferences(byte[] descriptor, AccessControlSections sections = AccessControlSections.All) {
+			Guard.ArgumentNotNull(descriptor, nameof(descriptor));
+			var security = new RawSecurityDescriptor(descriptor, 0);
+			var references = new Dictionary<SecurityIdentifier, AccessControlSections>();
+			void Add(SecurityIdentifier sid, AccessControlSections section) {
+				if (sid != null)
+					references[sid] = references.GetValueOrDefault(sid) | section;
 			}
-			if (!original.Equals(replacement))
-				changed |= section;
-			return replacement;
+			if (sections.HasFlag(AccessControlSections.Owner))
+				Add(security.Owner, AccessControlSections.Owner);
+			if (sections.HasFlag(AccessControlSections.Group))
+				Add(security.Group, AccessControlSections.Group);
+			void AddAcl(RawAcl acl, AccessControlSections section) {
+				if (acl != null && sections.HasFlag(section))
+					foreach (GenericAce ace in acl)
+						if (ace is KnownAce known)
+							Add(known.SecurityIdentifier, section);
+			}
+			AddAcl(security.DiscretionaryAcl, AccessControlSections.Access);
+			AddAcl(security.SystemAcl, AccessControlSections.Audit);
+			return references.Select(item => new SecurityDescriptorSidReference(item.Key, item.Value)).ToArray();
 		}
-		security.Owner = Translate(security.Owner, AccessControlSections.Owner);
-		security.Group = Translate(security.Group, AccessControlSections.Group);
-		void TranslateAcl(RawAcl acl, AccessControlSections section) {
-			if (acl != null && sections.HasFlag(section)) {
-				for (var index = 0; index < acl.Count; index++) {
-					if (acl[index] is KnownAce known) {
-						known.SecurityIdentifier = Translate(known.SecurityIdentifier, section);
-						acl[index] = known;
+
+		/// <summary>Translates every original SID at most once. A null translation retains its original SID.</summary>
+		public static byte[] TranslateSecurityDescriptor(byte[] descriptor, Func<SecurityIdentifier, SecurityIdentifier> translate)
+			=> TranslateSecurityDescriptor(descriptor, translate, AccessControlSections.All, out _);
+
+		/// <summary>Returns the original bytes when unchanged. Owner, group, ACL order, masks, inheritance, object GUIDs and opaque ACE data are preserved.</summary>
+		public static byte[] TranslateSecurityDescriptor(byte[] descriptor, Func<SecurityIdentifier, SecurityIdentifier> translate,
+			AccessControlSections sections, out AccessControlSections changedSections) {
+			Guard.ArgumentNotNull(descriptor, nameof(descriptor));
+			Guard.ArgumentNotNull(translate, nameof(translate));
+			var security = new RawSecurityDescriptor(descriptor, 0);
+			var translations = new Dictionary<SecurityIdentifier, SecurityIdentifier>();
+			var changed = AccessControlSections.None;
+			SecurityIdentifier Translate(SecurityIdentifier original, AccessControlSections section) {
+				if (original == null || !sections.HasFlag(section))
+					return original;
+				if (!translations.TryGetValue(original, out var replacement)) {
+					replacement = translate(original) ?? original;
+					translations.Add(original, replacement);
+				}
+				if (!original.Equals(replacement))
+					changed |= section;
+				return replacement;
+			}
+			security.Owner = Translate(security.Owner, AccessControlSections.Owner);
+			security.Group = Translate(security.Group, AccessControlSections.Group);
+			void TranslateAcl(RawAcl acl, AccessControlSections section) {
+				if (acl != null && sections.HasFlag(section)) {
+					for (var index = 0; index < acl.Count; index++) {
+						if (acl[index] is KnownAce known) {
+							known.SecurityIdentifier = Translate(known.SecurityIdentifier, section);
+							acl[index] = known;
+						}
 					}
 				}
 			}
+			TranslateAcl(security.DiscretionaryAcl, AccessControlSections.Access);
+			TranslateAcl(security.SystemAcl, AccessControlSections.Audit);
+			changedSections = changed;
+			if (changed == AccessControlSections.None)
+				return descriptor;
+			var result = new byte[security.BinaryLength];
+			security.GetBinaryForm(result, 0);
+			return result;
 		}
-		TranslateAcl(security.DiscretionaryAcl, AccessControlSections.Access);
-		TranslateAcl(security.SystemAcl, AccessControlSections.Audit);
-		changedSections = changed;
-		if (changed == AccessControlSections.None)
-			return descriptor;
-		var result = new byte[security.BinaryLength];
-		security.GetBinaryForm(result, 0);
-		return result;
 	}
 }

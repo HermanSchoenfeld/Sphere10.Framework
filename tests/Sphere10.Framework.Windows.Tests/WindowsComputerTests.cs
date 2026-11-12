@@ -20,14 +20,13 @@ namespace Sphere10.Framework.UnitTests;
 public class WindowsComputerTests {
 	[Test]
 	public async Task ReadOnlyIdentityProcessorsAndOperatingSystemReturnTypedDetachedData() {
-		var computer = new ComputerUtil();
-		var identity = await computer.QueryAsync();
+		var identity = await Tools.Windows.Computer.QueryAsync();
 		Assert.That(identity.Name, Is.EqualTo(Environment.MachineName).IgnoreCase);
 		Assert.That(identity.TotalPhysicalMemory, Is.GreaterThan(0));
-		var processors = await computer.GetProcessorsAsync();
+		var processors = await Tools.Windows.Computer.GetProcessorsAsync();
 		Assert.That(processors, Is.Not.Empty);
 		Assert.That(processors.All(processor => !string.IsNullOrEmpty(processor.DeviceId)), Is.True);
-		var systems = await computer.GetOperatingSystemsAsync();
+		var systems = await Tools.Windows.Computer.GetOperatingSystemsAsync();
 		Assert.That(systems, Is.Not.Empty);
 		Assert.That(systems.All(system => !string.IsNullOrEmpty(system.Name) && !string.IsNullOrEmpty(system.Version)), Is.True);
 		Assert.That(systems.Any(system => string.Equals(system.SystemDirectory, Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase)), Is.True);
@@ -36,10 +35,9 @@ public class WindowsComputerTests {
 
 	[Test]
 	public async Task FirmwareAndProductQueriesReturnDetachedArraysWithoutRequiringOptionalHardwareFields() {
-		var computer = new ComputerUtil();
-		var bios = await computer.GetBiosAsync();
-		var boards = await computer.GetBaseboardsAsync();
-		var products = await computer.GetSystemProductsAsync();
+		var bios = await Tools.Windows.Computer.GetBiosAsync();
+		var boards = await Tools.Windows.Computer.GetBaseboardsAsync();
+		var products = await Tools.Windows.Computer.GetSystemProductsAsync();
 		Assert.That(bios, Is.Not.Null);
 		Assert.That(boards, Is.Not.Null);
 		Assert.That(products, Is.Not.Null);
@@ -54,14 +52,11 @@ public class WindowsComputerTests {
 	[TestCase("**************.******+***")]
 	[TestCase("2026**********.000000+000")]
 	[TestCase("not-a-dmtf-date")]
-	public void UnknownOrMalformedProviderDatesRemainUnavailableInsteadOfFailingTheInventory(string text) {
-		Assert.That(WindowsComputer.ParseDmtfDate(text), Is.Null);
-	}
+	public void UnknownOrMalformedProviderDatesRemainUnavailableInsteadOfFailingTheInventory(string text) => Assert.That(WindowsComputer.ParseDmtfDate(text), Is.Null);
 
 	[Test]
-	public void CompleteProviderDatesAreConvertedToUtc() {
-		Assert.That(WindowsComputer.ParseDmtfDate("20260102030405.000000+000"), Is.EqualTo(new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc)));
-	}
+	public void CompleteProviderDatesAreConvertedToUtc()
+		=> Assert.That(WindowsComputer.ParseDmtfDate("20260102030405.000000+000"), Is.EqualTo(new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc)));
 
 	[TestCase("identity")]
 	[TestCase("products")]
@@ -70,16 +65,15 @@ public class WindowsComputerTests {
 	[TestCase("processors")]
 	[TestCase("os")]
 	public async Task PreCanceledQueriesDoNotStartWindowsProviderCollection(string query) {
-		var computer = new ComputerUtil();
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
 		var pending = query switch {
-			"identity" => (Task)computer.QueryAsync(cancellation.Token),
-			"products" => computer.GetSystemProductsAsync(cancellation.Token),
-			"bios" => computer.GetBiosAsync(cancellation.Token),
-			"baseboards" => computer.GetBaseboardsAsync(cancellation.Token),
-			"processors" => computer.GetProcessorsAsync(cancellation.Token),
-			_ => computer.GetOperatingSystemsAsync(cancellation.Token)
+			"identity" => (Task)Tools.Windows.Computer.QueryAsync(cancellation.Token),
+			"products" => Tools.Windows.Computer.GetSystemProductsAsync(cancellation.Token),
+			"bios" => Tools.Windows.Computer.GetBiosAsync(cancellation.Token),
+			"baseboards" => Tools.Windows.Computer.GetBaseboardsAsync(cancellation.Token),
+			"processors" => Tools.Windows.Computer.GetProcessorsAsync(cancellation.Token),
+			_ => Tools.Windows.Computer.GetOperatingSystemsAsync(cancellation.Token)
 		};
 		await Assert.ThatAsync(async () => await pending, Throws.InstanceOf<OperationCanceledException>());
 	}

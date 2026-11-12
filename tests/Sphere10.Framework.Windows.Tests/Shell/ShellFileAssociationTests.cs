@@ -21,26 +21,22 @@ public class ShellFileAssociationTests {
 	[TestCase("")]
 	[TestCase(" ")]
 	[TestCase(".txt\0.exe")]
-	public void InvalidAssociationIdentifiersAreRejectedBeforeNativeLookup(string association) {
-		Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(association), Throws.ArgumentException);
-	}
+	public void InvalidAssociationIdentifiersAreRejectedBeforeNativeLookup(string association)
+		=> Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(association), Throws.ArgumentException);
 
 	[Test]
-	public void OversizedAssociationIdentifiersAreRejectedBeforeNativeLookup() {
-		Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(new string('x', 32768)), Throws.ArgumentException);
-	}
+	public void OversizedAssociationIdentifiersAreRejectedBeforeNativeLookup()
+		=> Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(new string('x', 32768)), Throws.ArgumentException);
 
 	[TestCase("")]
 	[TestCase(" ")]
 	[TestCase("open\0other")]
-	public void InvalidVerbsAreRejectedBeforeNativeLookup(string verb) {
-		Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(".txt", verb), Throws.ArgumentException);
-	}
+	public void InvalidVerbsAreRejectedBeforeNativeLookup(string verb)
+		=> Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(".txt", verb), Throws.ArgumentException);
 
 	[Test]
-	public void OversizedVerbsAreRejectedBeforeNativeLookup() {
-		Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(".txt", new string('x', 32768)), Throws.ArgumentException);
-	}
+	public void OversizedVerbsAreRejectedBeforeNativeLookup()
+		=> Assert.That(() => Tools.Windows.Shell.QueryFileAssociation(".txt", new string('x', 32768)), Throws.ArgumentException);
 
 	[Test, Category("Integration")]
 	public void UnregisteredExtensionRetainsTheShellsFallbackStringsAndPerFieldStatus() {
@@ -48,10 +44,10 @@ public class ShellFileAssociationTests {
 		var result = Tools.Windows.Shell.QueryFileAssociation(extension);
 		Assert.That(result.Association, Is.EqualTo(extension));
 		Assert.That(result.IsProgId, Is.False);
-		var command = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => WinAPI.SHLWAPI.AssocQueryStringW(
+		var command = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => WinAPI.SHLWAPI.AssocQueryStringW(
 			WinAPI.SHLWAPI.ASSOCF.ASSOCF_NOTRUNCATE | WinAPI.SHLWAPI.ASSOCF.ASSOCF_NOFIXUPS,
 			WinAPI.SHLWAPI.ASSOCSTR.ASSOCSTR_COMMAND, extension, null, output, ref length));
-		var executable = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => WinAPI.SHLWAPI.AssocQueryStringW(
+		var executable = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => WinAPI.SHLWAPI.AssocQueryStringW(
 			WinAPI.SHLWAPI.ASSOCF.ASSOCF_NOTRUNCATE | WinAPI.SHLWAPI.ASSOCF.ASSOCF_NOFIXUPS,
 			WinAPI.SHLWAPI.ASSOCSTR.ASSOCSTR_EXECUTABLE, extension, null, output, ref length));
 		// Some Windows versions resolve an unregistered extension to the native Open With handler.
@@ -69,7 +65,7 @@ public class ShellFileAssociationTests {
 	public void ExtensionLookupPreservesTheNativeCurrentUserResolutionAndRawCommand() {
 		const string extension = ".txt";
 		var result = Tools.Windows.Shell.QueryFileAssociation(extension);
-		var native = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => WinAPI.SHLWAPI.AssocQueryStringW(
+		var native = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => WinAPI.SHLWAPI.AssocQueryStringW(
 			WinAPI.SHLWAPI.ASSOCF.ASSOCF_NOTRUNCATE | WinAPI.SHLWAPI.ASSOCF.ASSOCF_NOFIXUPS,
 			WinAPI.SHLWAPI.ASSOCSTR.ASSOCSTR_COMMAND, extension, null, output, ref length));
 		Assert.That(result.Command, Is.EqualTo(native.Value));
@@ -89,7 +85,7 @@ public class ShellFileAssociationTests {
 	public void AStringThatGrowsDuringLookupIsReadAgainWithoutReturningItsTruncatedPrefix() {
 		const string complete = "Native association \u03a9 \ud83d\udcc4";
 		var reads = 0;
-		var result = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => {
+		var result = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => {
 			reads++;
 			if (output == null) {
 				length = 4;
@@ -112,7 +108,7 @@ public class ShellFileAssociationTests {
 	[Test]
 	public void MissingStringsPreserveTheirNativeFailureWithoutAllocatingAnOutputBuffer() {
 		var reads = 0;
-		var result = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => {
+		var result = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => {
 			reads++;
 			Assert.That(output, Is.Null);
 			return MissingAssociation;
@@ -127,7 +123,7 @@ public class ShellFileAssociationTests {
 	[TestCase(uint.MaxValue)]
 	public void InvalidNativeBufferRequirementsAreBoundedBeforeAllocating(uint requestedLength) {
 		var reads = 0;
-		var result = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => {
+		var result = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => {
 			reads++;
 			Assert.That(output, Is.Null);
 			length = requestedLength;
@@ -141,7 +137,7 @@ public class ShellFileAssociationTests {
 	[Test]
 	public void AContinuallyGrowingRegistrationStopsAfterBoundedRetriesWithoutExposingPartialData() {
 		var reads = 0;
-		var result = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => {
+		var result = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => {
 			reads++;
 			if (output == null) {
 				length = 2;
@@ -158,7 +154,7 @@ public class ShellFileAssociationTests {
 
 	[Test]
 	public void AFailedReadNeverReturnsItsPartiallyWrittenOutput() {
-		var result = ShellUtility.ReadAssociationString((StringBuilder output, ref uint length) => {
+		var result = Tools.Windows.Shell.ReadAssociationString((StringBuilder output, ref uint length) => {
 			if (output == null) {
 				length = 8;
 				return 1;

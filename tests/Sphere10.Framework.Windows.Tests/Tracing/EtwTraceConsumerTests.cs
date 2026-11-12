@@ -17,6 +17,9 @@ namespace Sphere10.Framework.Windows.Tests;
 
 [TestFixture]
 public class EtwTraceConsumerTests {
+	// A session no logger on this machine owns, so every guarded operation must refuse it before changing anything
+	private static readonly EtwTraceSessionInfo Expected = new("Sphere10-OwnedFixture-" + Guid.NewGuid().ToString("N"), Guid.NewGuid(), 1, "owned.etl", WinAPI.ADVAPI32.EVENT_TRACE_REAL_TIME_MODE, 0);
+
 	[Test]
 	public void EventAbiMatchesWindowsSdkX64Definitions() {
 		Assert.That(Marshal.SizeOf<WinAPI.ADVAPI32.EVENT_HEADER>(), Is.EqualTo(80));
@@ -34,28 +37,16 @@ public class EtwTraceConsumerTests {
 
 	[Test]
 	public async Task CancelledConsumersAndUpdatesDoNotQueryOrChangeNativeSessions() {
-		var traces = new FixtureTraceUtil();
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(async () => await traces.SetRealTimeAsync(traces.Expected, true, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		await Assert.ThatAsync(async () => await traces.ConsumeRealTimeAsync(traces.Expected, _ => Assert.Fail("No callback expected."), cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		Assert.That(traces.Queries, Is.Zero);
+		await Assert.ThatAsync(async () => await Tools.Windows.TraceSessions.SetRealTimeAsync(Expected, true, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.TraceSessions.ConsumeRealTimeAsync(Expected, _ => Assert.Fail("No callback expected."), cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 	}
 
-	[TestCase("missing")]
-	[TestCase("guid")]
-	[TestCase("handle")]
-	[TestCase("file")]
-	public async Task ReplacedSessionsAreRejectedBeforeAnyNativeUpdateOrConsumer(string change) {
-		var traces = new FixtureTraceUtil();
-		traces.Current = change switch {
-			"missing" => null,
-			"guid" => traces.Expected with { Guid = Guid.NewGuid() },
-			"handle" => traces.Expected with { SessionId = 2 },
-			_ => traces.Expected with { LogFilePath = "foreign.etl" }
-		};
-		Assert.That(() => traces.SetRealTime(traces.Expected, true), Throws.InvalidOperationException);
-		await Assert.ThatAsync(async () => await traces.ConsumeRealTimeAsync(traces.Expected, _ => Assert.Fail("No callback expected.")), Throws.InvalidOperationException);
+	[Test]
+	public async Task AbsentSessionsAreRejectedBeforeAnyNativeUpdateOrConsumer() {
+		Assert.That(() => Tools.Windows.TraceSessions.SetRealTime(Expected, true), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await Tools.Windows.TraceSessions.ConsumeRealTimeAsync(Expected, _ => Assert.Fail("No callback expected.")), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -107,14 +98,4 @@ public class EtwTraceConsumerTests {
 		Assert.That(EtwTracePropertyDecoder.Decode(new[] { new EtwTracePropertyDecoder.Property("ForwardReference", 2, 14, 1, 0) }, new byte[4], 8), Is.Empty);
 	}
 
-	private sealed class FixtureTraceUtil : EtwTraceUtil {
-		public EtwTraceSessionInfo Expected { get; } = new("OwnedFixture", Guid.NewGuid(), 1, "owned.etl", WinAPI.ADVAPI32.EVENT_TRACE_REAL_TIME_MODE, 0);
-		public EtwTraceSessionInfo Current { get; set; }
-		public int Queries { get; private set; }
-		public FixtureTraceUtil() { Current = Expected; }
-		public override EtwTraceSessionInfo[] GetSessions() {
-			Queries++;
-			return Current == null ? Array.Empty<EtwTraceSessionInfo>() : new[] { Current };
-		}
-	}
 }

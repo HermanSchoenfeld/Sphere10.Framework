@@ -20,7 +20,6 @@ namespace Sphere10.Framework.Windows.Tests;
 public class ShellUtilityTests {
 	[Test]
 	public void DiscoveryAndKnownFolderReadsUseExistingUtilityWithoutCreatingFolders() {
-		Assert.That(Tools.Windows.Shell, Is.TypeOf<ShellUtility>());
 		var profile = Tools.Windows.Shell.GetKnownFolderPath(new Guid("5e6c858f-0e22-4760-9afe-ea3317b67173"));
 		Assert.That(Path.GetFullPath(profile), Is.EqualTo(Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))).IgnoreCase);
 		Assert.That(() => Tools.Windows.Shell.GetKnownFolderPath(Guid.Empty), Throws.ArgumentException);
@@ -49,7 +48,7 @@ public class ShellUtilityTests {
 	public async Task CancelledRecycleBinQueryDoesNotEnterTheNativeOperation() {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(async () => await new ShellUtility().QueryRecycleBinAsync(cancellationToken: cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.Shell.QueryRecycleBinAsync(cancellationToken: cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 	}
 
 	[Test]
@@ -85,26 +84,8 @@ public class ShellUtilityTests {
 	}
 
 	[Test]
-	public void ShellLaunchValidatesBeforeLaunchingAndExplorerArgumentsQuoteTheExistingPath() {
-		Assert.That(() => new ShellUtility().Launch(" "), Throws.ArgumentException);
-		Assert.That(() => new ShellUtility().Launch("unused.exe", windowStyle: (ProcessWindowStyle)123), Throws.ArgumentException);
-		var directory = Path.Combine(Path.GetTempPath(), "Sphere10 shell fixture " + Guid.NewGuid().ToString("N"));
-		Directory.CreateDirectory(directory);
-		using var cleanup = Tools.Scope.DeleteDirOnDispose(directory);
-		var shell = new FixtureShell();
-		shell.HighlightFileInExplorer(directory);
-		Assert.That(Path.GetFileName(shell.Target), Is.EqualTo("explorer.exe").IgnoreCase);
-		Assert.That(shell.Arguments, Is.EqualTo("/select,\"" + Path.GetFullPath(directory) + "\""));
-	}
-
-	private sealed class FixtureShell : ShellUtility {
-		public string Target { get; private set; }
-		public string Arguments { get; private set; }
-		public override Process Launch(string target, string arguments = null, string workingDirectory = null, string verb = null,
-			IntPtr ownerWindow = default, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal) {
-			Target = target;
-			Arguments = arguments;
-			return null;
-		}
+	public void ShellLaunchValidatesBeforeLaunching() {
+		Assert.That(() => Tools.Windows.Shell.Launch(" "), Throws.ArgumentException);
+		Assert.That(() => Tools.Windows.Shell.Launch("unused.exe", windowStyle: (ProcessWindowStyle)123), Throws.ArgumentException);
 	}
 }

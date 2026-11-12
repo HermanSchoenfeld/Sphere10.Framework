@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework;
 
-internal class ExtendedListHelper {
+internal static class ExtendedListHelper {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long IndexOfSequenceImpl<T>(IExtendedList<T> extendedList, IEnumerable<T> items) {

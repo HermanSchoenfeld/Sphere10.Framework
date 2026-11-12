@@ -25,7 +25,6 @@ public class NamedPipeUtilTests {
 		using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 		var waiting = server.WaitForConnectionAsync(cancellation.Token);
 		var names = await Tools.Windows.Pipes.GetNamesAsync(cancellation.Token);
-		Assert.That(Tools.Windows.Pipes, Is.TypeOf<NamedPipeUtil>());
 		Assert.That(names, Does.Contain(name));
 		Assert.That(names, Is.Ordered.Using<string>(StringComparer.OrdinalIgnoreCase));
 		Assert.That(names.Distinct(StringComparer.OrdinalIgnoreCase).Count(), Is.EqualTo(names.Length));
@@ -53,14 +52,12 @@ public class NamedPipeUtilTests {
 	[TestCase("C:\\pipe")]
 	[TestCase("/rooted/pipe")]
 	[TestCase("with\0nul")]
-	public void InvalidLocalNamesCannotBeUsedAsPipePaths(string name) {
-		Assert.That(() => Tools.Windows.Pipes.GetPath(name), Throws.InstanceOf<ArgumentException>());
-	}
+	public void InvalidLocalNamesCannotBeUsedAsPipePaths(string name) => Assert.That(() => Tools.Windows.Pipes.GetPath(name), Throws.InstanceOf<ArgumentException>());
 
 	[Test]
 	public void TheWin32EntireNameLengthLimitIsEnforced() {
-		Assert.That(Tools.Windows.Pipes.GetPath(new string('x', 256 - NamedPipeUtil.LocalNamespacePath.Length)).Length, Is.EqualTo(256));
-		Assert.That(() => Tools.Windows.Pipes.GetPath(new string('x', 257 - NamedPipeUtil.LocalNamespacePath.Length)), Throws.InstanceOf<ArgumentException>());
+		Assert.That(Tools.Windows.Pipes.GetPath(new string('x', 256 - Tools.Windows.Pipes.LocalNamespacePath.Length)).Length, Is.EqualTo(256));
+		Assert.That(() => Tools.Windows.Pipes.GetPath(new string('x', 257 - Tools.Windows.Pipes.LocalNamespacePath.Length)), Throws.InstanceOf<ArgumentException>());
 	}
 }
 

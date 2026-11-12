@@ -1,4 +1,4 @@
-// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -43,6 +43,16 @@ public sealed class FileHandleService {
 		if (identity.HasValue)
 			Guard.Argument(identity.Value.IsVerified && identity.Value.ProcessId > 0, nameof(identity), "Per-process file inspection requires a verified PID and creation time.");
 		return Task.Run(() => RunWorkerAsync("handles", identity, null, cancellationToken), cancellationToken);
+	}
+
+	/// <summary>Captures selected object types through the same bounded helper. Other-object closure is never offered.</summary>
+	public Task<FileHandleCapture> CaptureObjectsAsync(FileHandleCaptureOptions options, ProcessIdentity? identity = null, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(options, nameof(options));
+		Guard.Argument(options.ObjectTypes is { Length: > 0 and <= 64 } && options.ObjectTypes.All(type => !string.IsNullOrWhiteSpace(type) && type.Length <= 128), nameof(options), "Select At Least One Bounded Object Type Or * For All Types");
+		if (identity.HasValue)
+			Guard.Argument(identity.Value.IsVerified && identity.Value.ProcessId > 0, nameof(identity), "Per-Process Object Inspection Requires A Verified PID And Creation Time");
+		var selected = options with { ObjectTypes = options.ObjectTypes.Distinct(StringComparer.OrdinalIgnoreCase).ToArray() };
+		return Task.Run(() => RunWorkerAsync("objects", identity, JsonSerializer.Serialize(selected), cancellationToken), cancellationToken);
 	}
 
 	public Task<FileHandleCapture> FindBlockingProcessesAsync(string path, CancellationToken cancellationToken = default) {
@@ -92,9 +102,45 @@ public sealed class FileHandleService {
 		Guard.Ensure(!result.IsPartial, "The isolated file-handle release did not report a complete outcome. " + result.Availability);
 	}
 
+	public static bool TryRunWorker(string[] args, out int exitCode) {
+		exitCode = 0;
+		if (args == null || args.Length == 0 || args[0] != WorkerArgument)
+			return false;
+		Console.OutputEncoding = new UTF8Encoding(false);
+		// The helper remains bounded even when the parent closes before its cancellation continuation runs.
+		var watchdog = JobBuilder.For(() => Environment.Exit(3)).Called("File handle worker watchdog").RunOnce(DateTime.UtcNow.AddSeconds(22)).Build();
+		Scheduler.Asynchronous.AddJob(watchdog);
+		using var disarm = Tools.Scope.ExecuteOnDispose(() => Scheduler.Asynchronous.RemoveJob(watchdog));
+		Tools.Exceptions.ExecuteCapturingException(() => {
+			Guard.Argument(args.Length >= 2, nameof(args), "A file inspection worker requires a mode.");
+			if (args[1] == "release") {
+				Guard.Argument(args.Length == 3 && args[2].Length <= 128 * 1024, nameof(args), "File-handle release requires one captured native handle.");
+				new FileHandleService().ForceRelease(JsonSerializer.Deserialize<FileHandleInfo>(args[2]));
+			} else if (args[1] == "blockers") {
+				Guard.Argument(args.Length == 3, nameof(args), "Restart Manager inspection requires a file path.");
+				CaptureBlockers(args[2]);
+			} else {
+				var objects = args[1] == "objects";
+				Guard.Argument((objects && (args.Length == 3 || args.Length == 5)) || (args[1] == "handles" && (args.Length == 2 || args.Length == 4)), nameof(args), "Invalid file handle worker arguments.");
+				ProcessIdentity? identity = args.Length == (objects ? 5 : 4)
+					? new ProcessIdentity(int.Parse(args[2], CultureInfo.InvariantCulture), new DateTime(long.Parse(args[3], CultureInfo.InvariantCulture), DateTimeKind.Utc))
+					: null;
+				var options = objects ? JsonSerializer.Deserialize<FileHandleCaptureOptions>(args[^1]) : null;
+				CaptureHandles(identity, options);
+			}
+			WriteMessage(new WorkerMessage { Kind = "complete" });
+		}, out var error);
+		if (error != null) {
+			WriteMessage(new WorkerMessage { Kind = "error", Message = $"{error.GetType().Name}: {error.Message}" });
+			exitCode = 1;
+		}
+		return true;
+	}
+
 	internal static void ValidateReleaseInput(FileHandleInfo expected) {
 		Guard.ArgumentNotNull(expected, nameof(expected));
 		Guard.Argument(expected.Identity.IsVerified && expected.ProcessId > 0 && expected.HandleValue.HasValue && expected.HandleValue > 0
+			&& expected.IsDiskFile && string.Equals(expected.ObjectType, "File", StringComparison.Ordinal)
 			&& expected.ObjectAddress != 0 && expected.ObjectTypeIndex != 0 && !string.IsNullOrEmpty(expected.Path) && string.IsNullOrEmpty(expected.Availability),
 			nameof(expected), "Select a complete captured disk-file handle with verified process and native object identity.");
 	}
@@ -109,37 +155,6 @@ public sealed class FileHandleService {
 	private static WinAPI.NTDLL.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX FindReleaseEntry(FileHandleInfo expected)
 		=> ReadHandleTable().FirstOrDefault(entry => entry.ProcessId.ToUInt64() == (ulong)expected.ProcessId && entry.HandleValue.ToUInt64() == expected.HandleValue);
 
-	public static bool TryRunWorker(string[] args, out int exitCode) {
-		exitCode = 0;
-		if (args == null || args.Length == 0 || args[0] != WorkerArgument)
-			return false;
-		Console.OutputEncoding = new UTF8Encoding(false);
-		// The helper remains bounded even when the parent closes before its cancellation continuation runs.
-		using var watchdog = new System.Threading.Timer(_ => Environment.Exit(3), null, TimeSpan.FromSeconds(22), Timeout.InfiniteTimeSpan);
-		Tools.Exceptions.ExecuteCapturingException(() => {
-			Guard.Argument(args.Length >= 2, nameof(args), "A file inspection worker requires a mode.");
-			if (args[1] == "release") {
-				Guard.Argument(args.Length == 3 && args[2].Length <= 128 * 1024, nameof(args), "File-handle release requires one captured native handle.");
-				new FileHandleService().ForceRelease(JsonSerializer.Deserialize<FileHandleInfo>(args[2]));
-			} else if (args[1] == "blockers") {
-				Guard.Argument(args.Length == 3, nameof(args), "Restart Manager inspection requires a file path.");
-				CaptureBlockers(args[2]);
-			} else {
-				Guard.Argument(args[1] == "handles" && (args.Length == 2 || args.Length == 4), nameof(args), "Invalid file handle worker arguments.");
-				ProcessIdentity? identity = args.Length == 4
-					? new ProcessIdentity(int.Parse(args[2], CultureInfo.InvariantCulture), new DateTime(long.Parse(args[3], CultureInfo.InvariantCulture), DateTimeKind.Utc))
-					: null;
-				CaptureHandles(identity);
-			}
-			WriteMessage(new WorkerMessage { Kind = "complete" });
-		}, out var error);
-		if (error != null) {
-			WriteMessage(new WorkerMessage { Kind = "error", Message = $"{error.GetType().Name}: {error.Message}" });
-			exitCode = 1;
-		}
-		return true;
-	}
-
 	private async Task<FileHandleCapture> RunWorkerAsync(string mode, ProcessIdentity? identity, string path, CancellationToken cancellationToken) {
 		using var slot = await _workers.EnterScopeAsync(cancellationToken).ConfigureAwait(false);
 		var startedAt = DateTime.UtcNow;
@@ -151,53 +166,44 @@ public sealed class FileHandleService {
 		var partial = false;
 		var complete = false;
 		var notes = new List<string>();
-		Task<string> workerErrors = null;
-		ProcessIdentity? workerIdentity = null;
-		using var worker = new Process { StartInfo = BuildWorkerStartInfo(mode, identity, path) };
+		WindowsProcessWorkerSession worker = null;
 		using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		timeout.CancelAfter(TimeSpan.FromSeconds(20));
 		await using (Tools.Scope.ExecuteOnDisposeAsync(async () => {
-			// Cleanup stops only this owned helper. Source-handle closure belongs solely to an explicit release request.
-			var cleanupError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
-				if (!worker.HasExited)
-					worker.Kill();
-				using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-				await worker.WaitForExitAsync(cleanupTimeout.Token).ConfigureAwait(false);
-			}, error => error is InvalidOperationException or Win32Exception or OperationCanceledException).ConfigureAwait(false);
-			if (cleanupError != null) {
+			if (worker == null)
+				return;
+			// Transport owns only the helper. The facade retains its original operation,
+			// partial-result and unfinished-worker policies; release is still explicit.
+			await worker.DisposeAsync().ConfigureAwait(false);
+			if (!worker.TerminationConfirmed) {
+				_unfinishedWorker = worker.Identity;
 				partial = true;
-				if (cleanupError is OperationCanceledException)
-					_unfinishedWorker = workerIdentity;
-				notes.Add($"Worker cleanup: {cleanupError.Message}");
 			}
-			if (workerErrors != null) {
-				// Observe the redirected reader even when timeout cleanup interrupted its stream.
-				var streamError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => workerErrors.WaitAsync(TimeSpan.FromSeconds(1)),
-					error => error is OperationCanceledException or IOException or ObjectDisposedException or TimeoutException).ConfigureAwait(false);
-				if (streamError is TimeoutException) {
-					// A driver can prevent even helper termination. Keep parent cleanup bounded and observe any later stream failure.
-					_ = workerErrors.ContinueWith(task => { _ = task.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
-					partial = true;
-					notes.Add("The owned worker's error stream did not close within its cleanup budget.");
-				}
+			foreach (var error in worker.CleanupErrors) {
+				partial = true;
+				notes.Add("Worker cleanup: " + error.Message);
+			}
+			if (!string.IsNullOrWhiteSpace(worker.StandardError))
+				notes.Add(worker.StandardError.Trim());
+			if (worker.ErrorTruncated) {
+				partial = true;
+				notes.Add("The owned worker's diagnostic error output exceeded the retained 1,048,576-character transport limit.");
 			}
 		})) {
 			var inspectionError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
-				Guard.Ensure(worker.Start(), "Unable to start the isolated file inspection worker.");
-				workerIdentity = new ProcessIdentity(worker.Id, worker.StartTime.ToUniversalTime());
-				workerErrors = worker.StandardError.ReadToEndAsync(timeout.Token);
+				worker = await WindowsProcessWorkerSession.StartAsync(BuildWorkerStartInfo(mode, identity, path),
+					new WindowsProcessWorkerSessionOptions { MaximumErrorCharacters = 1024 * 1024 }, timeout.Token).ConfigureAwait(false);
 				while (true) {
-					var line = await worker.StandardOutput.ReadLineAsync(timeout.Token).ConfigureAwait(false);
+					var line = await worker.ReadLineAsync(128 * 1024, timeout.Token).ConfigureAwait(false);
 					if (line == null)
 						break;
-					Guard.Ensure(line.Length <= 128 * 1024, "The file inspection worker returned an oversized message.");
 					var message = JsonSerializer.Deserialize<WorkerMessage>(line);
 					if (message == null)
 						continue;
 					if (message.Kind == "row" && message.Row != null) {
 						Guard.Ensure(rows.Count < MaximumRows, "The file inspection row limit was reached.");
 						rows.Add(message.Row);
-						partial |= !string.IsNullOrEmpty(message.Row.Availability) && mode == "handles";
+						partial |= !string.IsNullOrEmpty(message.Row.Availability) && mode is "handles" or "objects";
 					} else if (message.Kind == "complete") {
 						complete = true;
 					} else if (!string.IsNullOrEmpty(message.Message)) {
@@ -205,17 +211,14 @@ public sealed class FileHandleService {
 						notes.Add(message.Message);
 					}
 				}
-				await worker.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
-				var stderr = await workerErrors.ConfigureAwait(false);
-				if (!string.IsNullOrWhiteSpace(stderr))
-					notes.Add(stderr.Trim());
-				partial |= !complete || worker.ExitCode != 0;
-				if (!complete || worker.ExitCode != 0)
-					notes.Add($"The isolated worker exited with code {worker.ExitCode} before completing inspection.");
+				var exitCode = await worker.Exit.WaitAsync(timeout.Token).ConfigureAwait(false);
+				partial |= !complete || exitCode != 0;
+				if (!complete || exitCode != 0)
+					notes.Add($"The isolated worker exited with code {exitCode} before completing inspection.");
 			}, error => error is not OperationCanceledException || !cancellationToken.IsCancellationRequested).ConfigureAwait(false);
 			if (inspectionError is OperationCanceledException) {
 				partial = true;
-				notes.Add("The isolated worker reached its 20-second limit. Available rows were retained; native file name resolution may be blocked by a driver.");
+				notes.Add("The isolated worker reached its 20-second limit. Available rows were retained; native object name resolution may be blocked by a provider.");
 			} else if (inspectionError != null) {
 				partial = true;
 				notes.Add($"File inspection: {inspectionError.GetType().Name}: {inspectionError.Message}");
@@ -224,6 +227,8 @@ public sealed class FileHandleService {
 		cancellationToken.ThrowIfCancellationRequested();
 		if (mode == "handles")
 			notes.Insert(0, "Open disk-file handles are a point-in-time inventory, not proof that a file blocks sharing. Handle values may be reused; access masks belong to the initial table snapshot. Pipes, mapped images, exited and protected processes may be omitted.");
+		else if (mode == "objects")
+			notes.Insert(0, "Read-only selected object handles. Names can be absent, stale or unavailable. Known type-specific rights and undecoded mask bits are retained. Only disk-file handles support the separate explicit release action.");
 		else if (mode == "blockers")
 			notes.Insert(0, "Restart Manager reports applications using the selected file; this is distinct from open-handle enumeration. No process is stopped or restarted.");
 		else
@@ -266,7 +271,7 @@ public sealed class FileHandleService {
 		public string Message { get; init; } = string.Empty;
 	}
 
-	private static void CaptureHandles(ProcessIdentity? requested) {
+	private static void CaptureHandles(ProcessIdentity? requested, FileHandleCaptureOptions options = null) {
 		// A real owned disk handle identifies this boot's File object-type index without hardcoding it.
 		var ownImagePath = Environment.ProcessPath ?? typeof(FileHandleService).Assembly.Location;
 		using var probe = File.OpenHandle(ownImagePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
@@ -276,10 +281,12 @@ public sealed class FileHandleService {
 		var fileType = entries.FirstOrDefault(entry => entry.ProcessId.ToUInt64() == (ulong)Environment.ProcessId && entry.HandleValue.ToUInt64() == probeValue).ObjectTypeIndex;
 		Guard.Ensure(fileType != 0, "Windows did not provide a usable File object-type index in the native handle snapshot.");
 		var owners = new Dictionary<int, HandleOwner>();
+		var objectTypes = new Dictionary<ushort, string> { [fileType] = "File" };
+		var selectedTypes = options == null ? null : new HashSet<string>(options.ObjectTypes, StringComparer.OrdinalIgnoreCase);
 		using var resources = new Disposables();
 		var emitted = 0;
 		var deadline = Stopwatch.StartNew();
-		foreach (var entry in entries.Where(entry => entry.ObjectTypeIndex == fileType).OrderBy(entry => entry.ProcessId.ToUInt64())) {
+		foreach (var entry in entries.Where(entry => options != null || entry.ObjectTypeIndex == fileType).OrderBy(entry => entry.ProcessId.ToUInt64())) {
 			if (deadline.Elapsed > TimeSpan.FromSeconds(17) || emitted >= MaximumRows) {
 				WriteMessage(new WorkerMessage { Kind = "partial", Message = "Open-handle enumeration reached its time or row budget; available rows were retained." });
 				return;
@@ -309,13 +316,32 @@ public sealed class FileHandleService {
 				continue;
 			}
 			using (duplicate) {
-				if (WinAPI.KERNEL32.GetFileType(duplicate) != WinAPI.KERNEL32.FileTypeDisk)
+				if (!objectTypes.TryGetValue(entry.ObjectTypeIndex, out var objectType)) {
+					Tools.Exceptions.ExecuteCapturingException(() => objectType = Tools.Windows.Objects.QueryHandleString(duplicate, true), out var typeError);
+					if (typeError != null)
+						objectType = "Type #" + entry.ObjectTypeIndex.ToString(CultureInfo.InvariantCulture);
+					objectTypes[entry.ObjectTypeIndex] = objectType;
+				}
+				if (selectedTypes != null && !selectedTypes.Contains("*") && !selectedTypes.Contains(objectType))
 					continue;
-				var path = ReadHandlePath(duplicate, out var unavailable);
+				var diskFile = objectType == "File" && WinAPI.KERNEL32.GetFileType(duplicate) == WinAPI.KERNEL32.FileTypeDisk;
+				if (objectType == "File" && !diskFile && options?.IncludeNonDiskFiles != true)
+					continue;
+				var path = string.Empty;
+				var unavailable = string.Empty;
+				if (options?.ResolveNames != false) {
+					if (diskFile)
+						path = ReadHandlePath(duplicate, out unavailable);
+					else {
+						Tools.Exceptions.ExecuteCapturingException(() => path = Tools.Windows.Objects.QueryHandleString(duplicate, false), out var nameError);
+						unavailable = nameError?.Message ?? string.Empty;
+					}
+				}
 				WriteRow(new FileHandleInfo {
 					Identity = owner.Identity, ProcessName = owner.Name, HandleValue = entry.HandleValue.ToUInt64(),
 					ObjectAddress = unchecked((ulong)entry.Object.ToInt64()), ObjectTypeIndex = entry.ObjectTypeIndex,
-					GrantedAccess = entry.GrantedAccess, Path = path, Availability = unavailable
+					GrantedAccess = entry.GrantedAccess, Path = path, Availability = unavailable, ObjectType = objectType, IsDiskFile = diskFile,
+					AccessRights = Tools.Windows.Objects.DecodeAccessMask(objectType, entry.GrantedAccess)
 				});
 				emitted++;
 			}
