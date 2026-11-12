@@ -58,12 +58,12 @@ public class LogOutputSelectorControlTests {
 		Assert.That(control.IsLogging, Is.False);
 		Assert.That(control.LastError, Is.Null);
 		Assert.That(Directory.GetFiles(_directory), Is.Empty);
-		Assert.That(FindControl<CheckBox>(control, "_loggingCheckBox").Text, Is.EqualTo("Log Output"));
+		Assert.That(FindControl<CheckBox>(control, "_loggingCheckBox").Text, Is.Empty);
 		Assert.That(TypeDescriptor.GetProperties(control)[nameof(control.Logger)].IsBrowsable, Is.False);
 	}
 
 	[Test]
-	public void ConfigurationButtonUsesCompactBrowseSizingAndRemainsBesideItsCheckbox() {
+	public void ConfigurationButtonUsesCompactIconSizingAndRetainsExactHintsAcrossLoggingStates() {
 		using var control = new LogOutputSelectorControl { Width = 600 };
 		using var selector = new PathSelectorControl();
 		control.CreateControl();
@@ -72,15 +72,49 @@ public class LogOutputSelectorControlTests {
 		var configure = FindControl<Button>(control, "_configureButton");
 		var checkbox = FindControl<CheckBox>(control, "_loggingCheckBox");
 		var browse = FindControl<Button>(selector, "_fileSelectorButton");
-		Assert.That(configure.Text, Is.EqualTo("..."));
+		Assert.That(configure.Text, Is.Empty);
+		Assert.That(checkbox.Text, Is.Empty);
 		Assert.That(configure.Width, Is.LessThanOrEqualTo(browse.Width + 8));
 		Assert.That(configure.Height, Is.LessThanOrEqualTo(browse.Height + 8));
 		Assert.That(configure.Left - checkbox.Right, Is.InRange(0, 10), "A wide host must not push the compact configuration button away from its checkbox.");
-		Assert.That(configure.AccessibleName, Is.EqualTo("Configure Log Output"));
+		Assert.That(control.GetPreferredSize(Size.Empty).Width, Is.LessThan(100 * control.DeviceDpi / 96), "Legacy explicit widths must not become the preferred toolbar width.");
+		Assert.That(configure.AccessibleName, Is.EqualTo("Log output options"));
 		Assert.That(configure.AccessibleDescription, Does.Contain("current logging configuration").And.Contain("change output"));
 		var tooltip = (ToolTip)typeof(LogOutputSelectorControl).GetField("_toolTip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(control);
-		Assert.That(tooltip.GetToolTip(configure), Does.Contain("Configure Log Output"));
+		Assert.That(tooltip.GetToolTip(configure), Is.EqualTo("Log output options"));
+		Assert.That(tooltip.GetToolTip(checkbox), Is.EqualTo("Enable/Disable Logging"));
 		Assert.That(configure.TabStop, Is.True);
+		control.ApplicationLogger = new NoOpLogger();
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Application });
+		Assert.That(tooltip.GetToolTip(checkbox), Is.EqualTo("Enable/Disable Logging"));
+		Assert.That(checkbox.AccessibleDescription, Does.Contain("Logging Is On"));
+		control.StopLogging();
+		Assert.That(tooltip.GetToolTip(checkbox), Is.EqualTo("Enable/Disable Logging"));
+		Assert.That(tooltip.GetToolTip(configure), Is.EqualTo("Log output options"));
+	}
+
+	[TestCase(9F)]
+	[TestCase(14F)]
+	public void ToolbarHostUsesCompactPreferredWidthAndKeepsTheIconVisibleAtLargerFonts(float fontSize) {
+		RunWithMessageLoop(owner => {
+			owner.ClientSize = new Size(800, 160);
+			using var font = new Font("Segoe UI", fontSize);
+			using var toolbar = new ToolStrip { Dock = DockStyle.Top, Font = font };
+			using var control = new LogOutputSelectorControl { Size = new Size(230, 26), Font = font };
+			var host = new ToolStripControlHost(control) { AutoSize = true, Size = new Size(230, 26) };
+			var after = new ToolStripLabel("Following Tool");
+			toolbar.Items.Add(host);
+			toolbar.Items.Add(after);
+			owner.Controls.Add(toolbar);
+			toolbar.PerformLayout();
+			control.PerformLayout();
+			var configure = FindControl<Button>(control, "_configureButton");
+			Assert.That(host.Width, Is.LessThanOrEqualTo(control.GetPreferredSize(Size.Empty).Width + host.Margin.Horizontal + 4), "The host must not retain the old wide selector allocation.");
+			Assert.That(control.RectangleToScreen(control.ClientRectangle).Contains(configure.RectangleToScreen(configure.ClientRectangle)), Is.True, "The log options glyph must remain inside the hosted selector.");
+			Assert.That(after.Bounds.Left - host.Bounds.Right, Is.InRange(0, 10));
+			SaveScreenshot(toolbar, "compact-log-toolbar-" + fontSize + ".png");
+			return Task.CompletedTask;
+		});
 	}
 
 	[Test]
@@ -356,7 +390,7 @@ public class LogOutputSelectorControlTests {
 		control.StartLogging();
 		var active = control.Logger;
 		var configure = FindControl<Button>(control, "_configureButton");
-		Assert.That(configure.Text, Is.EqualTo("..."));
+		Assert.That(configure.Text, Is.Empty);
 		configure.PerformClick();
 		var dialog = await WaitForConfigurationDialog(owner);
 		Assert.That(control.Logger, Is.SameAs(active));
@@ -873,14 +907,45 @@ public class LogOutputSelectorControlTests {
 		Assert.That(output.IsDisposed, Is.False);
 		Assert.That(text.Text, Does.Not.Contain("After Stop"));
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
-		var final = host.OpenScreens.OfType<LogScreen>().Single(screen => !ReferenceEquals(screen, output));
+		Assert.That(host.OpenScreens.OfType<LogScreen>().Single(), Is.SameAs(output), "Re-enabling continues in the open log view.");
+		Assert.That(host.IsScreenUndocked(output), Is.True);
 		Assert.That(control.EnqueueInfo("Final capture"), Is.True);
 		await control.FlushLoggingAsync();
-		await WaitForAsync(() => FindControl<TextBox>(final, "_outputTextBox").Text.Contains("Final capture"));
+		await WaitForAsync(() => text.Text.Contains("Final capture"));
+		Assert.That(text.Text, Does.StartWith("[Info] From worker"), "The resumed view keeps its earlier output.");
 		Assert.That(host.CloseScreen(origin), Is.True);
 		Assert.That(control.IsDisposed, Is.True);
-		Assert.That(host.OpenScreens, Does.Contain(output).And.Contain(final));
-		Assert.That(final.IsDisposed, Is.False, "The application host owns the finished log view, independently of its originating selector.");
+		Assert.That(host.OpenScreens, Does.Contain(output));
+		Assert.That(output.IsDisposed, Is.False, "The application host owns the finished log view, independently of its originating selector.");
+	});
+
+	[Test]
+	public void ReEnablingReusesADockedLogScreenAndCreatesOneOnlyAfterItCloses() => RunWithMessageLoop(async owner => {
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		var origin = new ApplicationScreen { Title = "Origin" };
+		var control = new LogOutputSelectorControl();
+		origin.Controls.Add(control);
+		Assert.That(host.ShowScreen(origin), Is.True);
+		var configuration = new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false };
+		control.StartLogging(configuration);
+		var output = host.OpenScreens.OfType<LogScreen>().Single();
+		Assert.That(host.DockScreen(output), Is.True);
+		Assert.That(host.ShowScreen(origin), Is.True);
+		await control.StopLoggingAsync();
+		control.StartLogging(configuration);
+		Assert.That(host.OpenScreens.OfType<LogScreen>().Single(), Is.SameAs(output));
+		Assert.That(host.IsScreenUndocked(output), Is.False, "A docked view stays docked.");
+		Assert.That(host.ActiveScreen, Is.SameAs(output), "The reused view is brought forward.");
+		Assert.That(control.EnqueueInfo("Docked again"), Is.True);
+		await control.FlushLoggingAsync();
+		await WaitForAsync(() => FindControl<TextBox>(output, "_outputTextBox").Text.Contains("Docked again"));
+		Assert.That(host.CloseScreen(output), Is.True);
+		Assert.That(control.IsLogging, Is.False);
+		control.StartLogging(configuration);
+		var replacement = host.OpenScreens.OfType<LogScreen>().Single();
+		Assert.That(replacement, Is.Not.SameAs(output), "Only a closed view is replaced.");
+		await control.StopLoggingAsync();
 	});
 
 	[TestCase(null, "Capture Source")]

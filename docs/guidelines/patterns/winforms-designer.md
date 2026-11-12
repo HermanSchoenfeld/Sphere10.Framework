@@ -39,7 +39,7 @@ Keep reusable domain/services/controller foundations abstract where appropriate;
 compose them behind a concrete nongeneric visual surface. Typed grid behavior
 can live in a nonvisual controller, leaving the designer to instantiate an
 ordinary control. Use the framework's
-[VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
+[VisualGridArrayController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridArrayController.cs)
 behind a concrete designer-owned `VisualGrid`/`ApplicationScreen` surface.
 This visual-design requirement is an explicit exception
 to inheritance-only abstract-base naming; do not apply it to nonvisual classes.
@@ -62,8 +62,9 @@ and is read-only afterward; captions and checked/enabled state remain live.
 Use the existing merge controls and their `MergeAction` / `MergeIndex` behavior
 for presentation, without a second command-definition list or host binding registry.
 Capture nested command membership at owner activation as well; a currently
-merged menu can contain another screen's borrowed items. Detached windows own
-views of application commands while their original controls and callbacks remain
+merged menu can contain another screen's borrowed items. Detached windows show
+only their screen's own strips and the commands of its plugin and block;
+application-wide menus and toolbar items (File, Help, Options, Shutdown) stay
 with the main form.
 
 Keep popup preparation in the owner's original `DropDownOpening` handlers.
@@ -99,6 +100,16 @@ clipping its configure button. An application with larger toolbar controls must
 configure a larger common row explicitly. Standalone and detached screen strips
 can retain content-sized `ToolStripStableHeightBehavior` sizing for their full
 current command set, including temporarily hidden commands.
+
+Give interactive controls meaningful tooltips on their declaring designer surface.
+Describe the action, target, units and relevant availability or confirmation rather
+than repeating a caption or exposing an implementation name. Icon-only commands
+also need a descriptive accessible name. Keep menu projections on the original
+command's tooltip so toolbar and context-menu help cannot drift. A tooltip must
+describe the actual accepted inputs and operation; it does not define new behavior.
+Use the shared compact log selector's **Enable/Disable Logging** checkbox and
+**Log output options** button hints. An icon-only snapshot dropdown uses
+**Export current data** and retains its format choices.
 
 ### Row actions on grid screens
 
