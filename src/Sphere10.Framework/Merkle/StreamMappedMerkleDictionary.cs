@@ -12,6 +12,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -84,7 +85,9 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 
 	public void Load() => InternalDictionary.Load();
 
-	public Task LoadAsync() => Task.Run(Load);
+	public Task LoadAsync(CancellationToken cancellationToken = default) {
+		return Task.Run(Load, cancellationToken);
+	}
 
 	public TKey ReadKey(long index) => InternalDictionary.ReadKey(index);
 

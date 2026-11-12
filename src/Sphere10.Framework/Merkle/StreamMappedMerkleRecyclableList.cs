@@ -12,6 +12,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -135,7 +136,9 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 	/// <summary>
 	/// Asynchronously loads the underlying list if required.
 	/// </summary>
-	public Task LoadAsync() => InternalCollection.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) {
+		return InternalCollection.LoadAsync(cancellationToken);
+	}
 
 	/// <summary>
 	/// Disposes the underlying list and associated resources.

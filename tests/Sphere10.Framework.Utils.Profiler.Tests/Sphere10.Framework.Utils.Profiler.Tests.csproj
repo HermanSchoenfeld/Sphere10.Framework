@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsTestProject>true</IsTestProject>
 		<IsPackable>false</IsPackable>
 		<DefaultItemExcludes>$(DefaultItemExcludes);Results/**</DefaultItemExcludes>

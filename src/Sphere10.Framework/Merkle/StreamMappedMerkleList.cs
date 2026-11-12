@@ -12,6 +12,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -129,7 +130,9 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 	/// <summary>
 	/// Asynchronously loads the underlying list if required.
 	/// </summary>
-	public Task LoadAsync() => InternalCollection.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) {
+		return InternalCollection.LoadAsync(cancellationToken);
+	}
 
 	/// <summary>
 	/// Disposes the underlying list and associated resources.

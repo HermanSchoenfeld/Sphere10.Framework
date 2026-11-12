@@ -12,6 +12,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -39,7 +40,9 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 
 	public void Load() => InternalSet.Load();
 
-	public Task LoadAsync() => InternalSet.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) {
+		return InternalSet.LoadAsync(cancellationToken);
+	}
 
 	public void Dispose() => InternalSet.Dispose();
 

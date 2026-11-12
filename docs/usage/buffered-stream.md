@@ -44,15 +44,16 @@ flush operation without discarding buffered input.
 
 | Member | Behavior |
 |---|---|
-| `EnableReadBuffering` | Enables read-ahead; disabling releases the buffer and forwards operations directly. |
-| `EnableStreamLengthCaching` | Caches a successful `Length` query, including zero, while read buffering is enabled. |
+| `EnableReadBuffering` | Enables read-ahead; disabling releases the buffer and forwards reads directly. |
+| `EnableStreamLengthCaching` | Caches a successful `Length` query, including zero, independently of read buffering. |
 | `EnableBuffering()` | Enables both features. |
 | `DisableBuffering()` | Disables both features. |
 | `BufferSize` | Retains the configured capacity when buffering is disabled. |
 
 Disabling read buffering with unread bytes throws before changing either flag.
-Consume those bytes or explicitly call `FlushUnreadData()` first. A disabled read
-buffer bypasses length caching even when its independent flag remains enabled.
+Consume those bytes or explicitly call `FlushUnreadData()` first. Read buffering
+and length caching are independent: changing the read-buffer flag preserves the
+length-cache setting and any cached length.
 
 Writes and resizes invalidate the length cache before attempting mutation.
 Invalid arguments and zero-byte writes do not. Disable length caching for a
@@ -68,8 +69,8 @@ Run the behavioral fixture with the repository's ordinary NUnit runner:
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter FullyQualifiedName~BufferedStreamTests
 ```
 
-The decorator implementation passed 159 behavioral cases, including the Pascal implementation's 86
-semantic groups and the additional .NET asynchronous, span, copy and disposal
+The decorator implementation passed 186 behavioral cases, including the Pascal
+implementation's 86 semantic groups and the additional .NET asynchronous, span, copy and disposal
 routes. The core and test builds completed without warnings or errors.
 
 ## Measured file performance
