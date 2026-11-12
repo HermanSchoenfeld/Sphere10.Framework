@@ -86,8 +86,8 @@ public class EnumComboBox : ComboBoxEx {
 	}
 
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(ComboItem))]
 	private void PopulateCombo() {
+		AOTFixes.Retain();
 		var comboItems = new List<ComboItem>();
 		if (AllowEmptyOption) {
 			comboItems.Add(new ComboItem { Display = EmptyOptionText ?? string.Empty, Value = null });

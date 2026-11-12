@@ -236,8 +236,8 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 		}
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(CheckedBoxItem))]
 	private void PopulateCheckedListBox() {
+		AOTFixes.Retain();
 		try {
 			base.BeginUpdate();
 			_suspendEvents = true;

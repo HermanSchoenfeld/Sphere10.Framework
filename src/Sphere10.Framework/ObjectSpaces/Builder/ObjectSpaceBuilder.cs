@@ -9,7 +9,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -285,9 +284,8 @@ public class ObjectSpaceBuilder {
 		return dimensionBuilder;
 	}
 
-	// Metadata reopening uses the Type overload even for dimensions first configured generically.
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(ObjectSpaceDimensionBuilder<>))]
 	public IObjectSpaceDimensionBuilder AddDimension(Type type, bool ignoreAnnotations = false) {
+		AOTFixes.Retain();
 		var dimensionBuilder = (IObjectSpaceDimensionBuilder)typeof(ObjectSpaceDimensionBuilder<>).MakeGenericType(type).ActivateWithCompatibleArgs(this);
 		ConfigureDimension(dimensionBuilder, ignoreAnnotations);
 		return dimensionBuilder;

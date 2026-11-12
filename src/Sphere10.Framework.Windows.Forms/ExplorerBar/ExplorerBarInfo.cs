@@ -87,6 +87,7 @@ public class ExplorerBarInfo : IDisposable {
 	/// default settings
 	/// </summary>
 	public ExplorerBarInfo() {
+		AOTFixes.Retain();
 		this.taskPane = new TaskPaneInfo();
 		this.taskItem = new TaskItemInfo();
 		this.expando = new ExpandoInfo();

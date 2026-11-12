@@ -8,6 +8,28 @@ Sphere 10 Software employs its own code-styling approach, which all contribution
 
 **NOTE:** If a styling element / aspect is not addressed by this document (or editor config) then the contributor has artistic license by default.
 
+### Native AOT preservation declarations
+
+Keep each project's explicit AOT preservation declarations in one `AOTFixes.cs`
+at the project root, beside its `.csproj`. Use an internal static `AOTFixes`
+class for `DynamicDependency` attributes and any required closed-generic code
+anchors. Group related entries with comments explaining the reflected consumer
+and preserve only the required members. Keep Framework requirements in their
+owning Framework project and application-specific requirements in the application.
+
+Call the preservation method from reachable existing entry points. Library
+controls and factories must also work when constructed directly, without the
+application host; retain calls on those paths. An unreferenced annotated method
+does not preserve its dependencies. Do not add a module initializer or duplicate
+application-level lists merely to make these declarations reachable.
+
+`DynamicallyAccessedMembers` annotations are API data-flow contracts and remain
+on the parameters, return values, fields and properties they describe. Compiler
+directives for exact generic instantiations and publish feature switches remain
+in their required toolchain inputs. Neither these contracts nor native interop
+implementations are interchangeable with a preservation list. Verify actual
+native publishing and the affected reflective paths after moving declarations.
+
 ### Language and source conventions
 
 - `LangVersion` is `latest`.

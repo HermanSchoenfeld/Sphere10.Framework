@@ -36,6 +36,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	#region Form activation/destruction
 
 	public BlockMainForm() {
+		AOTFixes.Retain();
 		InitializeComponent();
 
 		// Initialize the current navigation layout; registered blocks do not allocate panes until selected.

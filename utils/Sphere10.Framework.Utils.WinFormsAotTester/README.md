@@ -1,6 +1,6 @@
 # WinForms AOT Tester
 
-An independent clone of the WinForms Tester for investigating unofficial .NET 10 Native AOT publishing. It retains the complete demonstration sources and dependencies. The ordinary build runs on CoreCLR as a control.
+An independent clone of the WinForms Tester for investigating unofficial .NET 11 Native AOT publishing. It retains the complete demonstration sources and dependencies. The ordinary build runs on CoreCLR as a control.
 
 The assembly and product identity differ from the original tester. Its source namespace is retained so the existing designer and resource identities continue to match. The window title identifies the active runtime mode.
 
@@ -11,7 +11,7 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsAotTester -c Release
 dotnet publish utils/Sphere10.Framework.Utils.WinFormsAotTester -c Release -p:BuildRevision=0 -p:PublishProfile=ExperimentalNativeAot -p:UseArtifactsOutput=true -p:ArtifactsPath="$PWD/artifacts/winforms-aot-build" -o artifacts/winforms-aot
 ```
 
-Native publishing requires Windows x64, the .NET 10 SDK and the Visual C++ native build tools. The opt-in profile bypasses the SDK's WinForms trimming guard, disables unsupported built-in COM interop and retains trimming/AOT warnings. Its descriptor preserves reviewed resource readers, Bitmap/Icon resources, state observers, theme models and startup settings. Entrypoint annotations preserve the tester's registered screens, lifecycle constructors and resource-applied SplitContainer properties. The profile retains binding, UI-editor and default-value support and uses the ordinary ComponentModel paths. Its descriptor also preserves the reflected PropertiesTab constructor.
+Native publishing requires Windows x64, the .NET 11 SDK and the Visual C++ native build tools. The opt-in profile bypasses the SDK's WinForms trimming guard, disables unsupported built-in COM interop and retains trimming/AOT warnings. Its descriptor preserves reviewed resource readers, Bitmap/Icon resources, state observers, theme models and startup settings. The entrypoint calls [AOTFixes.cs](AOTFixes.cs), which centralizes the tester's registered-screen, lifecycle, grid-row and ObjectSpace preservation declarations. BlockMainForm calls its own project's [AOTFixes.cs](../../src/Sphere10.Framework.Windows.Forms/AOTFixes.cs) to retain the SplitContainer properties required by its resource-based layout, so applications inherit that metadata contract. The profile retains binding, UI-editor and default-value support and uses the ordinary ComponentModel paths. Its descriptor also preserves the reflected PropertiesTab constructor.
 
 Use a fresh artifacts directory after changing the root descriptor. The tested Native AOT 10.0.14 incremental target can miss a descriptor-only edit; a new publish directory alone may still copy the previous native binary. A fresh `NativeIntermediateOutputPath` with a trailing separator is another option when retaining managed intermediates. Check that native compilation runs and verify the resulting executable.
 

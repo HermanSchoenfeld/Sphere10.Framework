@@ -102,9 +102,4 @@
     </type>
     <type fullname="Sphere10.Framework.Application.ProductUsageServices/UsageSettings" preserve="all" />
   </assembly>
-  <assembly fullname="System.Windows.Forms">
-    <type fullname="System.Windows.Forms.PropertyGridInternal.PropertiesTab" preserve="nothing">
-      <method name=".ctor" />
-    </type>
-  </assembly>
 </linker>

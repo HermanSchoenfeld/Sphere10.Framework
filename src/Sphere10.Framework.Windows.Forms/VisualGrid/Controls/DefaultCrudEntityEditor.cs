@@ -21,6 +21,7 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 	private CrudEntityTypeDescriptor? _entityDescriptor;
 
 	public DefaultCrudEntityEditor() {
+		AOTFixes.Retain();
 		InitializeComponent();
 	}
 
