@@ -20,7 +20,9 @@ param(
 	[ValidateNotNullOrEmpty()]
 	[string]$symbolSource = 'https://symbols.nuget.org/api/v2/symbolpackage',
 	[ValidateNotNullOrEmpty()]
-	[string]$packagesDirectory
+	[string]$packagesDirectory,
+	# CI uses a sealed, validated batch and compares existing NuGet payloads on retries.
+	[switch]$SealedRelease
 )
 
 Set-StrictMode -Version Latest
@@ -32,6 +34,17 @@ if (-not $PSBoundParameters.ContainsKey('packagesDirectory')) {
 	$packagesDirectory = Join-Path $repositoryRoot 'nuget-packages'
 }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+if ($SealedRelease) {
+	& python (Join-Path $PSScriptRoot 'nuget-release.py') verify $packagesDirectory
+	if ($LASTEXITCODE -ne 0) { throw 'Release manifest verification failed.' }
+	if ($PSCmdlet.ShouldProcess('nuget.org', 'Publish the sealed Framework package and symbol batch')) {
+		if ($source -ne 'https://api.nuget.org/v3/index.json') { throw 'Sealed release mode targets nuget.org only.' }
+		& python (Join-Path $PSScriptRoot 'nuget-release.py') publish $packagesDirectory
+		if ($LASTEXITCODE -ne 0) { throw 'Sealed release publication failed. Retain the original artifact for recovery.' }
+	}
+	return
+}
 
 function Read-ApiKey {
 	$secureKey = Read-Host -Prompt 'Enter NuGet API key (input hidden)' -AsSecureString

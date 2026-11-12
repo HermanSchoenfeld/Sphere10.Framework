@@ -2,6 +2,7 @@ name: Build
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -9,7 +10,8 @@ permissions:
 
 concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Never interrupt a publishing run midway through the immutable package batch.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   GITHUB_ACTIONS: 'true'
@@ -17,6 +19,43 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
 
 jobs:
+  release:
+    name: Validate release identity
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
+      artifact: ${{ steps.version.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test publishing contracts
+        run: python -m unittest discover -s scripts/tests -p "test_nuget_release.py" -v
+      - name: Resolve exact package version
+        id: version
+        shell: pwsh
+        run: |
+          $publish = $env:GITHUB_EVENT_NAME -eq 'push' -and $env:GITHUB_REPOSITORY -eq 'HermanSchoenfeld/Sphere10.Framework' -and ($env:GITHUB_REF -eq 'refs/heads/master' -or $env:GITHUB_REF.StartsWith('refs/tags/'))
+          "publish=$($publish.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          if ($publish) {
+            python scripts/nuget-release.py version --props Directory.Build.props --output $env:GITHUB_OUTPUT
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } else {
+            "version=0.0.0-validation.$env:GITHUB_RUN_ID.$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
+          }
+          if ($env:GITHUB_REF.StartsWith('refs/tags/')) {
+            $tagCommit = git rev-parse "$($env:GITHUB_REF)^{commit}"
+            if ($LASTEXITCODE -ne 0 -or $tagCommit -ne (git rev-parse HEAD)) { throw 'Tag does not identify the checked-out commit.' }
+            "artifact=nuget-$env:GITHUB_RUN_ID-tag" >> $env:GITHUB_OUTPUT
+          } else {
+            "artifact=nuget-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
+          }
+
   build:
     name: Build
     runs-on: windows-latest
@@ -29,14 +68,131 @@ jobs:
             10.0.x
             11.0.x
       - name: Build solution
-        run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --configuration Debug --verbosity minimal -p:BuildRevision=${{ github.run_number }}
+        run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --configuration Debug --verbosity minimal -p:BuildRevision=0
       - name: Upload compiled tests
         uses: actions/upload-artifact@v4
         with:
           name: compiled-tests
+          overwrite: true
           path: tests/**/bin/Debug/**
           if-no-files-found: error
           retention-days: 14
+
+  packages:
+    name: Pack and validate public packages
+    needs: release
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            11.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Find original tag artifact on a rerun
+        id: retained
+        uses: actions/github-script@v7
+        env:
+          PACKAGE_ARTIFACT: ${{ needs.release.outputs.artifact }}
+        with:
+          script: |
+            let found = false;
+            if (context.ref.startsWith('refs/tags/') && Number(process.env.GITHUB_RUN_ATTEMPT) > 1) {
+              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, { ...context.repo, run_id: context.runId });
+              found = artifacts.some(a => a.name === process.env.PACKAGE_ARTIFACT && !a.expired);
+            }
+            core.setOutput('found', String(found));
+      - name: Restore original tag batch
+        if: steps.retained.outputs.found == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release.outputs.artifact }}
+          path: ${{ runner.temp }}/nuget-batch
+      - name: Pack full Windows package boundary
+        if: steps.retained.outputs.found != 'true'
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          ./scripts/pack.ps1 -Version $env:PACKAGE_VERSION -SourceRevision $env:GITHUB_SHA -OutputDirectory "${{ runner.temp }}/nuget-batch" -ArtifactsPath "${{ runner.temp }}/package-build"
+          python scripts/nuget-release.py seal "${{ runner.temp }}/nuget-batch" --version $env:PACKAGE_VERSION --commit $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($framework in @('net10.0', 'net11.0')) {
+            ./scripts/validate-packages.ps1 -packagesDirectory "${{ runner.temp }}/nuget-batch" -packageVersion $env:PACKAGE_VERSION -consumerFramework $framework -workspaceDirectory "${{ runner.temp }}/package-consumers-$framework"
+          }
+      - name: Verify sealed batch
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          python scripts/nuget-release.py verify "${{ runner.temp }}/nuget-batch"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $manifest = Get-Content "${{ runner.temp }}/nuget-batch/release-manifest.json" -Raw | ConvertFrom-Json
+          if ($manifest.version -cne $env:PACKAGE_VERSION -or $manifest.commit -cne $env:GITHUB_SHA) { throw 'Artifact identity mismatch.' }
+      - uses: actions/upload-artifact@v4
+        if: steps.retained.outputs.found != 'true'
+        with:
+          name: ${{ needs.release.outputs.artifact }}
+          path: ${{ runner.temp }}/nuget-batch/*
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload package validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-validation-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/package-consumers-*/*.log
+            ${{ runner.temp }}/package-consumers-*/validation.json
+          if-no-files-found: ignore
+
+  publish:
+    name: Publish NuGet
+    needs: [release, build, test, browser, packages]
+    if: github.event_name == 'push' && github.repository == 'HermanSchoenfeld/Sphere10.Framework' && needs.release.outputs.publish == 'true'
+    runs-on: windows-latest
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: nuget-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release.outputs.artifact }}
+          path: ${{ runner.temp }}/nuget-batch
+      - name: Check existing versions before requesting credentials
+        run: python scripts/nuget-release.py preflight "${{ runner.temp }}/nuget-batch"
+      - name: NuGet Trusted Publishing
+        id: login
+        uses: NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e # v1
+        with:
+          user: Herman-Schoenfeld
+      - name: Publish and verify original batch
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: ./scripts/publish.ps1 -SealedRelease -PackagesDirectory "${{ runner.temp }}/nuget-batch" -Confirm:$false
 
   test:
     name: Test
@@ -77,6 +233,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.framework }}
+          overwrite: true
           path: TestResults/**/*.trx
           if-no-files-found: ignore
           retention-days: 14
@@ -101,6 +258,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wizard-browser-results
+          overwrite: true
           path: |
             ${{ runner.temp }}/wizard-browser/*.log
             ${{ runner.temp }}/wizard-browser/browser.runsettings

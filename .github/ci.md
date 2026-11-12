@@ -1,20 +1,22 @@
 # GitHub Actions tests
 
-The [Build workflow](workflows/main.yml) runs two Windows jobs: **Build** compiles the cross-platform solution with .NET 10 and uploads the test output folders; **Test** waits for Build, downloads those folders, and runs the compiled assemblies directly with `dotnet vstest`. Test does not rebuild the solution or restore packages.
+The [Build workflow](workflows/main.yml) compiles the cross-platform solution on Windows with the .NET 11 SDK and both .NET 10/11 targets. **Test (net10.0)** and **Test (net11.0)** download the compiled assemblies and run them directly with `dotnet vstest`. Test does not rebuild or restore. **Wizard browser tests** runs independently.
+
+**Validate release identity** checks the publishing contract and selects an exact version. **Pack and validate public packages** builds all packable Windows-solution libraries and exercises isolated .NET 10/11 consumers. **Publish NuGet** requires all of these checks to succeed, and runs only for eligible pushes in the intended repository. See [NuGet publishing](../docs/nuget-publishing.md) for artifact recovery and Trusted Publishing setup.
 
 There are no discovery, partitioning, or reporting scripts and no per-test watchdog. The workflow uses GitHub's default job timeout. Test failures and test-host crashes fail the job through the test runner's exit code.
 
 ## Build versions
 
-The release version is `VersionPrefix` in `Directory.Build.props`. The build command passes `github.run_number` as `BuildRevision`, giving binaries a four-part file version such as `3.1.3.114`. Informational version matches that file version and does not include a git SHA. NuGet package version stays `3.1.3` and assembly identity stays `3.1.3.0`.
+The next release base is `VersionPrefix` in `Directory.Build.props`, currently `3.2.0`. CI uses `BuildRevision=0`. Published package versions identify the run and attempt, while repository and informational metadata identify the full source SHA. Tags use their exact version. The numeric release base supplies assembly identity and file version.
 
-[GitHub's workflow run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying that run. It continues across releases rather than restarting at one. Local builds allocate the next build number from `LOCAL-BUILD-NUMBER` at the repository root (gitignored) so FileVersion is `3.1.3.N` instead of `.0`. Pass `-p:BuildRevision=1` to stamp a specific number. CI does not touch the local counter.
+[GitHub's run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying. The CI package suffix also includes the unique run ID and attempt. Local builds allocate a number from the gitignored `LOCAL-BUILD-NUMBER`, producing file versions such as `3.2.0.N`. Pass `-p:BuildRevision=1` for a specific number. CI leaves the local counter unchanged.
 
 ## Seeing failures and test output
 
 Open the workflow run, select **Test**, then expand **Run unit tests**. The detailed console logger shows test names, failure messages, expected/actual values, stack traces, and test output directly in the GitHub log. NUnit standard output is enabled. Nothing redirects this output to a server-side log file.
 
-The optional **test-results** artifact contains TRX reports even when tests fail. Downloading it is not necessary to read failures. Use GitHub's **Re-run failed jobs** to retry Test using the existing compiled-tests artifact. Both artifacts are retained for 14 days; after that, rerun all jobs to rebuild. Required branch checks should use the new **Build** and **Test** job names.
+The **test-results-net10.0** and **test-results-net11.0** artifacts contain TRX reports even when tests fail. Use **Re-run failed jobs** to retry using the existing compiled-tests artifact. Test artifacts are retained for 14 days. After that, rerun all jobs to rebuild. Required branch checks should include the build, both test targets, browser tests, release identity and package validation.
 
 ## Adding and running tests
 
@@ -40,4 +42,4 @@ Logical-cluster memoization remains controlled by the file-local `#define Logica
 
 ## Stable dependencies
 
-`Directory.Packages.props` uses stable dependency versions for the stable `3.1.3` release. When updating packages, exclude prerelease versions so packing does not produce NU5104 warnings. Preview dependencies require an explicitly prerelease package version.
+`Directory.Packages.props` contains the current dependency versions, including some prereleases. Review those dependencies before a stable tag. NuGet reports NU5104 when a stable package depends on a prerelease dependency. Continuous development packages are explicitly prerelease versions.

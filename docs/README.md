@@ -335,6 +335,7 @@ See the [Tools Reference](tools-reference.md) for each facade, its declaring pro
 - [Main README](../README.md) — Project overview, installation and package publishing
 - [CI test guide](../.github/ci.md) — How GitHub Actions builds and runs the tests, and how to reproduce a run locally
 - [Package consumer validation](../scripts/package-consumers/README.md) — What `validate-packages.ps1` checks before a release
+- [NuGet publishing](nuget-publishing.md) — Continuous prereleases, alpha/stable tags, OIDC setup, package provenance and recovery
 - [Test projects](../tests/) — NUnit test projects for the libraries
 
 ---

@@ -6,7 +6,8 @@ Packs the active framework libraries and validates isolated NuGet consumers.
 Creates a unique prerelease version and an external temporary workspace. Framework
 packages restore exclusively from the generated feed. Third-party packages restore
 from nuget.org. Keeps packages, consumer projects and logs for inspection; does not
-publish packages or remove existing files. Requires the .NET 10 SDK. The default
+publish packages or remove existing files. Requires the .NET 10 and 11 SDKs for
+the dual-target libraries. Consumers select .NET 10 or 11. The default
 Windows solution also requires the Windows desktop targeting pack.
 .EXAMPLE
 .\scripts\validate-packages.ps1
@@ -17,13 +18,19 @@ Windows solution also requires the Windows desktop targeting pack.
 param(
 	[string]$solutionPath = (Join-Path (Split-Path -Parent $PSScriptRoot) 'src/Sphere10.Framework (Win).sln'),
 	[ValidateSet('Debug', 'Release')]
-	[string]$configuration = 'Release'
+	[string]$configuration = 'Release',
+	[string]$packagesDirectory,
+	[string]$packageVersion,
+	[string]$workspaceDirectory,
+	[ValidateSet('net10.0', 'net11.0')]
+	[string]$consumerFramework = 'net10.0'
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+. (Join-Path $PSScriptRoot 'package-common.ps1')
 
 function Invoke-Dotnet {
 	param([string[]]$arguments, [string]$logName)
@@ -55,7 +62,7 @@ function Assert-UiIndependentConsumer {
 	}
 }
 function New-Consumer {
-	param([string]$name, [string[]]$packageIds, [string]$sdk = 'Microsoft.NET.Sdk', [string]$targetFramework = 'net10.0')
+	param([string]$name, [string[]]$packageIds, [string]$sdk = 'Microsoft.NET.Sdk', [string]$targetFramework = $consumerFramework)
 	$directory = Join-Path $workspace $name
 	New-Item -ItemType Directory -Path $directory | Out-Null
 	Copy-Item -Path (Join-Path $PSScriptRoot "package-consumers/$name/*") -Destination $directory
@@ -64,6 +71,7 @@ function New-Consumer {
 		"`t`t<PackageReference Include=`"$id`" Version=`"[$version]`"$privateAssets />"
 	}
 	$desktopProperties = if ($name -eq 'Desktop') { '<UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>' } else { '' }
+	if ($name -eq 'Renderer') { $desktopProperties = '<OutputType>Exe</OutputType>' }
 	$projectPath = Join-Path $directory "PackageConsumer.$name.csproj"
 	Write-TextFile $projectPath @"
 <Project Sdk="$sdk">
@@ -84,15 +92,23 @@ $($references -join [Environment]::NewLine)
 }
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-	throw 'Install the .NET 10 SDK before running package validation.'
+	throw 'Install the .NET 10 and 11 SDKs before running package validation.'
 }
 $solutionPath = (Resolve-Path -LiteralPath $solutionPath).ProviderPath
 $solutionDirectory = Split-Path -Parent $solutionPath
 $runId = [guid]::NewGuid().ToString('N')
 $version = '0.0.0-validation.' + [DateTime]::UtcNow.ToString('yyyyMMddHHmmss') + '.' + $runId.Substring(0, 8)
 $workspace = Join-Path ([IO.Path]::GetTempPath()) "s10nuget-$($runId.Substring(0, 8))"
+if ($workspaceDirectory) { $workspace = [IO.Path]::GetFullPath($workspaceDirectory) }
+if (Test-Path -LiteralPath $workspace) { throw "Validation requires a new workspace: $workspace" }
 $feed = Join-Path $workspace 'feed'
 New-Item -ItemType Directory -Path $workspace, $feed | Out-Null
+if ($packagesDirectory) {
+	if (-not $packageVersion) { throw 'An existing package batch requires its exact version.' }
+	$version = $packageVersion
+	Copy-Item -Path (Join-Path $packagesDirectory '*.nupkg') -Destination $feed
+	Copy-Item -Path (Join-Path $packagesDirectory '*.snupkg') -Destination $feed
+}
 Write-Host "Validating $version in $workspace" -ForegroundColor Cyan
 
 # Stop repository or user-directory build customizations from leaking into consumers.
@@ -110,25 +126,17 @@ Write-TextFile (Join-Path $workspace 'Directory.Build.targets') '<Project />'
 Write-TextFile (Join-Path $workspace 'Directory.Packages.props') '<Project><PropertyGroup><ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally></PropertyGroup></Project>'
 
 # Use evaluated metadata, so centrally inherited packability remains authoritative.
-$projects = @()
-foreach ($line in Get-Content -LiteralPath $solutionPath) {
-	if ($line -notmatch '^Project\([^)]*\) = "[^"]+", "([^"]+\.csproj)",') { continue }
-	$projectPath = [IO.Path]::GetFullPath((Join-Path $solutionDirectory $Matches[1]))
-	if (-not $projectPath.StartsWith($solutionDirectory + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { continue }
-	$output = & dotnet msbuild $projectPath -nologo -p:BuildRevision=0 -getProperty:IsPackable,PackageId,TargetFramework
-	if ($LASTEXITCODE -ne 0) { throw "Cannot evaluate $projectPath" }
-	$metadata = ($output -join [Environment]::NewLine | ConvertFrom-Json).Properties
-	if ($metadata.IsPackable -ne 'true') { continue }
-	$projects += [PSCustomObject]@{ Path = $projectPath; Id = $metadata.PackageId; TargetFramework = $metadata.TargetFramework }
-}
+$projects = @(Get-FrameworkPackageProjects $solutionPath)
 if ($projects.Count -eq 0) { throw "No packable framework projects found in $solutionPath" }
 
 # Pack only libraries, without cleaning or rebuilding tester applications.
-Write-Host "Packing $($projects.Count) public libraries..."
-Invoke-Dotnet @('new', 'sln', '--name', 'Packages', '--format', 'sln', '--output', $workspace) 'create-solution'
-$packSolution = Join-Path $workspace 'Packages.sln'
-Invoke-Dotnet (@('sln', $packSolution, 'add') + @($projects.Path)) 'populate-solution'
-Invoke-Dotnet @('pack', $packSolution, '-c', $configuration, '-o', $feed, '-p:BuildRevision=0', "-p:Version=$version", '--nologo') 'pack'
+if (-not $packagesDirectory) {
+	Write-Host "Packing $($projects.Count) public libraries..."
+	Invoke-Dotnet @('new', 'sln', '--name', 'Packages', '--format', 'sln', '--output', $workspace) 'create-solution'
+	$packSolution = Join-Path $workspace 'Packages.sln'
+	Invoke-Dotnet (@('sln', $packSolution, 'add') + @($projects.Path)) 'populate-solution'
+	Invoke-Dotnet @('pack', $packSolution, '-c', $configuration, '-o', $feed, '-p:BuildRevision=0', "-p:Version=$version", '--nologo') 'pack'
+}
 
 # Validate package metadata and the complete internal dependency graph.
 $packages = @(Get-ChildItem -LiteralPath $feed -Filter '*.nupkg' -File)
@@ -207,7 +215,9 @@ Assert-UiIndependentConsumer $applicationProject
 $libraryIds = @($packageIds | Where-Object { $_ -notlike 'Sphere10.Framework.Windows*' -and $_ -notlike 'Sphere10.Framework.Web.AspNetCore*' })
 $null = New-Consumer 'Libraries' $libraryIds
 $desktopIds = @($packageIds | Where-Object { $_ -like 'Sphere10.Framework.Windows*' })
-if ($desktopIds.Count) { $null = New-Consumer 'Desktop' $desktopIds 'Microsoft.NET.Sdk' 'net10.0-windows' }
+if ($desktopIds.Count) { $null = New-Consumer 'Desktop' $desktopIds 'Microsoft.NET.Sdk' "$consumerFramework-windows" }
+$rendererProject = New-Consumer 'Renderer' @('Sphere10.Framework.Web.VisualRenderer')
+Invoke-Dotnet @('run', '--project', $rendererProject, '-c', $configuration, '--no-build', '--no-restore') 'run-renderer'
 $webProject = New-Consumer 'Web' @('Sphere10.Framework.Web.AspNetCore.MVC', 'Sphere10.Framework.Web.AspNetCore.Blazor') 'Microsoft.NET.Sdk.Web'
 $publishDirectory = Join-Path $workspace 'published-web'
 Invoke-Dotnet @('publish', $webProject, '-c', $configuration, '--no-restore', '-o', $publishDirectory, '--nologo') 'publish-web'
@@ -280,7 +290,8 @@ $report = [PSCustomObject]@{
 	Version = $version
 	Solution = $solutionPath
 	Packages = @($packageIds | Sort-Object)
-	Consumers = @('Core', 'Application', 'Libraries', 'Web') + $(if ($desktopIds.Count) { 'Desktop' })
+	Consumers = @('Core', 'Application', 'Libraries', 'Renderer', 'Web') + $(if ($desktopIds.Count) { 'Desktop' })
+	TargetFramework = $consumerFramework
 	PublishedWeb = $publishDirectory
 	HttpChecks = 'Plugin and ApplicationBlock SSR, typed grid, theme CSS, MVC XML, scoped CSS, grid and picker JavaScript'
 }

@@ -8,13 +8,17 @@ Cleans and packs Sphere10 Framework for NuGet distribution.
 [CmdletBinding()]
 param(
 	[ValidateNotNullOrEmpty()]
-	[string]$outputDirectory
+	[string]$outputDirectory,
+	[string]$Version,
+	[string]$SourceRevision,
+	[string]$ArtifactsPath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'package-common.ps1')
 
 if (-not $PSBoundParameters.ContainsKey('outputDirectory')) {
 	$outputDirectory = Join-Path $repositoryRoot 'nuget-packages'
@@ -50,6 +54,17 @@ function Remove-StagingDirectory {
 }
 
 $buildArguments = @('-c', 'Release')
+if ($Version) {
+	if ($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$' -or $SourceRevision -notmatch '^[0-9a-f]{40}$') {
+		throw 'An explicit release requires a version and full source commit.'
+	}
+	$numericVersion = $Version.Split('-')[0]
+	$buildArguments += @('-p:BuildRevision=0', "-p:VersionPrefix=$numericVersion", "-p:Version=$Version", "-p:PackageVersion=$Version",
+		"-p:SourceRevisionId=$SourceRevision", "-p:RepositoryCommit=$SourceRevision", '-p:RepositoryUrl=https://github.com/HermanSchoenfeld/Sphere10.Framework',
+		'-p:ContinuousIntegrationBuild=true', '-p:PublishRepositoryUrl=true', '-p:DebugType=portable',
+		"-p:InformationalVersion=$Version+$SourceRevision", '-p:IncludeSourceRevisionInInformationalVersion=false')
+}
+if ($ArtifactsPath) { $buildArguments += @('--artifacts-path', $ArtifactsPath) }
 
 Write-Host "Cleaning solution: $solutionPath" -ForegroundColor Cyan
 & dotnet clean $solutionPath @buildArguments
@@ -67,7 +82,15 @@ foreach ($directoryPath in @((Join-Path $repositoryRoot 'publish'), $stageRoot))
 New-Item -ItemType Directory -Path $stageDirectory | Out-Null
 try {
 	Write-Host "Packing framework to: $stageDirectory" -ForegroundColor Cyan
-	& dotnet pack $solutionPath @buildArguments -o $stageDirectory
+	# Evaluate the same public boundary used by package-consumer validation. Do not pack testers.
+	$projects = @(Get-FrameworkPackageProjects $solutionPath)
+	if (-not $projects.Count) { throw 'No public package projects found.' }
+	$packSolution = Join-Path $stageDirectory 'Packages.sln'
+	& dotnet new sln --name Packages --format sln --output $stageDirectory
+	if ($LASTEXITCODE -ne 0) { throw 'Could not create package solution.' }
+	& dotnet sln $packSolution add @($projects.Path)
+	if ($LASTEXITCODE -ne 0) { throw 'Could not populate package solution.' }
+	& dotnet pack $packSolution @buildArguments -o $stageDirectory -m:1
 	if ($LASTEXITCODE -ne 0) {
 		throw "Solution packing failed (exit code $LASTEXITCODE). Existing packages have been retained."
 	}
@@ -106,6 +129,9 @@ try {
 	foreach ($package in @($packages + $symbols)) {
 		Copy-Item -LiteralPath $package.FullName -Destination (Join-Path $outputRoot $package.Name)
 	}
+	# Keep only portable evaluated facts, without local project paths, alongside the batch.
+	ConvertTo-Json -InputObject @($projects | Select-Object Id, TargetFramework, TargetFrameworks) |
+		Set-Content -LiteralPath (Join-Path $outputRoot 'package-projects.json') -Encoding utf8
 } finally {
 	Remove-StagingDirectory
 }

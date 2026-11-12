@@ -4,7 +4,7 @@ This folder holds the consumer fixtures for [validate-packages.ps1](../validate-
 
 ## Run the validation
 
-Run the script from the Framework repository root with PowerShell and the .NET 10 SDK:
+Run the script from the Framework repository root with PowerShell and the .NET 10 and 11 SDKs:
 
 ```powershell
 ./scripts/validate-packages.ps1
@@ -15,6 +15,19 @@ Run the script from the Framework repository root with PowerShell and the .NET 1
 |---|---|---|
 | `-solutionPath` | `src/Sphere10.Framework (Win).sln` | The solution whose packable projects under `src/` are packed. The Windows solution covers every active library and needs the Windows desktop targeting pack. The cross-platform solution leaves out the Windows libraries, so the `Desktop` consumer is skipped. |
 | `-configuration` | `Release` | The configuration, `Debug` or `Release`, used for packing and for building the consumers. |
+| `-consumerFramework` | `net10.0` | Select `net10.0` or `net11.0`. Desktop consumers add the Windows suffix. CI checks both. |
+| `-packagesDirectory` | Not set | Validate an existing package batch instead of rebuilding it. Requires `-packageVersion`. |
+| `-packageVersion` | Generated validation version | Exact version of the supplied package batch. |
+| `-workspaceDirectory` | New temporary folder | Optional new workspace for isolated consumers, cache and reports. Existing directories are rejected. |
+
+To validate the exact artifacts that will be published, run once for each target with a distinct workspace:
+
+```powershell
+./scripts/validate-packages.ps1 -packagesDirectory <batch> -packageVersion <exact-version> -consumerFramework net10.0
+./scripts/validate-packages.ps1 -packagesDirectory <batch> -packageVersion <exact-version> -consumerFramework net11.0
+```
+
+The [publishing workflow](../../docs/nuget-publishing.md) seals the original batch and uses these checks before uploading it.
 
 Each run creates a new workspace folder named `s10nuget-<id>` in the system temporary directory and prints its path. The workspace and consumer names are short so that NuGet and Razor asset paths stay within Windows path-length limits. Third-party packages restore from nuget.org into an empty package cache inside that workspace, so every run needs network access. The script never deletes a workspace, so remove old `s10nuget-*` folders yourself.
 
@@ -32,7 +45,8 @@ After a successful run, create the release packages with `./scripts/pack.ps1`, a
 | `Core` | `Sphere10.Framework.Web` | Creates a `SitemapXml`. Its restore graph and framework references must contain no ASP.NET Core, JS interop, MAUI, Windows desktop, WinForms, WPF or `System.Drawing.Common` assemblies, and no `Sphere10.Framework.Windows*`, `Sphere10.Framework.Web.AspNetCore*` or `Sphere10.Framework.Drawing` package. |
 | `Application` | `Sphere10.Framework.Application` | Uses the UI-independent application model in `Sphere10.Framework.Application.UI`. It derives a block, a menu and a menu item from `ApplicationBlockBase`, `ApplicationMenuBase<T>` and `ApplicationMenuItemBase`, and it uses screen definitions, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>`, `IApplication.LoadedPlugins` and `Blocks`, the screen-host contracts and `Wizard<TModel, TStep>`. Its restore graph passes the same UI-free check as `Core`. |
 | `Libraries` | Every package except `Sphere10.Framework.Windows*` and `Sphere10.Framework.Web.AspNetCore*` | A partial property compiles through the packed `[AutoDirty]` generator, and `AssertEx` and `UnitTestDAC` resolve from the NUnit packages. |
-| `Desktop` | Every `Sphere10.Framework.Windows*` package, for `net10.0-windows` | Derives the WinForms `ApplicationScreen` and builds a plugin and its block with the WinForms `ApplicationPluginBuilder`. |
+| `Desktop` | Every `Sphere10.Framework.Windows*` package, for the selected Windows target | Derives the WinForms `ApplicationScreen` and builds a plugin and its block with the WinForms `ApplicationPluginBuilder`. |
+| `Renderer` | `Sphere10.Framework.Web.VisualRenderer` | Executes HTML rendering, opens the embedded theme archive and verifies that license notices reach the consumer output. |
 | `Web` | `Sphere10.Framework.Web.AspNetCore.MVC` and `Sphere10.Framework.Web.AspNetCore.Blazor` | Builds, publishes and serves the Blazor host that [The Web consumer](#the-web-consumer) describes. |
 
 The workspace keeps the packages in `feed`, the generated consumer projects, the published host in `published-web`, a log for each restore, build, pack and publish step, and a `validation.json` summary of the run.
