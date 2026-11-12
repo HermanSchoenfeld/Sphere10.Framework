@@ -76,6 +76,11 @@ public class ExplorerBarInfo : IDisposable {
 	/// </summary>
 	private HeaderInfo header;
 
+	/// <summary>
+	/// System defined metrics for the block selector buttons beneath a TaskPane
+	/// </summary>
+	private BlockSelectorInfo blockSelector;
+
 
 	/// <summary>
 	/// Initializes a new instance of the ExplorerBarInfo class with 
@@ -86,6 +91,7 @@ public class ExplorerBarInfo : IDisposable {
 		this.taskItem = new TaskItemInfo();
 		this.expando = new ExpandoInfo();
 		this.header = new HeaderInfo();
+		this.blockSelector = new BlockSelectorInfo();
 	}
 
 	/// <summary>
@@ -105,6 +111,7 @@ public class ExplorerBarInfo : IDisposable {
 		this.Expando.SetDefaultValues();
 		this.Header.SetDefaultValues();
 		this.TaskItem.SetDefaultValues();
+		this.BlockSelector.SetDefaultValues();
 
 		this.SetUnthemedArrowImages();
 	}
@@ -153,6 +160,16 @@ public class ExplorerBarInfo : IDisposable {
 		get { return this.header; }
 
 		set { this.header = value; }
+	}
+
+	/// <summary>
+	/// Gets the block selector settings. The buttons draw their colours, fonts and borders from the
+	/// Header, Expando and TaskPane settings; this section holds only their metrics.
+	/// </summary>
+	public BlockSelectorInfo BlockSelector {
+		get { return this.blockSelector; }
+
+		set { this.blockSelector = value ?? new BlockSelectorInfo(); }
 	}
 
 

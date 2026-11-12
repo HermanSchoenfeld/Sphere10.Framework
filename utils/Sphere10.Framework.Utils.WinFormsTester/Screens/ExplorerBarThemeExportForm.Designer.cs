@@ -6,8 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.ExplorerBarDesigner {
-    partial class ExportForm {
+namespace Sphere10.Framework.Utils.WinFormsTester {
+    partial class ExplorerBarThemeExportForm {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -51,8 +51,8 @@ namespace Sphere10.Framework.Utils.ExplorerBarDesigner {
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(721, 604);
             this.Controls.Add(this.textBox1);
-            this.Name = "ExportForm";
-            this.Text = "ExportForm";
+            this.Name = "ExplorerBarThemeExportForm";
+            this.Text = "Explorer Bar Theme";
             this.ResumeLayout(false);
             this.PerformLayout();
 

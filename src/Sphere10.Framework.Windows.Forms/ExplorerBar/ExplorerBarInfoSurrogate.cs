@@ -44,6 +44,12 @@ public class ExplorerBarInfoSurrogate : ISerializable {
 	public HeaderInfoSurrogate HeaderInfoSurrogate;
 
 	/// <summary>
+	/// This member is not intended to be used directly from your code. Themes saved before block selector
+	/// metrics existed leave it null and load the defaults.
+	/// </summary>
+	public BlockSelectorInfoSurrogate BlockSelectorInfoSurrogate;
+
+	/// <summary>
 	/// Version number of the surrogate.  This member is not intended 
 	/// to be used directly from your code.
 	/// </summary>
@@ -62,6 +68,7 @@ public class ExplorerBarInfoSurrogate : ISerializable {
 		this.TaskItemInfoSurrogate = null;
 		this.ExpandoInfoSurrogate = null;
 		this.HeaderInfoSurrogate = null;
+		this.BlockSelectorInfoSurrogate = null;
 	}
 
 	#endregion
@@ -87,6 +94,9 @@ public class ExplorerBarInfoSurrogate : ISerializable {
 
 		this.HeaderInfoSurrogate = new HeaderInfoSurrogate();
 		this.HeaderInfoSurrogate.Load(explorerBarInfo.Header);
+
+		this.BlockSelectorInfoSurrogate = new BlockSelectorInfoSurrogate();
+		this.BlockSelectorInfoSurrogate.Load(explorerBarInfo.BlockSelector);
 	}
 
 
@@ -101,6 +111,8 @@ public class ExplorerBarInfoSurrogate : ISerializable {
 		explorerBarInfo.TaskItem = this.TaskItemInfoSurrogate.Save();
 		explorerBarInfo.Expando = this.ExpandoInfoSurrogate.Save();
 		explorerBarInfo.Header = this.HeaderInfoSurrogate.Save();
+		if (this.BlockSelectorInfoSurrogate != null)
+			explorerBarInfo.BlockSelector = this.BlockSelectorInfoSurrogate.Save();
 
 		return explorerBarInfo;
 	}
@@ -118,6 +130,7 @@ public class ExplorerBarInfoSurrogate : ISerializable {
 		info.AddValue("TaskItemInfoSurrogate", this.TaskItemInfoSurrogate);
 		info.AddValue("ExpandoInfoSurrogate", this.ExpandoInfoSurrogate);
 		info.AddValue("HeaderInfoSurrogate", this.HeaderInfoSurrogate);
+		info.AddValue("BlockSelectorInfoSurrogate", this.BlockSelectorInfoSurrogate);
 	}
 
 
@@ -135,6 +148,11 @@ public class ExplorerBarInfoSurrogate : ISerializable {
 		this.TaskItemInfoSurrogate = (TaskItemInfoSurrogate)info.GetValue("TaskItemInfoSurrogate", typeof(TaskItemInfoSurrogate));
 		this.ExpandoInfoSurrogate = (ExpandoInfoSurrogate)info.GetValue("ExpandoInfoSurrogate", typeof(ExpandoInfoSurrogate));
 		this.HeaderInfoSurrogate = (HeaderInfoSurrogate)info.GetValue("HeaderInfoSurrogate", typeof(HeaderInfoSurrogate));
+		// Binary themes written before block selector metrics existed have no entry for them.
+		foreach (var entry in info) {
+			if (entry.Name == "BlockSelectorInfoSurrogate")
+				this.BlockSelectorInfoSurrogate = (BlockSelectorInfoSurrogate)entry.Value;
+		}
 	}
 
 	#endregion

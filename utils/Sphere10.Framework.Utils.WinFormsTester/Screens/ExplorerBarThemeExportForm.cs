@@ -9,15 +9,16 @@
 using System.Windows.Forms;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Utils.ExplorerBarDesigner;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ExportForm : Form {
-	public ExportForm() {
+/// <summary>Shows an exported explorer bar theme as XML for copying.</summary>
+public partial class ExplorerBarThemeExportForm : Form {
+	public ExplorerBarThemeExportForm() {
 		InitializeComponent();
 	}
 
 	public static async Task ShowDialogAsync(IWin32Window parent, string text) {
-		using var form = new ExportForm();
+		using var form = new ExplorerBarThemeExportForm();
 		form.textBox1.Text = text;
 		await form.ShowDialogAsync(parent);
 	}

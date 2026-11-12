@@ -128,5 +128,11 @@
 		<TitleRadius>0</TitleRadius>
 		<Version>3300</Version>
 	</HeaderInfoSurrogate>
+	<BlockSelectorInfoSurrogate>
+		<Shape>Buttons</Shape>
+		<ColorStyle>ExpandoHeader</ColorStyle>
+		<GlossAlpha>0</GlossAlpha>
+		<Version>3300</Version>
+	</BlockSelectorInfoSurrogate>
 	<Version>3300</Version>
 </ExplorerBarInfoSurrogate>
