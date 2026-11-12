@@ -5,6 +5,22 @@ Framework data sources, paging, settings and application editing behavior. The
 Tester demonstrates them separately: **Data And Collections > SourceGrid > Raw
 Grid Engine Gallery** opens the engine showcase.
 
+## Choosing the presentation layer
+
+| Requirement | Reuse |
+|---|---|
+| Process, service, module, event or other entity inventory | VisualGrid with IDataSource; keep paging, filtered totals, selection, row commands and export ownership together |
+| A child table or image/editor panel below an entity | VisualGrid.RowDetails; its internal SourceGrid linked-control/span composition already handles native row mapping |
+| A document or matrix with section headings, merged cells and heterogeneous cell roles | SourceGrid directly, as for a hierarchical system information report |
+| Custom cell models, views/controllers, cell spans or non-entity matrix interaction | SourceGrid's existing cell/model/controller composition; study the raw engine gallery before creating another widget |
+| Byte inspection or ordinary time-series charts | Existing HexEditorControl or GraphChart/TelemetryChart, rather than building another renderer from grid cells |
+
+Using SourceGrid directly does not supply a diagnostic data source, a collector or
+a paging/export policy. Keep expensive preparation on workers and retain the
+screen's existing resource and settings owner. If an entity-table requirement is
+missing, extend VisualGrid's reusable composition instead of bypassing its row
+identity, filtering or native-input contracts in one application.
+
 ## Component ownership
 
 ```mermaid
@@ -137,6 +153,24 @@ payloads. This is independent of ObjectSpace storage metadata.
 
 The original SourceGrid and DevAge authors, Davide Icardi and Darius Damalakas,
 are acknowledged in the relevant code headers, including extracted helpers.
+
+## Native controls in VisualGrid row details
+
+`VisualGrid.RowDetails` composes the absorbed engine's existing `LinkedControls`
+with a real spanned cell immediately below an entity. `ColumnSpan` makes the
+child fill the table's columns; link positions follow one physical/entity-row
+layout during paging, sort and reorder. Surviving controls keep their native
+parents and handles. The old `Cells.CellControl` class is obsolete and is not
+used for this feature.
+
+Every expansion creates native control resources, so use the shared control
+budget, depth bound, value-state retention limit and lazy worker preparation.
+Prefer a table with a bounded scrollable child panel over rendering thousands
+of native subcontrols at once. This mechanism is appropriate when the child
+must be a real interactive panel; ordinary text/image cells should remain
+prepared cells. SourceGrid rows and cell heights themselves are not a second
+data model. Product code uses `VisualGrid`'s public descriptor and never maintains
+its own physical-row mapping or reaches into the engine to install controls.
 
 ## Source naming migration
 

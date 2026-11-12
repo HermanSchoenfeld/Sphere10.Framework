@@ -37,8 +37,8 @@ public class VisualGridNativeInputRouteTests {
 			}).ToArray()
 		};
 		owner.Controls.Add(crud);
-		var source = new SnapshotDataSource<Row>();
-		source.ReplaceSnapshot(Enumerable.Range(0, 400).Select(index => new Row { Value = "First snapshot " + index }).ToArray());
+		var source = new ArrayDataSource<Row>();
+		source.ReplaceData(Enumerable.Range(0, 400).Select(index => new Row { Value = "First snapshot " + index }).ToArray());
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
 		var grid = crud.Controls.Find("_grid", true).OfType<Grid>().Single();
@@ -89,7 +89,7 @@ public class VisualGridNativeInputRouteTests {
 		await ready.Task;
 		try {
 			for (var refresh = 0; refresh < 3; refresh++) {
-				source.ReplaceSnapshot(Enumerable.Range(0, 400).Select(index => new Row { Value = $"Replacement {refresh} / {index}" }).ToArray());
+				source.ReplaceData(Enumerable.Range(0, 400).Select(index => new Row { Value = $"Replacement {refresh} / {index}" }).ToArray());
 				await crud.RefreshGrid();
 			}
 		} finally {

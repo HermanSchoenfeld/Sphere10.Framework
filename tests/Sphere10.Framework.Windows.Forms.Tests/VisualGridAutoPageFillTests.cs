@@ -118,7 +118,7 @@ public class VisualGridAutoPageFillTests {
 		await SettleAsync(crud);
 		var capacity = crud.VisibleEntities.Count();
 		Assert.That(capacity, Is.GreaterThan(3));
-		source.ReplaceSnapshot(source.Snapshot.Take(capacity * 2 + 3).ToArray());
+		source.ReplaceData(source.Data.Take(capacity * 2 + 3).ToArray());
 		await crud.RefreshGrid();
 		Find<Button>(crud, "_lastPageButton").PerformClick();
 		await SettleAsync(crud);
@@ -231,11 +231,11 @@ public class VisualGridAutoPageFillTests {
 		public Image Image { get; set; }
 	}
 
-	private sealed class RecordingSource : SnapshotDataSource<Row> {
+	private sealed class RecordingSource : ArrayDataSource<Row> {
 		private int _readCount;
 		private int _lastPageLength;
 
-		public RecordingSource(Row[] rows) => ReplaceSnapshot(rows);
+		public RecordingSource(Row[] rows) => ReplaceData(rows);
 
 		public int ReadCount => Volatile.Read(ref _readCount);
 		public int LastPageLength => Volatile.Read(ref _lastPageLength);

@@ -23,6 +23,53 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class VisualGridPagingTests {
+	private sealed record NavigationRow(string Value);
+	[Test]
+	public void LocateNavigatesMatchingPagesAndOnlyClearsSearchWhenRequested() => RunWithMessageLoop(async owner => {
+		using var grid = new VisualGrid { Dock = DockStyle.Fill, PageMode = VisualGridPageMode.Paged };
+		owner.Controls.Add(grid);
+		grid.GridBindings = new[] { new VisualGridColumn<NavigationRow> { ColumnName = "Value", PreferenceKey = "Value", PropertyValue = row => row.Value, DataType = typeof(string) } };
+		var source = new ArrayDataSource<NavigationRow>();
+		source.ReplaceData(Enumerable.Range(0, 30).Select(index => new NavigationRow($"Entry {index:000}")).ToArray());
+		await grid.SetDataSource(source);
+		grid.ApplyGridPreferences(new VisualGridSettings { PageMode = VisualGridPageMode.Paged, PageSize = 3 });
+		await grid.SetSearchTextAsync("007");
+		Assert.That(await grid.LocateEntityAsync(row => row is NavigationRow item && item.Value == "Entry 019"), Is.False);
+		Assert.That(grid.CurrentSearchText, Is.EqualTo("007"));
+		var uiThread = Environment.CurrentManagedThreadId;
+		Assert.That(await grid.LocateEntityAsync(row => {
+			Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(uiThread));
+			return row is NavigationRow item && item.Value == "Entry 019";
+		}, clearSearch: true), Is.True);
+		Assert.That(((NavigationRow)grid.SelectedEntity).Value, Is.EqualTo("Entry 019"));
+		Assert.That(grid.CaptureGridPreferences().PageNumber, Is.EqualTo(6));
+		Assert.That(grid.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
+	});
+
+	[Test]
+	public void LocateDoesNotSelectOldResultsAfterANewerFilterWins() => RunWithMessageLoop(async owner => {
+		using var grid = new VisualGrid { Dock = DockStyle.Fill, PageMode = VisualGridPageMode.Single };
+		owner.Controls.Add(grid);
+		grid.GridBindings = new[] { new VisualGridColumn<NavigationRow> { ColumnName = "Value", PreferenceKey = "Value", PropertyValue = row => row.Value, DataType = typeof(string) } };
+		var source = new ArrayDataSource<NavigationRow>();
+		source.ReplaceData(new[] { new NavigationRow("First"), new NavigationRow("Second") });
+		await grid.SetDataSource(source);
+		await grid.RefreshGrid();
+		var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var release = new ManualResetEventSlim();
+		var locating = grid.LocateEntityAsync(row => {
+			started.TrySetResult();
+			release.Wait(TimeSpan.FromSeconds(5));
+			return row is NavigationRow item && item.Value == "First";
+		});
+		await started.Task;
+		await grid.SetSearchTextAsync("Second");
+		release.Set();
+		Assert.That(await locating, Is.False);
+		Assert.That(grid.CurrentSearchText, Is.EqualTo("Second"));
+		Assert.That(grid.SelectedEntity is NavigationRow { Value: "First" }, Is.False);
+	});
+
 	[TestCase(1)]
 	[TestCase(50)]
 	[TestCase(9999)]

@@ -59,7 +59,11 @@ public class VisualGridPageModeMenuTests {
 				Assert.That(grid.PageMode, Is.EqualTo(mode));
 				Assert.That(selector.SelectedItem, Is.EqualTo(mode));
 				Assert.That(selector.DropDownItems.Cast<ToolStripMenuItem>().Where(item => item.Checked).Select(item => item.Tag), Is.EqualTo(new object[] { mode }));
-				Assert.That(selector.ToolTipText, Is.EqualTo("Page mode: " + (mode == VisualGridPageMode.Paged ? "Manual" : mode.ToString())));
+				Assert.That(selector.ToolTipText, Is.EqualTo(mode switch {
+					VisualGridPageMode.Single => "Single page: show every matching record with vertical scrolling.",
+					VisualGridPageMode.Auto => "Automatic paging: fit complete rows to the table's current height.",
+					_ => "Manual paging: choose the number of matching records shown on each page."
+				}), "The selector tooltip describes the active page mode.");
 				Assert.That(manualSize.Value, Is.EqualTo(23));
 				Assert.That(manualSize.Visible, Is.EqualTo(mode == VisualGridPageMode.Paged));
 				Assert.That(Find<Control>(grid, "_pageNavigationPanel").Visible, Is.EqualTo(mode != VisualGridPageMode.Single));

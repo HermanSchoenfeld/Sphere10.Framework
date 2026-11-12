@@ -24,8 +24,8 @@ public class VisualGridQuerySummaryTests {
 	[Test]
 	public void AcceptedBindingsExposeTheFilteredTotalAcrossPagesAndEmptyResults() => RunWithMessageLoop(async owner => {
 		using var grid = CreateGrid(owner);
-		var source = new SnapshotDataSource<QueryRow>();
-		source.ReplaceSnapshot(Enumerable.Range(1, 11).Select(id => new QueryRow { Id = id, Name = id <= 8 ? "Keep " + id : "Other " + id }).ToArray());
+		var source = new ArrayDataSource<QueryRow>();
+		source.ReplaceData(Enumerable.Range(1, 11).Select(id => new QueryRow { Id = id, Name = id <= 8 ? "Keep " + id : "Other " + id }).ToArray());
 		await grid.SetDataSource(source);
 		var publications = new List<(int Total, int Visible, int Thread)>();
 		var ownerThread = Environment.CurrentManagedThreadId;
@@ -56,7 +56,7 @@ public class VisualGridQuerySummaryTests {
 		using var grid = CreateGrid(owner);
 		var source = new GatedSource();
 		using var releaseRead = Tools.Scope.ExecuteOnDispose(() => source.Continue.TrySetResult());
-		source.ReplaceSnapshot(new[] { new QueryRow { Id = 1, Name = "Held" }, new QueryRow { Id = 2, Name = "Current" }, new QueryRow { Id = 3, Name = "Current" } });
+		source.ReplaceData(new[] { new QueryRow { Id = 1, Name = "Held" }, new QueryRow { Id = 2, Name = "Current" }, new QueryRow { Id = 3, Name = "Current" } });
 		await grid.SetDataSource(source);
 		await grid.RefreshGrid();
 		var totals = new List<int>();
@@ -110,7 +110,7 @@ public class VisualGridQuerySummaryTests {
 		public string Name { get; set; }
 	}
 
-	private sealed class GatedSource : SnapshotDataSource<QueryRow> {
+	private sealed class GatedSource : ArrayDataSource<QueryRow> {
 		public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 		public TaskCompletionSource Continue { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 

@@ -76,8 +76,8 @@ public class VisualGridReadOnlyCellTests {
 		crud.AutoSizeRowsOnRefresh = autoSizeOnRefresh;
 		crud.PageMode = VisualGridPageMode.Single;
 		var row = new Row { Value = "First value" };
-		var source = new SnapshotDataSource<Row>();
-		source.ReplaceSnapshot(new[] { row });
+		var source = new ArrayDataSource<Row>();
+		source.ReplaceData(new[] { row });
 		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
@@ -100,19 +100,19 @@ public class VisualGridReadOnlyCellTests {
 		crud.PageMode = VisualGridPageMode.Single;
 		using var small = new Bitmap(16, 16);
 		using var large = new Bitmap(16, 64);
-		var source = new SnapshotDataSource<Row>();
-		source.ReplaceSnapshot(new[] { new Row { Value = small } });
+		var source = new ArrayDataSource<Row>();
+		source.ReplaceData(new[] { new Row { Value = small } });
 		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Image", DisplayType = CrudCellDisplayType.Image, PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
 		var smallHeight = native.Rows[1].Height;
-		source.ReplaceSnapshot(new[] { new Row { Value = large }, new Row { Value = large } });
+		source.ReplaceData(new[] { new Row { Value = large }, new Row { Value = large } });
 		await crud.RefreshGrid();
 		Assert.That(native.Rows[1].Height, Is.GreaterThan(smallHeight).And.GreaterThanOrEqualTo(64));
 		Assert.That(native.Rows[2].Height, Is.EqualTo(native.Rows[1].Height), "A new row needs a real content measurement.");
 		Assert.That(((Cell)native[1, 0]).Image, Is.SameAs(large));
-		source.ReplaceSnapshot(new[] { new Row { Value = small } });
+		source.ReplaceData(new[] { new Row { Value = small } });
 		await crud.RefreshGrid();
 		Assert.That(native.RowsCount, Is.EqualTo(2));
 		Assert.That(native.Rows[1].Height, Is.EqualTo(smallHeight));
@@ -126,8 +126,8 @@ public class VisualGridReadOnlyCellTests {
 		using var crud = NewGrid(owner);
 		crud.AutoSizeRowsOnRefresh = false;
 		var row = new Row { Value = "Single line" };
-		var source = new SnapshotDataSource<Row>();
-		source.ReplaceSnapshot(new[] { row });
+		var source = new ArrayDataSource<Row>();
+		source.ReplaceData(new[] { row });
 		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
@@ -160,8 +160,8 @@ public class VisualGridReadOnlyCellTests {
 		using var largeFont = new Font(native.Font.FontFamily, 28);
 		native.Font = largeFont;
 		var row = new Row { Value = initiallyHasValue ? string.Empty : "Initially hidden", HasValue = initiallyHasValue };
-		var source = new SnapshotDataSource<Row>();
-		source.ReplaceSnapshot(new[] { row });
+		var source = new ArrayDataSource<Row>();
+		source.ReplaceData(new[] { row });
 		crud.GridBindings = new[] { new VisualGridColumn<Row> {
 			ColumnName = "Value", DataType = typeof(string), PropertyHasValue = entity => entity.HasValue, PropertyValue = entity => entity.Value
 		} };
@@ -187,8 +187,8 @@ public class VisualGridReadOnlyCellTests {
 		using var restoreText = Tools.Scope.ExecuteOnDispose(() => view.ElementText = originalText);
 		view.ElementText = new ContentSizedText();
 		var row = new Row { Value = "Short" };
-		var source = new SnapshotDataSource<Row>();
-		source.ReplaceSnapshot(new[] { row });
+		var source = new ArrayDataSource<Row>();
+		source.ReplaceData(new[] { row });
 		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();

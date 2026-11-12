@@ -48,12 +48,16 @@ partial class VisualGridTestScreen {
 	private TabControl _contentTabs;
 	private TabPage _editingTab;
 	private TabPage _liveTab;
+	private TabPage _detailsTab;
+	private VisualGridDetailsDemo _detailsDemo;
 	private VisualGrid _liveGrid;
 	private VisualGridConfigurationContextMenu _gridConfigurationMenu;
 	private FlowLayoutPanel _liveActions;
 	private FlowLayoutPanel _liveOptions;
 	private CheckBox _liveUpdatesCheckBox;
 	private Button _liveRefreshButton;
+	private Button _livePageRefreshButton;
+	private ToolTip _liveToolTip;
 	private Button _refreshSelectedLiveButton;
 	private Button _removeSelectedLiveButton;
 	private Button _selectFirstLiveButton;
@@ -70,27 +74,19 @@ partial class VisualGridTestScreen {
 	private CheckBox _liveLoadingFeedbackCheckBox;
 	private CheckBox _liveMouseUpCheckBox;
 	private CheckBox _liveToggleSelectionCheckBox;
+	private CheckBox _liveRowStylesCheckBox;
 	private Label _liveStatus;
-	private System.Windows.Forms.Timer _liveTimer;
 
 	/// <summary>
 	/// Clean up any resources being used.
 	/// </summary>
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
-		var disposeLive = disposing && !_liveDisposed;
-		if (disposeLive) {
-			_liveDisposed = true;
-			_liveCancellation.Cancel();
+		if (disposing) {
+			EndLiveSource();
 			_components?.Dispose();
 		}
 		base.Dispose(disposing);
-		if (disposeLive) {
-			_liveCancellation.Dispose();
-			if (_liveImages != null)
-				foreach (var image in _liveImages)
-					image.Dispose();
-		}
 	}
 
 	// Windows Form Designer generated code
@@ -99,6 +95,8 @@ partial class VisualGridTestScreen {
 	/// the contents of this method with the code editor.
 	/// </summary>
 	private void InitializeComponent() {
+		_detailsTab = new TabPage("Expandable Panels And Hierarchy");
+		_detailsDemo = new VisualGridDetailsDemo { Dock = DockStyle.Fill };
 		_components = new System.ComponentModel.Container();
 		_gridConfigurationMenu = new VisualGridConfigurationContextMenu(_components);
 		_outputTextBox = new System.Windows.Forms.TextBox();
@@ -137,6 +135,8 @@ partial class VisualGridTestScreen {
 		_liveOptions = new FlowLayoutPanel();
 		_liveUpdatesCheckBox = new CheckBox();
 		_liveRefreshButton = new Button();
+		_livePageRefreshButton = new Button();
+		_liveToolTip = new ToolTip(_components);
 		_refreshSelectedLiveButton = new Button();
 		_removeSelectedLiveButton = new Button();
 		_selectFirstLiveButton = new Button();
@@ -153,8 +153,8 @@ partial class VisualGridTestScreen {
 		_liveLoadingFeedbackCheckBox = new CheckBox();
 		_liveMouseUpCheckBox = new CheckBox();
 		_liveToggleSelectionCheckBox = new CheckBox();
+		_liveRowStylesCheckBox = new CheckBox();
 		_liveStatus = new Label();
-		_liveTimer = new System.Windows.Forms.Timer(_components);
 		_showcaseLayout.SuspendLayout();
 		_showcaseBody.SuspendLayout();
 		_optionsPanel.SuspendLayout();
@@ -444,6 +444,12 @@ partial class VisualGridTestScreen {
 		_liveRefreshButton.Text = "Capture Snapshot";
 		_liveRefreshButton.AutoSize = true;
 		_liveRefreshButton.Click += LiveRefreshClicked;
+		_liveToolTip.SetToolTip(_liveRefreshButton, "Collect a new batch in the data source; its Changed event updates the grid.");
+		_livePageRefreshButton.Name = "_livePageRefreshButton";
+		_livePageRefreshButton.Text = "Refresh Current Page";
+		_livePageRefreshButton.AutoSize = true;
+		_livePageRefreshButton.Click += LivePageRefreshClicked;
+		_liveToolTip.SetToolTip(_livePageRefreshButton, "Read the published page without collecting data; Show Loading Feedback controls this manual refresh.");
 		_refreshSelectedLiveButton.Name = "_refreshSelectedLiveButton";
 		_refreshSelectedLiveButton.Text = "Refresh Selected Row";
 		_refreshSelectedLiveButton.AutoSize = true;
@@ -460,6 +466,7 @@ partial class VisualGridTestScreen {
 		_selectFirstLiveButton.Click += SelectFirstLiveClicked;
 		_liveActions.Controls.Add(_liveUpdatesCheckBox);
 		_liveActions.Controls.Add(_liveRefreshButton);
+		_liveActions.Controls.Add(_livePageRefreshButton);
 		_liveActions.Controls.Add(_refreshSelectedLiveButton);
 		_liveActions.Controls.Add(_removeSelectedLiveButton);
 		_liveActions.Controls.Add(_selectFirstLiveButton);
@@ -524,6 +531,10 @@ partial class VisualGridTestScreen {
 		_liveToggleSelectionCheckBox.AutoSize = true;
 		_liveToggleSelectionCheckBox.Checked = true;
 		_liveToggleSelectionCheckBox.CheckedChanged += LivePresentationChanged;
+		_liveRowStylesCheckBox.Name = "_liveRowStylesCheckBox";
+		_liveRowStylesCheckBox.Text = "Color High Load Rows";
+		_liveRowStylesCheckBox.AutoSize = true;
+		_liveRowStylesCheckBox.CheckedChanged += LivePresentationChanged;
 		_liveOptions.Controls.Add(_livePageModeLabel);
 		_liveOptions.Controls.Add(_livePageMode);
 		_liveOptions.Controls.Add(_liveTitleLabel);
@@ -537,6 +548,7 @@ partial class VisualGridTestScreen {
 		_liveOptions.Controls.Add(_liveLoadingFeedbackCheckBox);
 		_liveOptions.Controls.Add(_liveMouseUpCheckBox);
 		_liveOptions.Controls.Add(_liveToggleSelectionCheckBox);
+		_liveOptions.Controls.Add(_liveRowStylesCheckBox);
 		_liveStatus.Name = "_liveStatus";
 		_liveStatus.Dock = DockStyle.Bottom;
 		_liveStatus.AutoSize = true;
@@ -548,8 +560,6 @@ partial class VisualGridTestScreen {
 		_liveTab.Controls.Add(_liveOptions);
 		_liveTab.Controls.Add(_liveActions);
 		_liveGrid.BringToFront();
-		_liveTimer.Interval = 750;
-		_liveTimer.Tick += LiveTimerTick;
 		//
 		// VisualGridTestScreen
 		//
@@ -630,6 +640,8 @@ partial class VisualGridTestScreen {
 		_showcaseBody.Controls.Add(_optionsPanel);
 		_showcaseBody.Controls.Add(_outputTextBox);
 		_contentTabs.BringToFront();
+		_detailsTab.Controls.Add(_detailsDemo);
+		_contentTabs.TabPages.Add(_detailsTab);
 		Controls.Add(_showcaseLayout);
 		_optionsPanel.ResumeLayout(false);
 		_optionsPanel.PerformLayout();

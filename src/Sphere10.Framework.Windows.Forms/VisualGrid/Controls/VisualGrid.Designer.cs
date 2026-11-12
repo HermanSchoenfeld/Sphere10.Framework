@@ -41,15 +41,25 @@ partial class VisualGrid {
 	private System.Windows.Forms.ToolStripMenuItem _editToolStripMenuItem;
 	private System.Windows.Forms.ToolStripMenuItem _deleteToolStripMenuItem;
 	private System.Windows.Forms.ContextMenuStrip _selectionContextMenuStrip;
+	private System.Windows.Forms.ContextMenuStrip _rowCommandMenu;
 	private System.Windows.Forms.Panel _gridContainerPanel;
 	private SourceGrid.Grid _grid;
 	private System.Windows.Forms.Label _pageCountLabel;
+	private System.Windows.Forms.ToolTip _toolTips;
 
 	/// <summary>
 	/// Clean up any resources being used.
 	/// </summary>
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
+		if (disposing)
+			ReleaseDataSourceNotifications();
+		if (disposing)
+			ReleaseColumnLayoutSource();
+		if (disposing)
+			_rowDetails?.Dispose();
+		if (disposing)
+			_rowCellViews?.Dispose();
 		if (disposing)
 			this._initialLoadingCircle.Active = false;
 		if (disposing && (_components != null))
@@ -65,6 +75,10 @@ partial class VisualGrid {
 	/// </summary>
 	private void InitializeComponent() {
 		_components = new System.ComponentModel.Container();
+		_toolTips = new System.Windows.Forms.ToolTip(_components);
+		_rowCommandMenu = new System.Windows.Forms.ContextMenuStrip(_components);
+		_rowCommandMenu.Name = "rowMenu";
+		_rowCommandMenu.Opening += RowCommandMenuOpening;
 		this._initialLoadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
 		this._layoutPanel = new System.Windows.Forms.TableLayoutPanel();
 		this._topPanel = new System.Windows.Forms.TableLayoutPanel();
@@ -96,6 +110,18 @@ partial class VisualGrid {
 		this._searchTextBox = new Sphere10.Framework.Windows.Forms.SearchTextBox();
 		this._pageNumberBox = new Sphere10.Framework.Windows.Forms.IntBox();
 		this._grid = new InputGrid();
+		_toolTips.SetToolTip(_searchTextBox, "Search matching records across every page.");
+		_toolTips.SetToolTip(_pageSizeUpDown, "Number of matching records per page in Manual mode.");
+		_toolTips.SetToolTip(_pageNumberBox, "Enter a page number to navigate the matching records.");
+		_toolTips.SetToolTip(_firstPageButton, "Go to the first page of matching records.");
+		_toolTips.SetToolTip(_previousPageButton, "Go to the previous page of matching records.");
+		_toolTips.SetToolTip(_nextPageButton, "Go to the next page of matching records.");
+		_toolTips.SetToolTip(_lastPageButton, "Go to the last page of matching records.");
+		_toolTips.SetToolTip(_createButton, "Create a new record.");
+		_toolTips.SetToolTip(_deleteButton, "Delete the selected record.");
+		_deselectToolStripMenuItem.ToolTipText = "Clear the selected row or child-row selection.";
+		_editToolStripMenuItem.ToolTipText = "Open the selected record for editing.";
+		_deleteToolStripMenuItem.ToolTipText = "Delete the selected record after confirmation.";
 		this._layoutPanel.SuspendLayout();
 		this._topPanel.SuspendLayout();
 		this._bottomPanel.SuspendLayout();

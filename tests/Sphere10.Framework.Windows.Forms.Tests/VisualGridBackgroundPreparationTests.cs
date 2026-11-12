@@ -107,7 +107,7 @@ public class VisualGridBackgroundPreparationTests {
 		var columns = Enumerable.Range(0, 20).Select(_ => (IVisualGridColumn)TextColumn()).ToArray();
 		var formats = columns.Select(column => (column.DisplayType, column.DataType)).ToArray();
 		var prepare = typeof(VisualGrid).GetMethod("PrepareReadOnlyRows", BindingFlags.NonPublic | BindingFlags.Static);
-		var arguments = new object[] { rows, columns, formats };
+		var arguments = new object[] { rows, columns, formats, null };
 		var result = await Task.Run(() => {
 			prepare.Invoke(null, arguments);
 			var before = GC.GetAllocatedBytesForCurrentThread();

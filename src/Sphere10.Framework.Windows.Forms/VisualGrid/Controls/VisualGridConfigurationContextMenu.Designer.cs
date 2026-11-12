@@ -24,12 +24,14 @@ partial class VisualGridConfigurationContextMenu {
 		//
 		_saveConfigurationMenuItem.Name = "_saveConfigurationMenuItem";
 		_saveConfigurationMenuItem.Text = "Save configuration";
+		_saveConfigurationMenuItem.ToolTipText = "Save this grid's current paging and column layout in this screen's user settings.";
 		_saveConfigurationMenuItem.Click += SaveConfigurationClicked;
 		//
 		// _restoreDefaultsMenuItem
 		//
 		_restoreDefaultsMenuItem.Name = "_restoreDefaultsMenuItem";
 		_restoreDefaultsMenuItem.Text = "Restore defaults";
+		_restoreDefaultsMenuItem.ToolTipText = "Restore this grid's declared default paging and column layout.";
 		_restoreDefaultsMenuItem.Click += RestoreDefaultsClicked;
 		//
 		// VisualGridConfigurationContextMenu

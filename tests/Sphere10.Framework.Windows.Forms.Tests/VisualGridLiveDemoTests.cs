@@ -8,6 +8,8 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -29,6 +31,10 @@ public class VisualGridLiveDemoTests {
 		await screen.Initialization;
 		var grid = Find<VisualGrid>(screen, "_liveGrid");
 		await grid.RefreshGrid();
+		using (var image = new Bitmap(screen.Width, screen.Height)) {
+			screen.DrawToBitmap(image, screen.ClientRectangle);
+			image.Save(Path.Combine(TestContext.CurrentContext.TestDirectory, "visual-grid-source-notifications.png"), ImageFormat.Png);
+		}
 		var rows = grid.VisibleEntities.Cast<VisualGridTestScreen.LiveSample>().ToArray();
 		Assert.That(rows.Length, Is.GreaterThan(1).And.LessThan(500), "Auto Paged must query a fitted page from the 500-row source.");
 		grid.SelectedEntity = rows[0];
@@ -50,6 +56,47 @@ public class VisualGridLiveDemoTests {
 		Find<CheckBox>(screen, "_liveUpdatesCheckBox").Checked = false;
 		Assert.That(((VisualGridTestScreen.LiveSample)grid.SelectedEntity).Id, Is.EqualTo(selected.Id));
 		Assert.That(grid.Enabled, Is.True);
+		Find<CheckBox>(screen, "_liveRowStylesCheckBox").Checked = true;
+		await grid.RefreshGrid();
+		Assert.That(grid.RowStyleProvider, Is.Not.Null);
+		Assert.That(grid.RowStyleProvider(selected with { Load = 95 }).Background, Is.EqualTo(Color.MistyRose));
+		Assert.That(grid.RowStyleProvider(selected with { Load = 10 }).Background.IsEmpty, Is.True);
+		Assert.That(((VisualGridTestScreen.LiveSample)grid.SelectedEntity).Id, Is.EqualTo(selected.Id));
+		Find<CheckBox>(screen, "_liveRowStylesCheckBox").Checked = false;
+		await grid.RefreshGrid();
+		Assert.That(grid.RowStyleProvider, Is.Null);
+	});
+
+	[Test]
+	public void DisposalJoinsAutomaticCellPreparationBeforeReleasingBorrowedImages() => RunWithMessageLoop(async owner => {
+		using var screen = CreateScreen(owner);
+		await screen.Initialization;
+		var grid = Find<VisualGrid>(screen, "_liveGrid");
+		await grid.RefreshGrid();
+		var image = ((VisualGridTestScreen.LiveSample)grid.VisibleEntities.First()).Icon;
+		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var release = new ManualResetEventSlim();
+		using var releaseOnFailure = Tools.Scope.ExecuteOnDispose(release.Set);
+		var column = (VisualGridColumn<VisualGridTestScreen.LiveSample>)grid.GridBindings.First();
+		var held = 0;
+		column.PropertyValue = row => {
+			if (Interlocked.Exchange(ref held, 1) == 0) {
+				entered.TrySetResult();
+				release.Wait();
+				Assert.That(row.Icon.Width, Is.GreaterThan(0), "The source owner's images must remain alive until borrowed cell preparation ends.");
+			}
+			return row.Icon;
+		};
+		Find<CheckBox>(screen, "_liveUpdatesCheckBox").Checked = true;
+		await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		var pending = grid.RefreshCompletion;
+		Assert.That(pending.IsCompleted, Is.False);
+		screen.Dispose();
+		Assert.That(screen.DisposalCompletion.IsCompleted, Is.False);
+		release.Set();
+		await screen.DisposalCompletion.WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.That(pending.IsCompleted, Is.True);
+		Assert.That(() => _ = image.Width, Throws.TypeOf<ArgumentException>());
 	});
 
 	[Test]
