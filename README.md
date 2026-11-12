@@ -4,8 +4,9 @@
   <img  src="resources/branding/sphere-10-framework-logo.jpg" alt="Sphere10 Framework logo">
 </p>
 
-![Version](https://img.shields.io/badge/version-3.1.3-blue)
+![Next release](https://img.shields.io/badge/next%20release-3.2.0-blue)
 [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
+[![Prerelease](https://img.shields.io/nuget/vpre/Sphere10.Framework.svg?label=preview)](https://www.nuget.org/packages/Sphere10.Framework#versions-body-tab)
 ![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%2011.0-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -113,70 +114,75 @@ The libraries are organized under `src/`, with tests under `tests/` and runnable
 
 Select the packages that fit your application, and read each project guide for its API and platform requirements. A packable project's NuGet package ID is its project name. `Sphere10.Framework.Runtime` and the legacy iOS, Android and macOS projects are not packed. The tables below link to every project's README, grouped by role.
 
+Stable badges show published stable versions. Preview links include the opt-in CI,
+alpha and release-candidate versions. A new package can have prereleases before
+its first stable version. See [package channels and installation](docs/nuget-publishing.md#installing-packages).
+
 ### :gear: Core Framework & Utilities
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework) |
-| [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/block hierarchy, startup plugins and wizard orchestration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
-| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Networking over TCP, UDP, WebSockets and anonymous pipes, with JSON-RPC services | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
-| [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators delivered as a compiler analyzer, currently the `AutoDirty` property generator | |
+| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework) [Preview](https://www.nuget.org/packages/Sphere10.Framework#versions-body-tab) |
+| [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/block hierarchy, startup plugins and wizard orchestration | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Application) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Application#versions-body-tab) |
+| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Networking over TCP, UDP, WebSockets and anonymous pipes, with JSON-RPC services | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Communications) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Communications#versions-body-tab) |
+| [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators delivered as a compiler analyzer, currently the `AutoDirty` property generator | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Generators.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Generators) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Generators#versions-body-tab) |
 | [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Internal C# code builder and math-expression compiler, not packed | |
-| [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) |
+| [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![Stable](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg?label=stable)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) [Preview](https://www.nuget.org/packages/Sphere10.HashLib4CSharp#versions-body-tab) |
 
 ### :lock: Cryptography & Security
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework.CryptoEx**](src/Sphere10.Framework.CryptoEx/README.md) | Elliptic-curve signing/encryption, Schnorr, MuSig and cryptographic integrations | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.CryptoEx.svg)](https://www.nuget.org/packages/Sphere10.Framework.CryptoEx) |
-| [**Sphere10.Framework.Consensus**](src/Sphere10.Framework.Consensus/README.md) | Reversible blockchain state, chain/branch management and proof-of-work target/difficulty primitives | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Consensus.svg)](https://www.nuget.org/packages/Sphere10.Framework.Consensus) |
+| [**Sphere10.Framework.CryptoEx**](src/Sphere10.Framework.CryptoEx/README.md) | Elliptic-curve signing/encryption, Schnorr, MuSig and cryptographic integrations | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.CryptoEx.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.CryptoEx) [Preview](https://www.nuget.org/packages/Sphere10.Framework.CryptoEx#versions-body-tab) |
+| [**Sphere10.Framework.Consensus**](src/Sphere10.Framework.Consensus/README.md) | Reversible blockchain state, chain/branch management and proof-of-work target/difficulty primitives | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Consensus.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Consensus) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Consensus#versions-body-tab) |
 
 ### :floppy_disk: Data Access & Persistence
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework.Data**](src/Sphere10.Framework.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data) |
-| [**Sphere10.Framework.Data.Sqlite**](src/Sphere10.Framework.Data.Sqlite/README.md) | SQLite implementation for embedded databases | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Sqlite.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.Sqlite) |
-| [**Sphere10.Framework.Data.Firebird**](src/Sphere10.Framework.Data.Firebird/README.md) | Firebird database implementation | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Firebird.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.Firebird) |
-| [**Sphere10.Framework.Data.MSSQL**](src/Sphere10.Framework.Data.MSSQL/README.md) | Microsoft SQL Server implementation | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.MSSQL.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.MSSQL) |
-| [**Sphere10.Framework.Data.NHibernate**](src/Sphere10.Framework.Data.NHibernate/README.md) | NHibernate ORM integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.NHibernate.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.NHibernate) |
-| [**Sphere10.Framework.Data.MySQL**](src/Sphere10.Framework.Data.MySQL/README.md) | MySQL data-access provider | |
-| [**Sphere10.Framework.Data.PostgreSQL**](src/Sphere10.Framework.Data.PostgreSQL/README.md) | PostgreSQL data-access provider | |
-| [**Sphere10.Framework.Data.Oracle**](src/Sphere10.Framework.Data.Oracle/README.md) | Oracle data-access provider | |
+| [**Sphere10.Framework.Data**](src/Sphere10.Framework.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data#versions-body-tab) |
+| [**Sphere10.Framework.Data.Sqlite**](src/Sphere10.Framework.Data.Sqlite/README.md) | SQLite implementation for embedded databases | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Sqlite.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.Sqlite) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.Sqlite#versions-body-tab) |
+| [**Sphere10.Framework.Data.Firebird**](src/Sphere10.Framework.Data.Firebird/README.md) | Firebird database implementation | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Firebird.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.Firebird) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.Firebird#versions-body-tab) |
+| [**Sphere10.Framework.Data.MSSQL**](src/Sphere10.Framework.Data.MSSQL/README.md) | Microsoft SQL Server implementation | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.MSSQL.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.MSSQL) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.MSSQL#versions-body-tab) |
+| [**Sphere10.Framework.Data.NHibernate**](src/Sphere10.Framework.Data.NHibernate/README.md) | NHibernate ORM integration | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.NHibernate.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.NHibernate) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.NHibernate#versions-body-tab) |
+| [**Sphere10.Framework.Data.MySQL**](src/Sphere10.Framework.Data.MySQL/README.md) | MySQL data-access provider | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.MySQL.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.MySQL) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.MySQL#versions-body-tab) |
+| [**Sphere10.Framework.Data.PostgreSQL**](src/Sphere10.Framework.Data.PostgreSQL/README.md) | PostgreSQL data-access provider | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.PostgreSQL.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.PostgreSQL) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.PostgreSQL#versions-body-tab) |
+| [**Sphere10.Framework.Data.Oracle**](src/Sphere10.Framework.Data.Oracle/README.md) | Oracle data-access provider | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Oracle.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Data.Oracle) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Data.Oracle#versions-body-tab) |
 
 ### :desktop_computer: Desktop & Windows
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework.Windows**](src/Sphere10.Framework.Windows/README.md) | Windows platform integration: registry, services, event logging | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows) |
-| [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Windows Forms UI framework and components | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms) |
-| [**Sphere10.Framework.Windows.Forms.DataVisualization**](src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md) | Microsoft charting controls adapted to modern .NET, retaining upstream licenses | |
-| [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | SQLite connection editors for Windows Forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Sqlite.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Sqlite) |
-| [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Firebird connection editors for Windows Forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Firebird.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Firebird) |
-| [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | SQL Server connection editors for Windows Forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.MSSQL.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MSSQL) |
-| [**Sphere10.Framework.Windows.Forms.MySQL**](src/Sphere10.Framework.Windows.Forms.MySQL/README.md) | MySQL connection editors for Windows Forms | |
-| [**Sphere10.Framework.Windows.Forms.PostgreSQL**](src/Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) | PostgreSQL connection editors for Windows Forms | |
-| [**Sphere10.Framework.Windows.Forms.Oracle**](src/Sphere10.Framework.Windows.Forms.Oracle/README.md) | Oracle connection editors for Windows Forms | |
-| [**Sphere10.Framework.Windows.LevelDB**](src/Sphere10.Framework.Windows.LevelDB/README.md) | LevelDB key-value storage integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.LevelDB.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB) |
+| [**Sphere10.Framework.Windows**](src/Sphere10.Framework.Windows/README.md) | Windows platform integration: registry, services, event logging | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Windows Forms UI framework and components | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.DataVisualization**](src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md) | Microsoft charting controls adapted to modern .NET, retaining upstream licenses | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.DataVisualization.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.DataVisualization) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.DataVisualization#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | SQLite connection editors for Windows Forms | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Sqlite.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Sqlite) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Sqlite#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Firebird connection editors for Windows Forms | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Firebird.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Firebird) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Firebird#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | SQL Server connection editors for Windows Forms | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.MSSQL.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MSSQL) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MSSQL#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.MySQL**](src/Sphere10.Framework.Windows.Forms.MySQL/README.md) | MySQL connection editors for Windows Forms | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.MySQL.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MySQL) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MySQL#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.PostgreSQL**](src/Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) | PostgreSQL connection editors for Windows Forms | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.PostgreSQL.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.PostgreSQL) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.PostgreSQL#versions-body-tab) |
+| [**Sphere10.Framework.Windows.Forms.Oracle**](src/Sphere10.Framework.Windows.Forms.Oracle/README.md) | Oracle connection editors for Windows Forms | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Oracle.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Oracle) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Oracle#versions-body-tab) |
+| [**Sphere10.Framework.Windows.LevelDB**](src/Sphere10.Framework.Windows.LevelDB/README.md) | LevelDB key-value storage integration | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.LevelDB.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB#versions-body-tab) |
 
 ### :globe_with_meridians: Web & Cross-Platform
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | |
-| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
-| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Tabbed Blazor applications, extensible identity controls, and CRUD grids with typed columns, validation, reference editors, dialogs and wizards | |
-| [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Color and geometry helpers, plus Windows image processing and GDI+ rendering | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
-| [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
-| [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
+| [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Web.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Web) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Web#versions-body-tab) |
+| [**Sphere10.Framework.Web.VisualRenderer**](src/Sphere10.Framework.Web.VisualRenderer/README.md) | Typed visual documents, HTML/text renderers, embedded themes and rendering assets | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Web.VisualRenderer.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Web.VisualRenderer) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Web.VisualRenderer#versions-body-tab) |
+| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore#versions-body-tab) |
+| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.MVC.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore.MVC) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore.MVC#versions-body-tab) |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Tabbed Blazor applications, extensible identity controls, and CRUD grids with typed columns, validation, reference editors, dialogs and wizards | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.Blazor.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore.Blazor) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore.Blazor#versions-body-tab) |
+| [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Color and geometry helpers, plus Windows image processing and GDI+ rendering | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Drawing#versions-body-tab) |
+| [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.NUnit.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.NUnit) [Preview](https://www.nuget.org/packages/Sphere10.Framework.NUnit#versions-body-tab) |
+| [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.NUnit.DB.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.NUnit.DB) [Preview](https://www.nuget.org/packages/Sphere10.Framework.NUnit.DB#versions-body-tab) |
 | [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Legacy Xamarin.iOS integration, outside the active .NET 10 solutions | |
 | [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Legacy Xamarin.Android integration, outside the active .NET 10 solutions | |
 | [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Legacy macOS integration source, outside the active .NET 10 solutions | |
 
 ### :test_tube: Test Projects
 
-The [Build workflow](.github/workflows/main.yml) compiles the cross-platform solution and runs the core, Application, CryptoEx, Data, Communications, ASP.NET Core and Blazor test assemblies. A separate job runs the Blazor wizard browser tests through [test-blazor-browser.ps1](scripts/test-blazor-browser.ps1). Run the remaining test projects locally. The Windows, WinForms, LevelDB, HashLib4CSharp and Consensus tests are only in the Windows solution. See the [CI test guide](.github/ci.md) for adding tests, reading failures and reproducing a CI run locally.
+The [Build workflow](.github/workflows/main.yml) compiles the cross-platform solution and runs the core, Application, CryptoEx, Data, Communications, ASP.NET Core, Blazor and VisualRenderer test assemblies on .NET 10 and 11. Separate jobs run the Blazor wizard browser tests and validate the complete Windows NuGet package set. Run the remaining test projects locally. The Windows, WinForms, LevelDB, HashLib4CSharp and Consensus tests are only in the Windows solution. See the [CI test guide](.github/ci.md) and [NuGet publishing guide](docs/nuget-publishing.md).
 
 | Test Project | Purpose |
 |--------------|---------|
@@ -188,6 +194,7 @@ The [Build workflow](.github/workflows/main.yml) compiles the cross-platform sol
 | [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
 | [**Sphere10.Framework.Application.Tests**](tests/Sphere10.Framework.Application.Tests/README.md) | Shared application model, plugin, block, menu, screen-host and lifecycle tests without UI dependencies |
 | [**Sphere10.Framework.Web.AspNetCore.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Tests) | Shared web and MVC integration regressions |
+| [**Sphere10.Framework.Web.VisualRenderer.Tests**](tests/Sphere10.Framework.Web.VisualRenderer.Tests) | Visual model, HTML/text rendering, embedded themes and renderer assets |
 | [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/README.md) | CRUD grid, table, wizard, plugin, ApplicationBlock and lifecycle regression tests |
 | [**Sphere10.Framework.Windows.Forms.Tests**](tests/Sphere10.Framework.Windows.Forms.Tests/README.md) | WinForms application framework, screen hosts, grids, charts, controls and wizards on a Windows desktop |
 | [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
@@ -266,11 +273,16 @@ dotnet add package Sphere10.Framework.Data
 dotnet add package Sphere10.Framework.Data.Sqlite
 dotnet add package Sphere10.Framework.CryptoEx
 dotnet add package Sphere10.Framework.Communications
+
+# Opt into previews, including the new visual renderer
+dotnet add package Sphere10.Framework.Web.VisualRenderer --prerelease
 ```
 
 Each package ID matches a project in the [library catalog](#browse-the-libraries). `Sphere10.Framework.Generators` ships only a compiler analyzer, so reference it with `PrivateAssets="all"`.
 
-To switch an application between Framework project references and packages, follow [Interchangeable source and NuGet references](docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references). For unreleased changes, publish a prerelease package set to a folder feed with the [private feed](#private-feed) script.
+Stable users receive stable updates. Add `--prerelease` to opt into previews, or pin an exact version. Successful development pushes publish `3.2.0-ci.*` versions, and version tags publish deliberate alpha, RC or stable releases. See [NuGet publishing](docs/nuget-publishing.md) for channels, floating references, lock files and recovery.
+
+To switch an application between Framework project references and packages, follow [Interchangeable source and NuGet references](docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references). A [private folder feed](#private-feed) is also available for local development.
 
 ### Build from source
 
@@ -287,7 +299,7 @@ dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Re
 | `src/Sphere10.Framework (CrossPlatform).sln` | The cross-platform libraries, most of their test projects, the Blazor and MVC testers, the profiler and the protocol recipes |
 | `src/Sphere10.Framework (Win).sln` | Every active library, including the Windows, WinForms and DataVisualization projects, with their test projects, the WinForms, Blazor and MVC testers, the profiler and the protocol recipes |
 
-`-p:BuildRevision=0` stamps the file version `3.1.3.0` and leaves the local build counter unchanged. Test projects with a README list their filters and environment needs, such as a Windows desktop session or a browser. In Visual Studio, both solutions list the documentation under **Developer Documentation**, and the root README and packaging scripts under **Misc**.
+`-p:BuildRevision=0` stamps the file version `3.2.0.0` and leaves the local build counter unchanged. Test projects with a README list their filters and environment needs, such as a Windows desktop session or a browser. In Visual Studio, both solutions list the documentation under **Developer Documentation**, and the root README and packaging scripts under **Misc**.
 
 ## Building and publishing packages
 
@@ -295,15 +307,15 @@ Build the full package set on Windows with the .NET 11 SDK to include both suppo
 
 ### Versions
 
-`VersionPrefix` in [Directory.Build.props](Directory.Build.props) holds the numeric release version, and the package and assembly versions derive from it. Across the builds of one release, the NuGet version stays `3.1.3` and the assembly version stays `3.1.3.0`. Only the file version carries a build number, `BuildRevision`, as its fourth component.
+`VersionPrefix` in [Directory.Build.props](Directory.Build.props) holds the next intended numeric release, currently `3.2.0`. Automatic packages use `3.2.0-ci.<run-number>.<run-id>.<attempt>`. Tags such as `v3.2.0-alpha.1` and `v3.2.0` publish their exact versions. All intended packages share that version, including Windows and VisualRenderer. [The publishing guide](docs/nuget-publishing.md) covers version advancement, Trusted Publishing and recovery.
 
 | Build | `BuildRevision` | File version |
 |---|---|---|
-| GitHub Actions | The workflow run number | `3.1.3.114`, for example |
-| Local build without `BuildRevision` | The next number from `LOCAL-BUILD-NUMBER` at the repository root (gitignored), shared by the projects of one build session | `3.1.3.N` |
-| Local build with `-p:BuildRevision=1` | The supplied number | `3.1.3.1` |
+| GitHub Actions | `0`, with run identity in the package version and commit in informational/repository metadata | `3.2.0.0`, for example |
+| Local build without `BuildRevision` | The next number from `LOCAL-BUILD-NUMBER` at the repository root (gitignored), shared by the projects of one build session | `3.2.0.N` |
+| Local build with `-p:BuildRevision=1` | The supplied number | `3.2.0.1` |
 
-For a prerelease package, pass `-p:Version=3.1.3-preview.1` and keep `VersionPrefix` numeric. Use a new package version for each release, because published versions cannot be overwritten.
+For a local prerelease package, pass `-p:Version=3.2.0-preview.1` and keep `VersionPrefix` numeric. Use a new package version for each release, because published versions cannot be overwritten.
 
 ### Validate, pack and publish
 
@@ -323,6 +335,14 @@ Run the release scripts from the repository root:
 `publish.ps1` validates the whole batch before it pushes the first package. Each file name must match its package ID and version, a second version of the same package is rejected, and with `-IncludeSymbols` every package needs a matching `.snupkg`. The script selects only `Sphere10.Framework*` and `Sphere10.HashLib4CSharp` packages and ignores other files in the folder. Symbols are pushed only with `-IncludeSymbols`.
 
 The API key comes from `-ApiKey`, then the `NUGET_API_KEY` environment variable, then a hidden prompt. Publishing asks for PowerShell confirmation, so an automated run that supplies the key passes `-Confirm:$false`. `-Source`, `-SymbolSource` and `-PackagesDirectory` override the default feeds and package folder. The packing and publishing scripts support Windows PowerShell 5.1 and PowerShell 7, and their default paths resolve from the Framework repository root.
+
+GitHub uses `publish.ps1 -SealedRelease` with an OIDC-issued temporary key. This
+mode requires Python 3, publishes both packages and symbols, and verifies existing
+contents before treating a retry as successful. `pack.ps1 -Version <version>
+-SourceRevision <sha> -ArtifactsPath <build-folder>` prepares an explicitly stamped
+batch. `validate-packages.ps1 -packagesDirectory <folder> -packageVersion <version>`
+validates that exact batch rather than repacking it. Normal manual and private-feed
+commands remain available.
 
 ### Private feed
 

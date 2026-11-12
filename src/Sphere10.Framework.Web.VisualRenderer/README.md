@@ -77,6 +77,16 @@ Install from the NuGet feed containing the package:
 dotnet add package Sphere10.Framework.Web.VisualRenderer
 ```
 
+To opt into development builds before a stable release is available:
+
+```shell
+dotnet add package Sphere10.Framework.Web.VisualRenderer --prerelease
+```
+
+This package participates in the Framework-wide `3.2.0-ci.*` channel and exact
+alpha, RC and stable tag releases. Its version and internal dependencies match
+the other Framework packages. See [NuGet channels and publishing](../../docs/nuget-publishing.md).
+
 To build and consume a local package from this repository, see [Pack and publish the package](#pack-and-publish-the-package).
 
 ## Render a visual document to an HTML string
