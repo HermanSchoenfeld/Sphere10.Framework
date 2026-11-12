@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -88,17 +89,13 @@ public class DebugExtensionsTests {
 	public async Task AsyncCaptureQueryAndRefreshKeepTheirWorkOffTheCapturedMainThread() {
 		var mainThread = Debug.MainThread;
 		var workers = new ConcurrentQueue<Thread>();
-		var source = new ReloadableSnapshotDataSource<Row>(_ => {
+		var source = new ActionAsyncListDataSource<Row>(_ => {
 			workers.Enqueue(Thread.CurrentThread);
 			Debug.AssertNotMainThread();
-			return Task.FromResult(new[] { new Row { Id = 1 } });
+			return Task.FromResult<IEnumerable<Row>>(new[] { new Row { Id = 1 } });
 		});
-		var rows = await source.GetSnapshotAsync();
-		var refreshable = new RefreshableSnapshotDataSource<Row, int>(row => row.Id, row => {
-			workers.Enqueue(Thread.CurrentThread);
-			return row;
-		});
-		refreshable.ReplaceSnapshot(rows);
+		var rows = await Tools.DataSources.ReadAllAsync(source);
+		var refreshable = new ThreadRecordingRows(rows, workers);
 		await refreshable.RefreshRangeAsync(rows);
 		Assert.That((await source.ReadRangeAsync(null, 1, 0, null, SortDirection.None)).Items.Single().Id, Is.EqualTo(1));
 		Assert.That(workers, Has.Count.EqualTo(2).And.All.Not.SameAs(mainThread));
@@ -106,5 +103,19 @@ public class DebugExtensionsTests {
 
 	public sealed class Row {
 		public int Id { get; set; }
+	}
+
+	private sealed class ThreadRecordingRows : ListDataSource<Row> {
+		private readonly ConcurrentQueue<Thread> _workers;
+
+		public ThreadRecordingRows(IEnumerable<Row> rows, ConcurrentQueue<Thread> workers)
+			: base(rows) {
+			_workers = workers;
+		}
+
+		protected override Row RefreshMethod(Row entity) {
+			_workers.Enqueue(Thread.CurrentThread);
+			return entity;
+		}
 	}
 }
