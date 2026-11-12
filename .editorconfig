@@ -7,3 +7,16 @@ dotnet_naming_rule.locals_and_parameters_are_camel_case.style = camel_case_style
 dotnet_naming_symbols.locals_and_parameters.applicable_kinds = local, parameter
 dotnet_naming_symbols.locals_and_parameters.applicable_accessibilities = *
 dotnet_naming_style.camel_case_style.capitalization = camel_case
+
+# Shared C# property style across source, tests and utilities.
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+
+# Each accessor is independent: a simple getter may use => beside a block setter.
+# Multiline switch expressions and compact custom events follow the written style guide.
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
+
+# Ordinary callables retain the Framework's multiline block-body convention.
+csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_style_expression_bodied_operators = false:suggestion
+csharp_style_expression_bodied_local_functions = false:suggestion
