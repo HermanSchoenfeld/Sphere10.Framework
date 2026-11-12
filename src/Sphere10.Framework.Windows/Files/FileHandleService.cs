@@ -52,7 +52,7 @@ public sealed class FileHandleService {
 		if (identity.HasValue)
 			Guard.Argument(identity.Value.IsVerified && identity.Value.ProcessId > 0, nameof(identity), "Per-Process Object Inspection Requires A Verified PID And Creation Time");
 		var selected = options with { ObjectTypes = options.ObjectTypes.Distinct(StringComparer.OrdinalIgnoreCase).ToArray() };
-		return Task.Run(() => RunWorkerAsync("objects", identity, JsonSerializer.Serialize(selected), cancellationToken), cancellationToken);
+		return Task.Run(() => RunWorkerAsync("objects", identity, JsonSerializer.Serialize(selected, FileHandleJsonContext.Default.FileHandleCaptureOptions), cancellationToken), cancellationToken);
 	}
 
 	public Task<FileHandleCapture> FindBlockingProcessesAsync(string path, CancellationToken cancellationToken = default) {
@@ -98,7 +98,7 @@ public sealed class FileHandleService {
 	/// <summary>Uses the bounded existing diagnostic worker; cancellation cannot undo a native closure already issued.</summary>
 	public async Task ForceReleaseAsync(FileHandleInfo expected, CancellationToken cancellationToken = default) {
 		ValidateReleaseInput(expected);
-		var result = await Task.Run(() => RunWorkerAsync("release", null, JsonSerializer.Serialize(expected), cancellationToken), cancellationToken).ConfigureAwait(false);
+		var result = await Task.Run(() => RunWorkerAsync("release", null, JsonSerializer.Serialize(expected, FileHandleJsonContext.Default.FileHandleInfo), cancellationToken), cancellationToken).ConfigureAwait(false);
 		Guard.Ensure(!result.IsPartial, "The isolated file-handle release did not report a complete outcome. " + result.Availability);
 	}
 
@@ -115,7 +115,7 @@ public sealed class FileHandleService {
 			Guard.Argument(args.Length >= 2, nameof(args), "A file inspection worker requires a mode.");
 			if (args[1] == "release") {
 				Guard.Argument(args.Length == 3 && args[2].Length <= 128 * 1024, nameof(args), "File-handle release requires one captured native handle.");
-				new FileHandleService().ForceRelease(JsonSerializer.Deserialize<FileHandleInfo>(args[2]));
+				new FileHandleService().ForceRelease(JsonSerializer.Deserialize(args[2], FileHandleJsonContext.Default.FileHandleInfo));
 			} else if (args[1] == "blockers") {
 				Guard.Argument(args.Length == 3, nameof(args), "Restart Manager inspection requires a file path.");
 				CaptureBlockers(args[2]);
@@ -125,7 +125,7 @@ public sealed class FileHandleService {
 				ProcessIdentity? identity = args.Length == (objects ? 5 : 4)
 					? new ProcessIdentity(int.Parse(args[2], CultureInfo.InvariantCulture), new DateTime(long.Parse(args[3], CultureInfo.InvariantCulture), DateTimeKind.Utc))
 					: null;
-				var options = objects ? JsonSerializer.Deserialize<FileHandleCaptureOptions>(args[^1]) : null;
+				var options = objects ? JsonSerializer.Deserialize(args[^1], FileHandleJsonContext.Default.FileHandleCaptureOptions) : null;
 				CaptureHandles(identity, options);
 			}
 			WriteMessage(new WorkerMessage { Kind = "complete" });
@@ -197,7 +197,7 @@ public sealed class FileHandleService {
 					var line = await worker.ReadLineAsync(128 * 1024, timeout.Token).ConfigureAwait(false);
 					if (line == null)
 						break;
-					var message = JsonSerializer.Deserialize<WorkerMessage>(line);
+					var message = JsonSerializer.Deserialize(line, FileHandleJsonContext.Default.WorkerMessage);
 					if (message == null)
 						continue;
 					if (message.Kind == "row" && message.Row != null) {
@@ -252,7 +252,7 @@ public sealed class FileHandleService {
 	}
 
 	private static void WriteMessage(WorkerMessage message) {
-		Console.WriteLine(JsonSerializer.Serialize(message));
+		Console.WriteLine(JsonSerializer.Serialize(message, FileHandleJsonContext.Default.WorkerMessage));
 		Console.Out.Flush();
 	}
 
@@ -262,7 +262,7 @@ public sealed class FileHandleService {
 			&& DateTime.FromFileTimeUtc(FileTimeTicks(creation)) == identity.StartTimeUtc;
 	}
 
-	private sealed class WorkerMessage {
+	internal sealed class WorkerMessage {
 		public WorkerMessage() {
 		}
 
