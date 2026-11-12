@@ -166,8 +166,39 @@ which inherits `DefaultCrudEntityEditor` and filters transient, ignored and runt
 settings members. It also hides the settings root's ID and provider. This is the
 same editor used by automatic native Options pages; clients do not call internal
 settings-validation or property-filter helpers.
+It expands the settings root's own expandable values, such as a grid's settings,
+when the page opens; deeper values such as its column list stay collapsed. Other
+`DefaultCrudEntityEditor` uses keep their collapsed default unless they set
+`AutoExpandFirstLevel`.
 The editor context's `Settings` is the actual object; the dialog owns validation
 and persistence.
+
+An editor can show selected values from another existing application owner on
+the same page. Before binding that owner to a second value editor, call:
+
+```csharp
+context.IncludeSettings(sharedPreferences, nameof(SharedPreferences.RefreshSeconds));
+```
+
+`IncludeSettings(SettingsObject existingRoot, params string[] memberNames)` is an
+opt-in native editor capability. The root must be the actual object of another
+registered plugin, block or screen in the dialog's application graph. Member
+names must identify editable, browsable, persisted properties; IDs, providers,
+read-only, ignored and runtime/transient members are rejected. It creates no
+settings record and does not transfer ownership or replace a provider. Keep the
+editor's `GetEntityWithChanges()` result equal to the primary `context.Settings`;
+forward additional value-editor change notifications normally.
+
+The dialog backs up participating roots before editing. Changed participants
+join the selected page's validation and awaited saves through their existing
+owners. A successful save advances that root's backup independently, so a later
+save failure remains retryable and Cancel retains earlier successful Applies.
+Page Reset calls the actual participant's `RestoreDefaultValues()`, then retains
+only the declared displayed member defaults through the existing value
+serializer. Undisplayed properties remain unchanged; no hidden defaults instance
+is constructed. Opening the page does not save or activate an operational screen.
+For a compact single-field property editor, inherited `ToolbarVisible` and
+`HelpVisible` can be disabled without changing their default behavior elsewhere.
 
 Web class editors use
 `[Editor(typeof(MySettingsEditor), typeof(IApplicationSettingsEditor))]`.
