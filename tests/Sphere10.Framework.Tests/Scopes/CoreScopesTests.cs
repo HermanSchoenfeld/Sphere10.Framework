@@ -171,6 +171,19 @@ public class CoreScopesTests {
 		Assert.That(calls, Is.EqualTo(2));
 	}
 
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task SynchronouslyThrownCancellationRemainsACanceledOperation(bool withItem) {
+		var token = new CancellationToken(true);
+		var error = new OperationCanceledException(token);
+		var simple = Tools.Scope.ExecuteOnDisposeAsync(() => throw error);
+		var generic = Tools.Scope.ExecuteOnDisposeAsync<int>(_ => throw error, 7);
+		var operation = ValueTask.CompletedTask;
+		Assert.That(() => { operation = withItem ? generic.DisposeAsync() : simple.DisposeAsync(); }, Throws.Nothing);
+		Assert.That(operation.IsCanceled, Is.True);
+		await Assert.ThatAsync(async () => await operation, Throws.TypeOf<OperationCanceledException>().With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(token));
+	}
+
 	[Test]
 	public async Task CancellationPropagatesThroughBothDisposalForms() {
 		var scope = Tools.Scope.ExecuteOnDisposeAsync(() => ValueTask.FromCanceled(new CancellationToken(true)));

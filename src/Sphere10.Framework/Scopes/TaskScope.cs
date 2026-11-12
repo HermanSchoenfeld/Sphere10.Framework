@@ -25,7 +25,24 @@ public readonly struct TaskScope : IScope {
 		Task.ExecuteSyncOverAsync(() => finalizer().AsTask());
 	}
 
-	public async ValueTask DisposeAsync() => await _finalizer();
+	public ValueTask DisposeAsync() {
+		try {
+			return Complete(_finalizer());
+		} catch (Exception error) {
+			return Await(ValueTask.FromException(error));
+		}
+	}
+
+	internal static ValueTask Complete(ValueTask operation) {
+		// Consume completed callbacks without allocating a Debug async state machine.
+		// The slow path preserves awaiting, cancellation and deferred exception behavior.
+		if (!operation.IsCompletedSuccessfully)
+			return Await(operation);
+		operation.GetAwaiter().GetResult();
+		return ValueTask.CompletedTask;
+	}
+
+	internal static async ValueTask Await(ValueTask operation) => await operation;
 }
 
 /// <summary>Awaits an asynchronous finalizer with its original item.</summary>
@@ -46,6 +63,12 @@ public readonly struct TaskScope<T> : IScope<T> {
 		Task.ExecuteSyncOverAsync(() => finalizer(item).AsTask());
 	}
 
-	public async ValueTask DisposeAsync() => await _finalizer(Item);
+	public ValueTask DisposeAsync() {
+		try {
+			return TaskScope.Complete(_finalizer(Item));
+		} catch (Exception error) {
+			return TaskScope.Await(ValueTask.FromException(error));
+		}
+	}
 }
 
