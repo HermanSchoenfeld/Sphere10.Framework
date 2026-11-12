@@ -13,6 +13,9 @@ namespace Sphere10.Framework;
 
 public interface IDataSource<TItem> {
 
+	/// <summary>Raised after committed source data changes when CanNotify is advertised. Subscribers marshal presentation to their own dispatcher.</summary>
+	event EventHandlerEx Changed;
+
 	// Sync item methods
 	TItem New();
 

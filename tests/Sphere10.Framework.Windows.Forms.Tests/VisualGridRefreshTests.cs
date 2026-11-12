@@ -27,6 +27,42 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class VisualGridRefreshTests {
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RowStylesFollowPreparationOwnershipWithoutChangingSelectionOrDefaultViews(bool prepared) {
+		RunWithMessageLoop(async owner => {
+			using var crud = NewGrid(owner, true);
+			crud.PrepareReadOnlyCellsInBackground = prepared;
+			crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
+			var source = new ArrayDataSource<string>();
+			source.ReplaceData(new[] { "First", "Second" });
+			var ownerThread = Environment.CurrentManagedThreadId;
+			var styleThreads = new ConcurrentBag<int>();
+			crud.RowStyleProvider = row => {
+				styleThreads.Add(Environment.CurrentManagedThreadId);
+				return new VisualGridRowStyle(Color.Navy, Equals(row, "First") ? Color.LightBlue : Color.LightYellow);
+			};
+			await crud.SetDataSource(source, source.Capabilities);
+			await crud.RefreshGrid();
+			var native = Find<SourceGrid.Grid>(crud, "_grid");
+			var cell = native[1, 0];
+			Assert.That(((SourceGrid.Cells.Views.Cell)cell.View).BackColor, Is.EqualTo(Color.LightBlue));
+			Assert.That(((SourceGrid.Cells.Views.Cell)native[2, 0].View).BackColor, Is.EqualTo(Color.LightYellow));
+			Assert.That(styleThreads, Is.Not.Empty);
+			Assert.That(styleThreads.All(thread => prepared ? thread != ownerThread : thread == ownerThread), Is.True);
+			crud.SelectedEntity = "First";
+			crud.RowStyleProvider = _ => new VisualGridRowStyle(Color.DarkGreen, Color.LightGreen);
+			await crud.RefreshGrid();
+			Assert.That(crud.SelectedEntity, Is.EqualTo("First"));
+			Assert.That(((SourceGrid.Cells.Views.Cell)native[1, 0].View).BackColor, Is.EqualTo(Color.LightGreen));
+			if (prepared)
+				Assert.That(native[1, 0], Is.SameAs(cell), "A color change must retain the prepared cell and its input controllers.");
+			crud.RowStyleProvider = null;
+			await crud.RefreshGrid();
+			Assert.That(native[1, 0].View, Is.SameAs(SourceGrid.Cells.Views.Cell.Default));
+		});
+	}
+
 	[Test]
 	public void GridTitleCanBeConfiguredBeforeAHandleOrApplicationFormExists() {
 		var forms = FormsApplication.OpenForms.Count;
@@ -42,8 +78,8 @@ public class VisualGridRefreshTests {
 	[Test]
 	public void GridTitleUpdatesSynchronouslyAndRemainsVisibleForReadOnlySnapshots() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
-		var source = new SnapshotDataSource<string>();
-		source.ReplaceSnapshot(new[] { "Device" });
+		var source = new ArrayDataSource<string>();
+		source.ReplaceData(new[] { "Device" });
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
@@ -63,8 +99,8 @@ public class VisualGridRefreshTests {
 		crud.GridTitleAlignment = ContentAlignment.MiddleLeft;
 		crud.GridTitle = "Connected Devices";
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
-		var source = new SnapshotDataSource<string>();
-		source.ReplaceSnapshot(new[] { "Device" });
+		var source = new ArrayDataSource<string>();
+		source.ReplaceData(new[] { "Device" });
 		await crud.SetDataSource(source, DataSourceCapabilities.CanRead);
 		await crud.RefreshGrid();
 		var caption = Find<Label>(crud, "_titleLabel");
@@ -72,7 +108,7 @@ public class VisualGridRefreshTests {
 		Assert.That(WinAPI.USER32.IsWindowVisible(caption.Handle), Is.True, "The native header must be displayed rather than hidden behind a collapsed layout row.");
 		Assert.That(caption.Width, Is.GreaterThan(0));
 		Assert.That(caption.Parent.Height, Is.GreaterThanOrEqualTo(caption.Bottom));
-		Assert.That(crud.Capabilities, Is.EqualTo(DataSourceCapabilities.CanRead));
+		Assert.That(crud.Capabilities, Is.EqualTo(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanNotify), "The allowed operation mask never strips a notifying source's CanNotify.");
 		Assert.That(Find<Control>(crud, "_searchTextBox").Enabled, Is.False);
 		Assert.That(crud.VisibleEntities, Is.EqualTo(new[] { "Device" }));
 	});
@@ -106,7 +142,7 @@ public class VisualGridRefreshTests {
 		using var crud = NewGrid(owner, true);
 		crud.Enabled = false;
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
-		var source = new SnapshotDataSource<string>();
+		var source = new ArrayDataSource<string>();
 		await crud.SetDataSource(source, DataSourceCapabilities.CanSearch);
 		await crud.RefreshGrid();
 		var search = Find<Control>(crud, "_searchTextBox");
@@ -120,7 +156,7 @@ public class VisualGridRefreshTests {
 	public void GridTitleMarshalsAWorkerUpdateToItsExistingOwnerHandle() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
-		await crud.SetDataSource(new SnapshotDataSource<string>(), DataSourceCapabilities.CanRead);
+		await crud.SetDataSource(new ArrayDataSource<string>(), DataSourceCapabilities.CanRead);
 		await crud.RefreshGrid();
 		var caption = Find<Label>(crud, "_titleLabel");
 		Assert.That(caption.Visible, Is.False);

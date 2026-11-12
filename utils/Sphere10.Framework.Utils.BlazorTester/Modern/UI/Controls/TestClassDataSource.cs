@@ -17,7 +17,7 @@ public class TestClassDataSource : ListDataSource<TestClass> {
 
 	public TestClassDataSource()
 		: base(new ExtendedList<TestClass>()) {
-		Future.Value.AddRange(Enumerable.Range(1, 73).Select(id => {
+		List.AddRange(Enumerable.Range(1, 73).Select(id => {
 			var item = new TestClass();
 			item.FillWithTestData(id);
 			return item;
@@ -33,7 +33,7 @@ public class TestClassDataSource : ListDataSource<TestClass> {
 
 	public override DataSourceItems<TestClass> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		Guard.ArgumentGT(pageLength, 0, nameof(pageLength));
-		IEnumerable<TestClass> query = Future.Value;
+		IEnumerable<TestClass> query = List;
 		if (!string.IsNullOrWhiteSpace(searchTerm)) {
 			var term = searchTerm.Trim();
 			query = query.Where(item => item.Name?.Contains(term, StringComparison.OrdinalIgnoreCase) == true
