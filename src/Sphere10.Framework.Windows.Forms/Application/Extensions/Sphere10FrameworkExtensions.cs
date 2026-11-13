@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -37,6 +38,13 @@ public static class Sphere10FrameworkExtensions {
 	public static Sphere10FrameworkBuilder UseMainForm<TMainForm>(this Sphere10FrameworkBuilder builder, Action<TMainForm>? Configure = null)
 		where TMainForm : class, IMainForm {
 		builder.AddServices(services => services.AddMainForm(Configure));
+		return builder;
+	}
+
+	/// <summary>Selects the main window's DPI awareness without changing the process default for other windows.</summary>
+	public static Sphere10FrameworkBuilder UseMainForm<TMainForm>(this Sphere10FrameworkBuilder builder, DpiAwarenessContext dpiAwareness, Action<TMainForm>? configure = null)
+		where TMainForm : class, IMainForm {
+		builder.AddServices(services => services.AddMainForm(dpiAwareness, configure));
 		return builder;
 	}
 

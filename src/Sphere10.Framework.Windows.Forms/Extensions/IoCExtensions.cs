@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows;
+using Tools;
 using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -20,13 +22,25 @@ namespace Sphere10.Framework.Windows.Forms;
 public static class IoCExtensions {
 
 	public static void AddMainForm<TMainForm>(this IServiceCollection serviceCollection, Action<TMainForm>? Configure = null)
+		where TMainForm : class, IMainForm
+		=> AddMainForm<TMainForm>(serviceCollection, null, Configure);
+
+	/// <summary>Constructs the main form and its controls with the selected awareness, preserving the caller's thread context.</summary>
+	public static void AddMainForm<TMainForm>(this IServiceCollection serviceCollection, DpiAwarenessContext dpiAwareness, Action<TMainForm>? configure = null)
+		where TMainForm : class, IMainForm
+		=> AddMainForm<TMainForm>(serviceCollection, (DpiAwarenessContext?)dpiAwareness, configure);
+
+	private static void AddMainForm<TMainForm>(IServiceCollection serviceCollection, DpiAwarenessContext? dpiAwareness, Action<TMainForm> configure)
 		where TMainForm : class, IMainForm {
 		serviceCollection.AddSingleton<IMainForm>(Provider => {
-			var Form = ActivatorUtilities.CreateInstance<TMainForm>(Provider);
-			if (Form is LiteMainForm mainForm)
-				mainForm.AttachApplicationServices(Provider);
-			Configure?.Invoke(Form);
-			return Form;
+			// WinForms captures DPI awareness when constructing NativeWindow, before its handle is created.
+			using (dpiAwareness.HasValue ? Tools.Scope.EnterThreadDpiAwarenessScope(dpiAwareness.Value) : default) {
+				var Form = ActivatorUtilities.CreateInstance<TMainForm>(Provider);
+				if (Form is LiteMainForm mainForm)
+					mainForm.AttachApplicationServices(Provider);
+				configure?.Invoke(Form);
+				return Form;
+			}
 		});
 		serviceCollection.TryAddSingleton<IApplicationIconProvider, DefaultApplicationIconProvider>();
 		serviceCollection.AddSingleton<IUserInterfaceServices>(provider => provider.GetService<IMainForm>());

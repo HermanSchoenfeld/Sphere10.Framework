@@ -1727,6 +1727,16 @@ The **WinForms Tester** loads two plugins through `AddWinFormsApplicationPlugin`
 
 `Directory.Build.props` sets `ForceDesignerDPIUnaware=true` for the Visual Studio WinForms designer across the repository. This designer setting is separate from runtime DPI awareness. The library leaves runtime DPI policy to the application; Tester explicitly selects `HighDpiMode.DpiUnaware` before creating controls to preserve Windows bitmap scaling.
 
+For a stable main-window layout in an otherwise per-monitor-aware process, select
+`UseMainForm<MainForm>(DpiAwarenessContext.SystemAware)`. Windows scales this
+window between monitors instead of relaying DPI changes to its layout. Text can
+look softer away from the system DPI. The overload applies the context during
+construction and restores the caller's context. The existing overload inherits
+the caller's awareness. Construct independent per-monitor overlays inside
+`using (Tools.Scope.EnterThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2)) { ... }`
+and scope operations that use physical desktop coordinates the same way. Import
+`Sphere10.Framework.Windows` for the enum and `Tools` for the scope factory.
+
 ## Global keyboard shortcuts
 
 `GlobalHotKey` implements `IGlobalHotKey` using a private message-only window and

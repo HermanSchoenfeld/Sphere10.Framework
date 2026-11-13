@@ -2,6 +2,11 @@
 
 Reads the active display paths, modes, timings and EDID data, and provides a frame clock paced by the desktop compositor.
 
+`Tools.Windows.Display.GetBounds(deviceName)` reads a display's current desktop
+rectangle in physical pixels without WMI or cached UI geometry. Use it for
+capture and overlay bounds in processes with mixed DPI awareness. It throws when
+the named display's current mode is unavailable.
+
 `Tools.Windows.Display` reads the current display configuration through the CCD API, the registry and WMI. `GetDisplays` returns one `WindowsDisplayInfo` per active target path, with adapter and monitor identities, desktop position, DPI, active and preferred `WindowsDisplayTiming`, advanced-colour and HDR state, driver-enumerated `WindowsDisplayMode` values and the cached `WindowsMonitorEdid`. `GetDisplayNames` maps each GDI device name such as `\\.\DISPLAY1` to the monitor name Windows Settings shows. The synchronous methods assert in debug builds when called on the main thread, so UI code uses the async variants. `CreateDataSource` returns a `WindowsDisplayDataSource` that captures once on first load and then pages the detached rows.
 
 `DisplayFrameClock` raises `Frame` on a synchronization context once per composition frame, or less often when `MinimumInterval` is set. A background thread waits on a high-resolution waitable timer that follows the compositor's refresh rate, and a frame still queued is never queued twice. Start, stop and dispose it on the thread that owns the context. The [Magnification](../Magnification/README.md) renderer uses it to refresh capture windows. Monitor identity records come from the [System](../System/README.md) domain.

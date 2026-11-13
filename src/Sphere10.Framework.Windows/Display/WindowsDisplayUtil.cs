@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -24,6 +25,15 @@ public static partial class Windows {
 
 	/// <summary>Read-only current display paths. Async entry points dispatch all CCD, registry and WMI work to a worker.</summary>
 	public static class Display {
+		/// <summary>Reads the current desktop bounds of a GDI display in physical pixels, independently of thread DPI awareness and UI caches.</summary>
+		public static Rectangle GetBounds(string deviceName) {
+			Guard.ArgumentNotNullOrWhitespace(deviceName, nameof(deviceName));
+			var mode = NewDevMode();
+			if (!WinAPI.USER32.EnumDisplaySettingsExW(deviceName, -1, ref mode, 0))
+				throw new InvalidOperationException($"The current display mode for '{deviceName}' is unavailable.");
+			return new Rectangle(mode.X, mode.Y, checked((int)mode.Width), checked((int)mode.Height));
+		}
+
 		/// <summary>Creates a fresh lazy display snapshot; acquiring the utility or data source does not enumerate devices.</summary>
 		public static WindowsDisplayDataSource CreateDataSource() => new WindowsDisplayDataSource();
 

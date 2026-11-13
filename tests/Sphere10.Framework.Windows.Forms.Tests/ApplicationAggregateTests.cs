@@ -14,8 +14,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Tools;
+using Array = System.Array;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows;
 using FormsUI = global::Sphere10.Framework.Windows.Forms;
 using SharedUI = global::Sphere10.Framework.Application.UI;
 
@@ -40,6 +43,54 @@ public class ApplicationAggregateTests {
 	public void StopFramework() {
 		if (_startedFramework)
 			Sphere10Framework.Instance.EndFramework();
+	}
+
+	[TestCase(DpiAwarenessContext.Unaware)]
+	[TestCase(DpiAwarenessContext.SystemAware)]
+	public void MainFormDpiChoiceAppliesAtConstructionAndRestoresTheCallingThread(DpiAwarenessContext awareness) {
+		using (Tools.Scope.EnterThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2)) {
+			var original = WinAPI.USER32.GetThreadDpiAwarenessContext();
+			var services = new ServiceCollection();
+			var configured = false;
+			services.AddMainForm<LiteMainForm>(awareness, form => {
+				configured = true;
+				Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetThreadDpiAwarenessContext(), new IntPtr((int)awareness)), Is.True);
+			});
+			using var provider = services.BuildServiceProvider();
+			var form = (LiteMainForm)provider.GetRequiredService<FormsUI.IMainForm>();
+			Assert.That(configured, Is.True);
+			Assert.That(provider.GetRequiredService<IUserInterfaceServices>(), Is.SameAs(form));
+			Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetThreadDpiAwarenessContext(), original), Is.True);
+			// Handle creation happens later, after the registration has restored the caller's per-monitor context.
+			Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetWindowDpiAwarenessContext(form.Handle), new IntPtr((int)awareness)), Is.True);
+		}
+	}
+
+	[Test]
+	public void DefaultMainFormRegistrationKeepsTheCallingThreadsAwareness() {
+		using (Tools.Scope.EnterThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2)) {
+			var services = new ServiceCollection();
+			services.AddMainForm<LiteMainForm>();
+			using var provider = services.BuildServiceProvider();
+			var form = (LiteMainForm)provider.GetRequiredService<FormsUI.IMainForm>();
+			Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetWindowDpiAwarenessContext(form.Handle), new IntPtr((int)DpiAwarenessContext.PerMonitorAwareV2)), Is.True);
+		}
+	}
+
+	[Test]
+	public void PhysicalDisplayBoundsDoNotDependOnTheCallingWindowsDpiContext() {
+		foreach (var screen in Screen.AllScreens) {
+			using (Tools.Scope.EnterThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2)) {
+				var physical = Tools.Windows.Display.GetBounds(screen.DeviceName);
+				Assert.That(physical.Width, Is.GreaterThan(0));
+				Assert.That(physical.Height, Is.GreaterThan(0));
+				foreach (var awareness in new[] { DpiAwarenessContext.Unaware, DpiAwarenessContext.SystemAware }) {
+					using (Tools.Scope.EnterThreadDpiAwarenessScope(awareness)) {
+						Assert.That(Tools.Windows.Display.GetBounds(screen.DeviceName), Is.EqualTo(physical));
+					}
+				}
+			}
+		}
 	}
 
 	[Test]
