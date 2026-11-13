@@ -18,8 +18,9 @@ using (collection.EnterWriteScope()) {
 		collection.Add(item);
 }
 
-using var restore = stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin);
-// Disposal restores the borrowed stream's original position.
+using (stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin)) {
+	// Read at the temporary position; disposal restores the borrowed stream's original position.
+}
 ```
 
 Use the existing domain scope rather than reproducing its acquire/release protocol in consuming `try/finally`. Keep exception handling where it supplies recovery, unwinds a failed acquisition or transfers ownership.
@@ -78,7 +79,7 @@ Class owners retain the existing `Disposable` protocol: after successful sequent
 
 Match the ownership convention of the API being mirrored. .NET-style stream readers, writers and decorators use `leaveOpen`: `true` borrows the underlying stream; `false` closes it on disposal. Preserve the existing default of `false` for `EndianBinaryReader`, `EndianBinaryWriter` and `EncryptedStream`. Framework abstract data types and containers retain positive `ownsStream` ownership: `true` disposes the stream; `false` borrows it. When passing their ownership choice to a `leaveOpen` API, invert it at that boundary.
 
-Acquire once, keep one owner and dispose that acquisition once, normally through one `using` declaration. Explicit repeated disposal of an action scope invokes its callback again. Repeated disposal of a native scope can release a lock or pooled resource again; no shared scope bookkeeping makes it safe.
+Acquire once, keep one owner and dispose that acquisition once. Prefer an explicit `using (owner.EnterXXXScope(...)) { ... }` block for scope acquisition, using the existing `Enter...Scope` helper. The block shows exactly which operations use the temporary state and where restoration occurs. If the scope value is needed, declare it inside the `using (...)` statement. Preserve lifetime and nesting when updating existing usages; this is not a reason to rewrite unrelated code. Explicit repeated disposal of an action scope invokes its callback again. Repeated disposal of a native scope can release a lock or pooled resource again; no shared scope bookkeeping makes it safe.
 
 Assigning a scope struct to `IDisposable`, `IAsyncDisposable` or `IScope` boxes a copy. Return concrete values through provider interfaces, and use `where TScope : struct, IScope` for generic consumers. A struct method group such as `scope.Dispose` also captures a copy. Copying a value copies its resource reference or finalizer; it does not create another acquisition.
 
