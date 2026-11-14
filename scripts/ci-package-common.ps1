@@ -65,6 +65,38 @@ function Assert-CIPackageReferences([string]$ArtifactsRoot, [hashtable]$Expected
 	foreach ($id in $Expected.Keys) { if (!$found.ContainsKey($id)) { throw "No consumer restored $id." } }
 }
 
+function Save-CIArtifact([uri]$Uri, [string]$Token, [string]$OutFile) {
+	$origin = $Uri.GetLeftPart([UriPartial]::Authority)
+	$handler = [Net.Http.HttpClientHandler]::new()
+	$handler.AllowAutoRedirect = $false
+	$client = [Net.Http.HttpClient]::new($handler)
+	try {
+		for ($hop = 0; $hop -lt 5; $hop++) {
+			$request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Get, $Uri)
+			$null = $request.Headers.TryAddWithoutValidation('Authorization', "token $Token")
+			$response = $null
+			try {
+				$response = $client.Send($request, [Net.Http.HttpCompletionOption]::ResponseHeadersRead)
+				if ([int]$response.StatusCode -in @(301,302,303,307,308) -and $response.Headers.Location) {
+					$Uri = [uri]::new($Uri, $response.Headers.Location)
+					# Gitea redirects archive requests to an authenticated raw endpoint.
+					# Retain the job credential only while the destination stays on Gitea.
+					if ($Uri.GetLeftPart([UriPartial]::Authority) -ne $origin) { throw 'Artifact redirect changes origin; refusing to forward credentials.' }
+					continue
+				}
+				$null = $response.EnsureSuccessStatusCode()
+				$stream = [IO.File]::Create($OutFile)
+				try { $null = $response.Content.CopyToAsync($stream).GetAwaiter().GetResult() } finally { $stream.Dispose() }
+				return
+			} finally {
+				if ($response) { $response.Dispose() }
+				$request.Dispose()
+			}
+		}
+		throw 'Too many artifact redirects.'
+	} finally { $client.Dispose(); $handler.Dispose() }
+}
+
 function Restore-CITagBatch($State, [string]$Repository, [string]$ToolsRoot) {
 	if ($env:GITHUB_REF -notlike 'refs/tags/*') { return $false }
 	if (!$env:CI_API_URL -or !$env:CI_JOB_TOKEN) { throw 'Tag recovery requires the repository Actions API.' }
@@ -80,7 +112,7 @@ function Restore-CITagBatch($State, [string]$Repository, [string]$ToolsRoot) {
 	} while (!$artifact -and $items.Count -eq 100)
 	if (!$artifact) { return $false }
 	$archive = Join-Path $State.Artifacts 'retained-batch.zip'
-	Invoke-WebRequest "$env:CI_API_URL/repos/$Repository/actions/artifacts/$($artifact.id)/zip" -Headers $headers -OutFile $archive
+	Save-CIArtifact "$env:CI_API_URL/repos/$Repository/actions/artifacts/$($artifact.id)/zip" $env:CI_JOB_TOKEN $archive
 	# The artifact is produced by this workflow and contains a flat sealed package batch.
 	Add-Type -AssemblyName System.IO.Compression.FileSystem
 	$zip = [IO.Compression.ZipFile]::OpenRead($archive)

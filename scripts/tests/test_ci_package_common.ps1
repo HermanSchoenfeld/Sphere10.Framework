@@ -22,7 +22,7 @@ $env:CI_API_URL = 'http://unused.test/api/v1'
 $env:CI_JOB_TOKEN = 'test-only'
 $script:expired = $false
 function Invoke-RestMethod { param($Uri, $Headers) @{ artifacts = @([pscustomobject]@{ id = 1; name = 'nuget-77-tag'; expired = $script:expired }) } }
-function Invoke-WebRequest { param($Uri, $Headers, $OutFile) Copy-Item $script:archive $OutFile }
+function Save-CIArtifact { param($Uri, $Token, $OutFile) Copy-Item $script:archive $OutFile }
 $restored = Restore-CITagBatch $state $repository (Split-Path $PSScriptRoot)
 if ($restored -isnot [bool] -or !$restored) { throw 'Tag recovery must return one Boolean, not tool output.' }
 if ((Get-FileHash (Join-Path $state.Packages ([IO.Path]::GetFileName($package)))).Hash -ne (Get-FileHash $package).Hash) { throw 'Retained bytes changed.' }
