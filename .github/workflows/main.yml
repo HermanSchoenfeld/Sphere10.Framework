@@ -35,7 +35,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test publishing contracts
-        run: python -m unittest discover -s scripts/tests -p "test_nuget_release.py" -v
+        run: python -m unittest discover -s scripts/tests -p "test_nuget_*.py" -v
+      - name: Test retained batches and consumer hashes
+        shell: pwsh
+        run: ./scripts/tests/test_ci_package_common.ps1 -ArtifactsRoot "${{ runner.temp }}/package-ci-tests"
       - name: Resolve exact package version
         id: version
         shell: pwsh
@@ -193,6 +196,33 @@ jobs:
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: ./scripts/publish.ps1 -SealedRelease -PackagesDirectory "${{ runner.temp }}/nuget-batch" -Confirm:$false
+
+  publish-private:
+    name: Copy validated batch to private registry
+    needs: [release, build, test, browser, packages]
+    if: github.event_name == 'push' && github.repository == 'HermanSchoenfeld/Sphere10.Framework' && needs.release.outputs.publish == 'true'
+    runs-on: sphere10-gitea-publisher
+    environment: private-packages
+    permissions:
+      contents: read
+    concurrency:
+      group: private-nuget-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release.outputs.artifact }}
+          path: ${{ runner.temp }}/nuget-batch
+      - name: Verify and publish original package and symbol archives
+        shell: bash
+        env:
+          NUGET_REGISTRY_URL: ${{ vars.NUGET_REGISTRY_URL }}
+          NUGET_REGISTRY_TOKEN: ${{ secrets.NUGET_REGISTRY_TOKEN }}
+        run: python3 scripts/nuget-registry.py publish "$RUNNER_TEMP/nuget-batch" --repository "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA"
 
   test:
     name: Test

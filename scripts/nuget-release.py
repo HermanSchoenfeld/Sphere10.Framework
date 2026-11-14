@@ -29,13 +29,13 @@ def validate_version(value):
     return value
 
 
-def release_version(repository, event, ref, base, run_number, run_id, attempt):
+def release_version(repository, event, ref, base, run_number, run_id, attempt, expected_repository=REPOSITORY, default_branch="master"):
     validate_version(base)
     if "-" in base:
         raise ValueError("VersionPrefix must be the numeric next release version.")
-    if repository != REPOSITORY or event != "push":
+    if repository != expected_repository or event != "push":
         raise ValueError("Only push events in the intended repository may publish.")
-    if ref == "refs/heads/master":
+    if ref == "refs/heads/" + default_branch:
         values = [str(run_number), str(run_id), str(attempt)]
         if any(not re.fullmatch(r"[1-9][0-9]*", s) for s in values):
             raise ValueError("A CI version requires positive run number, run ID and attempt.")
@@ -126,9 +126,9 @@ def seal(directory, version, commit, projects):
     return manifest
 
 
-def verify(directory):
+def verify(directory, repository=REPOSITORY):
     manifest = json.loads((directory / "release-manifest.json").read_text(encoding="utf-8"))
-    if manifest["schema"] != 1 or manifest["repository"] != REPOSITORY:
+    if manifest["schema"] != 1 or manifest["repository"] != repository:
         raise ValueError("Unexpected release manifest.")
     actual = {p.name for pattern in ("*.nupkg", "*.snupkg") for p in directory.glob(pattern)}
     expected = {entry["name"] for entry in manifest["files"]}
@@ -203,6 +203,8 @@ def main():
     version_parser = commands.add_parser("version")
     version_parser.add_argument("--props", type=Path, required=True)
     version_parser.add_argument("--output", type=Path)
+    version_parser.add_argument("--repository", default=REPOSITORY)
+    version_parser.add_argument("--branch", default="master")
     for command in ("seal", "verify", "preflight", "publish"):
         child = commands.add_parser(command)
         child.add_argument("directory", type=Path)
@@ -213,7 +215,7 @@ def main():
     if args.command == "version":
         base = ET.parse(args.props).findtext(".//VersionPrefix")
         version = release_version(os.getenv("GITHUB_REPOSITORY"), os.getenv("GITHUB_EVENT_NAME"), os.getenv("GITHUB_REF", ""), base,
-                                  os.getenv("GITHUB_RUN_NUMBER"), os.getenv("GITHUB_RUN_ID"), os.getenv("GITHUB_RUN_ATTEMPT"))
+                                  os.getenv("GITHUB_RUN_NUMBER"), os.getenv("GITHUB_RUN_ID"), os.getenv("GITHUB_RUN_ATTEMPT"), args.repository, args.branch)
         print(version)
         if args.output:
             with args.output.open("a", encoding="utf-8") as output:

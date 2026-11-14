@@ -6,6 +6,34 @@ Windows libraries and `Sphere10.Framework.Web.VisualRenderer`. The public packag
 boundary is every distinct packable project under `src/` in the Windows solution.
 Legacy mobile projects, internal runtime code, tests and demos are not packages.
 
+## Private registry copy
+
+The `publish-private` job sends the same validated, sealed package and symbol
+archives to an additional NuGet V3 registry. It waits for the build, unit tests,
+browser tests and package validation, independently of the NuGet.org upload. PRs,
+feature branches and manual validation runs cannot publish. The public NuGet.org
+workflow and Trusted Publishing policy are unchanged.
+
+Configure the `private-packages` GitHub environment with `NUGET_REGISTRY_URL` as
+a variable and `NUGET_REGISTRY_TOKEN` as a secret. Restrict that environment to
+`master` and `v*` tags. The `sphere10-gitea-publisher` runner must reach the registry
+and provide Git, Python 3 and the Node runtime used by Actions. It only receives
+the publishing job; the existing hosted jobs perform the builds and tests.
+
+[`nuget-registry.py`](../scripts/nuget-registry.py) checks the complete existing
+batch before uploading anything, verifies downloaded archive hashes and resumes
+only identical partial batches. Package and symbol files are both checked. Retry
+the failed publishing job to reuse its original artifact. Conflicting versions
+fail; expired tag artifacts must be recovered rather than replaced with a rebuild.
+Registry endpoints must share the service index's origin, and credentials are
+never forwarded through redirects.
+
+The script also supports other repositories' evaluated package manifests through
+its `seal` command. [`ci-package-common.ps1`](../scripts/ci-package-common.ps1)
+provides package selection, isolated restore configuration, consumer archive-hash
+checks and Gitea tag-artifact recovery. Products own their build/test selection
+and pin these shared tools to a reviewed Framework commit.
+
 ## Stable and prerelease channels
 
 Successful pushes to `master` produce a version of the form
@@ -193,15 +221,17 @@ and does not contact NuGet.org.
 Run the publication contract tests without any registry writes:
 
 ```powershell
-python -m unittest discover -s scripts/tests -p test_nuget_release.py -v
+python -m unittest discover -s scripts/tests -p "test_nuget_*.py" -v
+./scripts/tests/test_ci_package_common.ps1 -ArtifactsRoot <isolated-test-output>
 ./scripts/validate-packages.ps1
 ```
 
 The tests cover branch/tag identities, malformed tags, rerun uniqueness, missing
 symbols, dependencies, source identity, changed archives, repository signatures,
 partial batches, concurrent upload races and conflicting contents. All registry
-operations in these tests use an in-memory fake. Never publish disposable test
+operations in these tests use an in-memory fake or a local test HTTP server. Never publish disposable test
 versions to NuGet.org.
 
 GitHub's repository sidebar **Packages** lists GitHub Packages, a separate registry.
-This project publishes only to NuGet.org. The README badges link to that feed.
+The public packages are on NuGet.org; an additional private registry can receive
+the same validated batches. The README badges link to the public feed.
