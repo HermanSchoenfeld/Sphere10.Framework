@@ -5,6 +5,11 @@
 BenchmarkDotNet.Artifacts/
 .bdn/
 
+# Generated Python bytecode and interpreter caches
+__pycache__/
+*.pyc
+*.pyo
+
 # Local scope benchmark campaigns, harnesses and source snapshots.
 /docs/performance/evidence/20261024-value-scopes/
 /docs/performance/evidence/20261024-scope-abstraction/
