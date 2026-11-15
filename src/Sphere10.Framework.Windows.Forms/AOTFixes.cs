@@ -20,6 +20,8 @@ internal static class AOTFixes {
 	// The default explorer theme includes block-selector settings read by XmlSerializer.
 	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlockSelectorInfoSurrogate))]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlockSelectorInfo))]
+	// Settings persistence reflects both members and construction when restoring saved shortcut assignments.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties, typeof(HotKeyAssignment))]
 	// ListControl resolves DisplayMember and ValueMember on these private item types.
 	// String targets use documentation-style nested names and keep the item classes private.
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, "Sphere10.Framework.Windows.Forms.EnumComboBox.ComboItem", "Sphere10.Framework.Windows.Forms")]

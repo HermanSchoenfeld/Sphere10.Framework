@@ -22,7 +22,6 @@ public class ColorMatricesTests {
 		var matrix = ColorMatrices.FromArray(new[,] {
 			{ 0.3f, 0.3f, 0.3f, 0f, 0f }, { 0.6f, 0.6f, 0.6f, 0f, 0f }, { 0.1f, 0.1f, 0.1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 0f, 0f, 0f, 0f, 1f }
 		});
-
 		Assert.That(matrix.Then(ColorMatrices.Identity).ApproximatelyEquals(matrix), Is.True);
 		Assert.That(ColorMatrices.Identity.Then(matrix).ApproximatelyEquals(matrix), Is.True);
 		Assert.That(ColorMatrices.Identity.IsIdentity(), Is.True);
@@ -36,7 +35,6 @@ public class ColorMatricesTests {
 			{ -1f, 0f, 0f, 0f, 0f }, { 0f, -1f, 0f, 0f, 0f }, { 0f, 0f, -1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 1f, 1f, 1f, 0f, 1f }
 		});
 		var composed = negative.Then(ColorMatrices.CreateBrightness(0.25f));
-
 		Assert.That(composed[0, 0], Is.EqualTo(-1f));
 		Assert.That(composed[4, 0], Is.EqualTo(1.25f).Within(0.00001f));
 	}
@@ -44,7 +42,6 @@ public class ColorMatricesTests {
 	[Test]
 	public void ContrastScalesAroundMidGray() {
 		var contrast = ColorMatrices.CreateContrast(2f);
-
 		Assert.That(contrast[0, 0], Is.EqualTo(2f));
 		Assert.That(contrast[4, 0], Is.EqualTo(-0.5f));
 		Assert.That(contrast[3, 3], Is.EqualTo(1f));
@@ -54,20 +51,107 @@ public class ColorMatricesTests {
 	[Test]
 	public void InterpolationEndsExactlyAtTheTargetAndExcludesTheStart() {
 		var frames = ColorMatrices.Interpolate(ColorMatrices.Identity, ColorMatrices.CreateBrightness(1f), 4);
-
 		Assert.That(frames, Has.Length.EqualTo(4));
 		Assert.That(frames[0][4, 0], Is.EqualTo(0.25f).Within(0.00001f));
 		Assert.That(frames[3].ApproximatelyEquals(ColorMatrices.CreateBrightness(1f)), Is.True);
 	}
 
+	[TestCase(0f)]
+	[TestCase(0.25f)]
+	[TestCase(1f)]
+	public void InterpolationWritesAllCoefficientsIntoTheSuppliedDestination(float progress) {
+		var from = ColorMatrices.CreateContrast(0.5f).Then(ColorMatrices.CreateBrightness(-0.2f));
+		var to = ColorMatrices.CreateContrast(1.5f).Then(ColorMatrices.CreateBrightness(0.4f));
+		var destination = ColorMatrices.Identity;
+		ColorMatrices.Interpolate(from, to, progress, destination);
+		for (var row = 0; row < ColorMatrices.Size; row++)
+			for (var column = 0; column < ColorMatrices.Size; column++)
+				Assert.That(destination[row, column], Is.EqualTo(from[row, column] + (to[row, column] - from[row, column]) * progress).Within(0.000001f));
+	}
+
+	[Test]
+	public void InterpolationCopiesEndpointsExactlyWithoutCancellationRounding() {
+		var from = new ColorMatrix { Matrix00 = 1e20f };
+		var to = ColorMatrices.Identity;
+		var destination = ColorMatrices.Identity;
+		ColorMatrices.Interpolate(from, to, 0f, destination);
+		Assert.That(destination.Matrix00, Is.EqualTo(from.Matrix00));
+		ColorMatrices.Interpolate(from, to, 1f, destination);
+		Assert.That(destination.Matrix00, Is.EqualTo(to.Matrix00));
+		Assert.That(ColorMatrices.Interpolate(from, to, 3)[2].Matrix00, Is.EqualTo(to.Matrix00));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void InterpolationCanWriteIntoEitherInput(bool overwriteTarget) {
+		var from = ColorMatrices.CreateBrightness(-0.4f);
+		var to = ColorMatrices.CreateBrightness(0.8f);
+		var destination = overwriteTarget ? to : from;
+		ColorMatrices.Interpolate(from, to, 0.25f, destination);
+		Assert.That(destination.Matrix40, Is.EqualTo(-0.1f).Within(0.000001f));
+		Assert.That(destination.Matrix00, Is.EqualTo(1f));
+	}
+
+	[TestCase(-0.1f)]
+	[TestCase(1.1f)]
+	[TestCase(float.NaN)]
+	[TestCase(float.PositiveInfinity)]
+	public void InterpolationRejectsInvalidProgressBeforeWriting(float progress) {
+		var from = ColorMatrices.CreateBrightness(-0.4f);
+		var to = ColorMatrices.CreateBrightness(0.8f);
+		var destination = ColorMatrices.Identity;
+		Assert.That(() => ColorMatrices.Interpolate(from, to, progress, destination), Throws.ArgumentException);
+		Assert.That(destination.IsIdentity(), Is.True);
+	}
+
+	[Test]
+	public void RetainedInterpolationAndCopyStorageDoNotAllocate() {
+		// Warm the exact path before measuring only repeated work on already owned matrices.
+		var from = ColorMatrices.CreateBrightness(-0.4f);
+		var to = ColorMatrices.CreateBrightness(0.8f);
+		var destination = ColorMatrices.Identity;
+		var applied = ColorMatrices.Identity;
+		for (var sample = 0; sample < 100; sample++) {
+			ColorMatrices.Interpolate(from, to, 0.25f, destination);
+			destination.CopyTo(applied);
+		}
+
+		// Assertions and fixture setup stay outside the allocation interval.
+		var before = GC.GetAllocatedBytesForCurrentThread();
+		for (var sample = 0; sample < 1000; sample++) {
+			ColorMatrices.Interpolate(from, to, 0.25f, destination);
+			destination.CopyTo(applied);
+		}
+		var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+		Assert.That(allocated, Is.Zero);
+		Assert.That(applied.Matrix40, Is.EqualTo(-0.1f).Within(0.000001f));
+	}
+
+	[Test]
+	public void CopyToOwnsItsCoefficientsAndSupportsSelfCopy() {
+		var source = ColorMatrices.CreateBrightness(0.5f);
+		var destination = ColorMatrices.Identity;
+		source.CopyTo(destination);
+		source.CopyTo(source);
+		source.Matrix40 = 0f;
+		Assert.That(destination.Matrix40, Is.EqualTo(0.5f));
+		Assert.That(source.Matrix41, Is.EqualTo(0.5f));
+		Assert.That(() => source.CopyTo(null), Throws.ArgumentNullException);
+		Assert.That(() => ColorMatrixExtensions.CopyTo(null, destination), Throws.ArgumentNullException);
+	}
+
 	[Test]
 	public void ArraysRoundTripAndRejectInvalidShapesOrValues() {
 		var matrix = ColorMatrices.CreateContrast(1.5f);
-
 		Assert.That(ColorMatrices.FromArray(matrix.ToArray()).ApproximatelyEquals(matrix), Is.True);
 		Assert.That(new ColorMatrix(matrix.ToJaggedArray()).ApproximatelyEquals(matrix), Is.True);
 		Assert.That(() => ColorMatrices.FromArray(new float[4, 5]), Throws.ArgumentException);
-		Assert.That(() => ColorMatrices.FromArray(new[,] { { float.NaN, 0f, 0f, 0f, 0f }, { 0f, 1f, 0f, 0f, 0f }, { 0f, 0f, 1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 0f, 0f, 0f, 0f, 1f } }), Throws.ArgumentException);
+		Assert.That(
+			() => ColorMatrices.FromArray(new[,] {
+				{ float.NaN, 0f, 0f, 0f, 0f }, { 0f, 1f, 0f, 0f, 0f }, { 0f, 0f, 1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 0f, 0f, 0f, 0f, 1f }
+			}),
+			Throws.ArgumentException
+		);
 		Assert.That(() => ColorMatrices.CreateContrast(-1f), Throws.ArgumentException);
 	}
 
@@ -76,9 +160,12 @@ public class ColorMatricesTests {
 		var negative = ColorMatrices.FromArray(new[,] {
 			{ -1f, 0f, 0f, 0f, 0f }, { 0f, -1f, 0f, 0f, 0f }, { 0f, 0f, -1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 1f, 1f, 1f, 0f, 1f }
 		});
-
 		Assert.That(negative.Transform(Color.FromArgb(200, 10, 20, 30)), Is.EqualTo(Color.FromArgb(200, 245, 235, 225)));
-		Assert.That(ColorMatrices.CreateBrightness(1f).Transform(Color.FromArgb(255, 128, 0, 64)), Is.EqualTo(Color.FromArgb(255, 255, 255, 255)), "Channels above 1 clamp to 255.");
+		Assert.That(
+			ColorMatrices.CreateBrightness(1f).Transform(Color.FromArgb(255, 128, 0, 64)),
+			Is.EqualTo(Color.FromArgb(255, 255, 255, 255)),
+			"Channels above 1 clamp to 255."
+		);
 		Assert.That(ColorMatrices.CreateBrightness(-1f).Transform(Color.White), Is.EqualTo(Color.FromArgb(255, 0, 0, 0)), "Channels below 0 clamp to 0.");
 	}
 
@@ -90,9 +177,7 @@ public class ColorMatricesTests {
 		var negative = ColorMatrices.FromArray(new[,] {
 			{ -1f, 0f, 0f, 0f, 0f }, { 0f, -1f, 0f, 0f, 0f }, { 0f, 0f, -1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 1f, 1f, 1f, 0f, 1f }
 		});
-
 		using var result = negative.ApplyTo(source);
-
 		Assert.That(result, Is.Not.SameAs(source));
 		Assert.That(result.Size, Is.EqualTo(source.Size));
 		Assert.That(result.PixelFormat, Is.EqualTo(PixelFormat.Format32bppArgb));
@@ -123,7 +208,6 @@ public class ColorMatricesTests {
 	public void RgbTransformsUseTheColumnVectorConvention() {
 		// Output red takes the input green: the transform's [0, 1] lands in the GDI+ matrix's [1, 0].
 		var swap = ColorMatrices.FromRgbTransform(new[,] { { 0f, 1f, 0f }, { 1f, 0f, 0f }, { 0f, 0f, 1f } });
-
 		Assert.That(swap[1, 0], Is.EqualTo(1f));
 		Assert.That(swap.Transform(Color.FromArgb(255, 10, 200, 30)), Is.EqualTo(Color.FromArgb(255, 200, 10, 30)));
 		Assert.That(() => ColorMatrices.FromRgbTransform(new float[2, 3]), Throws.ArgumentException);
@@ -132,7 +216,6 @@ public class ColorMatricesTests {
 	[Test]
 	public void SmartInversionKeepsHuesAndSwapsLightAndDark() {
 		var smart = ColorMatrices.CreateInversion().Then(ColorMatrices.CreateHueRotation(180f));
-
 		Assert.That(smart.Transform(Color.White), Is.EqualTo(Color.FromArgb(255, 0, 0, 0)));
 		Assert.That(smart.Transform(Color.Black), Is.EqualTo(Color.FromArgb(255, 255, 255, 255)));
 		var red = smart.Transform(Color.FromArgb(255, 200, 40, 40));
@@ -149,7 +232,6 @@ public class ColorMatricesTests {
 	[TestCase(ColorVisionDeficiency.Achromatomaly)]
 	public void ColorVisionDeficienciesKeepNeutralsAndChangeColours(ColorVisionDeficiency deficiency) {
 		var matrix = ColorMatrices.CreateColorVisionDeficiency(deficiency);
-
 		Assert.That(matrix.Transform(Color.White), Is.EqualTo(Color.FromArgb(255, 255, 255, 255)), "Each row of the model sums to one, so white stays white.");
 		Assert.That(matrix.Transform(Color.Black), Is.EqualTo(Color.FromArgb(255, 0, 0, 0)));
 		Assert.That(matrix.Transform(Color.FromArgb(255, 200, 30, 30)), Is.Not.EqualTo(Color.FromArgb(255, 200, 30, 30)));
@@ -158,7 +240,6 @@ public class ColorMatricesTests {
 	[Test]
 	public void ThresholdSplitsAtTheLevel() {
 		var threshold = ColorMatrices.CreateThreshold(0.5f);
-
 		Assert.That(threshold.Transform(Color.FromArgb(255, 140, 140, 140)), Is.EqualTo(Color.FromArgb(255, 255, 255, 255)));
 		Assert.That(threshold.Transform(Color.FromArgb(255, 115, 115, 115)), Is.EqualTo(Color.FromArgb(255, 0, 0, 0)));
 		Assert.That(() => ColorMatrices.CreateThreshold(2f), Throws.ArgumentException);
@@ -169,7 +250,6 @@ public class ColorMatricesTests {
 		var grayscale = ColorMatrices.CreateMonochrome();
 		var left = new DisplayColorEffect(@"\\.\DISPLAY1", new Rectangle(0, 0, 1920, 1080), grayscale);
 		var right = new DisplayColorEffect(@"\\.\DISPLAY2", new Rectangle(1920, 0, 1920, 1080), ColorMatrices.CreateMonochrome());
-
 		Assert.That(DisplayColorEffectRenderer.GetSharedMatrix(new[] { left, right }).ApproximatelyEquals(grayscale), Is.True);
 		Assert.That(DisplayColorEffectRenderer.GetSharedMatrix(new[] { left, right with { Matrix = ColorMatrices.Identity } }), Is.Null);
 		Assert.That(DisplayColorEffectRenderer.GetSharedMatrix(new DisplayColorEffect[0]).IsIdentity(), Is.True);
@@ -180,7 +260,6 @@ public class ColorMatricesTests {
 		var matrix = ColorMatrices.CreateBrightness(0.5f);
 		var clone = matrix.Clone();
 		clone[4, 0] = 0f;
-
 		Assert.That(matrix[4, 0], Is.EqualTo(0.5f));
 	}
 }

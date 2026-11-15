@@ -11,7 +11,7 @@ Methods ending in `AndDispose`, such as `ResizeAndDispose` and `ZoomAndDispose`,
 | Type | Kind | Purpose |
 |---|---|---|
 | [`ColorExtensions`](ColorExtensions.cs) | static class | Adds `ToARGBString`, `GetShade` (toward white or black) and `GetTranslucentShade` (toward opaque or transparent) to `Color` |
-| [`ColorMatrixExtensions`](ColorMatrixExtensions.cs) | static class | Adds clone, array conversion, composition with `Then`, brightness and contrast, per-color `Transform`, `ApplyTo` an image and tolerance-based equality to `ColorMatrix` |
+| [`ColorMatrixExtensions`](ColorMatrixExtensions.cs) | static class | Adds `Clone`, allocation-free `CopyTo` an existing matrix, array conversion, composition with `Then`, brightness and contrast, per-color `Transform`, `ApplyTo` an image and tolerance-based equality to `ColorMatrix` |
 | [`DrawingByteArrayExtensions`](ByteArrayExtensions.cs) | static class | Adds `ToImage` to `byte[]`, which decodes the bytes into an `Image` |
 | [`GraphicsExtensions`](GraphicsExtensions.cs) | static class | Adds rounded-rectangle fills, borders and gradients, linear and angled gradient fills, 3D gradient borders, circles, alpha blits and justified or ellipsis-truncated text to `Graphics` |
 | [`IconExtensions`](IconExtensions.cs) | static class | Adds `ToBitmap(width, height)` to `Icon` |

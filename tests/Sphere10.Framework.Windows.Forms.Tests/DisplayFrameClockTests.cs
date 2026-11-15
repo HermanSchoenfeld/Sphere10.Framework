@@ -37,15 +37,13 @@ public class DisplayFrameClockTests {
 		var threadId = Environment.CurrentManagedThreadId;
 		var frames = 0;
 		var otherThread = false;
-		clock.Frame += (_, _) => {
+		clock.Frame += () => {
 			frames++;
 			otherThread |= Environment.CurrentManagedThreadId != threadId;
 		};
-
 		clock.Start();
 		Pump(TimeSpan.FromSeconds(1));
 		clock.Stop();
-
 		Assert.That(clock.RefreshRate, Is.InRange(24.0, 500.0));
 		Assert.That(otherThread, Is.False, "Frames arrive on the context that owns the clock.");
 		// A WinForms timer manages about 64 per second at best; the clock should come close to the display's rate.
@@ -58,12 +56,10 @@ public class DisplayFrameClockTests {
 	public void MinimumIntervalThrottlesTheRate() {
 		using var clock = new DisplayFrameClock { MinimumInterval = TimeSpan.FromMilliseconds(100) };
 		var frames = 0;
-		clock.Frame += (_, _) => frames++;
-
+		clock.Frame += () => frames++;
 		clock.Start();
 		Pump(TimeSpan.FromSeconds(1));
 		clock.Stop();
-
 		Assert.That(frames, Is.InRange(6, 11));
 	}
 
@@ -71,12 +67,11 @@ public class DisplayFrameClockTests {
 	public void SlowHandlersLowerTheRateWithoutStarvingTheMessageLoop() {
 		using var clock = new DisplayFrameClock();
 		var frames = 0;
-		clock.Frame += (_, _) => {
+		clock.Frame += () => {
 			frames++;
 			Thread.Sleep(100);
 		};
 		var pumpReturns = 0;
-
 		clock.Start();
 		var elapsed = Stopwatch.StartNew();
 		while (elapsed.Elapsed < TimeSpan.FromSeconds(1)) {
@@ -88,7 +83,6 @@ public class DisplayFrameClockTests {
 		clock.Stop();
 		var afterStop = frames;
 		Pump(TimeSpan.FromMilliseconds(300));
-
 		Assert.That(frames, Is.InRange(5, 11), "Each slow frame occupies the thread; no queued burst follows.");
 		Assert.That(pumpReturns, Is.GreaterThan(frames), "The message loop runs between frames.");
 		Assert.That(frames, Is.EqualTo(afterStop), "Stopping discards a frame that was already queued.");
@@ -98,8 +92,7 @@ public class DisplayFrameClockTests {
 	public void StopsAndRestarts() {
 		using var clock = new DisplayFrameClock();
 		var frames = 0;
-		clock.Frame += (_, _) => frames++;
-
+		clock.Frame += () => frames++;
 		clock.Start();
 		Pump(TimeSpan.FromMilliseconds(200));
 		clock.Stop();
@@ -107,7 +100,6 @@ public class DisplayFrameClockTests {
 		Pump(TimeSpan.FromMilliseconds(200));
 		Assert.That(frames, Is.EqualTo(stopped));
 		Assert.That(clock.IsRunning, Is.False);
-
 		clock.Start();
 		Pump(TimeSpan.FromMilliseconds(200));
 		Assert.That(frames, Is.GreaterThan(stopped));

@@ -19,10 +19,17 @@ public static class ColorMatrixExtensions {
 	public static ColorMatrix Clone(this ColorMatrix matrix) {
 		Guard.ArgumentNotNull(matrix, nameof(matrix));
 		var clone = new ColorMatrix();
+		matrix.CopyTo(clone);
+		return clone;
+	}
+
+	/// <summary>Copies every coefficient into an existing matrix; copying a matrix to itself is supported.</summary>
+	public static void CopyTo(this ColorMatrix matrix, ColorMatrix destination) {
+		Guard.ArgumentNotNull(matrix, nameof(matrix));
+		Guard.ArgumentNotNull(destination, nameof(destination));
 		for (var row = 0; row < ColorMatrices.Size; row++)
 			for (var column = 0; column < ColorMatrices.Size; column++)
-				clone[row, column] = matrix[row, column];
-		return clone;
+				destination[row, column] = matrix[row, column];
 	}
 
 	/// <summary>Returns the matrix as a 5x5 array indexed [row, column].</summary>

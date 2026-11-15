@@ -22,12 +22,12 @@ namespace Sphere10.Framework.Windows;
 /// Start, stop and dispose the clock on the thread that owns the context.
 /// </remarks>
 public sealed class DisplayFrameClock : SyncDisposable {
+	public event EventHandlerEx Frame;
+
 	private const double FallbackRefreshRate = 60.0;
 	private const double MinimumRefreshRate = 24.0;
 	private const double MaximumRefreshRate = 500.0;
 	private static readonly TimeSpan RateReadInterval = TimeSpan.FromSeconds(1);
-
-	public event EventHandler Frame;
 
 	private readonly SynchronizationContext _context;
 	private readonly SendOrPostCallback _raiseFrame;
@@ -36,7 +36,6 @@ public sealed class DisplayFrameClock : SyncDisposable {
 	private long _frameCount;
 	private int _generation;
 	private int _pending;
-	private bool _running;
 	private bool _disposed;
 
 	public DisplayFrameClock()
@@ -50,7 +49,7 @@ public sealed class DisplayFrameClock : SyncDisposable {
 		ReadRefreshRate();
 	}
 
-	public bool IsRunning => _running;
+	public bool IsRunning { get; private set; }
 
 	/// <summary>The compositor's refresh rate, in frames per second, as last read; 60 when Windows does not report one.</summary>
 	public double RefreshRate => BitConverter.Int64BitsToDouble(Interlocked.Read(ref _refreshRateBits));
@@ -69,18 +68,18 @@ public sealed class DisplayFrameClock : SyncDisposable {
 
 	public void Start() {
 		ObjectDisposedException.ThrowIf(_disposed, this);
-		if (_running)
+		if (IsRunning)
 			return;
-		_running = true;
+		IsRunning = true;
 		var generation = Interlocked.Increment(ref _generation);
 		new Thread(Run) { IsBackground = true, Name = "Display frame clock", Priority = ThreadPriority.AboveNormal }.Start(generation);
 	}
 
 	/// <summary>Stops raising frames; a frame already queued is discarded. The worker ends after its current wait.</summary>
 	public void Stop() {
-		if (!_running)
+		if (!IsRunning)
 			return;
-		_running = false;
+		IsRunning = false;
 		Interlocked.Increment(ref _generation);
 	}
 
@@ -128,13 +127,15 @@ public sealed class DisplayFrameClock : SyncDisposable {
 			if (!IsCurrent((int)state))
 				return;
 			Interlocked.Increment(ref _frameCount);
-			Frame?.Invoke(this, EventArgs.Empty);
+			NotifyFrame();
 		} finally {
 			Interlocked.Exchange(ref _pending, 0);
 		}
 	}
 
 	private bool IsCurrent(int generation) => Volatile.Read(ref _generation) == generation;
+
+	private void NotifyFrame() => Frame?.Invoke();
 
 	private void ReadRefreshRate() {
 		var info = new WinAPI.DWMAPI.DWM_TIMING_INFO { cbSize = (uint)Marshal.SizeOf<WinAPI.DWMAPI.DWM_TIMING_INFO>() };

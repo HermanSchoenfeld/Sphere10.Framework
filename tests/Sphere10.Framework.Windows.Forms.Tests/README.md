@@ -35,7 +35,7 @@ Set `SPHERE10_CHART_VALIDATION_DIRECTORY` to an output directory before running 
 - Windows with an interactive desktop session. Native UI fixtures run on STA threads and are `[NonParallelizable]` when they share framework startup or native window state.
 - `VisualGridSelectionPaintingTests`, `WidgetStateEventTests` and `WindowHighlightScopeTests` send physical input or move the cursor. Run them on an idle desktop without other native UI fixtures or user input.
 - `ChartExampleCompilationTests` is `[Explicit]` and needs an installed .NET SDK to compile the exported C# example.
-- `MagnificationTests` is `[Explicit]` because it creates magnifier windows and changes the desktop colour effect. Stop other magnification applications first.
+- `MagnificationTests` and `DisplayColorEffectRendererTests` are `[Explicit]` because they create magnifier windows and change the desktop colour effect. Stop other magnification applications first.
 - The fixtures need no external services or demo database credentials.
 
 ## Contents
@@ -97,6 +97,7 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 | [DesignerCompatibilityTests](DesignerCompatibilityTests.cs) | Forms and controls load as the root of a WinForms design surface with no framework running, and their designer files keep the generated shape. |
 | [DevAgeDrawingReuseTests](DevAgeDrawingReuseTests.cs) | Shared drawing calculations used by the imported shading, split button and task pane painting. |
 | [DisplayFrameClockTests](DisplayFrameClockTests.cs) | The display frame clock's thread, rate, throttling, slow handlers and restart. |
+| [DisplayColorEffectRendererTests](DisplayColorEffectRendererTests.cs) | Request ownership, capture membership, elapsed-time transitions and notification ordering through the native renderer (explicit). |
 | [DrawingCacheTests](DrawingCacheTests.cs) | Brush and pen cache keys, reuse limits and disposal of cached and overflow resources. |
 | [DrawingExtractionTests](DrawingExtractionTests.cs) | Drawing geometry, contrast colours, alignment and rounded rectangles extracted from SourceGrid. |
 | [FixedLengthFieldListTests](FixedLengthFieldListTests.cs) | The fixed-length field dictionary's typed views, field identity and declared ordering. |

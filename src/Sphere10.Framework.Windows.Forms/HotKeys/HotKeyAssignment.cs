@@ -21,6 +21,8 @@ namespace Sphere10.Framework.Windows.Forms;
 /// </summary>
 [Obfuscation(Exclude = true)]
 public class HotKeyAssignment {
+	public HotKeyAssignment() => AOTFixes.Retain();
+
 	public string Command { get; set; }
 
 	public Keys Shortcut { get; set; }

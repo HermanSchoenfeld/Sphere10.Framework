@@ -39,7 +39,9 @@ public static class ColorMatrices {
 		return matrix;
 	}
 
-	/// <summary>Returns the product <paramref name="first"/> x <paramref name="second"/>, applying <paramref name="first"/> to a color before <paramref name="second"/>.</summary>
+	/// <summary>
+	/// Returns the product <paramref name="first"/> x <paramref name="second"/>, applying <paramref name="first"/> to a color before <paramref name="second"/>.
+	/// </summary>
 	public static ColorMatrix Multiply(ColorMatrix first, ColorMatrix second) {
 		Guard.ArgumentNotNull(first, nameof(first));
 		Guard.ArgumentNotNull(second, nameof(second));
@@ -113,13 +115,11 @@ public static class ColorMatrices {
 	}
 
 	/// <summary>The sepia tone of the W3C Filter Effects <c>sepia</c> function at full amount (the coefficients Microsoft documents for GDI+).</summary>
-	public static ColorMatrix CreateSepia() {
-		return FromRgbTransform(new[,] {
-			{ 0.393f, 0.769f, 0.189f },
-			{ 0.349f, 0.686f, 0.168f },
-			{ 0.272f, 0.534f, 0.131f }
-		});
-	}
+	public static ColorMatrix CreateSepia() => FromRgbTransform(new[,] {
+		{ 0.393f, 0.769f, 0.189f },
+		{ 0.349f, 0.686f, 0.168f },
+		{ 0.272f, 0.534f, 0.131f }
+	});
 
 	/// <summary>The W3C Filter Effects <c>saturate</c> matrix: 0 is grayscale, 1 leaves colours unchanged and values above 1 intensify them.</summary>
 	public static ColorMatrix CreateSaturation(float saturation) {
@@ -162,43 +162,41 @@ public static class ColorMatrices {
 	/// Machado, Oliveira and Fernandes (IEEE TVCG 15(6), 2009) at severity 1.0 and 0.6; achromatopsia is BT.709 grayscale and
 	/// achromatomaly keeps 40 % saturation. Like most screen tools it applies the model to gamma-encoded values.
 	/// </summary>
-	public static ColorMatrix CreateColorVisionDeficiency(ColorVisionDeficiency deficiency) {
-		return deficiency switch {
-			ColorVisionDeficiency.Protanopia => FromRgbTransform(new[,] {
-				{ 0.152286f, 1.052583f, -0.204868f },
-				{ 0.114503f, 0.786281f, 0.099216f },
-				{ -0.003882f, -0.048116f, 1.051998f }
-			}),
-			ColorVisionDeficiency.Protanomaly => FromRgbTransform(new[,] {
-				{ 0.385450f, 0.769005f, -0.154455f },
-				{ 0.100526f, 0.829802f, 0.069673f },
-				{ -0.007345f, -0.011366f, 1.018711f }
-			}),
-			ColorVisionDeficiency.Deuteranopia => FromRgbTransform(new[,] {
-				{ 0.367322f, 0.860646f, -0.227968f },
-				{ 0.280085f, 0.672501f, 0.047413f },
-				{ -0.011820f, 0.042940f, 0.968881f }
-			}),
-			ColorVisionDeficiency.Deuteranomaly => FromRgbTransform(new[,] {
-				{ 0.547494f, 0.607765f, -0.155259f },
-				{ 0.181692f, 0.781742f, 0.036566f },
-				{ -0.010410f, 0.027275f, 0.983136f }
-			}),
-			ColorVisionDeficiency.Tritanopia => FromRgbTransform(new[,] {
-				{ 1.255528f, -0.076749f, -0.178779f },
-				{ -0.078411f, 0.930809f, 0.147602f },
-				{ 0.004733f, 0.691367f, 0.303900f }
-			}),
-			ColorVisionDeficiency.Tritanomaly => FromRgbTransform(new[,] {
-				{ 1.104996f, -0.046633f, -0.058363f },
-				{ -0.032137f, 0.971635f, 0.060503f },
-				{ 0.001336f, 0.317922f, 0.680742f }
-			}),
-			ColorVisionDeficiency.Achromatopsia => CreateMonochrome(),
-			ColorVisionDeficiency.Achromatomaly => CreateSaturation(0.4f),
-			_ => throw new ArgumentOutOfRangeException(nameof(deficiency), deficiency, "Unknown colour vision deficiency.")
-		};
-	}
+	public static ColorMatrix CreateColorVisionDeficiency(ColorVisionDeficiency deficiency) => deficiency switch {
+		ColorVisionDeficiency.Protanopia => FromRgbTransform(new[,] {
+			{ 0.152286f, 1.052583f, -0.204868f },
+			{ 0.114503f, 0.786281f, 0.099216f },
+			{ -0.003882f, -0.048116f, 1.051998f }
+		}),
+		ColorVisionDeficiency.Protanomaly => FromRgbTransform(new[,] {
+			{ 0.385450f, 0.769005f, -0.154455f },
+			{ 0.100526f, 0.829802f, 0.069673f },
+			{ -0.007345f, -0.011366f, 1.018711f }
+		}),
+		ColorVisionDeficiency.Deuteranopia => FromRgbTransform(new[,] {
+			{ 0.367322f, 0.860646f, -0.227968f },
+			{ 0.280085f, 0.672501f, 0.047413f },
+			{ -0.011820f, 0.042940f, 0.968881f }
+		}),
+		ColorVisionDeficiency.Deuteranomaly => FromRgbTransform(new[,] {
+			{ 0.547494f, 0.607765f, -0.155259f },
+			{ 0.181692f, 0.781742f, 0.036566f },
+			{ -0.010410f, 0.027275f, 0.983136f }
+		}),
+		ColorVisionDeficiency.Tritanopia => FromRgbTransform(new[,] {
+			{ 1.255528f, -0.076749f, -0.178779f },
+			{ -0.078411f, 0.930809f, 0.147602f },
+			{ 0.004733f, 0.691367f, 0.303900f }
+		}),
+		ColorVisionDeficiency.Tritanomaly => FromRgbTransform(new[,] {
+			{ 1.104996f, -0.046633f, -0.058363f },
+			{ -0.032137f, 0.971635f, 0.060503f },
+			{ 0.001336f, 0.317922f, 0.680742f }
+		}),
+		ColorVisionDeficiency.Achromatopsia => CreateMonochrome(),
+		ColorVisionDeficiency.Achromatomaly => CreateSaturation(0.4f),
+		_ => throw new ArgumentOutOfRangeException(nameof(deficiency), deficiency, "Unknown colour vision deficiency.")
+	};
 
 	/// <summary>Returns <paramref name="steps"/> matrices moving linearly from just after <paramref name="from"/> up to and including <paramref name="to"/>.</summary>
 	public static ColorMatrix[] Interpolate(ColorMatrix from, ColorMatrix to, int steps) {
@@ -208,13 +206,32 @@ public static class ColorMatrices {
 		var frames = new ColorMatrix[steps];
 		for (var step = 0; step < steps; step++) {
 			var frame = new ColorMatrix();
-			var progress = (step + 1) / (float)steps;
-			for (var row = 0; row < Size; row++)
-				for (var column = 0; column < Size; column++)
-					frame[row, column] = from[row, column] + (to[row, column] - from[row, column]) * progress;
+			Interpolate(from, to, (step + 1) / (float)steps, frame);
 			frames[step] = frame;
 		}
 		return frames;
+	}
+
+	/// <summary>Writes a linear interpolation into an existing matrix without allocating; either input may also be the destination.</summary>
+	/// <remarks>
+	/// Progress must be finite and between zero and one. Endpoints are copied exactly, including coefficients that cannot be recovered by floating-point subtraction.
+	/// </remarks>
+	public static void Interpolate(ColorMatrix from, ColorMatrix to, float progress, ColorMatrix destination) {
+		Guard.ArgumentNotNull(from, nameof(from));
+		Guard.ArgumentNotNull(to, nameof(to));
+		Guard.ArgumentNotNull(destination, nameof(destination));
+		Guard.Argument(IsFinite(progress) && progress >= 0 && progress <= 1, nameof(progress), "Progress must be between zero and one.");
+		if (progress == 0) {
+			from.CopyTo(destination);
+			return;
+		}
+		if (progress == 1) {
+			to.CopyTo(destination);
+			return;
+		}
+		for (var row = 0; row < Size; row++)
+			for (var column = 0; column < Size; column++)
+				destination[row, column] = from[row, column] + (to[row, column] - from[row, column]) * progress;
 	}
 
 	/// <summary>Whether two matrices agree within <paramref name="tolerance"/> in every element.</summary>

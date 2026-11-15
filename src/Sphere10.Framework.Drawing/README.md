@@ -53,7 +53,7 @@ Types declared in the project folder itself:
 | [`AnchorArea`](AnchorArea.cs) | class | Left, top, right and bottom anchor distances with center and middle flags, and `CalculateArea` that places content of a given size inside an area |
 | [`BorderLine`](BorderLine.cs) | struct | One border edge: color, width, dash style and padding, with `NoBorder` and `Black1Width` presets |
 | [`BrushCache`](BrushCache.cs) | class | Disposable cache of `SolidBrush`es by color with a fixed number of reusable slots, which owns every brush it returns until disposed |
-| [`ColorMatrices`](ColorMatrices.cs) | static class | Builds and multiplies 5x5 GDI+ `ColorMatrix` values for brightness, contrast, inversion, monochrome, sepia, saturation, hue rotation, threshold and colour-vision-deficiency simulation, and interpolates between matrices |
+| [`ColorMatrices`](ColorMatrices.cs) | static class | Builds and multiplies 5x5 GDI+ `ColorMatrix` values for brightness, contrast, inversion, monochrome, sepia, saturation, hue rotation, threshold and colour-vision-deficiency simulation, and interpolates into a new array or an existing destination matrix |
 | [`ColorVisionDeficiency`](ColorVisionDeficiency.cs) | enum | Deficiencies that `ColorMatrices.CreateColorVisionDeficiency` simulates, from protanopia to achromatomaly |
 | [`Gradient3DBorderStyle`](Gradient3DBorderStyle.cs) | enum | Raised or sunken style for `GraphicsExtensions.DrawGradient3DBorder` |
 | [`GradientFillDirection`](GradientFillDirection.cs) | enum | Horizontal or vertical direction for `GraphicsExtensions.GradientFill` |
