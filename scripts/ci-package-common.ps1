@@ -8,14 +8,51 @@ function Invoke-CIDotNet([string[]]$Arguments) {
 	if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments[0]) failed with exit code $LASTEXITCODE." }
 }
 
-function Initialize-PackageCI([string]$RepositoryRoot, [string]$ArtifactsRoot, [string]$RegistryUrl, [string]$Version) {
+function Write-CIPackageRestoreConfig([string]$Path, [string]$RegistryUrl, [string[]]$RegistryPackagePatterns, [string]$StagingPath, [string[]]$StagedPackageIds) {
+	if (!$RegistryPackagePatterns -or @($RegistryPackagePatterns | Where-Object { $_ -notmatch '^(?:[A-Za-z0-9_.-]+\*?|\*)$' }).Count) {
+		throw 'CI requires valid registry package ID or prefix patterns.'
+	}
+	if ($StagingPath -and (!$StagedPackageIds -or @($StagedPackageIds | Where-Object { $_ -notmatch '^[A-Za-z0-9_.-]+$' }).Count)) {
+		throw 'The staged source requires exact evaluated package IDs.'
+	}
+	$url = [Security.SecurityElement]::Escape($RegistryUrl)
+	$patterns = @($RegistryPackagePatterns | Select-Object -Unique | Where-Object { $_ -notin $StagedPackageIds })
+	$privateMapping = if ($patterns.Count) {
+		$entries = ($patterns | ForEach-Object { "      <package pattern=`"$([Security.SecurityElement]::Escape($_))`" />" }) -join "`n"
+		"    <packageSource key=`"ci-private`">`n$entries`n    </packageSource>"
+	} else { '' }
+	$stagedSource = ''
+	$stagedMapping = ''
+	if ($StagingPath) {
+		$stagedSource = "    <add key=`"ci-staged`" value=`"$([Security.SecurityElement]::Escape($StagingPath))`" />"
+		$entries = ($StagedPackageIds | Select-Object -Unique | ForEach-Object { "      <package pattern=`"$([Security.SecurityElement]::Escape($_))`" />" }) -join "`n"
+		$stagedMapping = "    <packageSource key=`"ci-staged`">`n$entries`n    </packageSource>"
+	}
+	[IO.File]::WriteAllText($Path, @"
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="ci-private" value="$url" allowInsecureConnections="true" />
+$stagedSource
+  </packageSources>
+  <packageSourceMapping>
+    <clear />
+    <packageSource key="nuget.org"><package pattern="*" /></packageSource>
+$privateMapping
+$stagedMapping
+  </packageSourceMapping>
+</configuration>
+"@)
+}
+
+function Initialize-PackageCI([string]$RepositoryRoot, [string]$ArtifactsRoot, [string]$RegistryUrl, [string]$Version, [string[]]$RegistryPackagePatterns) {
 	New-Item -ItemType Directory -Path $ArtifactsRoot -Force | Out-Null
 	$env:TEMP = Join-Path $ArtifactsRoot 'temp'
 	$env:TMP = $env:TEMP
 	New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
 	$config = Join-Path $ArtifactsRoot 'NuGet.Config'
-	$url = [Security.SecurityElement]::Escape($RegistryUrl)
-	[IO.File]::WriteAllText($config, "<configuration><packageSources><clear/><add key=`"nuget.org`" value=`"https://api.nuget.org/v3/index.json`"/><add key=`"ci-private`" value=`"$url`" allowInsecureConnections=`"true`"/></packageSources></configuration>")
+	Write-CIPackageRestoreConfig $config $RegistryUrl $RegistryPackagePatterns
 	if ($env:NUGET_REGISTRY_READ_TOKEN) {
 		[Environment]::SetEnvironmentVariable('NuGetPackageSourceCredentials_ci-private', "Username=$env:NUGET_REGISTRY_USER;Password=$env:NUGET_REGISTRY_READ_TOKEN;ValidAuthenticationTypes=Basic")
 	}
@@ -30,7 +67,14 @@ function Initialize-PackageCI([string]$RepositoryRoot, [string]$ArtifactsRoot, [
 	if ($env:GITHUB_SHA -and $env:GITHUB_SHA -ne $commit) { throw 'Checkout does not match the workflow commit.' }
 	$packages = Join-Path $ArtifactsRoot 'packages'
 	New-Item -ItemType Directory -Path $packages -Force | Out-Null
-	return [pscustomobject]@{ Root = $RepositoryRoot; Artifacts = $ArtifactsRoot; Packages = $packages; Config = $config; Commit = $commit; Version = $Version }
+	return [pscustomobject]@{ Root = $RepositoryRoot; Artifacts = $ArtifactsRoot; Packages = $packages; Config = $config; Commit = $commit; Version = $Version; RegistryUrl = $RegistryUrl; RegistryPackagePatterns = $RegistryPackagePatterns }
+}
+
+function New-CIConsumerConfig($State, [string[]]$PackageIds) {
+	$config = Join-Path $State.Artifacts 'NuGet.Consumer.Config'
+	# Exact IDs take precedence over registry prefixes; only this producer's evaluated packages use staging.
+	Write-CIPackageRestoreConfig $config $State.RegistryUrl $State.RegistryPackagePatterns $State.Packages $PackageIds
+	return $config
 }
 
 function Get-CIPackageProjects([string]$RepositoryRoot, [string[]]$Properties) {
@@ -44,7 +88,8 @@ function Get-CIPackageProjects([string]$RepositoryRoot, [string[]]$Properties) {
 	return @($projects)
 }
 
-function Assert-CIPackageReferences([string]$ArtifactsRoot, [hashtable]$Expected, [string]$PackageRoot) {
+function Assert-CIPackageReferences([string]$ArtifactsRoot, [hashtable]$Expected, [string]$PackageRoot, [string]$RegistryUrl, [string[]]$RegistryPackagePatterns) {
+	if ([bool]$RegistryUrl -ne [bool]$RegistryPackagePatterns) { throw 'Registry provenance checks require both the URL and package patterns.' }
 	$found = @{}
 	$hashes = @{}
 	foreach ($id in $Expected.Keys) {
@@ -59,6 +104,20 @@ function Assert-CIPackageReferences([string]$ArtifactsRoot, [hashtable]$Expected
 				if ($item.Value.type -ne 'package' -or $parts[1] -ne $Expected[$parts[0]]) { throw "Incorrect package reference: $($item.Name) in $($file.FullName)" }
 				if ($item.Value.sha512 -notin @($hashes[$parts[0]], "sha512-$($hashes[$parts[0]])")) { throw "Consumer restored different bytes for $($item.Name). Use a new version or the original retained batch." }
 				$found[$parts[0]] = $true
+			} elseif ($RegistryUrl -and $item.Value.type -eq 'package' -and @($RegistryPackagePatterns | Where-Object { $parts[0] -like $_ }).Count) {
+				# NuGet does not apply source mapping to an already cached package. Check the actual cache receipt too.
+				$metadataPath = @($assets.packageFolders.PSObject.Properties.Name | ForEach-Object {
+					Join-Path $_ "$($item.Value.path)/.nupkg.metadata"
+				} | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1)
+				$source = $null
+				if ($metadataPath.Count) {
+					$metadata = Get-Content -LiteralPath $metadataPath[0] -Raw | ConvertFrom-Json
+					$sourceProperty = $metadata.PSObject.Properties['source']
+					if ($sourceProperty) { $source = [string]$sourceProperty.Value }
+				}
+				if (!$source -or !$source.TrimEnd('/').Equals($RegistryUrl.TrimEnd('/'), [StringComparison]::OrdinalIgnoreCase)) {
+					throw "Cannot verify Gitea provenance for cached dependency $($item.Name). Rerun with NUGET_PACKAGES set to a fresh isolated directory; the shared cache has not been modified."
+				}
 			}
 		}
 	}

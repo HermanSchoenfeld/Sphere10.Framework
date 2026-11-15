@@ -41,11 +41,58 @@ $hash = [Convert]::ToBase64String([Convert]::FromHexString((Get-FileHash $packag
 $assets = @{ libraries = @{ "Example.Library/$version" = @{ type = 'package'; sha512 = $hash } } }
 $assets | ConvertTo-Json -Depth 5 | Set-Content "$consumer/obj/Test/project.assets.json"
 Assert-CIPackageReferences $consumer @{ 'Example.Library' = $version } $batch
+
+# Exercise NuGet's own matching rules, including a private exact ID superseded by staging.
+$sdk = (& dotnet --version).Trim()
+if ($LASTEXITCODE -ne 0) { throw 'Cannot locate the SDK for NuGet configuration checks.' }
+$sdkRoot = Join-Path (Split-Path (Get-Command dotnet).Source -Parent) "sdk/$sdk"
+Add-Type -Path (Join-Path $sdkRoot 'NuGet.Common.dll')
+Add-Type -Path (Join-Path $sdkRoot 'NuGet.Configuration.dll')
+$registryUrl = 'https://packages.invalid/nuget/index.json'
+$registryPatterns = @('Example.*', 'Example.Library')
+$producerConfig = Join-Path $root 'NuGet.Producer.Config'
+Write-CIPackageRestoreConfig $producerConfig $registryUrl $registryPatterns
+$consumerState = [pscustomobject]@{ Artifacts = $root; Packages = $batch; RegistryUrl = $registryUrl; RegistryPackagePatterns = $registryPatterns }
+$consumerConfig = New-CIConsumerConfig $consumerState @('Example.Library')
+function Assert-MappedSource([string]$Config, [string]$PackageId, [string]$ExpectedSource) {
+	$settings = [NuGet.Configuration.Settings]::LoadSpecificSettings((Split-Path $Config), (Split-Path $Config -Leaf))
+	$mapping = [NuGet.Configuration.PackageSourceMapping]::GetPackageSourceMapping($settings)
+	$actual = @($mapping.GetConfiguredPackageSources($PackageId))
+	if ($actual.Count -ne 1 -or $actual[0] -cne $ExpectedSource) { throw "Unexpected source mapping for $PackageId in $Config." }
+}
+Assert-MappedSource $producerConfig 'Example.Library' 'ci-private'
+Assert-MappedSource $consumerConfig 'Example.Library' 'ci-staged'
+Assert-MappedSource $consumerConfig 'Example.Library.Extensions' 'ci-private'
+Assert-MappedSource $consumerConfig 'Example.Framework' 'ci-private'
+Assert-MappedSource $consumerConfig 'ThirdParty.Library' 'nuget.org'
+$rejected = $false
+try { New-CIConsumerConfig $consumerState @('Example.*') | Out-Null } catch { $rejected = $_.Exception.Message -like '*exact evaluated package IDs*' }
+if (!$rejected) { throw 'Staging must not accept a package prefix in place of evaluated IDs.' }
+
+# Cached packages bypass source mapping, so only a matching registry receipt is accepted.
+$cache = Join-Path $root 'cache'
+$dependencyPath = 'example.framework/2.0.0'
+$metadataPath = Join-Path $cache "$dependencyPath/.nupkg.metadata"
+New-Item -ItemType Directory -Path (Split-Path $metadataPath) -Force | Out-Null
+$assets.packageFolders = @{ $cache = @{} }
+$assets.libraries['Example.Framework/2.0.0'] = @{ type = 'package'; path = $dependencyPath; sha512 = 'fixture' }
+$assets | ConvertTo-Json -Depth 5 | Set-Content "$consumer/obj/Test/project.assets.json"
+@{ source = $registryUrl } | ConvertTo-Json | Set-Content $metadataPath
+Assert-CIPackageReferences $consumer @{ 'Example.Library' = $version } $batch $registryUrl $registryPatterns
+@{ source = 'https://api.nuget.org/v3/index.json' } | ConvertTo-Json | Set-Content $metadataPath
+$rejected = $false
+try { Assert-CIPackageReferences $consumer @{ 'Example.Library' = $version } $batch $registryUrl $registryPatterns } catch { $rejected = $_.Exception.Message -like '*fresh isolated directory*' }
+if (!$rejected) { throw 'A dependency cached from a different registry must be rejected.' }
+Remove-Item -LiteralPath $metadataPath
+$rejected = $false
+try { Assert-CIPackageReferences $consumer @{ 'Example.Library' = $version } $batch $registryUrl $registryPatterns } catch { $rejected = $_.Exception.Message -like '*provenance*' }
+if (!$rejected) { throw 'A dependency without a cache source receipt must be rejected.' }
+
 Add-Content $package 'Different archive bytes'
 $rejected = $false
 try { Assert-CIPackageReferences $consumer @{ 'Example.Library' = $version } $batch } catch { $rejected = $_.Exception.Message -like '*different bytes*' }
 if (!$rejected) { throw 'Stale cached package bytes must be rejected.' }
-'Passed retained-tag recovery, expiry, source identity and consumer archive-hash checks.'
+'Passed retained-tag recovery, expiry, source identity, source mapping, cache provenance and consumer archive-hash checks.'
 # The wrong-commit case deliberately invokes a failing native process. GitHub's
 # PowerShell wrapper otherwise treats that expected exit code as this step's result.
 exit 0
