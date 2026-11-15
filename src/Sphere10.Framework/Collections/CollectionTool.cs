@@ -24,12 +24,20 @@ namespace Tools;
 /// </summary>
 public static class Collection {
 
-	/// <summary>Compares two uniquely keyed snapshots without changing either input. Unchanged items are omitted.</summary>
-	/// <remarks>Removals and modifications follow the previous snapshot's order; additions follow the current snapshot's order.
-	/// Duplicate keys are rejected rather than silently selecting one observation. The change kind distinguishes missing entries from default values.</remarks>
-	public static CollectionDifference<T, TKey>[] CompareByKey<T, TKey>(IEnumerable<T> previous, IEnumerable<T> current, Func<T, TKey> key,
-		IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<T> valueComparer = null) {
-		// Materialize each input once and validate membership before producing any differences.
+	/// <summary>Compares two sequences by unique keys and returns their added, removed and modified items.</summary>
+	/// <remarks>
+	/// Each sequence is enumerated once. Keys identify matching items, and the value comparer determines whether matching items differ.
+	/// Unchanged items are omitted. Removals and modifications follow the previous sequence's order. Additions follow the current sequence's order.
+	/// Duplicate keys within either sequence are rejected. Results retain the supplied item values. The change kind distinguishes absent items from default values.
+	/// </remarks>
+	public static CollectionDifference<T, TKey>[] CompareByKey<T, TKey>(
+		IEnumerable<T> previous,
+		IEnumerable<T> current,
+		Func<T, TKey> key,
+		IEqualityComparer<TKey> keyComparer = null,
+		IEqualityComparer<T> valueComparer = null
+	) {
+		// Index each sequence once and reject duplicate keys before comparing its items.
 		Guard.ArgumentNotNull(previous, nameof(previous));
 		Guard.ArgumentNotNull(current, nameof(current));
 		Guard.ArgumentNotNull(key, nameof(key));
@@ -39,7 +47,7 @@ public static class Collection {
 		var currentByKey = current.ToDictionary(key, keyComparer);
 		var differences = new List<CollectionDifference<T, TKey>>();
 
-		// Preserve the captured values themselves; a default value is not proof of absence.
+		// Compare matching values and report missing keys separately from default item values.
 		foreach (var entry in previousByKey) {
 			if (!currentByKey.TryGetValue(entry.Key, out var currentValue))
 				differences.Add(new(entry.Key, entry.Value, default, CollectionDifferenceKind.Removed));

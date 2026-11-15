@@ -8,5 +8,5 @@
 
 namespace Sphere10.Framework;
 
-/// <summary>A change between uniquely keyed collection snapshots. Kind determines which values are present.</summary>
+/// <summary>A keyed item added, removed or modified between two sequences. Kind determines which values are present.</summary>
 public sealed record CollectionDifference<T, TKey>(TKey Key, T Previous, T Current, CollectionDifferenceKind Kind);

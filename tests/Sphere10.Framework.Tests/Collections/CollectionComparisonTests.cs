@@ -15,13 +15,22 @@ namespace Sphere10.Framework.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class CollectionComparisonTests {
+	#region Inner Types
+
+	private sealed record Entry(string Name, string Value);
+
+	#endregion
+
 	[Test]
-	public void ReportsOnlyChangedMembershipAndValuesWithoutMutatingSnapshots() {
+	public void ReportsOnlyChangedMembershipAndValuesWithoutMutatingInputs() {
 		var before = new[] { new Entry("unchanged", "1"), new Entry("changed", "2"), new Entry("removed", "3") };
 		var after = new[] { new Entry("added", "4"), new Entry("changed", "5"), new Entry("unchanged", "1") };
 		var differences = Tools.Collection.CompareByKey(before, after, entry => entry.Name);
 		Assert.That(differences.Select(change => change.Key), Is.EqualTo(new[] { "changed", "removed", "added" }));
-		Assert.That(differences.Select(change => change.Kind), Is.EqualTo(new[] { CollectionDifferenceKind.Modified, CollectionDifferenceKind.Removed, CollectionDifferenceKind.Added }));
+		Assert.That(
+			differences.Select(change => change.Kind),
+			Is.EqualTo(new[] { CollectionDifferenceKind.Modified, CollectionDifferenceKind.Removed, CollectionDifferenceKind.Added })
+		);
 		Assert.That(differences[0].Previous.Value, Is.EqualTo("2"));
 		Assert.That(differences[0].Current.Value, Is.EqualTo("5"));
 		Assert.That(before[1].Value, Is.EqualTo("2"));
@@ -41,8 +50,15 @@ public class CollectionComparisonTests {
 	public void RejectsAmbiguousDuplicateKeys(bool previousContainsDuplicates) {
 		var duplicates = new[] { new Entry("x", "one"), new Entry("X", "two") };
 		var empty = Array.Empty<Entry>();
-		Assert.That(() => Tools.Collection.CompareByKey(previousContainsDuplicates ? duplicates : empty, previousContainsDuplicates ? empty : duplicates,
-			entry => entry.Name, StringComparer.OrdinalIgnoreCase), Throws.InstanceOf<ArgumentException>());
+		Assert.That(
+			() => Tools.Collection.CompareByKey(
+				previousContainsDuplicates ? duplicates : empty,
+				previousContainsDuplicates ? empty : duplicates,
+				entry => entry.Name,
+				StringComparer.OrdinalIgnoreCase
+			),
+			Throws.InstanceOf<ArgumentException>()
+		);
 	}
 
 	[Test]
@@ -52,10 +68,4 @@ public class CollectionComparisonTests {
 		Assert.That(removed.Kind, Is.EqualTo(CollectionDifferenceKind.Removed));
 		Assert.That(added.Kind, Is.EqualTo(CollectionDifferenceKind.Added));
 	}
-
-	#region Inner Types
-
-	private sealed record Entry(string Name, string Value);
-
-	#endregion
 }

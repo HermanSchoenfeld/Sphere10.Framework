@@ -20,9 +20,9 @@ long count = list.Count;                     // 3
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`CollectionDifference<T, TKey>`](SpecialTypes.cs) | record | One keyed change between two snapshots, carrying the previous and current item and a `CollectionDifferenceKind`. |
+| [`CollectionDifference<T, TKey>`](SpecialTypes.cs) | record | One keyed change between two sequences, carrying the previous and current item and a `CollectionDifferenceKind`. |
 | [`CollectionDifferenceKind`](CollectionDifferenceKind.cs) | enum | Classifies a `CollectionDifference<T, TKey>` as `Added`, `Removed` or `Modified`. |
-| [`Tools.Collection`](CollectionTool.cs) | tools | Compares keyed snapshots (`CompareByKey`), generates and repeats sequences, partitions counts, binary-searches lists and resizes arrays within the 32-bit addressing limit. |
+| [`Tools.Collection`](CollectionTool.cs) | tools | Compares sequences by unique keys (`CompareByKey`), generates and repeats sequences, partitions counts, binary-searches lists and resizes arrays within the 32-bit addressing limit. |
 
 ### Arrays
 
