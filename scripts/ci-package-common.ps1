@@ -8,6 +8,70 @@ function Invoke-CIDotNet([string[]]$Arguments) {
 	if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments[0]) failed with exit code $LASTEXITCODE." }
 }
 
+function Assert-CIPackageCachePath([string]$Path) {
+	if (![IO.Path]::IsPathFullyQualified($Path)) { throw 'The CI package cache requires an absolute path.' }
+	$resolved = [IO.Path]::GetFullPath($Path).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+	if ($resolved -eq [IO.Path]::GetPathRoot($resolved).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)) { throw 'The CI package cache cannot be a filesystem root.' }
+	# Never create or remove an owned cache through a junction in its ancestor chain.
+	for ($current = $resolved; $current; $current = [IO.Path]::GetDirectoryName($current)) {
+		if (Test-Path -LiteralPath $current) {
+			$item = Get-Item -LiteralPath $current -Force
+			if (!$item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "The CI package cache path contains a file or directory link: $current" }
+		}
+	}
+	return $resolved
+}
+
+function Remove-CIPackageCache([string]$Path) {
+	$cache = Assert-CIPackageCachePath $Path
+	if (!(Test-Path -LiteralPath $cache)) { return }
+	$markerPath = Join-Path $cache '.sphere10-ci-cache.json'
+	if (!(Test-Path -LiteralPath $markerPath -PathType Leaf) -or ((Get-Item -LiteralPath $markerPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "Refusing to remove an unowned CI package cache: $cache" }
+	$marker = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
+	if ($marker.Schema -ne 1 -or $marker.Path -ne $cache) { throw "Invalid CI package cache ownership marker: $cache" }
+	function Remove-OwnedCacheEntry([string]$Entry) {
+		if (!$Entry.StartsWith($cache + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package cache cleanup escaped its owned root.' }
+		$item = Get-Item -LiteralPath $Entry -Force
+		if ($item.PSIsContainer) {
+			if (!($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+				foreach ($child in Get-ChildItem -LiteralPath $Entry -Force) { Remove-OwnedCacheEntry $child.FullName }
+			}
+			# Delete the link itself, never recurse through its shared-cache target.
+			[IO.Directory]::Delete($Entry, $false)
+		} else { [IO.File]::Delete($Entry) }
+	}
+	foreach ($entry in Get-ChildItem -LiteralPath $cache -Force | Where-Object { $_.FullName -ne $markerPath }) { Remove-OwnedCacheEntry $entry.FullName }
+	# Retain ownership if cleanup fails so the same helper can safely resume it.
+	[IO.File]::Delete($markerPath)
+	[IO.Directory]::Delete($cache, $false)
+}
+
+function New-CIPackageCache([string]$Path, [string]$SharedCachePath, [string[]]$RegistryPackagePatterns) {
+	if (!$RegistryPackagePatterns -or @($RegistryPackagePatterns | Where-Object { $_ -notmatch '^(?:[A-Za-z0-9_.-]+\*?|\*)$' }).Count) { throw 'CI requires valid registry package ID or prefix patterns.' }
+	$cache = Assert-CIPackageCachePath $Path
+	if (![IO.Path]::IsPathFullyQualified($SharedCachePath)) { throw 'The shared NuGet cache requires an absolute path.' }
+	$shared = [IO.Path]::GetFullPath($SharedCachePath).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+	$separator = [IO.Path]::DirectorySeparatorChar
+	if ($cache.Equals($shared, [StringComparison]::OrdinalIgnoreCase) -or $cache.StartsWith($shared + $separator, [StringComparison]::OrdinalIgnoreCase) -or $shared.StartsWith($cache + $separator, [StringComparison]::OrdinalIgnoreCase)) { throw 'The owned and shared package caches must not overlap.' }
+	if ((Test-Path -LiteralPath $shared) -and !(Test-Path -LiteralPath $shared -PathType Container)) { throw 'The shared NuGet cache must be a directory.' }
+	Remove-CIPackageCache $cache
+	New-Item -ItemType Directory -Path $cache | Out-Null
+	@{ Schema = 1; Path = $cache; SharedCache = $shared } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $cache '.sphere10-ci-cache.json') -Encoding utf8
+	try {
+		if (Test-Path -LiteralPath $shared) {
+			foreach ($package in Get-ChildItem -LiteralPath $shared -Directory -Force) {
+				if ($package.Name -notmatch '^[A-Za-z0-9_.-]+$' -or @($RegistryPackagePatterns | Where-Object { $package.Name -like $_ }).Count) { continue }
+				$linkType = if ($IsWindows) { 'Junction' } else { 'SymbolicLink' }
+				New-Item -ItemType $linkType -Path (Join-Path $cache $package.Name) -Target $package.FullName | Out-Null
+			}
+		}
+	} catch {
+		Remove-CIPackageCache $cache
+		throw
+	}
+	return $cache
+}
+
 function Write-CIPackageRestoreConfig([string]$Path, [string]$RegistryUrl, [string[]]$RegistryPackagePatterns, [string]$StagingPath, [string[]]$StagedPackageIds) {
 	if (!$RegistryPackagePatterns -or @($RegistryPackagePatterns | Where-Object { $_ -notmatch '^(?:[A-Za-z0-9_.-]+\*?|\*)$' }).Count) {
 		throw 'CI requires valid registry package ID or prefix patterns.'
@@ -67,7 +131,21 @@ function Initialize-PackageCI([string]$RepositoryRoot, [string]$ArtifactsRoot, [
 	if ($env:GITHUB_SHA -and $env:GITHUB_SHA -ne $commit) { throw 'Checkout does not match the workflow commit.' }
 	$packages = Join-Path $ArtifactsRoot 'packages'
 	New-Item -ItemType Directory -Path $packages -Force | Out-Null
-	return [pscustomobject]@{ Root = $RepositoryRoot; Artifacts = $ArtifactsRoot; Packages = $packages; Config = $config; Commit = $commit; Version = $Version; RegistryUrl = $RegistryUrl; RegistryPackagePatterns = $RegistryPackagePatterns }
+	$previousNuGetPackages = $env:NUGET_PACKAGES
+	$sharedCache = $previousNuGetPackages
+	if (!$sharedCache) {
+		$cacheLocation = (& dotnet nuget locals global-packages --list --force-english-output) -join "`n"
+		if ($LASTEXITCODE -ne 0 -or $cacheLocation -notmatch '^global-packages:\s*(.+)\s*$') { throw 'Could not resolve the existing global NuGet package cache.' }
+		$sharedCache = $Matches[1].Trim()
+	}
+	$existingMarker = Join-Path $sharedCache '.sphere10-ci-cache.json'
+	if (Test-Path -LiteralPath $existingMarker) {
+		# Reinitialization in one process must reuse the original cache, not link another owned cache.
+		$sharedCache = (Get-Content -LiteralPath $existingMarker -Raw | ConvertFrom-Json).SharedCache
+	}
+	$packageCache = New-CIPackageCache (Join-Path ([IO.Path]::GetFullPath($ArtifactsRoot)) 'nuget-cache') $sharedCache $RegistryPackagePatterns
+	$env:NUGET_PACKAGES = $packageCache
+	return [pscustomobject]@{ Root = $RepositoryRoot; Artifacts = $ArtifactsRoot; Packages = $packages; Config = $config; Commit = $commit; Version = $Version; RegistryUrl = $RegistryUrl; RegistryPackagePatterns = $RegistryPackagePatterns; PackageCache = $packageCache; PreviousNuGetPackages = $previousNuGetPackages }
 }
 
 function New-CIConsumerConfig($State, [string[]]$PackageIds) {

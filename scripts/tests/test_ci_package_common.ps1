@@ -92,7 +92,89 @@ Add-Content $package 'Different archive bytes'
 $rejected = $false
 try { Assert-CIPackageReferences $consumer @{ 'Example.Library' = $version } $batch } catch { $rejected = $_.Exception.Message -like '*different bytes*' }
 if (!$rejected) { throw 'Stale cached package bytes must be rejected.' }
-'Passed retained-tag recovery, expiry, source identity, source mapping, cache provenance and consumer archive-hash checks.'
+
+# Private IDs must be restored into an owned cache while third-party files are reused.
+$sharedCache = Join-Path $root 'shared-cache'
+$ownedCache = Join-Path $root 'owned-cache'
+foreach ($id in @('thirdparty.library', 'example.framework', 'example.library', 'exact.private')) {
+	New-Item -ItemType Directory -Path (Join-Path $sharedCache "$id/1.0.0") -Force | Out-Null
+	Set-Content -LiteralPath (Join-Path $sharedCache "$id/1.0.0/keep.txt") -Value "Original $id"
+}
+$sourceFile = Join-Path $sharedCache 'thirdparty.library/1.0.0/keep.txt'
+$sourceHash = (Get-FileHash -LiteralPath $sourceFile).Hash
+$cachePatterns = @('Example.*', 'Exact.Private')
+try {
+	$created = New-CIPackageCache $ownedCache $sharedCache $cachePatterns
+	if ($created -ne $ownedCache) { throw 'The isolated cache helper must return its owned path.' }
+	$link = Get-Item -LiteralPath (Join-Path $ownedCache 'thirdparty.library') -Force
+	if (!($link.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Third-party package folders must reuse the shared cache through directory links.' }
+	if ((Get-FileHash -LiteralPath (Join-Path $ownedCache 'thirdparty.library/1.0.0/keep.txt')).Hash -ne $sourceHash) { throw 'Linked third-party content differs.' }
+	foreach ($id in @('example.framework', 'example.library', 'exact.private')) {
+		if (Test-Path -LiteralPath (Join-Path $ownedCache $id)) { throw "Private package was reused from the shared cache: $id" }
+	}
+	New-Item -ItemType Directory -Path (Join-Path $ownedCache 'example.framework/2.0.0') -Force | Out-Null
+	Set-Content -LiteralPath (Join-Path $ownedCache 'example.framework/2.0.0/local.txt') 'Owned private package'
+	New-CIPackageCache $ownedCache $sharedCache $cachePatterns | Out-Null
+	if (Test-Path -LiteralPath (Join-Path $ownedCache 'example.framework')) { throw 'Repeated initialization retained a private package cache entry.' }
+	# Also remove a nested directory link without following its target.
+	New-Item -ItemType Directory -Path (Join-Path $ownedCache 'owned.private/1.0.0') -Force | Out-Null
+	$linkType = if ($IsWindows) { 'Junction' } else { 'SymbolicLink' }
+	New-Item -ItemType $linkType -Path (Join-Path $ownedCache 'owned.private/1.0.0/shared-link') -Target (Join-Path $sharedCache 'thirdparty.library') | Out-Null
+} finally { Remove-CIPackageCache $ownedCache }
+if ((Test-Path -LiteralPath $ownedCache) -or (Get-FileHash -LiteralPath $sourceFile).Hash -ne $sourceHash) { throw 'Cache cleanup removed shared package contents or retained the owned root.' }
+foreach ($id in @('example.framework', 'example.library', 'exact.private')) {
+	if (!(Test-Path -LiteralPath (Join-Path $sharedCache "$id/1.0.0/keep.txt"))) { throw 'Cache isolation removed an original private package.' }
+}
+Remove-CIPackageCache $ownedCache # Repeated cleanup is harmless.
+foreach ($invalid in @($sharedCache, (Join-Path $sharedCache 'nested'), $root, 'relative-cache')) {
+	$rejected = $false
+	try { New-CIPackageCache $invalid $sharedCache $cachePatterns | Out-Null } catch { $rejected = $true }
+	if (!$rejected) { throw "Unsafe cache destination was accepted: $invalid" }
+}
+$unowned = Join-Path $root 'unowned-cache'
+New-Item -ItemType Directory -Path $unowned | Out-Null
+Set-Content -LiteralPath (Join-Path $unowned 'keep.txt') 'Unowned data'
+$rejected = $false
+try { New-CIPackageCache $unowned $sharedCache $cachePatterns | Out-Null } catch { $rejected = $_.Exception.Message -like '*unowned*' }
+if (!$rejected -or !(Test-Path -LiteralPath (Join-Path $unowned 'keep.txt'))) { throw 'An unowned destination was modified.' }
+$linkedDestination = Join-Path $root 'linked-destination'
+New-Item -ItemType $linkType -Path $linkedDestination -Target $sharedCache | Out-Null
+try {
+	$rejected = $false
+	try { New-CIPackageCache (Join-Path $linkedDestination 'nested') $sharedCache $cachePatterns | Out-Null } catch { $rejected = $_.Exception.Message -like '*directory link*' }
+	if (!$rejected) { throw 'A cache destination through a directory link was accepted.' }
+} finally { [IO.Directory]::Delete($linkedDestination, $false) }
+if ((Get-FileHash -LiteralPath $sourceFile).Hash -ne $sourceHash) { throw 'Invalid destination checks changed the shared cache.' }
+
+$previousEnvironment = @{}
+foreach ($name in @('NUGET_PACKAGES', 'GITHUB_SHA', 'NUGET_REGISTRY_READ_TOKEN', 'TEMP', 'TMP')) { $previousEnvironment[$name] = [Environment]::GetEnvironmentVariable($name) }
+$initializationRoot = Join-Path $root 'initialization'
+function git { $global:LASTEXITCODE = 0; 'a' * 40 }
+function dotnet {
+	if (($args -join ' ') -ne 'nuget locals global-packages --list --force-english-output') { throw 'Unexpected SDK invocation during cache initialization.' }
+	$global:LASTEXITCODE = 0
+	"global-packages: $script:sharedCache"
+}
+try {
+	$env:GITHUB_SHA = 'a' * 40
+	$env:NUGET_REGISTRY_READ_TOKEN = $null
+	$env:NUGET_PACKAGES = $sharedCache
+	$initialized = Initialize-PackageCI $root $initializationRoot $registryUrl '1.0.0-ci.1.2.1' $cachePatterns
+	if ($initialized.PreviousNuGetPackages -ne $sharedCache -or $env:NUGET_PACKAGES -ne $initialized.PackageCache) { throw 'Initialization did not preserve and replace the package-cache environment.' }
+	$reinitialized = Initialize-PackageCI $root $initializationRoot $registryUrl '1.0.0-ci.1.2.1' $cachePatterns
+	$marker = Get-Content -LiteralPath (Join-Path $reinitialized.PackageCache '.sphere10-ci-cache.json') -Raw | ConvertFrom-Json
+	if ($marker.SharedCache -ne $sharedCache) { throw 'Repeated initialization linked another owned cache instead of the original shared cache.' }
+	Remove-CIPackageCache $reinitialized.PackageCache
+	$env:NUGET_PACKAGES = $null
+	$initialized = Initialize-PackageCI $root $initializationRoot $registryUrl '1.0.0-ci.1.2.1' $cachePatterns
+	if ($initialized.PreviousNuGetPackages -or $env:NUGET_PACKAGES -ne $initialized.PackageCache) { throw 'An initially unset cache environment was not preserved.' }
+	if (!(Test-Path -LiteralPath (Join-Path $initialized.PackageCache 'thirdparty.library/1.0.0/keep.txt'))) { throw 'Default cache discovery did not reuse third-party packages.' }
+} finally {
+	Remove-CIPackageCache (Join-Path $initializationRoot 'nuget-cache')
+	foreach ($name in $previousEnvironment.Keys) { [Environment]::SetEnvironmentVariable($name, $previousEnvironment[$name]) }
+	Remove-Item Function:git,Function:dotnet
+}
+'Passed retained-tag recovery, expiry, source identity, source mapping, cache provenance, isolated cache lifecycle and consumer archive-hash checks.'
 # The wrong-commit case deliberately invokes a failing native process. GitHub's
 # PowerShell wrapper otherwise treats that expected exit code as this step's result.
 exit 0
