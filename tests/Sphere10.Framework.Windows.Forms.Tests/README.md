@@ -46,6 +46,7 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 
 | Fixture | Purpose |
 | --- | --- |
+| [AttachmentControlTests](AttachmentControlTests.cs) | Copied attachment contents, filename normalization, clear and empty-file semantics. |
 | [AboutBoxLifetimeTests](AboutBoxLifetimeTests.cs) | Repeated hosted About calls respect transient and singleton container ownership. |
 | [ActionMenuOwnerTests](ActionMenuOwnerTests.cs) | Action menu items receive the executing main form, execute-on-load callbacks and contextual selection. |
 | [ApplicationAggregateTests](ApplicationAggregateTests.cs) | One live shared application aggregate per native startup, block initialization, hidden unsaved screens and application command membership. |

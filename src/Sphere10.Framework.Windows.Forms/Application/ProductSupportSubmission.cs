@@ -19,7 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 internal static class ProductSupportSubmission {
 	internal static async Task SendAsync<TRequest>(Form dialog, Button sendButton, Button cancelButton, LoadingCircle loadingCircle, IUserInterfaceServices userInterface, TRequest request,
-		IEnumerable<ImageAttachmentSelectorControl> attachmentControls, Func<IProductSupportService, TRequest, CancellationToken, Task<Result>> send)
+		IEnumerable<AttachmentControl> attachmentControls, Func<IProductSupportService, TRequest, CancellationToken, Task<Result>> send)
 		where TRequest : ClientRequest {
 		if (!sendButton.Enabled)
 			return;
@@ -32,11 +32,9 @@ internal static class ProductSupportSubmission {
 			return;
 		}
 		var attachments = new List<ClientRequestAttachment>();
-		foreach (var control in attachmentControls.Where(control => control.AttachmentSource != ImageAttachmentSelectorControl.ImageAttachmentSource.None)) {
+		foreach (var control in attachmentControls.Where(control => control.HasAttachment)) {
 			if (!control.TryGetAttachment(out var fileName, out var data)) {
-				await userInterface.ReportErrorAsync("Attachment", control.AttachmentSource == ImageAttachmentSelectorControl.ImageAttachmentSource.Clipboard
-					? "The clipboard holds no image. Copy a screenshot or choose a file."
-					: "Choose a file that exists and can be read.");
+				await userInterface.ReportErrorAsync("Attachment", "Choose a file that exists and can be read.");
 				return;
 			}
 			if (data.Length > ClientRequestAttachment.MaxBytes) {
@@ -86,7 +84,7 @@ internal static class ProductSupportSubmission {
 				}
 			} catch (OperationCanceledException) when (cancellation.IsCancellationRequested) {
 			} catch (Exception error) {
-				userInterface.ReportError(error);
+				await userInterface.ReportErrorAsync(error);
 			}
 		}
 		if (saved || closeRequested)

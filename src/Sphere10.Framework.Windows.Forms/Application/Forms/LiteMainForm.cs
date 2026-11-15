@@ -276,7 +276,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		} catch (OperationCanceledException) {
 			// Application disposal or cancellation can withdraw a pending exit request.
 		} catch (Exception Error) {
-			ReportError(Error);
+			await ReportErrorAsync(Error);
 		}
 	}
 
@@ -386,7 +386,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 			if (IsDisposed)
 				SystemLog.Exception(error);
 			else
-				ReportError(error);
+				await ReportErrorAsync(error);
 		}
 	}
 
@@ -415,44 +415,23 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 			await about.ShowDialogAsync(this);
 		});
 
-	public virtual void ReportError(Exception error) => ExecuteInUIFriendlyContext(() => _ = ExceptionDialog.ShowAsync(this, error));
+	public virtual Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default)
+		=> ExceptionDialog.ShowAsync(this, error, cancellationToken);
 
-	public virtual void ReportError(string msg) => ReportError("Unexpected Error", msg);
+	public virtual Task ReportErrorAsync(string message, CancellationToken cancellationToken = default)
+		=> ReportErrorAsync("Unexpected Error", message, cancellationToken);
 
-	public virtual void ReportError(string title, string msg) {
-		ExecuteInUIFriendlyContext(
-			() =>
-				MessageBox.Show(
-					msg,
-					title,
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Error,
-					MessageBoxDefaultButton.Button1
-				)
-		);
-	}
+	public virtual Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> this.InvokeAsyncEx(_ => DialogEx.ShowAsync(this, SystemIconType.Error, title, message, cancellationToken, "OK"));
 
-	public virtual void ReportFatalError(string title, string msg) {
-		ExecuteInUIFriendlyContext(
-			() => {
-				ReportError(title, msg);
-				Exit(true);
-			}
-		);
-	}
+	public virtual Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> this.InvokeAsyncEx(async _ => {
+			await ReportErrorAsync(title, message, cancellationToken);
+			Exit(true);
+		});
 
-	public virtual void ReportInfo(string title, string msg) {
-		ExecuteInUIFriendlyContext(
-			async () => await DialogEx.ShowAsync(
-				this,
-				SystemIconType.Information,
-				msg,
-				title,
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Information
-			)
-		);
-	}
+	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> this.InvokeAsyncEx(_ => DialogEx.ShowAsync(this, SystemIconType.Information, title, message, cancellationToken, "OK"));
 
 	public bool AskYN(string question) {
 		// The synchronous interface must pump a modal message loop instead of blocking an async task.
@@ -519,10 +498,8 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		}
 	}
 
-	private void ApplicationOnThreadException(object sender, ThreadExceptionEventArgs threadExceptionEventArgs) {
-		Tools.Exceptions.ExecuteCapturingException<System.Exception>(() => {
-			this.ReportError(threadExceptionEventArgs.Exception);
-		}, out var capturedError);
+	private async void ApplicationOnThreadException(object sender, ThreadExceptionEventArgs threadExceptionEventArgs) {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => ReportErrorAsync(threadExceptionEventArgs.Exception));
 	}
 
 	#endregion

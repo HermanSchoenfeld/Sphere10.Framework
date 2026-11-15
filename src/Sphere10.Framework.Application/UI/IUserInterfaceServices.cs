@@ -38,33 +38,23 @@ public interface IUserInterfaceServices {
 
 	Task ShowAboutBox();
 
-	void ReportError(Exception e);
+	/// <summary>Reports an error, completing when the user dismisses the notification.</summary>
+	Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default);
 
-	void ReportError(string msg);
+	Task ReportErrorAsync(string message, CancellationToken cancellationToken = default);
 
-	void ReportError(string title, string msg);
+	Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default);
 
-	void ReportFatalError(string title, string msg);
+	Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default);
 
-	void ReportInfo(string title, string msg);
+	/// <summary>Reports information, completing when the user dismisses the notification.</summary>
+	Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default);
 
 	bool AskYN(string question);
 
 	Task<bool> AskYNAsync(string question, CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.FromResult(AskYN(question));
-	}
-
-	Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) {
-		cancellationToken.ThrowIfCancellationRequested();
-		ReportError(title, message);
-		return Task.CompletedTask;
-	}
-
-	Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) {
-		cancellationToken.ThrowIfCancellationRequested();
-		ReportInfo(title, message);
-		return Task.CompletedTask;
 	}
 
 	void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false);

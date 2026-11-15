@@ -29,6 +29,55 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class AsyncModalTests {
+	[TestCase("info", false)]
+	[TestCase("error", false)]
+	[TestCase("message", false)]
+	[TestCase("exception", false)]
+	[TestCase("fatal", false)]
+	[TestCase("info", true)]
+	[TestCase("exception", true)]
+	public void ReportsAwaitNativeModalDismissal(string kind, bool worker) => RunWithMessageLoop(async owner => {
+		using var form = new ReportingMainForm();
+		form.Show(owner);
+		Task Report() => kind switch {
+			"info" => form.ReportInfoAsync("Notice", "Readable detail"),
+			"error" => form.ReportErrorAsync("Error", "Readable detail"),
+			"message" => form.ReportErrorAsync("Readable detail"),
+			"exception" => form.ReportErrorAsync(new InvalidOperationException("Readable detail")),
+			_ => form.ReportFatalErrorAsync("Fatal", "Readable detail")
+		};
+		var report = worker ? Task.Run(Report) : Report();
+		var dialog = await WaitForDialog<DialogEx>();
+		Assert.That(dialog.Modal, Is.True);
+		Assert.That(dialog.Owner, Is.SameAs(form));
+		Assert.That(report.IsCompleted, Is.False);
+		Assert.That(form.ExitRequested, Is.False);
+		Assert.That(WinAPI.USER32.IsWindowEnabled(form.Handle), Is.False);
+		var dispatched = false;
+		await owner.InvokeAsync(() => dispatched = true);
+		Assert.That(dispatched, Is.True, "The native UI dispatcher remains responsive while awaiting the dialog.");
+		dialog.Close();
+		await report;
+		Assert.That(dialog.IsDisposed, Is.True);
+		Assert.That(WinAPI.USER32.IsWindowEnabled(form.Handle), Is.True);
+		Assert.That(form.ExitRequested, Is.EqualTo(kind == "fatal"));
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void CancellingAReportDisposesItsNativeModal(bool exception) => RunWithMessageLoop(async owner => {
+		using var form = new ReportingMainForm();
+		form.Show(owner);
+		using var cancellation = new CancellationTokenSource();
+		var report = exception ? form.ReportErrorAsync(new InvalidOperationException("Cancelled notice"), cancellation.Token)
+			: form.ReportInfoAsync("Notice", "Cancelled notice", cancellation.Token);
+		var dialog = await WaitForDialog<DialogEx>();
+		cancellation.Cancel();
+		await Assert.ThatAsync(async () => await report, Throws.InstanceOf<OperationCanceledException>());
+		await WaitUntil(() => dialog.IsDisposed);
+		Assert.That(WinAPI.USER32.IsWindowEnabled(form.Handle), Is.True);
+	});
+
 	[Test]
 	public void SynchronousNativeCleanupDoesNotRunPreviouslyPostedUiCallbacks() => RunWithMessageLoop(async owner => {
 		var posted = false;
@@ -659,7 +708,7 @@ public class AsyncModalTests {
 		throw new AssertionException($"{typeof(T).Name} did not become visible.");
 	}
 
-	private static void RunWithMessageLoop(Func<Form, Task> Test) {
+	internal static void RunWithMessageLoop(Func<Form, Task> Test) {
 		Exception? Failure = null;
 		var PreviousContext = SynchronizationContext.Current;
 		using var UiContext = new WindowsFormsSynchronizationContext();
@@ -684,6 +733,13 @@ public class AsyncModalTests {
 		Watchdog.Start();
 		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
+	}
+
+	private sealed class ReportingMainForm : LiteMainForm {
+		public bool ExitRequested;
+		public override void Exit(bool force = false) => ExitRequested = true;
+		protected override void OnLoad(EventArgs e) { }
+		protected override void OnActivated(EventArgs e) { }
 	}
 
 	private sealed class ConstructingWizard(Func<WinFormsWizardScreen<object>> constructScreen) : WinFormsWizardBase<object>("Unstarted owner", new object()) {

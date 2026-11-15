@@ -100,6 +100,7 @@ public static class ControlCatalogSamples {
 			Window<HexEditorForm>(CreateHexEditorForm, "A standalone editor window over the sample bytes with File, Edit and View menus. Close it to return to the catalog."),
 			Window<HexEditorGoToDialog>(() => new HexEditorGoToDialog { MaximumOffset = 4095 }, "Enter a hexadecimal or decimal offset up to 0xFFF. Go validates the input; this example does not move a caret."),
 			Sample<HexEditorView>("Editors", CreateHexEditorView, "The painted hex surface alone, bound to a sample viewport: click, drag, use the keyboard and type to overwrite. Commands belong to HexEditorControl."),
+			Sample<AttachmentControl>("Images", () => new AttachmentControl(), "Choose the attachment icon to select or paste a file. OK accepts the selection; Cancel preserves it. Choose the filename to edit it."),
 			Sample<ImageAttachmentSelectorControl>("Images", () => new ImageAttachmentSelectorControl(), "Choose None, a file (or drop one on the control) or the clipboard image. Images are previewed and read only after your explicit selection."),
 			Sample<ImageLinkLabel>("Images", CreateImageLink),
 			Sample<ImageNavigator>("Images", CreateImageNavigator, "Use Previous and Next to navigate two owned sample images."),

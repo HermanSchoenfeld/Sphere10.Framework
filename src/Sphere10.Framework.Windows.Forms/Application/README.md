@@ -8,6 +8,16 @@ This domain is the Windows Forms implementation of the shared `Sphere10.Framewor
 
 The runner finishes the startup splash fade and closes it before showing the main form. First-activation handlers can then show modal notices without leaving the splash above them. BlockMainForm calls the project's central [AOTFixes](../AOTFixes.cs) to preserve the reflected SplitContainer properties used by its designer resources, so native publishing retains the configured navigation width.
 
+`LiteMainForm.OnDpiChanged` (also inherited by `MainForm`) awaits an informational
+notice when a system-aware main window receives a DPI change on the primary
+display. It uses the `ReportInfoAsync` service and preserves normal WinForms
+event handling. `_displayingNotice` suppresses only overlapping notices and resets
+in `finally` after dismissal or failure, allowing later scaling changes to notify
+again. The notice advises saving work, signing out of Windows and back
+in, then reopening the application. This deliberately relies only on
+`Form.DpiChanged`: Windows does not guarantee that event for system-aware windows,
+so the notice is best effort, not a system-wide scaling monitor.
+
 Screens bind grid and log-output preferences to their `ScreenSettings` through [VisualGrid](../VisualGrid/README.md) and [Logging](../Logging/README.md). General dialogs live in [Dialogs](../Dialogs/README.md) and [Forms](../Forms/README.md).
 
 ```csharp

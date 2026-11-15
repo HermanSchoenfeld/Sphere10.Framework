@@ -16,6 +16,10 @@ using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows;
 
+using System.Threading;
+
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Windows.Forms;
 
 public class CHMHelpProvider : IHelpServices {
@@ -64,16 +68,20 @@ public class CHMHelpProvider : IHelpServices {
 		}
 	}
 
-	public void ShowContextHelp(IHelpableObject helpableObject) {
+	public Task ShowContextHelpAsync(IHelpableObject helpableObject, CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
 		Guard.ArgumentNotNull(helpableObject, nameof(helpableObject));
 		var contextControl = helpableObject as Control;
 		var owner = contextControl != null && !contextControl.IsDisposed ? contextControl : UserInterfaceServices.PrimaryUIController as Control;
 		ShowHelp(owner?.FindForm() ?? owner, File.Exists(helpableObject.FileName) ? helpableObject.FileName : CHMFile, helpableObject.HelpTopicID.Value);
+		return Task.CompletedTask;
 	}
 
-	public void ShowHelp() {
+	public Task ShowHelpAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
 		var owner = UserInterfaceServices.PrimaryUIController as Control;
 		ShowHelp(owner?.FindForm() ?? owner, CHMFile, null);
+		return Task.CompletedTask;
 	}
 
 	protected virtual void ShowHelp(Control owner, string file, int? topicId) {

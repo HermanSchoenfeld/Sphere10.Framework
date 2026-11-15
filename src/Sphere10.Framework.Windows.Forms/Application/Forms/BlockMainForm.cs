@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -460,13 +462,13 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Misc
 
-	public virtual void ShowActiveScreenContextHelp() {
+	public virtual async Task ShowActiveScreenContextHelpAsync(CancellationToken cancellationToken = default) {
 		var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 		if (helpServices == null)
 			return;
 
 		if (ActiveBlock != null && ActiveScreen != null) {
-			helpServices.ShowContextHelp(ActiveScreen);
+			await helpServices.ShowContextHelpAsync(ActiveScreen, cancellationToken);
 		}
 	}
 
@@ -476,9 +478,9 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Handlers
 
-	protected override void ContextHelp_Click(object sender, EventArgs e) => ShowActiveScreenContextHelp();
+	protected override async void ContextHelp_Click(object sender, EventArgs e) => await ShowActiveScreenContextHelpAsync();
 
-	protected override void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) => ShowActiveScreenContextHelp();
+	protected override async void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) => await ShowActiveScreenContextHelpAsync();
 
 	#endregion
 

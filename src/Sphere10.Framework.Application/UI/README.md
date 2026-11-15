@@ -6,6 +6,39 @@ A running `IApplication` owns its blocks through an `IApplicationScreenHost`, an
 
 Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, website-launcher and user-interface services stay in `Sphere10.Framework.Application`. Lifecycle tasks are in [Initialization and finalization tasks](../Lifecycle/README.md), and the settings that screens, blocks and plugins own are in [Settings](../Settings/README.md). The [Application guide](../README.md#shared-ui-framework) covers ownership, lifecycles, navigation, builders and wizards in detail.
 
+## Awaiting notifications and navigation
+
+`IUserInterfaceServices` exposes `ReportErrorAsync` (exception, message and
+caption/message overloads), `ReportFatalErrorAsync` and `ReportInfoAsync`. Await
+them: the returned task completes when the notification is dismissed, and carries
+failures back to the caller. There are no synchronous reporting
+aliases or completed-task bridges. Decorators forward the task and cancellation
+token unchanged. Console reports complete after writing; WinForms fatal reporting
+requests exit after dismissal, while Blazor retains its existing report-only policy.
+
+WinForms dispatches through native `Control.InvokeAsync` and shows the owned
+`DialogEx` or `ExceptionDialog` with .NET 10 `Form.ShowDialogAsync`. Cancellation
+closes the dialog and awaits that same native modal task before disposing it,
+so the owner is re-enabled before reporting completes. Blazor dispatches through
+the attached renderer and awaits `Modal.ViewService`, forwarding cancellation to
+the modal host. WinForms reports cancellation after native cleanup; Blazor retains
+its modal contract that cancellation of an open dialog completes as dismissal.
+No custom native modal loops are involved.
+
+`IWebsiteLauncher` and `IHelpServices` also expose asynchronous methods with
+optional cancellation tokens. Await launch/help requests so an implementation
+such as an offline demonstration can finish its notification. A standard shell
+launch completes after starting the external process; it does not wait for the
+browser or help viewer to exit.
+
+```csharp
+try {
+    await userInterface.ReportInfoAsync("Import complete", "The records are ready.", cancellationToken);
+} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+    // The caller cancelled the notification.
+}
+```
+
 ## Contents
 
 | Type | Kind | Purpose |

@@ -42,8 +42,8 @@ namespace Sphere10.Framework.Windows.Forms {
             this.groupBox3 = new System.Windows.Forms.GroupBox();
 			this._whoAreYouControl = new Sphere10.Framework.Windows.Forms.WhoAreYouControl();
             this._attachmentsGroupBox = new System.Windows.Forms.GroupBox();
-            this._firstAttachmentControl = new Sphere10.Framework.Windows.Forms.ImageAttachmentSelectorControl();
-            this._secondAttachmentControl = new Sphere10.Framework.Windows.Forms.ImageAttachmentSelectorControl();
+            this._firstAttachmentControl = new Sphere10.Framework.Windows.Forms.AttachmentControl();
+            this._secondAttachmentControl = new Sphere10.Framework.Windows.Forms.AttachmentControl();
             this._loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -155,7 +155,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._attachmentsGroupBox.Controls.Add(this._secondAttachmentControl);
             this._attachmentsGroupBox.Location = new System.Drawing.Point(12, 378);
             this._attachmentsGroupBox.Name = "_attachmentsGroupBox";
-            this._attachmentsGroupBox.Size = new System.Drawing.Size(528, 166);
+            this._attachmentsGroupBox.Size = new System.Drawing.Size(528, 94);
             this._attachmentsGroupBox.TabIndex = 17;
             this._attachmentsGroupBox.TabStop = false;
             this._attachmentsGroupBox.Text = "Attachments (optional, up to 1 MB each)";
@@ -166,7 +166,7 @@ namespace Sphere10.Framework.Windows.Forms {
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._firstAttachmentControl.Location = new System.Drawing.Point(14, 19);
             this._firstAttachmentControl.Name = "_firstAttachmentControl";
-            this._firstAttachmentControl.Size = new System.Drawing.Size(508, 66);
+            this._firstAttachmentControl.Size = new System.Drawing.Size(508, 30);
             this._firstAttachmentControl.TabIndex = 0;
             // 
             // _secondAttachmentControl
@@ -175,7 +175,7 @@ namespace Sphere10.Framework.Windows.Forms {
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._secondAttachmentControl.Location = new System.Drawing.Point(14, 91);
             this._secondAttachmentControl.Name = "_secondAttachmentControl";
-            this._secondAttachmentControl.Size = new System.Drawing.Size(508, 66);
+            this._secondAttachmentControl.Size = new System.Drawing.Size(508, 30);
             this._secondAttachmentControl.TabIndex = 1;
             // 
             // _loadingCircle
@@ -233,8 +233,8 @@ namespace Sphere10.Framework.Windows.Forms {
         private System.Windows.Forms.Button _sendButton;
         private BasicContactDetailsControl _basicContactDetailsControl;
         private System.Windows.Forms.GroupBox _attachmentsGroupBox;
-        private ImageAttachmentSelectorControl _firstAttachmentControl;
-        private ImageAttachmentSelectorControl _secondAttachmentControl;
+        private AttachmentControl _firstAttachmentControl;
+        private AttachmentControl _secondAttachmentControl;
         private LoadingCircle _loadingCircle;
         private ApplicationBanner applicationBanner1;
         private System.Windows.Forms.GroupBox groupBox3;

@@ -655,7 +655,10 @@ public class ApplicationExitTests {
 		public int ExitCheckThread { get; private set; }
 		public int ReportedErrorCount { get; private set; }
 
-		public override void ReportError(Exception error) => ReportedErrorCount++;
+		public override Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default) {
+			ReportedErrorCount++;
+			return Task.CompletedTask;
+		}
 
 		public IntPtr QueryEndSession() {
 			var message = Message.Create(Handle, WinAPI.USER32.WM_QUERYENDSESSION, IntPtr.Zero, IntPtr.Zero);

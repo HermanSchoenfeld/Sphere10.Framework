@@ -350,7 +350,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		try {
 			await ShowScreenOptionsFromAsync(userInterface);
 		} catch (Exception error) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
@@ -393,7 +393,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 			await ShowRequestFeatureDialog();
 		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
@@ -402,7 +402,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 			await ShowSendCommentDialog();
 		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
@@ -411,7 +411,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 			await ShowSubmitBugReportDialog();
 		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
@@ -420,50 +420,50 @@ public partial class MainForm : LiteMainForm, IMainForm {
 			await ShowAboutBox();
 		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
-	protected virtual void ContextHelp_Click(object sender, EventArgs e) {
+	protected virtual async void ContextHelp_Click(object sender, EventArgs e) {
 		var screen = CommandUserInterfaceServices.ScreenHost?.ActiveScreen;
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			if (screen != null)
-				helpServices.ShowContextHelp(screen);
+				await helpServices.ShowContextHelpAsync(screen);
 			else
-				helpServices.ShowHelp();
-		}, out var error);
+				await helpServices.ShowHelpAsync();
+		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
-	protected virtual void UserGuide_Click(object sender, EventArgs e) {
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+	protected virtual async void UserGuide_Click(object sender, EventArgs e) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
-			helpServices.ShowHelp();
-		}, out var error);
+			await helpServices.ShowHelpAsync();
+		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
-	protected virtual void Exit_Click(object sender, EventArgs e) {
+	protected virtual async void Exit_Click(object sender, EventArgs e) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			Exit(false);
 		}, out var error);
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 
-	protected virtual void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+	protected virtual async void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
-			helpServices.ShowHelp();
-		}, out var error);
+			await helpServices.ShowHelpAsync();
+		});
 		if (error != null) {
-			ReportError(error);
+			await ReportErrorAsync(error);
 		}
 	}
 

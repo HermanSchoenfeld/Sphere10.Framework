@@ -34,7 +34,7 @@ public partial class ProductProductRequestFeatureDialog : ProductSupportDialog, 
 			);
 		});
 		if (error != null) {
-			UserInterfaceServices.ReportError(error);
+			await UserInterfaceServices.ReportErrorAsync(error);
 		}
 	}
 }

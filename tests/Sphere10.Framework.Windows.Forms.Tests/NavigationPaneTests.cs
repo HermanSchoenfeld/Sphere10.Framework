@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -716,7 +717,10 @@ public class NavigationPaneTests {
 
 		protected override bool ShowWithoutActivation => true;
 
-		public override void ReportError(Exception Error) => LayoutErrors.Add(Error);
+		public override Task ReportErrorAsync(Exception Error, CancellationToken cancellationToken = default) {
+			LayoutErrors.Add(Error);
+			return Task.CompletedTask;
+		}
 	}
 
 	private class NavigationScreen : ApplicationScreen {

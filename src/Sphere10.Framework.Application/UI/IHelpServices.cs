@@ -6,13 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public interface IHelpServices {
 
-	void ShowContextHelp(IHelpableObject helpableObject);
+	Task ShowContextHelpAsync(IHelpableObject helpableObject, CancellationToken cancellationToken = default);
 
-	void ShowHelp();
+	Task ShowHelpAsync(CancellationToken cancellationToken = default);
 
 }
 

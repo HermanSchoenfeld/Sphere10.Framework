@@ -33,6 +33,7 @@ Every folder of `Sphere10.Framework.Windows.Forms` is a domain with its own READ
 
 | Domain | What it provides | Source |
 |---|---|---|
+| [Attachment](Attachment/README.md) | Compact file/clipboard attachment selection with a modal editor and immutable content snapshots. | [source](Attachment/) |
 | [Application](Application/README.md) | Native WinForms application shell with plugins, blocks, menus, hosted screens, main forms, Options dialogs and startup integration. | [source](Application/) |
 | [AppointmentBook](AppointmentBook/README.md) | Scheduling grid control that shows appointments in named columns over a time period, with selection, drag-and-drop rescheduling and resizing. | [source](AppointmentBook/) |
 | [Authentication](Authentication/README.md) | Modal logon and password-entry dialogs that delegate credential checks and password policy to caller-supplied callbacks. | [source](Authentication/) |

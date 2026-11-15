@@ -75,27 +75,23 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 
 	public virtual Task ShowAboutBox() => throw new NotSupportedException();
 
-	public virtual void ReportError(Exception error) => ReportError("Error", error.ToString());
+	public virtual Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default)
+		=> ReportErrorAsync("Error", error.ToString(), cancellationToken);
 
-	public virtual void ReportError(string message) => ReportError("Error", message);
-	public virtual void ReportError(string title, string message) => throw new NotSupportedException();
-	public virtual void ReportFatalError(string title, string message) => throw new NotSupportedException();
-	public virtual void ReportInfo(string title, string message) => throw new NotSupportedException();
+	public virtual Task ReportErrorAsync(string message, CancellationToken cancellationToken = default)
+		=> ReportErrorAsync("Error", message, cancellationToken);
+
+	public virtual Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+	public virtual Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
 	public virtual bool AskYN(string question) => throw new NotSupportedException();
 	public virtual void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false) => throw new NotSupportedException();
 	public virtual Task<bool> AskYNAsync(string question, CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.FromResult(AskYN(question));
-	}
-	public virtual Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) {
-		cancellationToken.ThrowIfCancellationRequested();
-		ReportError(title, message);
-		return Task.CompletedTask;
-	}
-	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) {
-		cancellationToken.ThrowIfCancellationRequested();
-		ReportInfo(title, message);
-		return Task.CompletedTask;
 	}
 	public virtual Task ExecuteInUIFriendlyContextAsync(Func<Task> action, CancellationToken cancellationToken = default) =>
 		UserInterfaceServicesDispatch.ExecuteAsync(this, action, cancellationToken);

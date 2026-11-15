@@ -256,6 +256,6 @@ internal static class WinFormsCommandControls {
 			return;
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => userInterface.ExecuteMenuItemAsync(command));
 		if (error != null)
-			userInterface.ReportError(error);
+			await userInterface.ReportErrorAsync(error);
 	}
 }

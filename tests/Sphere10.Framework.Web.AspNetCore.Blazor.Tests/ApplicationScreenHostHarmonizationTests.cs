@@ -553,10 +553,15 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(executions, Is.EqualTo(1));
 	}
 
-	[TestCase("info")]
-	[TestCase("error")]
-	[TestCase("confirm")]
-	public async Task ModalInteractionsUseTheRealViewServiceAndAwaitTheirResult(string kind) {
+	[TestCase("info", false)]
+	[TestCase("error", false)]
+	[TestCase("exception", false)]
+	[TestCase("message", false)]
+	[TestCase("fatal", false)]
+	[TestCase("confirm", false)]
+	[TestCase("info", true)]
+	[TestCase("error", true)]
+	public async Task ModalInteractionsUseTheRealViewServiceAndAwaitTheirResult(string kind, bool cancel) {
 		var probe = new DialogProbe();
 		var services = CreateServices().AddLogging().AddSingleton(probe).AddSingleton<IJSRuntime>(new ModalRuntime());
 		await using var provider = services.BuildServiceProvider();
@@ -565,10 +570,14 @@ public class ApplicationScreenHostHarmonizationTests {
 		var userInterface = (BlazorUserInterfaceServices)scope.ServiceProvider.GetRequiredService<IUserInterfaceServices>();
 		using var binding = userInterface.AttachController(renderer, action => renderer.Dispatcher.InvokeAsync(action));
 		await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<CaptureModalHost>());
+		using var cancellation = new CancellationTokenSource();
 		Task interaction = kind switch {
-			"info" => userInterface.ReportInfoAsync("Information", "Readable detail"),
-			"error" => userInterface.ReportErrorAsync("Error", "Readable detail"),
-			_ => userInterface.AskYNAsync("Continue?")
+			"info" => userInterface.ReportInfoAsync("Information", "Readable detail", cancellation.Token),
+			"error" => userInterface.ReportErrorAsync("Error", "Readable detail", cancellation.Token),
+			"message" => userInterface.ReportErrorAsync("Readable detail", cancellation.Token),
+			"exception" => userInterface.ReportErrorAsync(new InvalidOperationException("Readable detail"), cancellation.Token),
+			"fatal" => userInterface.ReportFatalErrorAsync("Fatal", "Readable detail", cancellation.Token),
+			_ => userInterface.AskYNAsync("Continue?", cancellation.Token)
 		};
 		await probe.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
 		Assert.That(interaction.IsCompleted, Is.False);
@@ -578,6 +587,15 @@ public class ApplicationScreenHostHarmonizationTests {
 		} else {
 			Assert.That(probe.Current, Is.TypeOf<Dialog>());
 			Assert.That(((Dialog)probe.Current).Message, Is.EqualTo("Readable detail"));
+		}
+		if (cancel) {
+			cancellation.Cancel();
+			await interaction.WaitAsync(TimeSpan.FromSeconds(5));
+			// Blazor's existing modal contract treats cancellation after opening as dismissal.
+			var next = userInterface.ReportInfoAsync("Next notice", "The modal host was released");
+			probe.Result.SetResult(ModalResult.Ok);
+			await next.WaitAsync(TimeSpan.FromSeconds(5));
+			return;
 		}
 		probe.Result.SetResult(ModalResult.Ok);
 		await interaction.WaitAsync(TimeSpan.FromSeconds(5));

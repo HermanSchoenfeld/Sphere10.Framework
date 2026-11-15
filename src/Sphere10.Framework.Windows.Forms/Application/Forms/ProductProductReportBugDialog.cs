@@ -34,7 +34,7 @@ public partial class ProductProductReportBugDialog : ProductSupportDialog, IProd
 			);
 		});
 		if (error != null) {
-			UserInterfaceServices.ReportError(error);
+			await UserInterfaceServices.ReportErrorAsync(error);
 		}
 	}
 }

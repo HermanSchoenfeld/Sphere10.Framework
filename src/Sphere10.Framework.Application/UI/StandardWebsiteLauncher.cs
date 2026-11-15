@@ -8,6 +8,9 @@
 
 using System.Diagnostics;
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public class StandardWebsiteLauncher : IWebsiteLauncher {
@@ -19,25 +22,23 @@ public class StandardWebsiteLauncher : IWebsiteLauncher {
 
 	public IProductInformationProvider ProductProvider { get; private set; }
 
-	public void LaunchWebsite(string url) {
+	public Task LaunchWebsiteAsync(string url, CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
 		Process.Start(new ProcessStartInfo {
 			FileName = $"{url.Trim('"')}",
 			UseShellExecute = true,
 		});
+		return Task.CompletedTask;
 	}
 
-	public void LaunchCompanyWebsite() {
-		LaunchWebsite(ProductProvider.ProductInformation.CompanyUrl);
-	}
+	public Task LaunchCompanyWebsiteAsync(CancellationToken cancellationToken = default)
+		=> LaunchWebsiteAsync(ProductProvider.ProductInformation.CompanyUrl, cancellationToken);
 
-	public void LaunchProductWebsite() {
-		LaunchWebsite(ProductProvider.ProductInformation.ProductUrl);
-	}
+	public Task LaunchProductWebsiteAsync(CancellationToken cancellationToken = default)
+		=> LaunchWebsiteAsync(ProductProvider.ProductInformation.ProductUrl, cancellationToken);
 
-	public void LaunchProductPurchaseWebsite() {
-		LaunchWebsite(ProductProvider.ProductInformation.ProductPurchaseUrl);
-	}
-
+	public Task LaunchProductPurchaseWebsiteAsync(CancellationToken cancellationToken = default)
+		=> LaunchWebsiteAsync(ProductProvider.ProductInformation.ProductPurchaseUrl, cancellationToken);
 
 }
 

@@ -19,6 +19,42 @@ namespace Sphere10.Framework.Application.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationUserInterfaceServicesTests {
+	[TestCase("exception")]
+	[TestCase("message")]
+	[TestCase("error")]
+	[TestCase("fatal")]
+	[TestCase("info")]
+	public async Task ReportingDecoratorPreservesCompletionCancellationAndFailure(string kind) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new ApplicationScreenHost(provider);
+		using var implementation = new ReportingServices(host, provider);
+		IUserInterfaceServices userInterface = new InteractionDecorator(implementation);
+		using var cancellation = new CancellationTokenSource();
+		Task Report() => kind switch {
+			"exception" => userInterface.ReportErrorAsync(new InvalidOperationException("Detail"), cancellation.Token),
+			"message" => userInterface.ReportErrorAsync("Detail", cancellation.Token),
+			"error" => userInterface.ReportErrorAsync("Error", "Detail", cancellation.Token),
+			"fatal" => userInterface.ReportFatalErrorAsync("Fatal", "Detail", cancellation.Token),
+			_ => userInterface.ReportInfoAsync("Information", "Detail", cancellation.Token)
+		};
+		var report = Report();
+		Assert.That(report.IsCompleted, Is.False);
+		Assert.That(implementation.Token, Is.EqualTo(cancellation.Token));
+		implementation.Dismissed.SetResult();
+		await report;
+
+		implementation.Dismissed = new TaskCompletionSource();
+		report = Report();
+		var failure = new InvalidOperationException("Notification failed");
+		implementation.Dismissed.SetException(failure);
+		await Assert.ThatAsync(async () => await report, Throws.Exception.SameAs(failure));
+
+		implementation.Dismissed = new TaskCompletionSource();
+		report = Report();
+		cancellation.Cancel();
+		await Assert.ThatAsync(async () => await report, Throws.InstanceOf<OperationCanceledException>());
+	}
+
 	[Test]
 	public async Task AnActionCanNavigateThroughTheBorrowedHostWithoutReenteringItsLifecycleGate() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -200,6 +236,22 @@ public class ApplicationUserInterfaceServicesTests {
 			Questions++;
 			return Task.FromResult(true);
 		}
+	}
+
+	private sealed class ReportingServices(IApplicationScreenHost host, IServiceProvider provider) : ApplicationUserInterfaceServices(host, provider) {
+		public TaskCompletionSource Dismissed = new();
+		public CancellationToken Token;
+
+		public override Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) {
+			Token = cancellationToken;
+			return Dismissed.Task.WaitAsync(cancellationToken);
+		}
+
+		public override Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default)
+			=> ReportErrorAsync(title, message, cancellationToken);
+
+		public override Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default)
+			=> ReportErrorAsync(title, message, cancellationToken);
 	}
 
 	private sealed class HostDecorator(IApplicationScreenHost host) : ApplicationScreenHostDecorator(host) {

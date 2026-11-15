@@ -1064,10 +1064,11 @@ public class DemoPluginRegistrationTests {
 	public sealed class DemoMainForm : BlockMainForm {
 		public Exception ReportedError { get; private set; }
 
-		public override void ReportError(Exception error) {
+		public override Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default) {
 			ReportedError ??= error;
 			TestContext.Progress.WriteLine("Native demo error: " + error);
 			TestContext.Progress.Flush();
+			return Task.CompletedTask;
 		}
 	}
 

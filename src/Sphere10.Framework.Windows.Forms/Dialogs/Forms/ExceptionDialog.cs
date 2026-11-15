@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -34,27 +35,36 @@ public partial class ExceptionDialog : DialogEx {
 	}
 
 	/// <summary>Awaitably shows the exception dialog without blocking the calling context.</summary>
-	public static async Task ShowAsync(IWin32Window owner, string title, Exception error) {
+	public static async Task ShowAsync(IWin32Window owner, string title, Exception error, CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
 		// The supplied owner determines the dispatcher; OpenForms can retain disposed handle-free forms.
 		var invoker = owner as Control ?? (owner != null ? Control.FromHandle(owner.Handle) : null);
 		invoker ??= System.Windows.Forms.Application.OpenForms.Cast<Form>()
 			.FirstOrDefault(form => form.IsHandleCreated && !form.IsDisposed && !form.Disposing);
 		if (invoker != null) {
-			await invoker.InvokeAsyncEx(async _ => {
-				using var form = new ExceptionDialog(title, error);
-				form.InitializeModalOwner(owner);
-				await form.ShowDialogAsync(owner);
-			});
+			await invoker.InvokeAsyncEx(_ => ShowOwnedAsync());
 		} else {
+			await ShowOwnedAsync();
+		}
+
+		async Task ShowOwnedAsync() {
+			cancellationToken.ThrowIfCancellationRequested();
 			using var form = new ExceptionDialog(title, error);
 			form.InitializeModalOwner(owner);
-			await form.ShowDialogAsync(owner);
+			var modal = form.ShowDialogAsync(owner);
+			try {
+				await modal.WaitAsync(cancellationToken);
+			} catch (OperationCanceledException) {
+				form.Close();
+				await modal;
+				throw;
+			}
 		}
 	}
 
 	/// <summary>Awaitably shows the exception dialog (titled "Error") without blocking the calling context.</summary>
-	public static Task ShowAsync(IWin32Window owner, Exception error) => ShowAsync(owner, "Error", error);
+	public static Task ShowAsync(IWin32Window owner, Exception error, CancellationToken cancellationToken = default) => ShowAsync(owner, "Error", error, cancellationToken);
 
 	/// <summary>Shows the exception using an available live window when no owner is supplied.</summary>
-	public static Task ShowAsync(Exception Error) => ShowAsync(null, Error);
+	public static Task ShowAsync(Exception error, CancellationToken cancellationToken = default) => ShowAsync(null, error, cancellationToken);
 }

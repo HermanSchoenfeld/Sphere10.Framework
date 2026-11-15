@@ -55,23 +55,22 @@ public abstract class UserInterfaceServicesDecorator<TConcrete> : IUserInterface
 
 	public virtual Task ShowAboutBox() => InternalServices.ShowAboutBox();
 
-	public virtual void ReportError(Exception error) => InternalServices.ReportError(error);
+	public virtual Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default)
+		=> InternalServices.ReportErrorAsync(error, cancellationToken);
 
-	public virtual void ReportError(string message) => InternalServices.ReportError(message);
+	public virtual Task ReportErrorAsync(string message, CancellationToken cancellationToken = default)
+		=> InternalServices.ReportErrorAsync(message, cancellationToken);
 
-	public virtual void ReportError(string title, string message) => InternalServices.ReportError(title, message);
+	public virtual Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) => InternalServices.ReportErrorAsync(title, message, cancellationToken);
 
-	public virtual void ReportFatalError(string title, string message) => InternalServices.ReportFatalError(title, message);
+	public virtual Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> InternalServices.ReportFatalErrorAsync(title, message, cancellationToken);
 
-	public virtual void ReportInfo(string title, string message) => InternalServices.ReportInfo(title, message);
+	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) => InternalServices.ReportInfoAsync(title, message, cancellationToken);
 
 	public virtual bool AskYN(string question) => InternalServices.AskYN(question);
 
 	public virtual Task<bool> AskYNAsync(string question, CancellationToken cancellationToken = default) => InternalServices.AskYNAsync(question, cancellationToken);
-
-	public virtual Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) => InternalServices.ReportErrorAsync(title, message, cancellationToken);
-
-	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) => InternalServices.ReportInfoAsync(title, message, cancellationToken);
 
 	public virtual void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false) => InternalServices.ExecuteInUIFriendlyContext(action, executeAsync);
 

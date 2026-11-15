@@ -104,10 +104,10 @@ public partial class ProductAboutBox : ApplicationForm, IAboutBox {
 		okButton.Location = new Point(ClientSize.Width - margin - okButton.Width, ClientSize.Height - LogicalToDeviceUnits(13) - okButton.Height);
 	}
 
-	private void _productLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+	private async void _productLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
 		var url = StringFormatter.FormatEx("{CompanyUrl}");
 		var websiteLauncher = Sphere10Framework.Instance.ServiceProvider.GetService<IWebsiteLauncher>();
-		websiteLauncher.LaunchWebsite(url);
+		await websiteLauncher.LaunchWebsiteAsync(url);
 	}
 
 }

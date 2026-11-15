@@ -15,6 +15,8 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
 [TestFixture]
@@ -22,38 +24,38 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [Apartment(ApartmentState.STA)]
 public class CHMHelpProviderTests {
 	[Test]
-	public void ContextHelpUsesItsContainingFormInsteadOfThePrimaryWindow() {
+	public async Task ContextHelpUsesItsContainingFormInsteadOfThePrimaryWindow() {
 		using var file = new TemporaryHelpFile();
 		using var primary = new Form();
 		using var options = new Form();
 		using var context = new HelpControl { FileName = file.Path, HelpTopicID = 400 };
 		options.Controls.Add(context);
 		var provider = new RecordingProvider(primary, file.Path);
-		provider.ShowContextHelp(context);
+		await provider.ShowContextHelpAsync(context);
 		Assert.That(provider.Owner, Is.SameAs(options));
 		Assert.That(provider.File, Is.EqualTo(file.Path));
 		Assert.That(provider.TopicId, Is.EqualTo(400));
 	}
 
 	[Test]
-	public void NonControlContextFallsBackToThePrimaryContainingFormAndDefaultFile() {
+	public async Task NonControlContextFallsBackToThePrimaryContainingFormAndDefaultFile() {
 		using var file = new TemporaryHelpFile();
 		using var primary = new Form();
 		using var primaryControl = new Control();
 		primary.Controls.Add(primaryControl);
 		var provider = new RecordingProvider(primaryControl, file.Path);
-		provider.ShowContextHelp(new HelpObject { FileName = file.Path + ".missing", HelpTopicID = 700 });
+		await provider.ShowContextHelpAsync(new HelpObject { FileName = file.Path + ".missing", HelpTopicID = 700 });
 		Assert.That(provider.Owner, Is.SameAs(primary));
 		Assert.That(provider.File, Is.EqualTo(file.Path));
 		Assert.That(provider.TopicId, Is.EqualTo(700));
 	}
 
 	[Test]
-	public void DefaultHelpUsesThePrimaryFormWithoutAContextTopic() {
+	public async Task DefaultHelpUsesThePrimaryFormWithoutAContextTopic() {
 		using var file = new TemporaryHelpFile();
 		using var primary = new Form();
 		var provider = new RecordingProvider(primary, file.Path);
-		provider.ShowHelp();
+		await provider.ShowHelpAsync();
 		Assert.That(provider.Owner, Is.SameAs(primary));
 		Assert.That(provider.File, Is.EqualTo(file.Path));
 		Assert.That(provider.TopicId, Is.Null);

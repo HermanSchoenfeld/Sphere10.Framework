@@ -76,10 +76,10 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 	}
 
 	public override Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default) =>
-		ExecuteInUIFriendlyContextAsync(() => Services.GetRequiredService<Modal.ViewService>().DialogAsync(title, message), cancellationToken);
+		ExecuteInUIFriendlyContextAsync(() => Services.GetRequiredService<Modal.ViewService>().DialogAsync(title, message, cancellationToken), cancellationToken);
 
 	public override Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) =>
-		ExecuteInUIFriendlyContextAsync(() => Services.GetRequiredService<Modal.ViewService>().DialogAsync(title, message), cancellationToken);
+		ExecuteInUIFriendlyContextAsync(() => Services.GetRequiredService<Modal.ViewService>().DialogAsync(title, message, cancellationToken), cancellationToken);
 
 	public override async Task<bool> AskYNAsync(string question, CancellationToken cancellationToken = default) {
 		var answer = false;
@@ -91,15 +91,13 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 	/// <summary>A synchronous modal would block the renderer; Blazor callers must await AskYNAsync.</summary>
 	public override bool AskYN(string question) => throw new NotSupportedException("Blazor confirmation dialogs must be awaited with AskYNAsync.");
 
-	public override void ReportError(Exception error) {
+	public override Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(error, nameof(error));
-		ObserveInteraction(ReportErrorAsync("Error", error.Message));
+		return ReportErrorAsync("Error", error.Message, cancellationToken);
 	}
 
-	public override void ReportError(string message) => ReportError("Error", message);
-	public override void ReportError(string title, string message) => ObserveInteraction(ReportErrorAsync(title, message));
-	public override void ReportFatalError(string title, string message) => ReportError(title, message);
-	public override void ReportInfo(string title, string message) => ObserveInteraction(ReportInfoAsync(title, message));
+	public override Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> ReportErrorAsync(title, message, cancellationToken);
 
 	protected override bool IsMenuItemEnabled(SharedUI.IApplicationMenuItem item) => Guard.ArgumentCast<IApplicationMenuItem>(item, nameof(item)).IsEnabled;
 

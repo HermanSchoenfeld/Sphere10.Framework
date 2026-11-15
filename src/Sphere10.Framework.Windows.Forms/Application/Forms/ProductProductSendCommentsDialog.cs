@@ -34,7 +34,7 @@ public partial class ProductProductSendCommentsDialog : ProductSupportDialog, IP
 			);
 		});
 		if (error != null) {
-			UserInterfaceServices.ReportError(error);
+			await UserInterfaceServices.ReportErrorAsync(error);
 		}
 	}
 }

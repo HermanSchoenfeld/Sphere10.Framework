@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application;
@@ -33,18 +34,22 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 
 	public Task ShowAboutBox() => throw new NotSupportedException();
 
-	public void ReportError(Exception e) => Console.WriteLine(e.ToDisplayString());
+	public Task ReportErrorAsync(Exception error, CancellationToken cancellationToken = default)
+		=> Console.Out.WriteLineAsync(error.ToDisplayString().AsMemory(), cancellationToken);
 
-	public void ReportError(string msg) => Console.Write(msg);
+	public Task ReportErrorAsync(string message, CancellationToken cancellationToken = default)
+		=> Console.Out.WriteAsync(message.AsMemory(), cancellationToken);
 
-	public void ReportError(string title, string msg) => Console.WriteLine(msg);
+	public Task ReportErrorAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> Console.Out.WriteLineAsync(message.AsMemory(), cancellationToken);
 
-	public void ReportFatalError(string title, string msg) {
-		Console.WriteLine(msg);
+	public async Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default) {
+		await ReportErrorAsync(title, message, cancellationToken);
 		Exit(true);
 	}
 
-	public void ReportInfo(string title, string msg) => Console.WriteLine(msg);
+	public Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> Console.Out.WriteLineAsync(message.AsMemory(), cancellationToken);
 
 	public bool AskYN(string question) => throw new NotSupportedException();
 

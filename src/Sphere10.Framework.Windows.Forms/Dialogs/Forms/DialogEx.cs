@@ -132,7 +132,14 @@ public partial class DialogEx : FormEx {
 		using var dialog = new DialogEx(iconType, title, text, false, buttonNames);
 		dialog.InitializeModalOwner(owner);
 		dialog.StartPosition = FormStartPosition.CenterParent;
-		await dialog.ShowDialogAsync(owner).WaitAsync(cancellationToken);
+		var modal = dialog.ShowDialogAsync(owner);
+		try {
+			await modal.WaitAsync(cancellationToken);
+		} catch (OperationCanceledException) {
+			dialog.Close();
+			await modal;
+			throw;
+		}
 		return dialog.DialogResult;
 	}
 

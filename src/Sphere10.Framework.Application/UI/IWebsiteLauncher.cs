@@ -6,17 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public interface IWebsiteLauncher {
 
-	void LaunchWebsite(string url);
+	Task LaunchWebsiteAsync(string url, CancellationToken cancellationToken = default);
 
-	void LaunchCompanyWebsite();
+	Task LaunchCompanyWebsiteAsync(CancellationToken cancellationToken = default);
 
-	void LaunchProductWebsite();
+	Task LaunchProductWebsiteAsync(CancellationToken cancellationToken = default);
 
-	void LaunchProductPurchaseWebsite();
+	Task LaunchProductPurchaseWebsiteAsync(CancellationToken cancellationToken = default);
 
 }
 

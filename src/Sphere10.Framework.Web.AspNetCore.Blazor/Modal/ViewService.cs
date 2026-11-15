@@ -68,12 +68,11 @@ public class ViewService {
 	/// <summary>
 	/// Show a dialog with content
 	/// </summary>
-	/// <param name="level"> dialog content inforative level, differing template may be used for different level</param>
 	/// <param name="title"> dialog title</param>
 	/// <param name="message"> message content</param>
-	/// <param name="confirmText"> optionally set confirm button text</param>
+	/// <param name="cancellationToken">Cancels and closes the modal interaction.</param>
 	/// <returns> a task that is complete once modal is dismissed</returns>
-	public async Task DialogAsync(string title, string message) {
+	public async Task DialogAsync(string title, string message, CancellationToken cancellationToken = default) {
 		Dictionary<string, object> parameters = new Dictionary<string, object> {
 			{ nameof(Dialog.Title), title },
 			{ nameof(Dialog.Message), message },
@@ -85,7 +84,7 @@ public class ViewService {
 			}
 		};
 
-		await _modalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
+		await _modalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters), null, cancellationToken);
 	}
 
 	public async Task<int> DialogAsync(string title, string message, params string[] buttonText) {

@@ -6,6 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public class StandardHelpServices : IHelpServices {
@@ -22,14 +25,11 @@ public class StandardHelpServices : IHelpServices {
 
 	public IWebsiteLauncher WebsiteLauncher { get; set; }
 
-	public void ShowContextHelp(IHelpableObject helpableObject) {
-		ShowHelp();
-	}
+	public Task ShowContextHelpAsync(IHelpableObject helpableObject, CancellationToken cancellationToken = default)
+		=> ShowHelpAsync(cancellationToken);
 
-	public void ShowHelp() {
-
-		WebsiteLauncher.LaunchProductWebsite();
-	}
+	public Task ShowHelpAsync(CancellationToken cancellationToken = default)
+		=> WebsiteLauncher.LaunchProductWebsiteAsync(cancellationToken);
 
 	public virtual HelpType PreferredHelpProvider {
 		get { return HelpType.URL; }
