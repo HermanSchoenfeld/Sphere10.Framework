@@ -10,8 +10,5 @@ using System;
 
 namespace Sphere10.Framework.Windows.Startup;
 
-[Flags]
-public enum WindowsStartupSources { None = 0, LogonRegistry = 1, ScheduledTasks = 2, WmiSubscriptions = 4, All = 7 }
-
 /// <summary>An explicit target interpretation, independent of the unchanged raw registration.</summary>
 public sealed record WindowsStartupTarget(string Path, string Arguments, string WorkingDirectory, string Availability);

@@ -8,8 +8,5 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>One named interpretation of the bytes at the caret, formatted for display.</summary>
-public sealed record HexEditorInspectionEntry(string Name, string Value);
-
-/// <summary>A resolved pointer position inside a hex editor view.</summary>
-public sealed record HexEditorHitTestResult(HexEditorPane Pane, long Offset, int Nibble);
+/// <summary>Identifies a detail by its ancestors and hierarchy scope for cycle checks and remembered state.</summary>
+internal sealed record VisualGridDetailPath(VisualGridDetailPath Parent, object Provider, object Identity);

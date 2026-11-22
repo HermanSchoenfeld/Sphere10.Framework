@@ -10,10 +10,4 @@ using System;
 
 namespace Sphere10.Framework.Windows.Services;
 
-public sealed record WindowsServiceFailureAction(uint Type, uint DelayMilliseconds);
-
-public sealed record WindowsServiceConfigurationIssue(uint InformationLevel, int NativeErrorCode);
-
 public sealed record WindowsServiceTriggerData(uint Type, byte[] Data);
-
-public sealed record WindowsServiceTrigger(uint Type, uint Action, Guid? Subtype, WindowsServiceTriggerData[] DataItems);

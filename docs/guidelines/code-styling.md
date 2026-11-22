@@ -134,11 +134,18 @@ Give multi-field data records explicit names instead of declaring tuple-shaped
 types in fields, collections, parameters or return values. Keep a class-local
 record as an inner type. Only compact, one-line record declarations go near the
 top of the owner. Full inner types go at the bottom of the class inside
-`#region Inner Types`. Each folder uses its own `SpecialTypes.cs` for the explicitly named data
-records shared by classes in that folder. This shared-record file is an exception
-to the ordinary one-type-per-file rule above; it is not a place for behavior or
-unrelated helpers. The types keep their own names; do not wrap them in repeated
-`SpecialTypes` classes across folders sharing a namespace.
+`#region Inner Types`. A record shared by several classes is a top-level type in
+its own file, named after it, like any other type.
+
+### Partial types
+
+Organize a substantial type by coherent responsibilities while keeping one class
+owner. Use `Type.cs` for its entry point and `Type.Aspect.cs` for each meaningful
+part. Apply the [partial-class pattern](patterns/partial-classes.md) across the
+whole type; it owns partitioning, responsibility comments, initializer order,
+move integrity and the [VisualGrid worked example](patterns/partial-classes.md#worked-example-visualgrid).
+Keep small cohesive types together and preserve designer/native declaration
+partitions. A file split does not require public helpers or another abstraction.
 
 ### Domain source organization
 

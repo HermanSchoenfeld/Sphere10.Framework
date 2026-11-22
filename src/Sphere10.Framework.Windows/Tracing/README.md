@@ -11,9 +11,9 @@ An `EtwTraceEventRecord` keeps the header fields, raw payload bytes, `EtwTracePr
 | Type | Kind | Purpose |
 |---|---|---|
 | [`EtwCpuProfileDecoder`](EtwCpuProfileDecoder.cs) | static class | Provider GUIDs, keyword and event types of kernel CPU sampling, and decoders for `SampledProfile` and `StackWalk` events |
-| [`EtwCpuProfileSample`](SpecialTypes.cs) | record | One CPU sample's instruction pointer and sampled thread ID, with availability text |
-| [`EtwCpuProfileStack`](SpecialTypes.cs) | record | One `StackWalk` payload with its original timestamp, process and thread IDs and stack addresses |
-| [`EtwStackEvent`](SpecialTypes.cs) | record | A provider GUID and event type that selects kernel stack capture on a system logger |
+| [`EtwCpuProfileSample`](EtwCpuProfileSample.cs) | record | One CPU sample's instruction pointer and sampled thread ID, with availability text |
+| [`EtwCpuProfileStack`](EtwCpuProfileStack.cs) | record | One `StackWalk` payload with its original timestamp, process and thread IDs and stack addresses |
+| [`EtwStackEvent`](EtwStackEvent.cs) | record | A provider GUID and event type that selects kernel stack capture on a system logger |
 | [`EtwTraceEventRecord`](EtwTraceEventRecord.cs) | record | One detached ETW event with header fields, payload bytes, decoded properties and extended data |
 | [`EtwTraceExtendedData`](EtwTraceEventRecord.cs) | record | One extended-header item with type, raw data, match ID and stack addresses |
 | [`EtwTraceProperty`](EtwTraceProperty.cs) | record | One manifest property with its original bytes and typed reads of unsigned integers and Unicode strings |

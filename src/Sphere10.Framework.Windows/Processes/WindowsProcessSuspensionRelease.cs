@@ -6,11 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Drawing;
+using System;
 
 namespace Sphere10.Framework.Windows;
 
-/// <summary>A detached, read-only desktop target; empty bounds mean its process identity could not be verified.</summary>
-public sealed record WindowsWindowTarget(WindowsWindowInfo Window, Rectangle Bounds);
-
-public sealed record WindowsUiAutomationProperty(int Id, string Name, string Value, string Availability);
+public sealed record WindowsProcessSuspensionRelease(ProcessIdentity Identity, int ReleasedThreads, ThreadIdentity[] RemainingThreads, string[] Errors);

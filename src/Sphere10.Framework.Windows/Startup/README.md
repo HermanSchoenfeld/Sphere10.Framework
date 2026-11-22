@@ -12,6 +12,6 @@ Reads where Windows starts programs at logon or boot (Run keys, startup folders,
 |---|---|---|
 | [`WindowsStartupRegistration`](WindowsStartupRegistration.cs) | record | One launch registration with family, name, scope, location, command, parsed executable and arguments, trigger, state and registry provenance |
 | [`WindowsStartupRegistrationDataSource`](WindowsStartupRegistrationDataSource.cs) | class | Read-only data source over the selected launch-source families, bounded by row count and query timeout |
-| [`WindowsStartupSources`](SpecialTypes.cs) | enum | Flags selecting logon registry entries, scheduled tasks and WMI subscriptions as launch sources |
-| [`WindowsStartupTarget`](SpecialTypes.cs) | record | An interpreted target path, arguments and working directory of a registered command, with availability text |
+| [`WindowsStartupSources`](WindowsStartupSources.cs) | enum | Flags selecting logon registry entries, scheduled tasks and WMI subscriptions as launch sources |
+| [`WindowsStartupTarget`](WindowsStartupTarget.cs) | record | An interpreted target path, arguments and working directory of a registered command, with availability text |
 | [`Tools.Windows.Startup`](WindowsStartupUtil.cs) | static class | `Tools.Windows.Startup` Run-key, StartupApproved, startup-folder, launch-source and target reads |

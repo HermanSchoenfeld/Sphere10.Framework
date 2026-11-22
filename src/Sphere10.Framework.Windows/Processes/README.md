@@ -8,16 +8,18 @@ Lists, opens, inspects and controls Windows processes and threads, tied to verif
 
 Several operations run in an isolated child process of the application. `ProcessSignalService`, `Tools.Windows.Dumps` and `FileHandleService` (in the [Files](../Files/README.md) domain) each start the application again with a worker argument through `WindowsProcessWorkerHost`, so the application calls their `TryRunWorker(args, out exitCode)` methods at the start of `Main` and exits when one returns true. `WindowsProcessWorkerSession` owns such a child with bounded stdout and stderr and asynchronous termination. `Tools.Windows.Symbols` unwinds x64 thread stacks from a PSS snapshot and resolves historical addresses against local images. `Tools.Windows.Managed` reads .NET runtime, thread and optional heap data from a PSS clone or a dump with ClrMD without loading target assemblies. `Tools.Windows.Dumps` writes user-mode minidumps and reads memory retained in them. See [managed diagnostics](../../../docs/usage/managed-diagnostics.md) for the end-to-end workflow.
 
+For a persistent request/response helper, set `WindowsProcessWorkerSessionOptions.RedirectStandardInput` and use `WriteLineAsync` with `ReadLineAsync`. Writes enforce a character limit and reject embedded line breaks. The caller serializes requests and supplies its cancellation deadline. Disposal terminates the owned process and exposes `TerminationConfirmed` before a replacement is started. The [media session](../Windowing/README.md) uses this transport with its own early worker dispatch and typed protocol.
+
 ## Contents
 
 | Type | Kind | Purpose |
 |---|---|---|
 | [`AttachToCommandPromptScope`](AttachToCommandPromptScope.cs) | struct | Scope that attaches the process to the foreground `cmd` or PowerShell console and frees it on disposal, posting Enter to restore the prompt |
-| [`ManagedDiagnosticEntry`](SpecialTypes.cs) | record | One managed diagnostic item with runtime, kind, name, address and value, such as a runtime, app domain, GC segment, module, thread, stack frame or current exception |
-| [`ManagedHeapObject`](SpecialTypes.cs) | record | One captured managed heap object with address, size, type name and method table |
-| [`ManagedHeapReference`](SpecialTypes.cs) | record | One reference from a source heap object to a target object |
-| [`ManagedHeapRoot`](SpecialTypes.cs) | record | One GC root with kind, address, target object and pinned and interior flags |
-| [`ManagedHeapType`](SpecialTypes.cs) | record | Per-type object count and total bytes of a heap capture |
+| [`ManagedDiagnosticEntry`](ManagedDiagnosticEntry.cs) | record | One managed diagnostic item with runtime, kind, name, address and value, such as a runtime, app domain, GC segment, module, thread, stack frame or current exception |
+| [`ManagedHeapObject`](ManagedHeapObject.cs) | record | One captured managed heap object with address, size, type name and method table |
+| [`ManagedHeapReference`](ManagedHeapReference.cs) | record | One reference from a source heap object to a target object |
+| [`ManagedHeapRoot`](ManagedHeapRoot.cs) | record | One GC root with kind, address, target object and pinned and interior flags |
+| [`ManagedHeapType`](ManagedHeapType.cs) | record | Per-type object count and total bytes of a heap capture |
 | [`ManagedInspectionOptions`](ManagedInspectionOptions.cs) | class | Opt-in heap and stack capture and upper bounds for objects, references, roots, entries and frames, plus local library directories |
 | [`ManagedRuntimeInfo`](ManagedRuntimeInfo.cs) | record | Detached result of a managed inspection: entries, heap objects, types, references and roots, truncation, issues and optional dump info |
 | [`Tools.Windows.Managed`](ManagedRuntimeUtil.cs) | static class | `Tools.Windows.Managed` read-only ClrMD inspection of a live process through a PSS clone or of a dump file |
@@ -30,9 +32,9 @@ Several operations run in an isolated child process of the application. `Process
 | [`ProcessWorkingSetDataSource`](ProcessWorkingSetDataSource.cs) | class | Polling data source that drains a process's working-set watch into a bounded history of `WorkingSetFaultRow` records |
 | [`ThreadIdentity`](ThreadIdentity.cs) | struct | Record struct of a thread ID and start time within a `ProcessIdentity` |
 | [`Tools.Windows.Threads`](ThreadUtil.cs) | static class | `Tools.Windows.Threads` reads, wait chains, priority, priority boost, suspend and resume of one verified thread |
-| [`WindowsCpuSet`](SpecialTypes.cs) | record | One system CPU Set with group, logical processor, core, efficiency class and parked and allocation flags |
-| [`WindowsDumpInfo`](SpecialTypes.cs) | record | An offline dump's path, length, write time and retained memory ranges |
-| [`WindowsDumpMemoryRange`](SpecialTypes.cs) | record | One virtual-memory range retained in a minidump with its file offset |
+| [`WindowsCpuSet`](WindowsCpuSet.cs) | record | One system CPU Set with group, logical processor, core, efficiency class and parked and allocation flags |
+| [`WindowsDumpInfo`](WindowsDumpInfo.cs) | record | An offline dump's path, length, write time and retained memory ranges |
+| [`WindowsDumpMemoryRange`](WindowsDumpMemoryRange.cs) | record | One virtual-memory range retained in a minidump with its file offset |
 | [`Tools.Windows.Dumps`](WindowsDumpUtil.cs) | static class | `Tools.Windows.Dumps` minidump capture in an isolated worker and reads of memory retained in a dump |
 | [`WindowsJobAccountingInfo`](WindowsJobAccountingInfo.cs) | record | Job object CPU times, page faults and process counts |
 | [`WindowsModuleInfo`](WindowsModuleInfo.cs) | record | One loader-listed module with path, base and size, plus optional PE header details of its mapped image |
@@ -51,24 +53,24 @@ Several operations run in an isolated child process of the application. `Process
 | [`WindowsProcessScheduling`](WindowsProcessScheduling.cs) | record | Affinity masks, default CPU Set IDs and available CPU Sets of a process, with availability text |
 | [`WindowsProcessString`](WindowsProcessString.cs) | record | One ASCII or Unicode string found in process memory or its image file, with its address or offset |
 | [`WindowsProcessStringScan`](WindowsProcessStringScan.cs) | record | Result of a string scan with bytes examined, skipped regions and truncation |
-| [`WindowsProcessSuspension`](SpecialTypes.cs) | record | One suspension owned by `ProcessSuspensionService`, with the suspended thread identities |
-| [`WindowsProcessSuspensionRelease`](SpecialTypes.cs) | record | Result of resuming an owned suspension: released count, remaining threads and errors |
+| [`WindowsProcessSuspension`](WindowsProcessSuspension.cs) | record | One suspension owned by `ProcessSuspensionService`, with the suspended thread identities |
+| [`WindowsProcessSuspensionRelease`](WindowsProcessSuspensionRelease.cs) | record | Result of resuming an owned suspension: released count, remaining threads and errors |
 | [`WindowsProcessTokenInfo`](WindowsProcessTokenInfo.cs) | record | Process token SIDs, session, elevation, groups, privileges, restriction, AppContainer and virtualization state |
 | [`WindowsProcessWorkerHost`](WindowsProcessWorkerHost.cs) | class | Builds argument-safe `ProcessStartInfo` to relaunch the application, or a given host, as an isolated worker |
-| [`WindowsProcessWorkerSession`](WindowsProcessWorkerSession.cs) | class | Async-disposable owner of one worker process with bounded line reads, captured stderr and confirmed termination |
-| [`WindowsProcessWorkerSessionOptions`](WindowsProcessWorkerSessionOptions.cs) | class | Termination and stderr-drain timeouts, stderr size limit and descendant-kill setting of a worker session |
-| [`WindowsResolvedAddresses`](SpecialTypes.cs) | record | Addresses resolved to stack frames against historical modules, with issues for missing or mismatched images |
+| [`WindowsProcessWorkerSession`](WindowsProcessWorkerSession.cs) | class | Async-disposable owner of one worker process with bounded line reads, optional line writes, captured stderr and confirmed termination |
+| [`WindowsProcessWorkerSessionOptions`](WindowsProcessWorkerSessionOptions.cs) | class | Termination and stderr-drain timeouts, stderr size limit, descendant-kill setting and optional redirected input |
+| [`WindowsResolvedAddresses`](WindowsResolvedAddresses.cs) | record | Addresses resolved to stack frames against historical modules, with issues for missing or mismatched images |
 | [`WindowsStackFrame`](WindowsStackFrame.cs) | record | One native stack frame with pointers, module, symbol, displacement and source line when available |
-| [`WindowsSymbolModule`](SpecialTypes.cs) | record | One historical image mapping (base, size, path, timestamp, checksum) used for address resolution |
+| [`WindowsSymbolModule`](WindowsSymbolModule.cs) | record | One historical image mapping (base, size, path, timestamp, checksum) used for address resolution |
 | [`Tools.Windows.Symbols`](WindowsSymbolUtil.cs) | static class | `Tools.Windows.Symbols` bounded x64 stack capture of a verified thread and offline address resolution |
 | [`WindowsThreadInfo`](WindowsThreadInfo.cs) | record | One thread's state, wait reason, priorities, CPU time, cycles, start time and start address |
-| [`WindowsThreadStack`](SpecialTypes.cs) | record | A bounded captured stack of one verified thread with truncation flag and issues |
+| [`WindowsThreadStack`](WindowsThreadStack.cs) | record | A bounded captured stack of one verified thread with truncation flag and issues |
 | [`WindowsThreadWaitChain`](WindowsThreadWaitChain.cs) | record | One Wait Chain Traversal sample with nodes, cycle detection and truncation |
-| [`WindowsThreadWaitChainNode`](SpecialTypes.cs) | record | One wait-chain node: object type, status, name and thread details |
+| [`WindowsThreadWaitChainNode`](WindowsThreadWaitChainNode.cs) | record | One wait-chain node: object type, status, name and thread details |
 | [`WindowsTokenGroup`](WindowsTokenGroup.cs) | record | One token group SID with its attribute flags |
 | [`WindowsTokenPrivilege`](WindowsTokenPrivilege.cs) | record | One token privilege name, LUID and attribute flags |
-| [`WindowsWorkingSetFault`](SpecialTypes.cs) | record | One raw working-set fault record with instruction pointer, faulting address and thread |
+| [`WindowsWorkingSetFault`](WindowsWorkingSetFault.cs) | record | One raw working-set fault record with instruction pointer, faulting address and thread |
 | [`WindowsWorkingSetPage`](WindowsWorkingSetPage.cs) | record | `QueryWorkingSetEx` flags for one address with decoded residency, sharing, protection, NUMA and page-size fields |
-| [`WindowsWorkingSetSample`](SpecialTypes.cs) | record | One drain of a working-set watch with its faults and lost-record count |
+| [`WindowsWorkingSetSample`](WindowsWorkingSetSample.cs) | record | One drain of a working-set watch with its faults and lost-record count |
 | [`WindowsWorkingSetWatch`](WindowsWorkingSetWatch.cs) | class | Exclusive in-process reader of a process's working-set fault buffer, whose disposal stops only this reader |
 | [`WorkingSetFaultRow`](WorkingSetFaultRow.cs) | record | One drained page fault with sequence number and observation time, as served by `ProcessWorkingSetDataSource` |

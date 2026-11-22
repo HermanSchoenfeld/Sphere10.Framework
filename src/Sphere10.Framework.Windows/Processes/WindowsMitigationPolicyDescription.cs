@@ -6,10 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms;
+using System;
 
-internal sealed record VisualGridPreparedRowStyle(VisualGridRowStyle Value);
+namespace Sphere10.Framework.Windows;
 
-internal sealed record VisualGridDetailRow(object Entity, object Identity, object QueryIdentity, bool Expandable);
-
-internal sealed record VisualGridDetailPath(VisualGridDetailPath Parent, VisualGridRowDetails Provider, object Identity);
+internal readonly record struct WindowsMitigationPolicyDescription(int InformationClass, string Name);

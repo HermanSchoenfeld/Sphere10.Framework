@@ -16,9 +16,9 @@ Queries, configures and controls Windows services and drivers through the Servic
 | [`Tools.Windows.Services`](ServiceUtil.cs) | static class | `Tools.Windows.Services` service and driver reads, configuration queries, start-mode changes, state control and status waits |
 | [`WindowsServiceAdvancedConfiguration`](WindowsServiceAdvancedConfiguration.cs) | record | Optional SCM configuration: delayed start, SID type, preshutdown timeout, launch protection, required privileges, failure actions, triggers and read issues |
 | [`WindowsServiceConfiguration`](WindowsServiceConfiguration.cs) | record | `QueryServiceConfig` data: names, binary path, account, type, start mode, error control, load-order group, tag and dependencies |
-| [`WindowsServiceConfigurationIssue`](SpecialTypes.cs) | record | An optional configuration level that could not be read, with its native error code |
+| [`WindowsServiceConfigurationIssue`](WindowsServiceConfigurationIssue.cs) | record | An optional configuration level that could not be read, with its native error code |
 | [`WindowsServiceDataSource`](WindowsServiceDataSource.cs) | class | Read-only data source over the service or the driver inventory |
-| [`WindowsServiceFailureAction`](SpecialTypes.cs) | record | One service failure action type and its delay |
+| [`WindowsServiceFailureAction`](WindowsServiceFailureAction.cs) | record | One service failure action type and its delay |
 | [`WindowsServiceInfo`](WindowsServiceInfo.cs) | record | One service or driver with configuration, status, PID, exit code, control flags, dependencies and per-section error codes |
-| [`WindowsServiceTrigger`](SpecialTypes.cs) | record | One service trigger with type, action, subtype GUID and data items |
-| [`WindowsServiceTriggerData`](SpecialTypes.cs) | record | One trigger data item's type and raw bytes |
+| [`WindowsServiceTrigger`](WindowsServiceTrigger.cs) | record | One service trigger with type, action, subtype GUID and data items |
+| [`WindowsServiceTriggerData`](WindowsServiceTriggerData.cs) | record | One trigger data item's type and raw bytes |

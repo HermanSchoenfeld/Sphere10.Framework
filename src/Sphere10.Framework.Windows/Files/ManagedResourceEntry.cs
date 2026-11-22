@@ -6,8 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows;
+namespace Sphere10.Framework.Windows.Files;
 
-public sealed record WindowsObjectEntry(string Name, string Type, string Path);
-
-public sealed record WindowsObjectDirectory(string Path, WindowsObjectEntry[] Entries, bool IsPartial, string LimitReason = null);
+/// <summary>An inert named entry inside an embedded .resources container; values are not instantiated.</summary>
+public sealed record ManagedResourceEntry(int ResourceToken, string Name, string DataType, int Size, bool IsBaml);

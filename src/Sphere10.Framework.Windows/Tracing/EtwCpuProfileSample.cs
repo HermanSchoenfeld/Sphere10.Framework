@@ -10,10 +10,5 @@ using System;
 
 namespace Sphere10.Framework.Windows;
 
-public sealed record EtwStackEvent(Guid ProviderId, byte Type);
-
 /// <summary>SampledProfile's instruction pointer and manifest thread ID; the ETW header PID is deliberately not promoted to the sampled actor.</summary>
 public sealed record EtwCpuProfileSample(ulong? InstructionPointer, uint? ThreadId, string Availability);
-
-/// <summary>Classic StackWalk payload, with its original timestamp retained unchanged for same-clock association.</summary>
-public sealed record EtwCpuProfileStack(ulong? OriginalEventTimestamp, uint? ProcessId, uint? ThreadId, ulong[] StackAddresses, string Availability);
