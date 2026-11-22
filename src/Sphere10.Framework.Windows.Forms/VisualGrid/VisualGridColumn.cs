@@ -13,26 +13,36 @@ using System.Drawing;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class VisualGridColumn<TEntity> : IVisualGridColumn {
-	private string _preferenceKey;
-
 	public VisualGridColumn() => DropDownItemsNullDisplayString = string.Empty;
 
 	public string ColumnName { get; set; }
 
 	/// <summary>Stable preference identity for projected columns without a property or sort name.</summary>
 	public string PreferenceKey {
-		get => _preferenceKey ?? PropertyName ?? SortName;
-		set => _preferenceKey = value;
+		get => field ?? PropertyName ?? SortName;
+		set;
 	}
-	public CrudCellDisplayType DisplayType { get; set; }
+
+	public VisualGridCellDisplayType DisplayType { get; set; }
 	public Sphere10.Framework.ResizeAlignment ImageAlignment { get; set; } = Sphere10.Framework.ResizeAlignment.CenterCenter;
 	public Sphere10.Framework.ResizeMethod? ImageResizeMethod { get; set; }
 	public Type DataType { get; set; }
 	public string SortName { get; set; }
-	public string? PropertyName { get; set; }
-	public CrudReferenceBinding? ReferenceBinding { get; set; }
+	public string PropertyName { get; set; }
+	public VisualGridReferenceBindingBase ReferenceBinding { get; set; }
+
 	/// <summary>Uses spare grid width for this column while retaining its content width as the minimum.</summary>
 	public bool ExpandsToFit { get; set; }
+
+	/// <summary>Omits this column from the grid by default; an accepted column preference can show it.</summary>
+	public bool Hidden { get; set; }
+
+	/// <summary>The narrowest width, in logical pixels, natural sizing gives the column; 0 sizes it to its header and the shown rows alone.</summary>
+	public int MinimumWidth { get; set; }
+
+	/// <summary>The widest width, in logical pixels, natural sizing gives the column; 0 leaves it unbounded.</summary>
+	public int MaximumWidth { get; set; }
+
 	public bool CanEditCell { get; set; }
 	public Func<TEntity, bool> PropertyHasValue { get; set; }
 	public Func<TEntity, object> PropertyValue { get; set; }
@@ -47,18 +57,9 @@ public class VisualGridColumn<TEntity> : IVisualGridColumn {
 	public Func<TEntity, Image> ButtonImage { get; set; }
 	public Func<TEntity, string> DateTimeFormat { get; set; }
 
-	public bool CellHasValue(object row) {
-		if (PropertyHasValue == null)
-			return true;
-		return PropertyHasValue((TEntity)row);
-	}
+	public bool CellHasValue(object row) => PropertyHasValue?.Invoke((TEntity)row) ?? true;
 
-	public object GetCellValue(object row) {
-		if (PropertyValue == null)
-			return null;
-
-		return PropertyValue((TEntity)row);
-	}
+	public object GetCellValue(object row) => PropertyValue?.Invoke((TEntity)row);
 
 	public void SetCellValue(object row, object @value) => SetPropertyValue((TEntity)row, @value);
 
@@ -66,41 +67,16 @@ public class VisualGridColumn<TEntity> : IVisualGridColumn {
 
 	public void ButtonPressed(object row) => ButtonAction((TEntity)row);
 
-	public Size GetButtonSize(object row) {
-		if (ButtonSize == null)
-			return Size.Empty;
+	public Size GetButtonSize(object row) => ButtonSize?.Invoke((TEntity)row) ?? Size.Empty;
 
-		return ButtonSize((TEntity)row);
-	}
+	public string GetButtonCaption(object row) => ButtonCaption == null ? string.Empty : ButtonCaption((TEntity)row);
 
-	public string GetButtonCaption(object row) {
-		if (ButtonCaption == null)
-			return string.Empty;
+	public Image GetButtonImage(object row) => ButtonImage?.Invoke((TEntity)row);
 
-		return ButtonCaption((TEntity)row);
-	}
-
-	public Image GetButtonImage(object row) {
-		if (ButtonImage == null)
-			return null;
-
-		return ButtonImage((TEntity)row);
-	}
-
-	public string GetDateTimeFormat(object row) {
-		if (DateTimeFormat == null) {
-			switch (DisplayType) {
-				case CrudCellDisplayType.Date:
-					return "yyyy-MM-dd";
-				case CrudCellDisplayType.Time:
-					return "HH:mm:ss.fff";
-				case CrudCellDisplayType.DateTime:
-				default:
-					return "yyyy-MM-dd HH:mm:ss.fff";
-			}
-		}
-		return DateTimeFormat((TEntity)row);
-	}
-
-
+	public string GetDateTimeFormat(object row)
+		=> DateTimeFormat != null ? DateTimeFormat((TEntity)row) : DisplayType switch {
+			VisualGridCellDisplayType.Date => "yyyy-MM-dd",
+			VisualGridCellDisplayType.Time => "HH:mm:ss.fff",
+			_ => "yyyy-MM-dd HH:mm:ss.fff"
+		};
 }

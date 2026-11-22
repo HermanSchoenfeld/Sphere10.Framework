@@ -219,6 +219,63 @@ public class VisualGridPreferencesTests {
 	}
 
 	[Test]
+	public void HiddenColumnsLeaveTheNativeGridAndRoundTripByStableColumnKey() {
+		RunWithMessageLoop(async owner => {
+			VisualGridSettings captured;
+			using (var first = CreateGrid(owner, "Hidden")) {
+				((VisualGridColumn<Row>)first.GridBindings[1]).Hidden = true;
+				first.GridBindings = first.GridBindings;
+				await first.SetDataSource(new ProbeSource());
+				await first.RefreshGrid();
+				var native = Find<Grid>(first, "_grid");
+				Assert.That(native.ColumnsCount, Is.EqualTo(1), "A column hidden by its schema is not created.");
+				Assert.That(first.VisibleGridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "name" }));
+				Assert.That(first.GridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "name", "group" }), "The declared schema keeps hidden columns.");
+
+				// An accepted preference overrides the schema in both directions.
+				var values = first.CaptureGridPreferences();
+				Assert.That(values.Columns.Select(column => column.Key), Is.EqualTo(new[] { "name", "group" }));
+				Assert.That(values.Columns.Select(column => column.Hidden), Is.EqualTo(new bool?[] { false, true }));
+				values.Columns.Single(column => column.Key == "name").Hidden = true;
+				values.Columns.Single(column => column.Key == "group").Hidden = false;
+				first.ApplyGridPreferences(values);
+				await first.RefreshGrid();
+				Assert.That(native.ColumnsCount, Is.EqualTo(1));
+				Assert.That(native[0, 0].Value, Is.EqualTo("Group"));
+				Assert.That(native[1, 0].Value, Is.EqualTo("Group"));
+				captured = first.CaptureGridPreferences();
+			}
+
+			// The screen-owned value carries visibility to the next grid instance.
+			using var restored = CreateGrid(owner, "Restored hidden");
+			restored.Preferences = captured;
+			await restored.SetDataSource(new ProbeSource());
+			await restored.RefreshGrid();
+			var grid = Find<Grid>(restored, "_grid");
+			Assert.That(restored.VisibleGridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "group" }));
+			Assert.That(grid.ColumnsCount, Is.EqualTo(1));
+
+			// A grid that mirrors another grid's displayed columns shows every binding it declares.
+			restored.ShowHiddenColumns = true;
+			await restored.RefreshGrid();
+			Assert.That(grid.ColumnsCount, Is.EqualTo(2));
+			restored.ShowHiddenColumns = false;
+			await restored.RefreshGrid();
+			Assert.That(grid.ColumnsCount, Is.EqualTo(1));
+
+			// Restoring defaults releases the visibility choice; this grid's schema declares both columns visible.
+			var reset = restored.CaptureGridPreferences();
+			reset.RestoreDefaultValues();
+			Assert.That(reset.Columns.All(column => column.Hidden == null), Is.True);
+			restored.ApplyGridPreferences(reset);
+			await restored.RefreshGrid();
+			Assert.That(grid.ColumnsCount, Is.EqualTo(2));
+			Assert.That(_provider.ReadCount, Is.Zero);
+			Assert.That(_provider.SaveCount, Is.Zero);
+		});
+	}
+
+	[Test]
 	public void ScreenColumnOrderAppliesToHeadersRowsAndCapturedValues() {
 		RunWithMessageLoop(async owner => {
 			using var crud = CreateGrid(owner, "Ordered columns");
@@ -347,6 +404,94 @@ public class VisualGridPreferencesTests {
 		});
 	}
 
+	[Test]
+	public void DraggingAHeaderBoundaryResizesTheColumn([Values] bool stretchingColumns, [Values] bool rowsOverflow) {
+		RunWithMessageLoop(async owner => {
+			using var crud = CreateGrid(owner, "Drag", stretching: stretchingColumns);
+			// Rows taller than the grid add a vertical scrollbar: the 21 November 2026 ARP table of 25 entries could not be resized.
+			if (rowsOverflow)
+				crud.PageMode = VisualGridPageMode.Single;
+			await crud.SetDataSource(new ProbeSource(rowsOverflow ? 200 : 20));
+			await crud.RefreshGrid();
+			var grid = Find<Grid>(crud, "_grid");
+			var before = grid.Columns[0].Width;
+			var header = grid.PositionToRectangle(new Position(0, 0));
+			var start = new Point(header.Right - 1, header.Top + header.Height / 2);
+			DragMouse(grid, start, new Point(start.X + 40, start.Y));
+			await Task.Yield();
+			Assert.That(grid.Columns[0].Width, Is.EqualTo(before + 40).Within(2), "The first column follows the dragged boundary.");
+			await crud.RefreshGrid();
+			Assert.That(grid.Columns[0].Width, Is.EqualTo(before + 40).Within(2), "A refresh keeps the width the user dragged.");
+
+			// The line is grabbed from its right side too, inside the next header, where people usually aim; the release does not sort.
+			var sorted = crud.CaptureGridPreferences().SortDirection;
+			before = grid.Columns[0].Width;
+			header = grid.PositionToRectangle(new Position(0, 1));
+			start = new Point(header.Left + 2, header.Top + header.Height / 2);
+			DragMouse(grid, start, new Point(start.X + 25, start.Y));
+			await Task.Yield();
+			Assert.That(grid.Columns[0].Width, Is.EqualTo(before + 25).Within(2), "Grabbing just right of the line resizes the column to its left.");
+			Assert.That(crud.CaptureGridPreferences().SortDirection, Is.EqualTo(sorted), "Finishing a resize is not a click that sorts.");
+		});
+	}
+
+	[Test]
+	public void DraggingAStretchedColumnWiderWhenTheRowsJustFitKeepsTheNewWidth() {
+		// 21 November 2026: an ARP table whose rows just filled the grid could not be widened. The wider column brought a horizontal scrollbar,
+		// that one a vertical scrollbar, and refitting the narrower viewport put the dragged column back before the width was the user's.
+		RunWithMessageLoop(async owner => {
+			using var crud = CreateGrid(owner, "JustFits");
+			crud.PageMode = VisualGridPageMode.Single;
+			await crud.SetDataSource(new ProbeSource(20));
+			await crud.RefreshGrid();
+			var grid = Find<Grid>(crud, "_grid");
+			for (var attempt = 0; attempt < 5; attempt++) {
+				var spare = grid.DisplayRectangle.Height - grid.Rows.GetBottom(grid.RowsCount - 1);
+				if (spare == 3)
+					break;
+				owner.ClientSize = new Size(owner.ClientSize.Width, owner.ClientSize.Height - spare + 3);
+				owner.PerformLayout();
+				await Task.Delay(50);
+			}
+			Assert.That(grid.DisplayRectangle.Height - grid.Rows.GetBottom(grid.RowsCount - 1), Is.InRange(1, SystemInformation.HorizontalScrollBarHeight - 1),
+				"The rows must just fit, so a horizontal scrollbar brings a vertical one.");
+			var before = grid.Columns[0].Width;
+			var header = grid.PositionToRectangle(new Position(0, 0));
+			var start = new Point(header.Right - 1, header.Top + header.Height / 2);
+			DragMouse(grid, start, new Point(start.X + 30, start.Y));
+			await Task.Yield();
+			Assert.That(grid.Columns[0].Width, Is.GreaterThanOrEqualTo(before + 28), "The dragged column keeps the width it was dragged to.");
+		});
+	}
+
+	[Test]
+	public void NaturalSizingGivesAColumnAtLeastItsMinimumWidth() {
+		RunWithMessageLoop(async owner => {
+			using var crud = CreateGrid(owner, "Minimum", stretching: false);
+			((VisualGridColumn<Row>)crud.GridBindings[1]).MinimumWidth = 260;
+			crud.GridBindings = crud.GridBindings.ToArray();
+			await crud.SetDataSource(new ProbeSource());
+			await crud.RefreshGrid();
+			var grid = Find<Grid>(crud, "_grid");
+			Assert.That(grid.Columns[1].Width, Is.GreaterThanOrEqualTo(crud.LogicalToDeviceUnits(260)), "The short Group values would size the column far narrower.");
+			Assert.That(grid.Columns[0].Width, Is.LessThan(crud.LogicalToDeviceUnits(260)), "A column without a minimum keeps its natural width.");
+		});
+	}
+
+	[Test]
+	public void NaturalSizingGivesAColumnAtMostItsMaximumWidth() {
+		RunWithMessageLoop(async owner => {
+			using var crud = CreateGrid(owner, "Maximum", stretching: false);
+			((VisualGridColumn<Row>)crud.GridBindings[0]).MaximumWidth = 30;
+			crud.GridBindings = crud.GridBindings.ToArray();
+			await crud.SetDataSource(new ProbeSource());
+			await crud.RefreshGrid();
+			var grid = Find<Grid>(crud, "_grid");
+			Assert.That(grid.Columns[0].Width, Is.EqualTo(crud.LogicalToDeviceUnits(30)), "The Name values would size the column wider.");
+			Assert.That(grid.Columns[1].Width, Is.GreaterThan(crud.LogicalToDeviceUnits(30)), "A column without a maximum keeps its natural width.");
+		});
+	}
+
 	// Supply the ordinary value a screen owns, independently of any control or provider.
 	private static VisualGridSettings Preferences(int pageSize, int page = 0, double? width = null) {
 		return new VisualGridSettings {
@@ -363,7 +508,7 @@ public class VisualGridPreferencesTests {
 	}
 
 	// Create a named native surface with stable declaration keys and no persistence responsibility.
-	private static VisualGrid CreateGrid(Form owner, string name, string caption = "Name", VisualGrid grid = null) {
+	private static VisualGrid CreateGrid(Form owner, string name, string caption = "Name", VisualGrid grid = null, bool stretching = true) {
 		var crud = grid ?? new VisualGrid();
 		crud.Name = name;
 		crud.Dock = DockStyle.Fill;
@@ -378,7 +523,7 @@ public class VisualGridPreferencesTests {
 				PropertyValue = row => row.Name,
 				SetPropertyValue = (row, value) => row.Name = (string)value,
 				CanEditCell = true,
-				ExpandsToFit = true
+				ExpandsToFit = stretching
 			},
 			new VisualGridColumn<Row> {
 				PreferenceKey = "group",
@@ -388,10 +533,28 @@ public class VisualGridPreferencesTests {
 				DataType = typeof(string),
 				PropertyValue = row => row.Group,
 				CanEditCell = false,
-				ExpandsToFit = true
+				ExpandsToFit = stretching
 			}
 		};
 		return crud;
+	}
+
+	// Delivers a left-button drag to the native window under the start point, as the mouse would, without moving the cursor.
+	private static void DragMouse(Grid grid, Point start, Point end) {
+		var target = (Control)grid;
+		for (var child = target.GetChildAtPoint(target.PointToClient(grid.PointToScreen(start))); child != null; child = target.GetChildAtPoint(target.PointToClient(grid.PointToScreen(start))))
+			target = child;
+		var wndProc = typeof(Control).GetMethod("WndProc", BindingFlags.Instance | BindingFlags.NonPublic);
+		void Send(int message, int keys, Point point) {
+			var local = target.PointToClient(grid.PointToScreen(point));
+			var m = Message.Create(target.Handle, message, keys, (local.Y << 16) | (local.X & 0xFFFF));
+			wndProc.Invoke(target, new object[] { m });
+		}
+		Send(0x0200, 0, start);
+		Send(0x0201, 1, start);
+		for (var step = 1; step <= 6; step++)
+			Send(0x0200, 1, new Point(start.X + (end.X - start.X) * step / 6, start.Y + (end.Y - start.Y) * step / 6));
+		Send(0x0202, 0, end);
 	}
 
 	// Resolve a designer-owned control through its public control tree.
@@ -434,9 +597,9 @@ public class VisualGridPreferencesTests {
 	private sealed class ProbeSource : ListDataSource<Row> {
 		private readonly List<QueryRequest> _requests = new();
 
-		public ProbeSource()
+		public ProbeSource(int count = 20)
 			: base(new ExtendedList<Row>()) {
-			Rows = Enumerable.Range(0, 20).Select(index => new Row { Name = "Name " + index.ToString("D2"), Group = "Group" }).ToArray();
+			Rows = Enumerable.Range(0, count).Select(index => new Row { Name = "Name " + index.ToString("D2"), Group = "Group" }).ToArray();
 		}
 
 		public Row[] Rows { get; }
