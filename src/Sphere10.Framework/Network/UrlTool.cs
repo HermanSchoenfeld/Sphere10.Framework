@@ -47,12 +47,18 @@ public static class Url {
 		return slug;
 	}
 
-	public static string ToUrlSlug(string value) {
+	public static string ToUrlSlug(string value) => ToUrlSlug(value, allowUnicode: false);
+
+	/// <summary>
+	/// Creates a lowercase path segment. Unicode mode retains letters, decimal digits and combining marks
+	/// in normalization form C; the result is a readable slug, not a percent-encoded request URI.
+	/// </summary>
+	public static string ToUrlSlug(string value, bool allowUnicode) {
 		// convert to lower case
 		value = value.ToLowerInvariant();
 
-		// remove diacritics (accents)
-		value = value.RemoveDiacritics();
+		// Preserve accents and equivalent Unicode spellings when requested; retain the legacy ASCII policy otherwise.
+		value = allowUnicode ? value.Normalize(NormalizationForm.FormC) : value.RemoveDiacritics();
 
 		// convert amperstands to n
 		value = value.Replace('&', 'n');
@@ -64,8 +70,22 @@ public static class Url {
 		// ensure all word delimiters are hyphens
 		value = WordDelimiters.Replace(value, "-");
 
+		// Preserve the C# language name before the punctuation filter removes its sharp.
+		value = Regex.Replace(value, @"\bc#", "c-sharp");
+
 		// strip out invalid characters
-		value = InvalidChars.Replace(value, "");
+		if (allowUnicode) {
+			var characters = new StringBuilder(value.Length);
+			foreach (var rune in value.EnumerateRunes()) {
+				var category = Rune.GetUnicodeCategory(rune);
+				if (Rune.IsLetterOrDigit(rune) || rune.Value == '-' ||
+					category is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark)
+					characters.Append(rune.ToString());
+			}
+			value = characters.ToString();
+		} else {
+			value = InvalidChars.Replace(value, "");
+		}
 
 		// replace multiple hyphens (-) with a single hyphen
 		value = MultipleHyphens.Replace(value, "-");
