@@ -31,6 +31,7 @@ public static partial class WinAPI {
 		public const int TOKEN_ALL_ACCESS = TOKEN_ASSIGN_PRIMARY + TOKEN_DUPLICATE + TOKEN_IMPERSONATE + TOKEN_QUERY + TOKEN_QUERY_SOURCE + TOKEN_ADJUST_PRIVILEGES + TOKEN_ADJUST_GROUPS + TOKEN_ADJUST_DEFAULT;
 		public const int ANYSIZE_ARRAY = 1;
 		public const string SE_RESTORE_NAME = "SeRestorePrivilege";
+		public const string SE_BACKUP_NAME = "SeBackupPrivilege";
 		public const int SE_PRIVILEGE_ENABLED = 0x2;
 
 		#endregion

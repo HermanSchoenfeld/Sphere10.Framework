@@ -6,6 +6,13 @@ Manages local users, groups and shares through the NetAPI, adjusts token privile
 
 `Tools.Windows.Security` enables privileges such as `SeBackupPrivilege` for one operation through `EnterScope` or `TryEnterScope`, which return a `TokenPrivilegeScope` over a duplicated thread token. Acquire and dispose that scope synchronously on the same worker thread, because it restores the previous thread token on disposal. `Impersonator.RunAs` logs on with supplied credentials and runs a synchronous action under that identity. `Tools.Windows.SecurityDescriptors` lists the SIDs a descriptor references and rewrites them without changing any other descriptor data. `SecurityTool` reads and writes file, directory and registry security, changes owners and looks up account names and SIDs. `ShareSecurity` with `ShareAccessRule` and `ShareAuditRule` is a `NativeObjectSecurity` model of share permissions.
 
+`Tools.Windows.Security.ReadUserProfiles` and `ReadUserProfilesAsync` read every user profile registered on the computer from the profile list Windows keeps in the registry, followed by the template profile that new profiles are copied from, whose `Sid` is null. Each `WindowsUserProfile` gives the owner's SID and account name, the profile folder, the path, length and last write time of its `NTUSER.DAT`, whether Windows has that hive loaded and whether the profile belongs to Local System, Local Service or Network Service. `AccountName` is null when Windows can no longer resolve the SID, and `Error` says why the hive file's details are unavailable. Nothing is opened or changed. A loaded hive is read at `HKEY_USERS\SID`, and any other can be loaded with `LoadHive` in the [Registry](../Registry/README.md) domain.
+
+```csharp
+foreach (var profile in await Tools.Windows.Security.ReadUserProfilesAsync())
+	Console.WriteLine($"{profile.AccountName ?? profile.Sid ?? "(template)"}: {profile.HivePath} {(profile.IsLoaded ? "loaded" : "not loaded")}");
+```
+
 ## Contents
 
 | Type | Kind | Purpose |
@@ -21,7 +28,7 @@ Manages local users, groups and shares through the NetAPI, adjusts token privile
 | [`NTObject`](NTObject.cs) | abstract class | Base of security principals with host, name, full name, SID and SID type |
 | [`NTRemoteObject`](NTRemoteObject.cs) | class | A domain account referenced from a host, such as a domain member of a local group |
 | [`NTShare`](NTShare.cs) | class | A network share with server path, type, permissions, use counts and security descriptor, and access-control get and set operations |
-| [`Tools.Windows.Security`](PrivilegeUtil.cs) | static class | `Tools.Windows.Security` token-privilege lookup, enabling and disabling, and operation-local privilege scopes |
+| [`Tools.Windows.Security`](PrivilegeUtil.cs) | static class | `Tools.Windows.Security` token-privilege lookup, enabling and disabling, and operation-local privilege scopes, with the user profile listing in [`UserProfileUtil.cs`](UserProfileUtil.cs) |
 | [`SecurityDescriptorSidReference`](SecurityDescriptorSidReference.cs) | struct | Record struct of one SID and the owner, group, DACL and SACL sections that reference it |
 | [`Tools.Windows.SecurityDescriptors`](SecurityDescriptorUtil.cs) | static class | `Tools.Windows.SecurityDescriptors` SID reference listing and SID translation of binary security descriptors |
 | [`SecurityTool`](SecurityTool.cs) | class | Static file, directory and registry security reads and writes, owner changes, current-user SID and account and SID lookups |
@@ -33,6 +40,7 @@ Manages local users, groups and shares through the NetAPI, adjusts token privile
 | [`UserFlags`](UserFlags.cs) | enum | NetAPI user account flags such as disabled, locked out, password not required and password never expires |
 | [`UserOperatorPriviliges`](UserOperatorPrivileges.cs) | enum | NetAPI operator privilege flags for print, communication, server and accounts operators |
 | [`UserPrivilege`](UserPrivilege.cs) | enum | NetAPI user privilege level: guest, user or administrator |
+| [`WindowsUserProfile`](WindowsUserProfile.cs) | record | One registered user profile with its owner, folder and the path, size, last write time and loaded state of its `NTUSER.DAT` |
 
 ### LocalAccounts
 

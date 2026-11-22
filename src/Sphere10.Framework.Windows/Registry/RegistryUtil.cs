@@ -153,6 +153,34 @@ public class RegistryUtil {
 		return Child(parent, newName);
 	}
 
+	/// <summary>Loads a hive file, such as the NTUSER.DAT of a user who is not signed in, as the sub-key <paramref name="name"/> of HKEY_USERS.
+	/// The caller owns the returned mount and unloads it as soon as the work is done. Requires an elevated administrator.</summary>
+	/// <remarks>Windows refuses a hive that is already loaded, which is the case for the user hive of anyone signed in; read that hive at
+	/// HKEY_USERS\SID instead. The backup and restore privileges are enabled for this call only.</remarks>
+	public RegistryHiveMount LoadHive(string filePath, string name) {
+		Debug.AssertNotMainThread();
+		Guard.ArgumentNotNullOrWhitespace(filePath, nameof(filePath));
+		ValidateComponent(name);
+		var fullPath = Path.GetFullPath(filePath);
+		Guard.FileExists(fullPath);
+		using var scope = _registryAccess.EnterWriteScope();
+		using (var users = RegistryKey.OpenBaseKey(RegistryHive.Users, RegistryView.Default))
+		using (var existing = users.OpenSubKey(name))
+			Guard.Ensure(existing == null, $"HKEY_USERS already has a key named '{name}'.");
+		if (!Tools.Windows.Security.TryEnterScope(new[] { WinAPI.NETAPI32.SE_BACKUP_NAME, WinAPI.NETAPI32.SE_RESTORE_NAME }, out var privileges))
+			throw new UnauthorizedAccessException("Loading a registry hive requires the backup and restore privileges of an elevated administrator.");
+		privileges.Dispose();
+		var error = RegistryHiveMount.LoadCore(name, fullPath);
+		if (error != 0)
+			throw new Win32Exception(error, error == 32
+				? $"Windows is using '{fullPath}'. A signed-in user's hive is already loaded under HKEY_USERS by their security identifier."
+				: $"Windows could not load the registry hive '{fullPath}': {new Win32Exception(error).Message}");
+		return new RegistryHiveMount(name, fullPath);
+	}
+
+	public Task<RegistryHiveMount> LoadHiveAsync(string filePath, string name, CancellationToken cancellationToken = default)
+		=> Task.Run(() => LoadHive(filePath, name), cancellationToken);
+
 	public void DeleteKey(RegistryAddress address, bool ignoreMissing = false) {
 		var parent = Parent(address, out var name);
 		using var scope = _registryAccess.EnterWriteScope();

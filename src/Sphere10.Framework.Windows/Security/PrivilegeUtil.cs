@@ -17,9 +17,9 @@ namespace Tools;
 public static partial class Windows {
 
 	/// <summary>
-	/// Provides utility methods for managing Windows security token privileges.
+	/// Provides utility methods for managing Windows security token privileges and reading the computer's user profiles.
 	/// </summary>
-	public static class Security {
+	public static partial class Security {
 		/// <summary>Enables required privileges on an operation-local effective token and restores the previous identity on disposal.
 		/// Acquire and dispose synchronously on the same worker thread; do not hold across await.</summary>
 		public static TokenPrivilegeScope EnterScope(params string[] privileges) {
