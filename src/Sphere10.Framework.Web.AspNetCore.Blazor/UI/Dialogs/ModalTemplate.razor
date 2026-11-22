@@ -8,7 +8,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using System.Threading
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@implements IDisposable
 
 <div class="modal-dialog modal-dialog-centered @SizeClass" role="document">
 	<div class="modal-content">
@@ -18,6 +20,10 @@
 				<button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
 					<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18" /></svg>
 				</button>
+				@if (BackdropDismissal != ModalBackdropDismissal.Close) {
+					@* This is a hook, not a control. The modal script sends a click outside the dialog and the Escape key here instead of to the close button. *@
+					<span class="modal-dismiss" hidden @onclick="OnDismissAsync"></span>
+				}
 			}
 		</div>
 		<div class="modal-body">
@@ -33,6 +39,8 @@
 </div>
 
 @code {
+	// Withdraws a pending close confirmation when this dialog is removed.
+	private CancellationTokenSource _closeConfirmation;
 
 	[Parameter]
 	public bool ShowCloseButton { get; set; } = true;
@@ -55,6 +63,24 @@
 	[Parameter]
 	public ModalOptions Options { get; set; } = new();
 
+	/// <summary>
+	/// What a click outside this dialog, or the Escape key, does when <see cref="Options"/> does not say.
+	/// </summary>
+	[Parameter]
+	public ModalBackdropDismissal DefaultBackdropDismissal { get; set; } = ModalBackdropDismissal.Close;
+
+	/// <summary>
+	/// The host showing this dialog, which asks the close confirmation above it.
+	/// </summary>
+	[CascadingParameter]
+	public ModalHost Host { get; set; }
+
+	/// <summary>
+	/// What a click outside this dialog, or the Escape key, does, which is the caller's
+	/// <see cref="ModalOptions.BackdropDismissal"/> when set and <see cref="DefaultBackdropDismissal"/> otherwise.
+	/// </summary>
+	public ModalBackdropDismissal BackdropDismissal => Options?.BackdropDismissal ?? DefaultBackdropDismissal;
+
 	private string SizeClass {
 		get {
 			return Options.Size switch {
@@ -65,9 +91,33 @@
 		}
 	}
 
-	private async Task OnCloseAsync() {
+	/// <summary>
+	/// Applies <see cref="BackdropDismissal"/> to a click outside this dialog or the Escape key. A dialog without
+	/// a close button cannot be closed, so it is neither closed nor asked about.
+	/// </summary>
+	/// <returns>Whether the dialog closed.</returns>
+	public async Task<bool> RequestDismissAsync() {
+		if (!ShowCloseButton || _closeConfirmation != null || BackdropDismissal == ModalBackdropDismissal.Ignore)
+			return false;
+		if (BackdropDismissal == ModalBackdropDismissal.Close)
+			return await CloseAsync();
+
+		// Ask above this dialog, then close as the close button does.
+		if (Host == null)
+			return false;
+		using var confirmation = _closeConfirmation = new CancellationTokenSource();
+		using var scope = Tools.Scope.ExecuteOnDispose(() => _closeConfirmation = null);
+		return await Host.ConfirmCloseAsync(confirmation.Token) && await CloseAsync();
+	}
+
+	public void Dispose() => _closeConfirmation?.Cancel();
+
+	private Task OnCloseAsync() => CloseAsync();
+
+	private Task OnDismissAsync() => RequestDismissAsync();
+
+	private async Task<bool> CloseAsync() {
 		var close = OnCloseFunc ?? CloseModal;
-		if (close != null)
-			await close();
+		return close != null && await close();
 	}
 }

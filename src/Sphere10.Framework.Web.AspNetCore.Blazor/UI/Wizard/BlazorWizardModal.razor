@@ -8,10 +8,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard
 @inherits ModalComponent
 
-<ModalTemplate OnCloseFunc="RequestCloseAsync" ShowCloseButton="CanCancel" Options="@Options">
+@* A wizard holds entered data, so a click outside it or the Escape key asks before cancelling it. The close button cancels directly. *@
+<ModalTemplate OnCloseFunc="RequestCloseAsync" ShowCloseButton="CanCancel" Options="@Options" DefaultBackdropDismissal="ModalBackdropDismissal.Confirm">
 	<HeaderTemplate>
 		<h6>@(_wizardHost?.Title ?? Wizard.Title)</h6>
 	</HeaderTemplate>

@@ -7,17 +7,24 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 const dialogs = new Map();
 
-// Keep focus inside the active dialog and route dismissal through its Blazor close button.
+// Keep focus inside the active dialog and route dismissal through the dialog's own Blazor handlers.
 export function Show(element) {
 	if (dialogs.has(element)) return;
 	const previousFocus = document.activeElement;
 	const backdrop = document.createElement("div");
 	backdrop.className = "modal-backdrop fade show";
 	document.body.appendChild(backdrop);
-	const Close = () => element.querySelector("button.close")?.click();
-	const OnClick = event => { if (event.target === element) Close(); };
+	// A dialog shown above another one, such as a close confirmation, also covers that dialog.
+	const top = Math.max(0, ...[...dialogs.keys()].map(open => Number(getComputedStyle(open).zIndex) || 0));
+	if (top) {
+		backdrop.style.zIndex = top + 1;
+		element.style.zIndex = top + 2;
+	}
+	// A click outside the dialog and Escape go to its dismiss hook, which applies the dialog's policy. A dialog without one closes.
+	const Dismiss = () => (element.querySelector(".modal-dismiss") ?? element.querySelector("button.close"))?.click();
+	const OnClick = event => { if (event.target === element) Dismiss(); };
 	const OnKeyDown = event => {
-		if (event.key === "Escape") Close();
+		if (event.key === "Escape") Dismiss();
 		if (event.key !== "Tab") return;
 		const controls = [...element.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]')].filter(control => control.getClientRects().length);
 		const first = controls[0] ?? element;
@@ -53,6 +60,7 @@ export function Hide(element) {
 	element.removeEventListener("keydown", state.OnKeyDown);
 	element.classList.remove("show");
 	element.style.display = "none";
+	element.style.zIndex = "";
 	element.setAttribute("aria-hidden", "true");
 	element.removeAttribute("aria-modal");
 	dialogs.delete(element);

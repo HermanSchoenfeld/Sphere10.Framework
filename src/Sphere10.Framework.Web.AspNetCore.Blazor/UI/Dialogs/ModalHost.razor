@@ -13,5 +13,10 @@
 @inherits ModalHostBase<ModalComponent, Sphere10.Framework.Web.AspNetCore.Blazor.Modal.ModalResult>
 
 <div @ref="ModalElement" class="modal fade" id="@Id" tabindex="-1" role="dialog" aria-label="Dialog" aria-hidden="true">
-	@DisplayedContent
+	<CascadingValue Value="this" IsFixed="true">
+		@DisplayedContent
+	</CascadingValue>
 </div>
+@if (_confirmationHost != null) {
+	<Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs.ModalHost @ref="ConfirmationHost" Id="@($"{Id}-confirmation")" />
+}
