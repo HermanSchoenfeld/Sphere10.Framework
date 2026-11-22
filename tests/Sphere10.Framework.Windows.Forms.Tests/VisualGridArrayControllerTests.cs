@@ -36,17 +36,17 @@ public class VisualGridArrayControllerTests {
 			return Task.FromResult<IEnumerable<Row>>(new[] { new Row { Id = 1, Name = "Sample " + capture }, new Row { Id = 2, Name = "Second " + capture } });
 		}));
 		Row[] Rows() => source.Current.ReadRange(null, int.MaxValue, 0, nameof(Row.Id), SortDirection.Ascending).Items.ToArray();
-		var controller = new VisualGridDataSourceController<Row>(grid, source,
+		grid.ConfigureDataSource(source,
 			selected => Rows().FirstOrDefault(row => row.Id == selected.Id));
 		Assert.That(source.RequiresLoad, Is.False);
 		Assert.That(source.Count, Is.Zero);
-		await controller.RefreshAsync();
+		await grid.RefreshDataSourceAsync();
 		Assert.That(captures, Is.Zero, "A source-owned presentation must not implicitly acquire the source's first capture.");
 		await source.RefreshAsync();
-		await controller.RefreshAsync();
+		await grid.RefreshDataSourceAsync();
 		grid.SelectedEntity = Rows()[1];
 		await source.RefreshAsync();
-		await controller.RefreshAsync();
+		await grid.RefreshDataSourceAsync();
 		Assert.That(grid.SelectedEntity, Is.SameAs(Rows()[1]));
 		Assert.That(((Row)grid.SelectedEntity).Name, Is.EqualTo("Second 2"));
 		await grid.SetSearchTextAsync("Sample");
@@ -88,9 +88,9 @@ public class VisualGridArrayControllerTests {
 			(IntPtr)((point.Y << 16) | (point.X & ushort.MaxValue)));
 		Assert.That(crud.SelectedEntity, Is.SameAs(rows[0]), "Native right-click selection must update the editing target before its permissions are read.");
 		var editing = crud.EditSelectedEntity();
-		CrudEntityEditorDialog dialog = null;
+		VisualEntityEditorDialog dialog = null;
 		for (var attempt = 0; attempt < 100 && dialog == null; attempt++) {
-			dialog = System.Windows.Forms.Application.OpenForms.OfType<CrudEntityEditorDialog>().SingleOrDefault();
+			dialog = System.Windows.Forms.Application.OpenForms.OfType<VisualEntityEditorDialog>().SingleOrDefault();
 			if (dialog == null) await Task.Delay(10);
 		}
 		Assert.That(dialog, Is.Not.Null, "The real grid operation must show the native CRUD editor.");

@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms {
-	partial class CrudDialog {
+	// Owns the modal grid form controls, layout and disposal.
+	// VisualGridDialog.cs configures the source, editor and modal workflow.
+	partial class VisualGridDialog {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -59,7 +61,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._okButton.UseVisualStyleBackColor = true;
 			this._okButton.Click += new System.EventHandler(this._okButton_Click);
 			//
-			// CrudDialog
+			// VisualGridDialog
 			//
 			this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -68,7 +70,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._visualGrid);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-			this.Name = "CrudDialog";
+			this.Name = "VisualGridDialog";
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.ResumeLayout(false);

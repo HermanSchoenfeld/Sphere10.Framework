@@ -32,18 +32,18 @@ public sealed class VisualGridDataSourceControllerTests {
 			grid.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", PropertyName = "Value", SortName = "Value",
 				DataType = typeof(string), PropertyValue = row => row.Value } };
 			using var source = new RangedSource();
-			var binding = new VisualGridDataSourceController<Row>(grid, source);
-			Assert.That(binding.VisibleSelectionIdentity, Is.Null, "Existing consumers retain their selected-entity policy unless configured.");
-			binding.VisibleSelectionIdentity = row => row.Id;
+			grid.ConfigureDataSource(source);
+			Assert.That(grid.VisibleSelectionIdentity, Is.Null, "Existing consumers retain their selected-entity policy unless configured.");
+			grid.VisibleSelectionIdentity = row => ((Row)row).Id;
 			object reconciled = null;
-			binding.SelectionReconciled += (_, _) => reconciled = grid.SelectedEntity;
-			await binding.RefreshAsync();
+			grid.SelectionReconciled += _ => reconciled = grid.SelectedEntity;
+			await grid.RefreshDataSourceAsync();
 			grid.SelectedEntity = grid.VisibleEntities.First();
 			source.Version = 2;
-			await binding.RefreshAsync();
+			await grid.RefreshDataSourceAsync();
 			Assert.That(((Row)grid.SelectedEntity).Value, Does.EndWith("v2"));
 			source.Empty = true;
-			await binding.RefreshAsync();
+			await grid.RefreshDataSourceAsync();
 			Assert.That(grid.SelectedEntity, Is.Null);
 			Assert.That(reconciled, Is.Null, "Row commands must receive their reconciliation callback after selection has been cleared.");
 		});
@@ -56,12 +56,13 @@ public sealed class VisualGridDataSourceControllerTests {
 			grid.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", PropertyName = "Value", SortName = "Value", DataType = typeof(string), PropertyValue = row => row.Value } };
 			using var source = new RangedSource();
 			var version = 1;
-			var binding = new VisualGridDataSourceController<Row>(grid, source) { PublicationIdentity = () => version, VisibleSelectionIdentity = row => row.Id };
-			await binding.RefreshAsync();
+			grid.ConfigureDataSource(source, visibleSelectionIdentity: row => row.Id);
+			grid.PublicationIdentity = () => version;
+			await grid.RefreshDataSourceAsync();
 			var first = grid.VisibleEntities.First();
 			grid.SelectedEntity = first;
 			source.DelayNext = true;
-			var pending = binding.RefreshAsync();
+			var pending = grid.RefreshDataSourceAsync();
 			await source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 			version = 2;
 			source.Version = 2;
@@ -70,7 +71,7 @@ public sealed class VisualGridDataSourceControllerTests {
 			Assert.That(grid.VisibleEntities.First(), Is.SameAs(first));
 			Assert.That(grid.SelectedEntity, Is.SameAs(first));
 			Assert.That(grid.Controls.Find("_grid", true).Single().Enabled, Is.True);
-			await binding.RefreshAsync();
+			await grid.RefreshDataSourceAsync();
 			Assert.That(((Row)grid.SelectedEntity).Value, Does.EndWith("v2"));
 		});
 	}
@@ -175,8 +176,8 @@ public sealed class VisualGridDataSourceControllerTests {
 			grid.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", PropertyName = "Value", SortName = "Value",
 				DataType = typeof(string), PropertyValue = row => row.Value } };
 			using var source = new RangedSource();
-			var binding = new VisualGridDataSourceController<Row>(grid, source, selected => source.LastRows.FirstOrDefault(row => row.Id == selected.Id));
-			await binding.RefreshAsync();
+			grid.ConfigureDataSource(source, selected => source.LastRows.FirstOrDefault(row => row.Id == selected.Id));
+			await grid.RefreshDataSourceAsync();
 			var native = grid.Controls.Find("_grid", true).OfType<SourceGrid.Grid>().Single();
 			Assert.That(grid.TotalRecords, Is.EqualTo(1000000));
 			Assert.That(source.Lengths, Is.All.LessThanOrEqualTo(100));
@@ -187,7 +188,7 @@ public sealed class VisualGridDataSourceControllerTests {
 			var width = native.Columns[0].Width;
 			source.Version = 2;
 			source.DelayNext = true;
-			var refresh = binding.RefreshAsync();
+			var refresh = grid.RefreshDataSourceAsync();
 			await source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.That(native.Enabled, Is.True);
 			Assert.That(WinAPI.USER32.IsWindowVisible(native.Handle), Is.True);

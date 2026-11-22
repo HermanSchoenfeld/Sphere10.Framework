@@ -68,7 +68,7 @@ public class ApplicationSettingsEditorSelectionTests {
 			var custom = new FormsUI.ApplicationScreenDefinition(typeof(OrdinarySettingsScreen), "Custom", stableKey: "custom", settingsEditor: context => {
 					Assert.That(context.Settings, Is.TypeOf<OrdinarySettings>());
 					customCalls++;
-					return new DefaultCrudEntityEditor();
+					return new VisualEntityEditor();
 				});
 			var block = new ApplicationBlock { Name = "Options" };
 			foreach (var definition in new[] { unmarked, marked, custom })
@@ -83,18 +83,18 @@ public class ApplicationSettingsEditorSelectionTests {
 			dialog.Show(owner);
 			dialog.SelectOwner(unmarked);
 			Assert.That(unmarked.Settings, Is.Not.Null);
-			Assert.That(Find<Panel>(dialog, "_editorHost").Controls.OfType<DefaultCrudEntityEditor>(), Is.Empty);
+			Assert.That(Find<Panel>(dialog, "_editorHost").Controls.OfType<VisualEntityEditor>(), Is.Empty);
 			Assert.That(Find<Button>(dialog, "_apply").Enabled, Is.False);
 			Assert.That(Find<Button>(dialog, "_reset").Enabled, Is.True, "Reset targets are configured independently of editor availability.");
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
 			Assert.That(store.Saves, Is.Zero);
 
 			dialog.SelectOwner(marked);
-			Assert.That(Find<Panel>(dialog, "_editorHost").Controls.OfType<DefaultCrudEntityEditor>().Count(), Is.EqualTo(1));
+			Assert.That(Find<Panel>(dialog, "_editorHost").Controls.OfType<VisualEntityEditor>().Count(), Is.EqualTo(1));
 			Assert.That(Find<Button>(dialog, "_apply").Enabled, Is.True);
 			dialog.SelectOwner(custom);
 			Assert.That(customCalls, Is.EqualTo(1));
-			var editor = Find<Panel>(dialog, "_editorHost").Controls.OfType<DefaultCrudEntityEditor>().Single();
+			var editor = Find<Panel>(dialog, "_editorHost").Controls.OfType<VisualEntityEditor>().Single();
 			((OrdinarySettings)editor.GetEntityWithChanges()).Number = 37;
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
 			Assert.That(((OrdinarySettings)custom.Settings).Number, Is.EqualTo(37));
@@ -134,7 +134,7 @@ public class ApplicationSettingsEditorSelectionTests {
 			Assert.That(FindFirstLevelItem(shown, nameof(EditableSettings.Details)).Expanded, Is.True);
 
 			// Other entity editors keep the native collapsed default.
-			using var ordinary = new DefaultCrudEntityEditor { Dock = DockStyle.Right };
+			using var ordinary = new VisualEntityEditor { Dock = DockStyle.Right };
 			owner.Controls.Add(ordinary);
 			ordinary.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, settings, false);
 			Assert.That(FindFirstLevelItem(ordinary, nameof(EditableSettings.Details)).Expanded, Is.False);
@@ -148,7 +148,7 @@ public class ApplicationSettingsEditorSelectionTests {
 	}
 
 	// Read a property row directly below the native grid's root, looking through category groups.
-	private static GridItem FindFirstLevelItem(DefaultCrudEntityEditor editor, string name) {
+	private static GridItem FindFirstLevelItem(VisualEntityEditor editor, string name) {
 		var root = editor.Controls.OfType<PropertyGrid>().Single().SelectedGridItem;
 		while (root.Parent != null)
 			root = root.Parent;

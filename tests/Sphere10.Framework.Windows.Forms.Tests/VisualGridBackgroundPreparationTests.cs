@@ -226,9 +226,9 @@ public class VisualGridBackgroundPreparationTests {
 		Assert.That(crud.IsDisposed, Is.True);
 	});
 
-	[TestCase(true, CrudCellDisplayType.Text)]
-	[TestCase(false, CrudCellDisplayType.Numeric)]
-	public void EditableAndOtherCellTypesRetainOwnerThreadDelegateAndControlConstruction(bool allowEditing, CrudCellDisplayType displayType) => RunWithMessageLoop(async owner => {
+	[TestCase(true, VisualGridCellDisplayType.Text)]
+	[TestCase(false, VisualGridCellDisplayType.Numeric)]
+	public void EditableAndOtherCellTypesRetainOwnerThreadDelegateAndControlConstruction(bool allowEditing, VisualGridCellDisplayType displayType) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		crud.AllowCellEditing = allowEditing;
 		var ownerThread = Environment.CurrentManagedThreadId;
@@ -275,7 +275,7 @@ public class VisualGridBackgroundPreparationTests {
 		using var small = new Bitmap(16, 16);
 		using var large = new Bitmap(16, 64);
 		var source = new RecordingSource { Rows = new[] { new Row { Value = small }, new Row { HasValue = false } } };
-		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Icon", DataType = typeof(System.Drawing.Image), DisplayType = CrudCellDisplayType.Image,
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Icon", DataType = typeof(System.Drawing.Image), DisplayType = VisualGridCellDisplayType.Image,
 			PropertyHasValue = row => row.HasValue, PropertyValue = row => row.Value } };
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();

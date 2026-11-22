@@ -8,7 +8,9 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
-partial class DefaultCrudEntityEditor {
+// Owns the property-grid editor controls and their disposal.
+// VisualEntityEditor.cs owns entity descriptors, edit tracking and reference bindings.
+partial class VisualEntityEditor {
 	/// <summary>
 	/// Required designer variable.
 	/// </summary>

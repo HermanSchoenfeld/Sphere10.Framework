@@ -19,7 +19,7 @@ public class ApplicationScreenDefinition : SharedUI.ApplicationScreenDefinition 
 	public ApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, ApplicationScreenRegistration registration = null, string stableKey = null,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null, SettingsObject settings = null,
-		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
+		Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> settingsEditor = null)
 		: base(screenType, title, activationMode, screenKind, registration, stableKey, settings) {
 		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 		Activator = activator;
@@ -30,7 +30,7 @@ public class ApplicationScreenDefinition : SharedUI.ApplicationScreenDefinition 
 	public Func<ApplicationScreenActivationContext, ApplicationScreen> Activator { get; }
 
 	/// <summary>Creates an editor for the actual settings object; null uses the standard PropertyGrid editor.</summary>
-	public Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> SettingsEditor { get; }
+	public Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> SettingsEditor { get; }
 
 	/// <summary>Preserves activation and identity while leaving command membership owned by the copied graph.</summary>
 	public override SharedUI.ApplicationScreenDefinition Clone()

@@ -8,69 +8,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Describes the existing records offered when editing an entity reference.</summary>
-public abstract class CrudReferenceBinding {
-	public const DataSourceCapabilities ReadOnlyCapabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
-
-	protected CrudReferenceBinding(IEnumerable<IVisualGridColumn> GridBindings) {
-		Guard.ArgumentNotNull(GridBindings, nameof(GridBindings));
-		this.GridBindings = GridBindings;
-	}
-
-	public IEnumerable<IVisualGridColumn> GridBindings { get; set; }
-
-	public bool AllowNull { get; set; } = true;
-
-	/// <summary>The configured dropdown content size in device pixels, limited by the available screen space.</summary>
-	public Size MaximumDropDownSize { get; set; } = new(760, 380);
-
-	/// <summary>Compatibility alias for MaximumDropDownSize.</summary>
-	public Size DropDownSize {
-		get => MaximumDropDownSize;
-		set => MaximumDropDownSize = value;
-	}
-
-	public abstract string GetDisplayText(object? Entity);
-
-	public abstract Task BindAsync(VisualGrid Grid);
-
-	protected void ConfigureGrid(VisualGrid Grid) {
-		Guard.ArgumentNotNull(Grid, nameof(Grid));
-		Grid.AllowCellEditing = false;
-		Grid.RightClickForContextMenu = false;
-		Grid.LeftClickToDeselect = false;
-		Grid.SelectOnMouseUp = true;
-		Grid.UseEntityReferenceForLookup = true;
-		Grid.AutoPageSize = true;
-		Grid.GridBindings = GridBindings.Where(Column => Column.DisplayType is not (CrudCellDisplayType.Button or CrudCellDisplayType.EditCommand or CrudCellDisplayType.DeleteCommand));
-	}
-}
-
-public class CrudReferenceBinding<TEntity> : CrudReferenceBinding {
-	public CrudReferenceBinding(IDataSource<TEntity> DataSource, IEnumerable<IVisualGridColumn> GridBindings, Func<TEntity, string>? DisplayText = null)
-		: base(GridBindings) {
-		Guard.ArgumentNotNull(DataSource, nameof(DataSource));
-		this.DataSource = DataSource;
-		this.DisplayText = DisplayText;
+public class VisualGridReferenceBinding<TEntity> : VisualGridReferenceBindingBase {
+	public VisualGridReferenceBinding(IDataSource<TEntity> dataSource, IEnumerable<IVisualGridColumn> gridBindings, Func<TEntity, string> displayText = null)
+		: base(gridBindings) {
+		Guard.ArgumentNotNull(dataSource, nameof(dataSource));
+		DataSource = dataSource;
+		DisplayText = displayText;
 	}
 
 	public IDataSource<TEntity> DataSource { get; }
 
-	public Func<TEntity, string>? DisplayText { get; set; }
+	public Func<TEntity, string> DisplayText { get; set; }
 
-	public override string GetDisplayText(object? Entity) => Entity == null ? "(none)" : DisplayText?.Invoke((TEntity)Entity) ?? Entity.ToString() ?? string.Empty;
+	public override string GetDisplayText(object entity) => entity == null ? "(none)" : DisplayText?.Invoke((TEntity)entity) ?? entity.ToString() ?? string.Empty;
 
-	public override async Task BindAsync(VisualGrid Grid) {
-		ConfigureGrid(Grid);
-		await Grid.SetDataSource(DataSource, ReadOnlyCapabilities);
-		if (Grid.IsDisposed)
+	public override async Task BindAsync(VisualGrid grid) {
+		ConfigureGrid(grid);
+		await grid.SetDataSource(DataSource, ReadOnlyCapabilities);
+		if (grid.IsDisposed)
 			return;
-		await Grid.RefreshGrid();
+		await grid.RefreshGrid();
 	}
 }

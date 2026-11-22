@@ -47,7 +47,7 @@
     <type fullname="Sphere10.Framework.Windows.Forms.PadLockButtonControlStateEventProvider" preserve="nothing">
       <method name=".ctor" />
     </type>
-    <type fullname="Sphere10.Framework.Windows.Forms.CrudComboBoxControlStateEventProvider" preserve="nothing">
+    <type fullname="Sphere10.Framework.Windows.FormsComboBoxControlStateEventProvider" preserve="nothing">
       <method name=".ctor" />
     </type>
     <type fullname="Sphere10.Framework.Windows.Forms.ExplorerBarInfoSurrogate" preserve="all" />

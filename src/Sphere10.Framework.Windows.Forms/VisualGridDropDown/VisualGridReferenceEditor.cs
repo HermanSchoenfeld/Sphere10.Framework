@@ -15,27 +15,28 @@ using System.Windows.Forms.Design;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Shares the same CRUD reference dropdown between PropertyGrid and inline grid editors.</summary>
-public class CrudReferenceEditor : UITypeEditor {
-	private readonly CrudReferenceBinding _binding;
+internal sealed class VisualGridReferenceEditor : UITypeEditor {
+	private readonly VisualGridReferenceBindingBase _binding;
 
-	public CrudReferenceEditor(CrudReferenceBinding Binding) {
-		Guard.ArgumentNotNull(Binding, nameof(Binding));
-		_binding = Binding;
+	public VisualGridReferenceEditor(VisualGridReferenceBindingBase binding) {
+		Guard.ArgumentNotNull(binding, nameof(binding));
+		_binding = binding;
 	}
 
 	public override bool IsDropDownResizable => true;
 
-	public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? Context) => UITypeEditorEditStyle.DropDown;
+	public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) => UITypeEditorEditStyle.DropDown;
 
-	public override object? EditValue(ITypeDescriptorContext? Context, IServiceProvider Provider, object? Value) {
-		if (Context?.PropertyDescriptor?.IsReadOnly == true || Provider?.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService Service)
-			return Value;
-		using var Picker = new CrudReferencePicker(_binding, Value);
-		if ((Provider as Control ?? Service as Control ?? Context?.Instance as Control) is { } Owner)
-			Picker.Font = Owner.Font;
-		Picker.SelectionAccepted += (_, _) => Service.CloseDropDown();
-		Picker.SelectionCancelled += (_, _) => Service.CloseDropDown();
-		Service.DropDownControl(Picker);
-		return Picker.HasSelection ? Picker.SelectedEntity : Value;
+	public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
+		if (context?.PropertyDescriptor?.IsReadOnly == true || provider?.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService service)
+			return value;
+		using (var picker = new VisualGridReferencePicker(_binding, value)) {
+			if ((provider as Control ?? service as Control ?? context?.Instance as Control) is { } owner)
+				picker.Font = owner.Font;
+			picker.SelectionAccepted += _ => service.CloseDropDown();
+			picker.SelectionCancelled += _ => service.CloseDropDown();
+			service.DropDownControl(picker);
+			return picker.HasSelection ? picker.SelectedEntity : value;
+		}
 	}
 }

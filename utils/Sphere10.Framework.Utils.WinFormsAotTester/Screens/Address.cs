@@ -14,7 +14,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.Crud;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 

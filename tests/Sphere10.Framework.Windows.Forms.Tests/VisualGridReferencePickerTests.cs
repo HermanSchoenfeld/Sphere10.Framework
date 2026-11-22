@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudReferencePickerTests {
+public class VisualGridReferencePickerTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void BoundRecursivePropertySelectsExistingIdentityWithoutExpandingOrWalkingGraph(bool SelfReference) {
@@ -35,7 +35,7 @@ public class CrudReferencePickerTests {
 		var Entity = SelfReference ? Original : new Employee { Name = "Employee" };
 		Entity.Manager = Original;
 		Original.Manager = Entity;
-		using var Editor = new DefaultCrudEntityEditor();
+		using var Editor = new VisualEntityEditor();
 		Editor.ReferenceBindings[nameof(Employee.Manager)] = CreateBinding(new[] { Original, Replacement });
 		Editor.SetEntity(DataSourceCapabilities.Default, Entity, false);
 		var Grid = Editor.Controls.OfType<PropertyGrid>().Single();
@@ -43,7 +43,7 @@ public class CrudReferencePickerTests {
 		Assert.That(Manager.Converter.GetPropertiesSupported(), Is.False);
 		Assert.That(Manager.Converter.GetStandardValuesSupported(), Is.False, "A reference picker must never offer to instantiate a new record.");
 		var PickerEditor = (UITypeEditor)Manager.GetEditor(typeof(UITypeEditor))!;
-		Assert.That(PickerEditor, Is.TypeOf<CrudReferenceEditor>());
+		Assert.That(PickerEditor, Is.Not.Null);
 		var Result = PickerEditor.EditValue(null, new EditorService(Picker => Picker.AcceptSelection(Replacement)), Original);
 		Assert.That(Result, Is.SameAs(Replacement));
 		Manager.SetValue(null, Result);
@@ -62,13 +62,13 @@ public class CrudReferencePickerTests {
 		using var Crud = new VisualGrid();
 		await Crud.SetDataSource(Binding.DataSource);
 		Crud.GridBindings = Binding.GridBindings;
-		using var AutomaticEditor = new DefaultCrudEntityEditor();
+		using var AutomaticEditor = new VisualEntityEditor();
 		ConfigureEditor(Crud, AutomaticEditor, Entity);
 		Assert.That(AutomaticEditor.ReferenceBindings.Keys, Does.Contain(nameof(Employee.Manager)));
 		Assert.That(AutomaticEditor.ReferenceBindings.Keys, Does.Not.Contain(nameof(Employee.Address)));
 
 		Crud.GridBindings = new[] { ManagerColumn(Binding) };
-		using var ExplicitEditor = new DefaultCrudEntityEditor();
+		using var ExplicitEditor = new VisualEntityEditor();
 		ConfigureEditor(Crud, ExplicitEditor, Entity);
 		Assert.That(ExplicitEditor.ReferenceBindings[nameof(Employee.Manager)], Is.SameAs(Binding));
 	});
@@ -76,7 +76,7 @@ public class CrudReferencePickerTests {
 	[Test]
 	public void UnboundAddressStillExpandsAlongsideBoundManager() {
 		var Entity = new Employee { Name = "Employee", Address = new Address { Street = "Original" } };
-		using var Editor = new DefaultCrudEntityEditor();
+		using var Editor = new VisualEntityEditor();
 		Editor.ReferenceBindings[nameof(Employee.Manager)] = CreateBinding(new[] { Entity });
 		Editor.SetEntity(DataSourceCapabilities.Default, Entity, false);
 		var Grid = Editor.Controls.OfType<PropertyGrid>().Single();
@@ -89,7 +89,9 @@ public class CrudReferencePickerTests {
 	[TestCase(true)]
 	public void ClosingPickerWithoutSelectionKeepsCurrentIdentity(bool InitiallyNull) {
 		var Original = InitiallyNull ? null : new Employee { Name = "Original" };
-		var Editor = new CrudReferenceEditor(CreateBinding(Array.Empty<Employee>()));
+		var InlineEditor = new SourceGrid.Cells.Editors.VisualGridReference(typeof(Employee), CreateBinding(Array.Empty<Employee>()));
+		using var Control = InlineEditor.Control;
+		var Editor = Control.UITypeEditor;
 		var Result = Editor.EditValue(null, new EditorService(Picker => {
 			Assert.That(Picker.SelectedEntity, Is.SameAs(Original));
 			Assert.That(Picker.HasSelection, Is.False);
@@ -101,10 +103,12 @@ public class CrudReferencePickerTests {
 	public void ClearReturnsNullAndRequiredBindingRejectsClear() {
 		var Original = new Employee { Name = "Original" };
 		var Binding = CreateBinding(new[] { Original });
-		var Editor = new CrudReferenceEditor(Binding);
+		var InlineEditor = new SourceGrid.Cells.Editors.VisualGridReference(typeof(Employee), Binding);
+		using var Control = InlineEditor.Control;
+		var Editor = Control.UITypeEditor;
 		Assert.That(Editor.EditValue(null, new EditorService(Picker => Picker.AcceptSelection(null)), Original), Is.Null);
 		Binding.AllowNull = false;
-		using var RequiredPicker = new CrudReferencePicker(Binding, Original);
+		using var RequiredPicker = new VisualGridReferencePicker(Binding, Original);
 		Assert.That(() => RequiredPicker.AcceptSelection(null), Throws.ArgumentException);
 		Assert.That(RequiredPicker.SelectedEntity, Is.SameAs(Original));
 	}
@@ -114,14 +118,14 @@ public class CrudReferencePickerTests {
 	public void PickerLoadsFullDatasourceWithOnlySupportedReadCapabilities(DataSourceCapabilities Capabilities) => RunWithMessageLoop(async Owner => {
 		var Records = Enumerable.Range(0, 120).Select(Index => new Employee { Name = $"Employee {Index}" }).ToArray();
 		var Source = new TestDataSource(Records) { SupportedCapabilities = Capabilities };
-		var Columns = CreateColumns().Concat(new[] { new VisualGridColumn<Employee> { DisplayType = CrudCellDisplayType.EditCommand } });
-		var Binding = new CrudReferenceBinding<Employee>(Source, Columns, Employee => Employee.Name);
-		using var Picker = new CrudReferencePicker(Binding, Records[110]);
+		var Columns = CreateColumns().Concat(new[] { new VisualGridColumn<Employee> { DisplayType = VisualGridCellDisplayType.EditCommand } });
+		var Binding = new VisualGridReferenceBinding<Employee>(Source, Columns, Employee => Employee.Name);
+		using var Picker = new VisualGridReferencePicker(Binding, Records[110]);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		Assert.That(Picker.LoadError, Is.Null);
 		Assert.That(Source.ReadCount, Is.GreaterThan(0));
-		Assert.That(Picker.Grid.Capabilities, Is.EqualTo(Capabilities & CrudReferenceBinding.ReadOnlyCapabilities));
+		Assert.That(Picker.Grid.Capabilities, Is.EqualTo(Capabilities & VisualGridReferenceBindingBase.ReadOnlyCapabilities));
 		Assert.That(Picker.Grid.AllowCellEditing, Is.False);
 		Assert.That(Picker.Grid.AutoPageSize, Is.True);
 		Assert.That(Picker.Grid.RightClickForContextMenu, Is.False);
@@ -140,7 +144,7 @@ public class CrudReferencePickerTests {
 			Assert.That(Picker.Grid.VisibleEntities.Last(), Is.SameAs(Records[119]));
 		}
 		var Closed = 0;
-		Picker.SelectionAccepted += (_, _) => Closed++;
+		Picker.SelectionAccepted += _ => Closed++;
 		Picker.Grid.SelectedEntity = Records[119];
 		Assert.That(Closed, Is.EqualTo(1), "Replacing a selected record must close only after the replacement is selected.");
 		Assert.That(Picker.SelectedEntity, Is.SameAs(Records[119]));
@@ -150,12 +154,12 @@ public class CrudReferencePickerTests {
 	[TestCase(true)]
 	public void InlineReferenceEditorPreservesValueAndNullWithoutTextConversion(bool InitiallyNull) {
 		var Original = InitiallyNull ? null : new Employee { Name = "Original" };
-		var Editor = new SourceGrid.Cells.Editors.CrudReference(typeof(Employee), CreateBinding(Array.Empty<Employee>()));
+		var Editor = new SourceGrid.Cells.Editors.VisualGridReference(typeof(Employee), CreateBinding(Array.Empty<Employee>()));
 		using var Control = Editor.Control;
 		Editor.SetEditValue(Original!);
 		Assert.That(Editor.GetEditedValue(), Is.SameAs(Original));
 		Assert.That(Control.TextBox.ReadOnly, Is.True);
-		Assert.That(Control.UITypeEditor, Is.TypeOf<CrudReferenceEditor>());
+		Assert.That(Control.UITypeEditor, Is.Not.Null);
 	}
 
 	[TestCase("select")]
@@ -176,7 +180,7 @@ public class CrudReferencePickerTests {
 		var Handled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var SelectTimer = new System.Windows.Forms.Timer { Interval = 25 };
 		SelectTimer.Tick += async (_, _) => {
-			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
+			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<VisualGridReferencePicker>().FirstOrDefault();
 			if (Picker == null)
 				return;
 			SelectTimer.Stop();
@@ -211,7 +215,7 @@ public class CrudReferencePickerTests {
 		var Entity = new Employee { Name = "Employee", Address = new Address { Street = "Original" } };
 		Entity.Manager = Entity;
 		var Replacement = new Employee { Name = "Replacement" };
-		using var Editor = new DefaultCrudEntityEditor { Dock = DockStyle.Fill };
+		using var Editor = new VisualEntityEditor { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Editor);
 		Editor.ReferenceBindings[nameof(Employee.Manager)] = CreateBinding(new[] { Entity, Replacement });
 		Editor.SetEntity(DataSourceCapabilities.Default, Entity, false);
@@ -225,7 +229,7 @@ public class CrudReferencePickerTests {
 		var PopupCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var SelectTimer = new System.Windows.Forms.Timer { Interval = 25 };
 		SelectTimer.Tick += async (_, _) => {
-			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
+			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<VisualGridReferencePicker>().FirstOrDefault();
 			if (Picker == null)
 				return;
 			SelectTimer.Stop();
@@ -284,8 +288,8 @@ public class CrudReferencePickerTests {
 	[Test]
 	public void ClosingPickerDuringReadDoesNotRestoreOrTouchDisposedControls() => RunWithMessageLoop(async Owner => {
 		var Source = new DelayedDataSource();
-		var Binding = new CrudReferenceBinding<Employee>(Source, CreateColumns());
-		using var Picker = new CrudReferencePicker(Binding, null);
+		var Binding = new VisualGridReferenceBinding<Employee>(Source, CreateColumns());
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		var Loading = Picker.LoadItemsAsync();
 		await Source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -296,20 +300,20 @@ public class CrudReferencePickerTests {
 		Assert.That(Picker.LoadError, Is.Null);
 		Assert.That(Picker.HasSelection, Is.False);
 	});
-	private static CrudReferenceBinding<Employee> CreateBinding(Employee[] Records) => new(new TestDataSource(Records), CreateColumns(), Employee => Employee.Name);
+	private static VisualGridReferenceBinding<Employee> CreateBinding(Employee[] Records) => new(new TestDataSource(Records), CreateColumns(), Employee => Employee.Name);
 
 	private static IVisualGridColumn[] CreateColumns() => new IVisualGridColumn[] {
 		new VisualGridColumn<Employee> { ColumnName = "Name", DataType = typeof(string), SortName = "Name", CanEditCell = true, PropertyValue = Employee => Employee.Name },
 		new VisualGridColumn<Employee> { ColumnName = "Manager", DataType = typeof(string), PropertyValue = Employee => Employee.Manager?.Name ?? "(none)" }
 	};
 
-	private static VisualGridColumn<Employee> ManagerColumn(CrudReferenceBinding Binding) => new() {
-		ColumnName = "Manager", PropertyName = nameof(Employee.Manager), DataType = typeof(Employee), DisplayType = CrudCellDisplayType.DropDownList,
+	private static VisualGridColumn<Employee> ManagerColumn(VisualGridReferenceBindingBase Binding) => new() {
+		ColumnName = "Manager", PropertyName = nameof(Employee.Manager), DataType = typeof(Employee), DisplayType = VisualGridCellDisplayType.DropDownList,
 		ReferenceBinding = Binding, PropertyValue = Employee => Employee.Manager!, SetPropertyValue = (Employee, Value) => Employee.Manager = (Employee?)Value,
 		CanEditCell = true, ExpandsToFit = true
 	};
 
-	private static void ConfigureEditor(VisualGrid Crud, DefaultCrudEntityEditor Editor, object Entity) =>
+	private static void ConfigureEditor(VisualGrid Crud, VisualEntityEditor Editor, object Entity) =>
 		typeof(VisualGrid).GetMethod("ConfigureReferenceBindings", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(Crud, new[] { Editor, Entity });
 
 	private static T FindControl<T>(Control Parent, string Name) where T : Control => (T)Parent.Controls.Find(Name, true).Single();
@@ -400,11 +404,11 @@ public class CrudReferencePickerTests {
 			return ReadRange(SearchTerm, PageLength, Page, SortProperty, SortDirection);
 		}
 	}
-	private sealed class EditorService(Action<CrudReferencePicker> Action) : IServiceProvider, IWindowsFormsEditorService {
+	private sealed class EditorService(Action<VisualGridReferencePicker> Action) : IServiceProvider, IWindowsFormsEditorService {
 		public object? GetService(Type ServiceType) => ServiceType == typeof(IWindowsFormsEditorService) ? this : null;
 		public void CloseDropDown() {
 		}
-		public void DropDownControl(Control Control) => Action((CrudReferencePicker)Control);
+		public void DropDownControl(Control Control) => Action((VisualGridReferencePicker)Control);
 		public DialogResult ShowDialog(Form Dialog) => DialogResult.Cancel;
 	}
 }

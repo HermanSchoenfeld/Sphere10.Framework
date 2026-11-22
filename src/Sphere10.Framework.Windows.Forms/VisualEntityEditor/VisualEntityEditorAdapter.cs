@@ -11,70 +11,34 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public abstract class CrudEntityEditorAdapter : ICrudEntityEditor<object> {
-	public abstract event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged;
-
-	public abstract void SetAdaptee(object @object);
-
-	public abstract Control AsControl();
-
-	public abstract void SetEntity(DataSourceCapabilities capabilities, object entity, bool isNewEntity);
-
-	public abstract object GetEntityWithChanges();
-
-	public abstract bool HasChanges { get; }
-
-	public abstract void UndoChanges();
-
-	public abstract void AcceptChanges();
-}
-
-
-public class CrudEntityEditorAdapter<TEntity> : CrudEntityEditorAdapter {
-	private ICrudEntityEditor<TEntity> _adaptee;
-
-	public override event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged {
-		add { _adaptee.PropertyChanged += (args) => value(args); }
-		remove { _adaptee.PropertyChanged -= (args) => value(args); }
+public class VisualEntityEditorAdapter<TEntity> : VisualEntityEditorAdapterBase {
+	public override event EventHandlerEx<VisualEntityPropertyChangedEventArgs> PropertyChanged {
+		add => _adaptee.PropertyChanged += value;
+		remove => _adaptee.PropertyChanged -= value;
 	}
 
-	public CrudEntityEditorAdapter() {
-		_adaptee = null;
+	private IVisualEntityEditor<TEntity> _adaptee;
+
+	public VisualEntityEditorAdapter() {
 	}
 
-	public CrudEntityEditorAdapter(ICrudEntityEditor<TEntity> adaptee) {
-		SetAdaptee(adaptee);
-	}
+	public VisualEntityEditorAdapter(IVisualEntityEditor<TEntity> adaptee) => SetAdaptee(adaptee);
+
+	public override bool HasChanges => _adaptee.HasChanges;
 
 	public override void SetAdaptee(object @object) {
-		if (!(@object is ICrudEntityEditor<TEntity>)) {
-			throw new ArgumentException(string.Format("Does not implement {0}", typeof(ICrudEntityEditor<TEntity>).Name));
-		}
-		_adaptee = @object as ICrudEntityEditor<TEntity>;
+		Guard.Argument(@object is IVisualEntityEditor<TEntity>, null, $"Does not implement {typeof(IVisualEntityEditor<TEntity>).Name}");
+		_adaptee = (IVisualEntityEditor<TEntity>)@object;
 	}
 
-	public override Control AsControl() {
-		return _adaptee.AsControl();
-	}
+	public override Control AsControl() => _adaptee.AsControl();
 
-	public override void SetEntity(DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
-		_adaptee.SetEntity(capabilities, (TEntity)entity, isNewEntity);
-	}
+	public override void SetEntity(DataSourceCapabilities capabilities, object entity, bool isNewEntity)
+		=> _adaptee.SetEntity(capabilities, (TEntity)entity, isNewEntity);
 
-	public override object GetEntityWithChanges() {
-		return _adaptee.GetEntityWithChanges();
-	}
+	public override object GetEntityWithChanges() => _adaptee.GetEntityWithChanges();
 
-	public override bool HasChanges {
-		get { return _adaptee.HasChanges; }
-	}
+	public override void UndoChanges() => _adaptee.UndoChanges();
 
-	public override void UndoChanges() {
-		_adaptee.UndoChanges();
-	}
-
-	public override void AcceptChanges() {
-		_adaptee.AcceptChanges();
-	}
+	public override void AcceptChanges() => _adaptee.AcceptChanges();
 }
-

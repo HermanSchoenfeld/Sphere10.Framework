@@ -29,7 +29,7 @@ public class VisualGridQuerySummaryTests {
 		await grid.SetDataSource(source);
 		var publications = new List<(int Total, int Visible, int Thread)>();
 		var ownerThread = Environment.CurrentManagedThreadId;
-		grid.DataBindingComplete += (_, _) => publications.Add((grid.TotalRecords, grid.VisibleEntities.Count(), Environment.CurrentManagedThreadId));
+		grid.DataBindingComplete += _ => publications.Add((grid.TotalRecords, grid.VisibleEntities.Count(), Environment.CurrentManagedThreadId));
 		await grid.RefreshGrid();
 		Find<NumericUpDown>(grid, "_pageSizeUpDown").Value = 2;
 		Find<Control>(grid, "_searchTextBox").Text = "Keep";
@@ -60,7 +60,7 @@ public class VisualGridQuerySummaryTests {
 		await grid.SetDataSource(source);
 		await grid.RefreshGrid();
 		var totals = new List<int>();
-		grid.DataBindingComplete += (_, _) => totals.Add(grid.TotalRecords);
+		grid.DataBindingComplete += _ => totals.Add(grid.TotalRecords);
 		Find<Control>(grid, "_searchTextBox").Text = "Held";
 		var pending = grid.RefreshGrid();
 		await source.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));

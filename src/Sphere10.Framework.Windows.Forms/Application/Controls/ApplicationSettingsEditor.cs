@@ -14,7 +14,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Edits settings values while excluding transient members and runtime ownership.</summary>
-public class ApplicationSettingsEditor : DefaultCrudEntityEditor {
+public class ApplicationSettingsEditor : VisualEntityEditor {
 
 	/// <summary>Applies the Framework's existing settings visibility rules to the native property editor and opens its first level.</summary>
 	public ApplicationSettingsEditor() {

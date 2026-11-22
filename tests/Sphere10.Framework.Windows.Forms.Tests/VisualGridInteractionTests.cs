@@ -327,7 +327,7 @@ public class VisualGridInteractionTests {
 	public void CombinedModeCheckboxChangesOnlyOnExplicitEdit(bool UseF2) => RunWithMessageLoop(async Owner => {
 		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
-		var Records = await BindRecords(Crud, DisplayType: CrudCellDisplayType.Boolean);
+		var Records = await BindRecords(Crud, DisplayType: VisualGridCellDisplayType.Boolean);
 		var Grid = FindControl<Grid>(Crud, "_grid");
 		await ClickCell(Grid, 1);
 		Assert.That(Crud.SelectedEntity, Is.SameAs(Records[0]));
@@ -353,7 +353,7 @@ public class VisualGridInteractionTests {
 	public void CombinedModeDropDownOpensOnlyOnExplicitEdit(bool UseF2) => RunWithMessageLoop(async Owner => {
 		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
-		var Records = await BindRecords(Crud, DisplayType: CrudCellDisplayType.DropDownList);
+		var Records = await BindRecords(Crud, DisplayType: VisualGridCellDisplayType.DropDownList);
 		var Grid = FindControl<Grid>(Crud, "_grid");
 		var Context = new CellContext(Grid, new Position(1, 0));
 		await ClickCell(Grid, 1);
@@ -368,11 +368,11 @@ public class VisualGridInteractionTests {
 		Assert.That(Context.EndEdit(true), Is.True);
 	});
 
-	[TestCase(false, CrudCellDisplayType.Text)]
-	[TestCase(true, CrudCellDisplayType.Text)]
-	[TestCase(false, CrudCellDisplayType.Boolean)]
-	[TestCase(true, CrudCellDisplayType.Boolean)]
-	public void NativeRightMouseDownSelectsItsRowBeforeTheContextMenuOpens(bool leftClickToDeselect, CrudCellDisplayType displayType) => RunWithMessageLoop(async owner => {
+	[TestCase(false, VisualGridCellDisplayType.Text)]
+	[TestCase(true, VisualGridCellDisplayType.Text)]
+	[TestCase(false, VisualGridCellDisplayType.Boolean)]
+	[TestCase(true, VisualGridCellDisplayType.Boolean)]
+	public void NativeRightMouseDownSelectsItsRowBeforeTheContextMenuOpens(bool leftClickToDeselect, VisualGridCellDisplayType displayType) => RunWithMessageLoop(async owner => {
 		using var crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = leftClickToDeselect };
 		owner.Controls.Add(crud);
 		var records = await BindRecords(crud, DisplayType: displayType);
@@ -420,19 +420,19 @@ public class VisualGridInteractionTests {
 		Sphere10.Framework.Windows.WinAPI.USER32.SendMessage(grid.Handle, Sphere10.Framework.Windows.WinAPI.WindowMessageFlags.WM_RBUTTONDOWN, (IntPtr)2, coordinates);
 	}
 
-	private static async Task<Record[]> BindRecords(VisualGrid Crud, bool CanEditColumn = true, string? InitialAddress = "1 Original Street", CrudCellDisplayType DisplayType = CrudCellDisplayType.Text) {
+	private static async Task<Record[]> BindRecords(VisualGrid Crud, bool CanEditColumn = true, string? InitialAddress = "1 Original Street", VisualGridCellDisplayType DisplayType = VisualGridCellDisplayType.Text) {
 		var Records = new[] { new Record { Address = InitialAddress }, new Record { Address = "2 Original Street" } };
 		Crud.GridBindings = new[] {
 			new VisualGridColumn<Record> {
 				ColumnName = "Address",
 				DisplayType = DisplayType,
-				DataType = DisplayType == CrudCellDisplayType.Boolean ? typeof(bool) : typeof(string),
+				DataType = DisplayType == VisualGridCellDisplayType.Boolean ? typeof(bool) : typeof(string),
 				ExpandsToFit = true,
 				CanEditCell = CanEditColumn,
-				PropertyValue = Record => DisplayType == CrudCellDisplayType.Boolean ? Record.Enabled : Record.Address!,
+				PropertyValue = Record => DisplayType == VisualGridCellDisplayType.Boolean ? Record.Enabled : Record.Address!,
 				DropDownItems = _ => new[] { "1 Original Street", "2 Original Street" },
 				SetPropertyValue = (Record, Value) => {
-					if (DisplayType == CrudCellDisplayType.Boolean)
+					if (DisplayType == VisualGridCellDisplayType.Boolean)
 						Record.Enabled = (bool)Value;
 					else
 						Record.Address = (string)Value;

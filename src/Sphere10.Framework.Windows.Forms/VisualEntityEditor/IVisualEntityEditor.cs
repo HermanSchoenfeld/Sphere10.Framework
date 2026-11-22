@@ -10,8 +10,10 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface ICrudEntityEditor<TEntity> {
-	event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged;
+public interface IVisualEntityEditor<TEntity> {
+	event EventHandlerEx<VisualEntityPropertyChangedEventArgs> PropertyChanged;
+
+	bool HasChanges { get; }
 
 	Control AsControl();
 
@@ -19,11 +21,8 @@ public interface ICrudEntityEditor<TEntity> {
 
 	TEntity GetEntityWithChanges();
 
-	bool HasChanges { get; }
-
 	void UndoChanges();
 
 	void AcceptChanges();
-
 }
 

@@ -14,14 +14,8 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Binds typed rows to a VisualGrid through an array store and retains row selection by caller-defined identity. Rows come from a borrowed source or from a collector callback.</summary>
 public sealed class VisualGridArrayController<T> : IVisualGridArrayController {
-	public event EventHandler SelectionReconciled {
-		add {
-			_binding.SelectionReconciled += value;
-		}
-		remove {
-			_binding.SelectionReconciled -= value;
-		}
-	}
+	public event EventHandlerEx<VisualGrid> SelectionReconciled { add => _grid.SelectionReconciled += value; remove => _grid.SelectionReconciled -= value; }
+
 	private readonly VisualGrid _grid;
 	private readonly ArrayDataSource<T> _projectionSource;
 	private readonly IDataSource<T> _captureSource;
@@ -30,7 +24,6 @@ public sealed class VisualGridArrayController<T> : IVisualGridArrayController {
 	private readonly Action<T[]> _changed;
 	private readonly AsyncSynchronizedGate _refresh = new();
 	private readonly int _ownerThreadId;
-	private readonly VisualGridDataSourceController<T> _binding;
 	private object _publishedIdentity;
 
 	/// <summary>Binds collection and identity callbacks to a grid on its creating UI thread.</summary>
@@ -40,19 +33,20 @@ public sealed class VisualGridArrayController<T> : IVisualGridArrayController {
 
 	/// <summary>Binds collection and identity callbacks to a grid on its creating UI thread.</summary>
 	public VisualGridArrayController(VisualGrid grid, ArrayDataSource<T> source, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect,
-				Action<T[]> changed = null)
-		: this(grid, source, identity, collect, changed, null) {
+		Action<T[]> changed = null, IDataSource<T> viewSource = null
+	)
+		: this(grid, source, identity, collect, changed, null, viewSource) {
 	}
 
 	/// <summary>Projects a borrowed source's published rows into an existing array query source, retaining its specialized filtering, hierarchy and row-refresh behavior.</summary>
 	public VisualGridArrayController(VisualGrid grid, IDataSource<T> captureSource, ArrayDataSource<T> projectionSource,
-		Func<T, object> identity, Action<T[]> changed = null
+		Func<T, object> identity, Action<T[]> changed = null, IDataSource<T> viewSource = null
 	)
-		: this(grid, projectionSource, identity, null, changed, captureSource) {
+		: this(grid, projectionSource, identity, null, changed, captureSource, viewSource) {
 	}
 
 	private VisualGridArrayController(VisualGrid grid, ArrayDataSource<T> source, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect,
-		Action<T[]> changed, IDataSource<T> captureSource
+		Action<T[]> changed, IDataSource<T> captureSource, IDataSource<T> viewSource
 	) {
 		Guard.ArgumentNotNull(grid, nameof(grid));
 		Guard.ArgumentNotNull(source, nameof(source));
@@ -66,7 +60,7 @@ public sealed class VisualGridArrayController<T> : IVisualGridArrayController {
 		_collect = collect;
 		_changed = changed;
 		_ownerThreadId = Environment.CurrentManagedThreadId;
-		_binding = new VisualGridDataSourceController<T>(grid, source, ResolvePublishedEntity);
+		_grid.ConfigureDataSource(viewSource ?? source, ResolvePublishedEntity);
 	}
 
 	/// <summary>The number of currently published rows.</summary>
@@ -81,52 +75,61 @@ public sealed class VisualGridArrayController<T> : IVisualGridArrayController {
 		set {
 			EnsureOwnerThread();
 			field = value;
-			_binding.PublicationIdentity = value;
+			_grid.PublicationIdentity = value;
 			_grid.AcceptSourcePublication = value == null ? null : () => Equals(_publishedIdentity, value());
 		}
 	}
 
-	/// <summary>Rejects an in-flight grid query through its existing publication version; committed rows stay interactive.</summary>
-	public void Invalidate() { EnsureOwnerThread(); _binding.Invalidate(); }
-
 	/// <summary>Optional visible-page selection identity; null preserves the controller's existing selection behavior.</summary>
 	public Func<T, object> VisibleSelectionIdentity {
-		get => _binding.VisibleSelectionIdentity;
-		set => _binding.VisibleSelectionIdentity = value;
+		get;
+		set {
+			EnsureOwnerThread();
+			field = value;
+			_grid.VisibleSelectionIdentity = value == null ? null : entity => entity is T typed ? value(typed) : null;
+		}
+	}
+
+	/// <summary>Rejects an in-flight grid query through its existing publication version; committed rows stay interactive.</summary>
+	public void Invalidate() {
+		EnsureOwnerThread();
+		_grid.InvalidateDataSource();
 	}
 
 	/// <summary>Refreshes on the grid's UI thread through a disposable admission scope. A source-backed controller only presents rows the source has already loaded; a collector-backed controller first invokes its collection callback.</summary>
 	public async Task RefreshAsync(CancellationToken cancellationToken = default) {
 		EnsureOwnerThread();
-		using var admission = await _refresh.EnterScopeAsync(cancellationToken);
-		if (_grid.IsDisposed)
-			return;
-		// Presentation never triggers the first acquisition; the source owner loads it.
-		if (_captureSource is ILoadable { RequiresLoad: true })
-			return;
-		var publication = PublicationIdentity?.Invoke();
-		var rows = _captureSource == null ? await _collect(cancellationToken) : await Tools.DataSources.ReadAllAsync(_captureSource, cancellationToken);
-		cancellationToken.ThrowIfCancellationRequested();
-		EnsureOwnerThread();
-		if (_grid.IsDisposed)
-			return;
-		if (PublicationIdentity != null && !Equals(publication, PublicationIdentity()))
-			return;
-		Guard.Ensure(rows != null, "Row collection must return an array.");
-		_publishedIdentity = publication;
-		_projectionSource.ReplaceData(rows);
-		// Map the latest selected instance as part of the native publication, before geometry work can yield to input.
-		var accepted = false;
-		EventHandler observeAcceptance = (_, _) => accepted = true;
-		if (PublicationIdentity != null)
-			_grid.DataBindingComplete += observeAcceptance;
-		using var observe = Tools.Scope.ExecuteOnDispose(() => _grid.DataBindingComplete -= observeAcceptance);
-		await _binding.RefreshAsync(cancellationToken);
-		if (PublicationIdentity != null && !accepted)
-			return;
-		if (cancellationToken.IsCancellationRequested || _grid.IsDisposed)
-			return;
-		_changed?.Invoke(Rows);
+		using (await _refresh.EnterScopeAsync(cancellationToken)) {
+			if (_grid.IsDisposed)
+				return;
+			// Presentation never triggers the first acquisition; the source owner loads it.
+			if (_captureSource is ILoadable { RequiresLoad: true })
+				return;
+			var publication = PublicationIdentity?.Invoke();
+			var rows = _captureSource == null ? await _collect(cancellationToken) : await Tools.DataSources.ReadAllAsync(_captureSource, cancellationToken);
+			cancellationToken.ThrowIfCancellationRequested();
+			EnsureOwnerThread();
+			if (_grid.IsDisposed)
+				return;
+			if (PublicationIdentity != null && !Equals(publication, PublicationIdentity()))
+				return;
+			Guard.Ensure(rows != null, "Row collection must return an array.");
+			_publishedIdentity = publication;
+			_projectionSource.ReplaceData(rows);
+			// Map the latest selected instance as part of the native publication, before geometry work can yield to input.
+			var accepted = false;
+			EventHandlerEx<VisualGrid> observeAcceptance = _ => accepted = true;
+			if (PublicationIdentity != null)
+				_grid.DataBindingComplete += observeAcceptance;
+			using (Tools.Scope.ExecuteOnDispose(() => _grid.DataBindingComplete -= observeAcceptance)) {
+				await _grid.RefreshDataSourceAsync(cancellationToken);
+				if (PublicationIdentity != null && !accepted)
+					return;
+				if (cancellationToken.IsCancellationRequested || _grid.IsDisposed)
+					return;
+				_changed?.Invoke(Rows);
+			}
+		}
 	}
 
 	/// <summary>Configures the store's fallback sorting on the owner thread.</summary>

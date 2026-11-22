@@ -10,6 +10,8 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
+// Owns the grid configuration menu items and their event wiring.
+// The main partial resolves the target grid and delegates persistence to its screen.
 partial class VisualGridConfigurationContextMenu {
 	private ToolStripMenuItem _saveConfigurationMenuItem;
 	private ToolStripMenuItem _restoreDefaultsMenuItem;

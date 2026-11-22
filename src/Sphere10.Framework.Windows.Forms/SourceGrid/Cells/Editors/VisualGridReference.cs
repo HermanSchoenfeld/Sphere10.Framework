@@ -12,17 +12,17 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
-public class CrudReference : TextBoxUITypeEditor {
-	private readonly CrudReferenceBinding _binding;
+public class VisualGridReference : TextBoxUITypeEditor {
+	private readonly VisualGridReferenceBindingBase _binding;
 
-	public CrudReference(Type entityType, CrudReferenceBinding binding)
+	public VisualGridReference(Type entityType, VisualGridReferenceBindingBase binding)
 		: base(entityType) {
 		Guard.ArgumentNotNull(binding, nameof(binding));
 		_binding = binding;
 		AllowNull = binding.AllowNull;
 		NullString = binding.GetDisplayText(null);
 		NullDisplayString = NullString;
-		Control.UITypeEditor = new CrudReferenceEditor(binding);
+		Control.UITypeEditor = new VisualGridReferenceEditor(binding);
 		Control.TextBox.ReadOnly = true;
 		Control.Button.Text = "▼";
 		Control.Button.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

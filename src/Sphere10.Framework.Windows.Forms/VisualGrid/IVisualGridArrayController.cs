@@ -14,9 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Nonvisual array binding operations shared by concrete nongeneric grid surfaces.</summary>
 public interface IVisualGridArrayController {
 	/// <summary>The number of currently published rows.</summary>
-	long Count {
-		get;
-	}
+	long Count { get; }
 
 	/// <summary>Refreshes presentation on the grid's owner context. A source-backed controller reads published rows without acquiring data; collector-backed controllers retain their collection contract.</summary>
 	Task RefreshAsync(CancellationToken cancellationToken = default);

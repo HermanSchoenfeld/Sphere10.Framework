@@ -70,6 +70,8 @@ internal sealed class VisualGridRowMeasurements {
 	private bool MatchesLayout(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry)
 		=> ReferenceEquals(_dataSource, dataSource) && ReferenceEquals(_bindings, bindings) && _geometry.Equals(geometry);
 
+	#region Inner Types
+
 	/// <summary>Names the native metrics and borrowed visual elements that affect row height.</summary>
 	internal readonly record struct Geometry(
 		Font GridFont, Font CellFont, int Dpi, int MinimumHeight, Padding Padding, SizeF BorderExtent,
@@ -78,4 +80,6 @@ internal sealed class VisualGridRowMeasurements {
 
 	/// <summary>Describes reusable single-line content; a negative image height always requires measurement.</summary>
 	internal readonly record struct Signature(int ImageHeight, bool HasText);
+
+	#endregion
 }

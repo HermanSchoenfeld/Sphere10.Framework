@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -38,7 +36,7 @@ internal class UpdateEntityOnValueChangedController : SourceGrid.Cells.Controlle
 		} else {
 			await _dataSource.UpdateAsync(_entity);
 		}
-		await _grid.NotifyEntityUpdated(_entity);
+		await _grid.UpdateEntityAsync(_entity);
 	}
 }
 

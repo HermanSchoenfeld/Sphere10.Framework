@@ -83,8 +83,8 @@ public class WindowsFormsToolTests {
 			var source = new ArrayDataSource<Row>();
 			var rows = new[] { new Row(1, "First"), new Row(2, "Second") };
 			source.ReplaceData(rows);
-			var ranged = Tools.WinForms.Grids.CreateDataSourceController(grid, source);
-			await ranged.RefreshAsync();
+			grid.ConfigureDataSource(source);
+			await grid.RefreshDataSourceAsync();
 			Assert.That(grid.VisibleEntities.Count(), Is.EqualTo(1));
 			Assert.That(grid.TotalRecords, Is.EqualTo(2));
 			var collections = 0;
@@ -97,11 +97,16 @@ public class WindowsFormsToolTests {
 			Assert.That(collections, Is.EqualTo(1));
 			Assert.That(source.Data, Is.EqualTo(rows));
 			var child = Tools.WinForms.Grids.CreateVisualGrid();
-			child.GridBindings = Columns();
-			var detail = Tools.WinForms.Grids.CreateArrayDetail<Row>(child, row => row.Id);
-			await detail.ApplyAsync(rows);
+			grid.GridBindings = new[] { new VisualGridColumn<GraphNode<Row>> { ColumnName = "Name", PreferenceKey = "Name", PropertyValue = node => node.Entity.Name } };
+			child.GridBindings = grid.GridBindings;
+			grid.CreateDetail = _ => Tools.WinForms.Grids.CreateDataSourceDetail(child);
+			var parent = new GraphNode<Row>(new Row(0, "Parent")) { Connections = rows.Select(row => new GraphNode<Row>(row)).ToArray() };
+			await grid.SetDataSource(new ActionGraphDataSource<Row>(new[] { parent }, node => node.Entity.Id));
+			await grid.RefreshGrid();
+			await grid.SetRowExpandedAsync(parent, true);
 			Assert.That(child.TotalRecords, Is.EqualTo(2));
-			await detail.DisposeAsync();
+			await grid.SetRowExpandedAsync(parent, false);
+			await grid.DetailsDisposalCompletion;
 			Assert.That(child.IsDisposed, Is.True);
 			var panel = new Panel();
 			var resource = new OwnedResource();
@@ -148,7 +153,7 @@ public class WindowsFormsToolTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void ByteReviewForwardsAcceptanceAndCancellationWithoutMutatingTheInput(bool accept) {
+	public void ByteReviewUpdatesTheSuppliedBufferOnlyAfterSaving(bool accept) {
 		RunWithMessageLoop(async owner => {
 			var bytes = new byte[] { 1, 2 };
 			Exception failure = null;
@@ -174,8 +179,8 @@ public class WindowsFormsToolTests {
 			closeDialog.Start();
 			var result = await Tools.WinForms.Review.ShowBytesAsync(owner, "Factory Bytes", bytes);
 			Assert.That(failure, Is.Null, failure?.ToString());
-			Assert.That(result, accept ? Is.EqualTo(new byte[] { 8, 9 }) : Is.Null);
-			Assert.That(bytes, Is.EqualTo(new byte[] { 1, 2 }));
+			Assert.That(result, Is.EqualTo(accept));
+			Assert.That(bytes, Is.EqualTo(accept ? new byte[] { 8, 9 } : new byte[] { 1, 2 }));
 		});
 	}
 

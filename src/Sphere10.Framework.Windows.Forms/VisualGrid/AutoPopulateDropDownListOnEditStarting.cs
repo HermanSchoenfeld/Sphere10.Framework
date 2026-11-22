@@ -33,7 +33,4 @@ internal class AutoPopulateDropDownListOnEditStarting : SourceGrid.Cells.Control
 		}
 		_dropDownList.StandardValues = dropDownValues;
 	}
-
-
 }
-

@@ -9,44 +9,44 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class CrudDialog : Form {
+// Configures and shows the modal grid over a borrowed source.
+// VisualGridDialog.Designer.cs owns the form controls and native layout.
+public partial class VisualGridDialog : Form {
 	private Func<Task> _delayedInitializationAction;
 
-	public CrudDialog() {
-		InitializeComponent();
-		_delayedInitializationAction = null;
-	}
+	public VisualGridDialog() => InitializeComponent();
 
 	public static Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource)
-		=> ShowAsync(window, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
+		=> ShowAsync(window, title, gridBindings, typeof(VisualEntityEditor), capabilities, dataSource);
 
 	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource)
-		=> ShowAsync(null, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
+		=> ShowAsync(null, title, gridBindings, typeof(VisualEntityEditor), capabilities, dataSource);
 
 	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource)
 		=> ShowAsync(null, title, gridBindings, entityEditorType, capabilities, dataSource);
 
 	public static async Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
-		using var crudDialog = new CrudDialog();
-		crudDialog.Text = title;
-		await crudDialog.SetCrudParameters(gridBindings, entityEditorType, capabilities, dataSource);
-		await crudDialog.ShowDialogAsync(window);
+		using (var gridDialog = new VisualGridDialog()) {
+			gridDialog.Text = title;
+			await gridDialog.SetParametersAsync(gridBindings, entityEditorType, capabilities, dataSource);
+			await gridDialog.ShowDialogAsync(window);
+		}
 	}
 
-	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public async Task SetParametersAsync<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		var initializationAction =
 			new Func<Task>(async () => {
 				try {
 					if (entityEditorType != null)
 						_visualGrid.SetEntityEditor<TEntity>(entityEditorType);
-					_visualGrid.GridBindings = gridBindings;
-					await _visualGrid.SetDataSource(dataSource);
-					_visualGrid.Capabilities = capabilities;
+					_visualGrid.GridBindings = gridBindings?.ToArray();
+					await _visualGrid.SetDataSource(dataSource, capabilities);
 				} catch (Exception error) {
 					await ExceptionDialog.ShowAsync(this, error);
 				}
@@ -62,13 +62,13 @@ public partial class CrudDialog : Form {
 		base.OnLoad(e);
 		try {
 			if (_delayedInitializationAction != null) {
-				var Initialization = _delayedInitializationAction;
+				var initialization = _delayedInitializationAction;
 				_delayedInitializationAction = null;
-				await Initialization();
+				await initialization();
 			}
 			await _visualGrid.RefreshGrid();
-		} catch (Exception Error) {
-			await ExceptionDialog.ShowAsync(this, Error);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 

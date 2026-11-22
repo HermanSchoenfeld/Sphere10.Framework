@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms {
-	partial class CrudEntityEditorDialog {
+	// Owns the entity-editor dialog controls, layout and disposal.
+	// VisualEntityEditorDialog.cs owns the edit workflow and source operations.
+	partial class VisualEntityEditorDialog {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -127,7 +129,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._errorRichTextBox.Text = "";
 			this._errorRichTextBox.WordWrap = false;
 			// 
-			// CrudEntityEditorDialog
+			// VisualEntityEditorDialog
 			// 
 			this.AcceptButton = this._saveButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -137,7 +139,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.Controls.Add(this._tableLayoutPanel);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
 			this.MinimumSize = new System.Drawing.Size(265, 228);
-			this.Name = "CrudEntityEditorDialog";
+			this.Name = "VisualEntityEditorDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EntityEditorDialog_FormClosing);
 			this._tableLayoutPanel.ResumeLayout(false);

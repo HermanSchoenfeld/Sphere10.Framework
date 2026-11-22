@@ -11,18 +11,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms.Crud;
+namespace Sphere10.Framework.Windows.Forms;
 
-public class CrudComboBox : CustomComboBox {
+public class VisualGridDropDown : CustomComboBox {
+	[Category("Behavior")] public event EventHandlerEx<VisualGridDropDown, object> EntitySelectionChanged;
+
 	private readonly VisualGrid _visualGrid;
-	private Size _maximumDropDownSize = new(760, 380);
 
-	[Category("Behavior")] public event EventHandlerEx<CrudComboBox, object> EntitySelectionChanged;
-
-	public CrudComboBox() {
+	public VisualGridDropDown() {
 		base.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		base.DropDownSizeMode = SizeMode.UseCurrentControlSize;
 		_visualGrid = new VisualGrid();
@@ -55,13 +55,13 @@ public class CrudComboBox : CustomComboBox {
 	[Category("Custom Drop-Down")]
 	[DefaultValue(typeof(Size), "760, 380")]
 	public Size MaximumDropDownSize {
-		get => _maximumDropDownSize;
+		get => field;
 		set {
 			Guard.Argument(value.Width > 0 && value.Height > 0, nameof(value), "The maximum dropdown dimensions must be positive.");
-			_maximumDropDownSize = value;
+			field = value;
 			ApplyDropDownSize();
 		}
-	}
+	} = new(760, 380);
 
 	[Category("Behavior")]
 	[DefaultValue(DataSourceCapabilities.Default)]
@@ -94,13 +94,12 @@ public class CrudComboBox : CustomComboBox {
 		await _visualGrid.RefreshGrid();
 	}
 
-	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
+	public async Task SetParametersAsync<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
 		try {
 			if (entityEditorType != null)
 				_visualGrid.SetEntityEditor<TEntity>(entityEditorType);
-			_visualGrid.GridBindings = gridBindings;
-			await _visualGrid.SetDataSource(dataSource);
-			_visualGrid.Capabilities = capabilities;
+			_visualGrid.GridBindings = gridBindings?.ToArray();
+			await _visualGrid.SetDataSource(dataSource, capabilities);
 			if (size != null)
 				MaximumDropDownSize = size.Value;
 			_visualGrid.AutoPageSize = autoPageSize;
@@ -112,6 +111,13 @@ public class CrudComboBox : CustomComboBox {
 		}
 	}
 
+	protected void NotifyEntitySelectionChanged(object selectedEntity) {
+		SelectedEntity = selectedEntity;
+		if (!_visualGrid.IsReconcilingSelection)
+			OnEntitySelectionChanged(SelectedEntity);
+		EntitySelectionChanged?.Invoke(this, SelectedEntity);
+	}
+
 	protected virtual void OnEntitySelectionChanged(object entity) {
 		if (AutoHideOnSelect)
 			HideDropDown();
@@ -120,18 +126,18 @@ public class CrudComboBox : CustomComboBox {
 	private void ApplyDropDownSize() {
 		if (_visualGrid == null || IsDisposed || _visualGrid.IsDisposed)
 			return;
-		var WorkingArea = Screen.FromControl(this).WorkingArea;
-		var AvailableHeight = WorkingArea.Height;
+		var workingArea = Screen.FromControl(this).WorkingArea;
+		var availableHeight = workingArea.Height;
 		if (IsHandleCreated) {
-			var Bounds = RectangleToScreen(ClientRectangle);
-			var SpaceAbove = Tools.Values.ClipValue(Bounds.Top - WorkingArea.Top, 0, WorkingArea.Height);
-			var SpaceBelow = Tools.Values.ClipValue(WorkingArea.Bottom - Bounds.Bottom, 0, WorkingArea.Height);
-			AvailableHeight = Math.Max(SpaceAbove, SpaceBelow);
+			var bounds = RectangleToScreen(ClientRectangle);
+			var spaceAbove = Tools.Values.ClipValue(bounds.Top - workingArea.Top, 0, workingArea.Height);
+			var spaceBelow = Tools.Values.ClipValue(workingArea.Bottom - bounds.Bottom, 0, workingArea.Height);
+			availableHeight = Math.Max(spaceAbove, spaceBelow);
 		}
-		var MaximumSize = new Size(Math.Min(_maximumDropDownSize.Width, Math.Max(1, WorkingArea.Width - 2)),
-			Math.Min(_maximumDropDownSize.Height, Math.Max(1, AvailableHeight - (AllowResizeDropDown ? 18 : 2))));
-		_visualGrid.MaximumSize = MaximumSize;
-		_visualGrid.Size = MaximumSize;
+		var maximumSize = new Size(Math.Min(MaximumDropDownSize.Width, Math.Max(1, workingArea.Width - 2)),
+			Math.Min(MaximumDropDownSize.Height, Math.Max(1, availableHeight - (AllowResizeDropDown ? 18 : 2))));
+		_visualGrid.MaximumSize = maximumSize;
+		_visualGrid.Size = maximumSize;
 	}
 
 	private void SetComboText(string text) {
@@ -150,25 +156,17 @@ public class CrudComboBox : CustomComboBox {
 		return DisplayMember(entity);
 	}
 
-	private void RaiseEntitySelectionChanged(object selectedEntity) {
-		SelectedEntity = selectedEntity;
-		if (!_visualGrid.IsReconcilingSelection)
-			OnEntitySelectionChanged(SelectedEntity);
-		if (EntitySelectionChanged != null)
-			EntitySelectionChanged(this, SelectedEntity);
-	}
-
-	void _visualGrid_EntitySelected(VisualGrid arg1, object arg2) {
+	private void _visualGrid_EntitySelected(VisualGrid arg1, object arg2) {
 		this.Text = DetermineDisplayString(arg2);
-		RaiseEntitySelectionChanged(arg2);
+		NotifyEntitySelectionChanged(arg2);
 	}
 
-	void _visualGrid_EntityDeselected(VisualGrid arg1, object arg2) {
+	private void _visualGrid_EntityDeselected(VisualGrid arg1, object arg2) {
 		// A replacement has already become the accepted selection; do not briefly clear it or accept a popup choice.
 		if (_visualGrid.IsReconcilingSelection && _visualGrid.SelectedEntityDirect != null)
 			return;
 		SelectedEntity = null;
-		RaiseEntitySelectionChanged(null);
+		NotifyEntitySelectionChanged(null);
 	}
 }
 

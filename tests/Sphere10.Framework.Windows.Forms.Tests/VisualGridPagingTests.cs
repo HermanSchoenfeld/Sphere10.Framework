@@ -106,7 +106,7 @@ public class VisualGridPagingTests {
 		Grid.MinimumHeight = MinimumRowHeight;
 		Crud.GridBindings = new[] {
 			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true },
-			new VisualGridColumn<string> { DisplayType = CrudCellDisplayType.EditCommand }
+			new VisualGridColumn<string> { DisplayType = VisualGridCellDisplayType.EditCommand }
 		};
 		await Crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Range(1, 200).Select(Index => $"Address {Index}").ToArray())));
 		Crud.AutoPageSize = true;

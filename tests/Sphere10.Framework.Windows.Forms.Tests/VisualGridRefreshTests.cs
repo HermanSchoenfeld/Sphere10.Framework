@@ -184,7 +184,7 @@ public class VisualGridRefreshTests {
 		using var crud = new VisualGrid();
 		crud.PageMode = VisualGridPageMode.Auto;
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Result", PropertyValue = row => row, DataType = typeof(string) } };
-		crud.Capabilities = CrudReferenceBinding.ReadOnlyCapabilities;
+		crud.Capabilities = VisualGridReferenceBindingBase.ReadOnlyCapabilities;
 		var loading = Find<LoadingCircle>(crud, "_initialLoadingCircle");
 		Assert.That(typeof(VisualGrid).GetField("_refreshTask", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud), Is.Null,
 			"Configuring a never-hosted grid must not start an implicit asynchronous read before any data source exists.");

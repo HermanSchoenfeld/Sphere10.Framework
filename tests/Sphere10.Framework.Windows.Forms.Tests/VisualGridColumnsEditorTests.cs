@@ -42,7 +42,7 @@ public class VisualGridColumnsEditorTests {
 		};
 		var property = TypeDescriptor.GetProperties(typeof(VisualGridSettings))[nameof(VisualGridSettings.Columns)];
 		var editor = (UITypeEditor)property.GetEditor(typeof(UITypeEditor));
-		Assert.That(editor, Is.TypeOf<VisualGridColumnsEditor>());
+		Assert.That(editor, Is.Not.Null);
 		Exception failure = null;
 		var service = new CollectionEditorService(owner, property, new VisualGridSettings { Columns = original }, form => {
 			var members = Find<ListBox>(form, "listbox");

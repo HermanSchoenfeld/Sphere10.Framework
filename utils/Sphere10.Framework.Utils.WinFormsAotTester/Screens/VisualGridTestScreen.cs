@@ -17,7 +17,6 @@ using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.Crud;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
@@ -30,9 +29,8 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	private static readonly string[] _cities = new string[] { "Vega", "Pleides", "Ceres", "Hyades", "Celestial Sphere", "Taurus", "Gemeni", "Mars", "Mercury", "Woodridge" };
 	private readonly TextBoxWriter _textWriter;
 	private readonly TestCrudDataSource _dataSource;
-	private readonly IEnumerable<IVisualGridColumn> _gridBindings;
+	private readonly IVisualGridColumn[] _gridBindings;
 	private readonly CancellationTokenSource _liveCancellation = new();
-	private readonly VisualGridDataSourceController<LiveSample> _liveController;
 	private readonly PollingDataSource<LiveSample> _liveSource;
 	private readonly VisualGridColumn<LiveSample> _liveImageColumn;
 	private readonly Image[] _liveImages;
@@ -62,7 +60,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "ID",
 				PropertyValue = e => e.ID,
 				DataType = typeof(int),
-				DisplayType = CrudCellDisplayType.Text,
+				DisplayType = VisualGridCellDisplayType.Text,
 				CanEditCell = false
 			},
 			new VisualGridColumn<Employee> {
@@ -70,7 +68,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "Name",
 				DataType = typeof(string),
 				PropertyValue = e => string.Format("{0} {1} {2}", e.Title ?? string.Empty, e.FirstName ?? string.Empty, e.LastName ?? string.Empty),
-				DisplayType = CrudCellDisplayType.Text,
+				DisplayType = VisualGridCellDisplayType.Text,
 				ExpandsToFit = false,
 				CanEditCell = false
 			},
@@ -79,7 +77,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "DateOfBirth",
 				DataType = typeof(DateTime),
 				PropertyValue = e => e.DateOfBirth,
-				DisplayType = CrudCellDisplayType.Date,
+				DisplayType = VisualGridCellDisplayType.Date,
 				DateTimeFormat = (x) => "dd/MM/yyyy",
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.DateOfBirth = (DateTime)o
@@ -89,7 +87,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "Salary",
 				DataType = typeof(decimal),
 				PropertyValue = e => e.Salary,
-				DisplayType = CrudCellDisplayType.Currency,
+				DisplayType = VisualGridCellDisplayType.Currency,
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Salary = (decimal)o
 			},
@@ -98,7 +96,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "UIntField",
 				DataType = typeof(uint),
 				PropertyValue = e => e.UIntField,
-				DisplayType = CrudCellDisplayType.Numeric,
+				DisplayType = VisualGridCellDisplayType.Numeric,
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.UIntField = (uint)o
 			},
@@ -107,7 +105,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "Supervisor",
 				DataType = typeof(bool),
 				PropertyValue = e => e.Supervisor,
-				DisplayType = CrudCellDisplayType.Boolean,
+				DisplayType = VisualGridCellDisplayType.Boolean,
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Supervisor = (bool)o
 			},
@@ -116,7 +114,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "StartWorkTime",
 				DataType = typeof(DateTime),
 				PropertyValue = e => e.StartWorkTime,
-				DisplayType = CrudCellDisplayType.Time,
+				DisplayType = VisualGridCellDisplayType.Time,
 				DateTimeFormat = (x) => "HH:mm:ss.fff",
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.StartWorkTime = (DateTime)o
@@ -126,7 +124,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "Address",
 				DataType = typeof(string),
 				PropertyValue = employee => employee.Address?.Street,
-				DisplayType = CrudCellDisplayType.Text,
+				DisplayType = VisualGridCellDisplayType.Text,
 				ExpandsToFit = true,
 				CanEditCell = true,
 				SetPropertyValue = (employee, value) => (employee.Address ??= new Address()).Street = value as string
@@ -137,7 +135,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				DataType = typeof(string),
 				PropertyHasValue = employee => employee.Address != null,
 				PropertyValue = employee => $"{employee.Address.City} {employee.Address.State}, {employee.Address.PostCode}",
-				DisplayType = CrudCellDisplayType.Text,
+				DisplayType = VisualGridCellDisplayType.Text,
 				CanEditCell = false
 			},
 			new VisualGridColumn<Employee> {
@@ -145,7 +143,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "Notes",
 				DataType = typeof(string),
 				PropertyValue = e => e.Notes,
-				DisplayType = CrudCellDisplayType.Text,
+				DisplayType = VisualGridCellDisplayType.Text,
 				ExpandsToFit = true,
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Notes = o as string
@@ -156,7 +154,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 				SortName = "Manager",
 				DataType = typeof(Employee),
 				PropertyValue = e => e.Manager,
-				DisplayType = CrudCellDisplayType.DropDownList,
+				DisplayType = VisualGridCellDisplayType.DropDownList,
 
 				ExpandsToFit = true,
 				CanEditCell = true,
@@ -164,7 +162,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 			},
 			new VisualGridColumn<Employee> {
 				PreferenceKey = "EditCommand",
-				DisplayType = CrudCellDisplayType.EditCommand,
+				DisplayType = VisualGridCellDisplayType.EditCommand,
 			}
 		};
 		var managerColumns = new IVisualGridColumn[] {
@@ -178,12 +176,12 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 			},
 			_gridBindings.Single(column => column.SortName == nameof(Employee.UIntField))
 		};
-		var managerBinding = new CrudReferenceBinding<Employee>(_dataSource, managerColumns, employee => $"{employee.Title} {employee.FirstName} {employee.LastName}".Trim()) {
+		var managerBinding = new VisualGridReferenceBinding<Employee>(_dataSource, managerColumns, employee => $"{employee.Title} {employee.FirstName} {employee.LastName}".Trim()) {
 			MaximumDropDownSize = new Size(520, 300)
 		};
 		_gridBindings.OfType<VisualGridColumn<Employee>>().Single(column => column.PropertyName == nameof(Employee.Manager)).ReferenceBinding = managerBinding;
 		_visualGrid.GridBindings = _gridBindings;
-		_crudComboBox.DisplayMember = (o) => ((Employee)o).FirstName;
+		_visualGridDropDown.DisplayMember = (o) => ((Employee)o).FirstName;
 		// These images are owned by the screen and borrowed by the worker-safe, read-only cells.
 		using var icon = SystemIcons.Information.ToBitmap();
 		_liveImages = new[] {
@@ -195,7 +193,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 			ColumnName = "Image",
 			PreferenceKey = "Icon",
 			DataType = typeof(Image),
-			DisplayType = CrudCellDisplayType.Image,
+			DisplayType = VisualGridCellDisplayType.Image,
 			PropertyValue = sample => sample.Icon
 		};
 		_liveGrid.GridBindings = new IVisualGridColumn[] {
@@ -211,9 +209,9 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 		_liveSource = new PollingDataSource<LiveSample>(new ActionRefreshableDataSource<LiveSample, LiveSampleDataSource>(new LiveSampleDataSource(this, Array.Empty<LiveSample>()), () => new LiveSampleDataSource(this))) {
 			AutoRefresh = false, RefreshInterval = TimeSpan.FromMilliseconds(750)
 		};
-		_liveController = new VisualGridDataSourceController<LiveSample>(_liveGrid, _liveSource,
+		_liveGrid.ConfigureDataSource(_liveSource,
 			selected => _liveSource.ReadRange(null, int.MaxValue, 0, null, SortDirection.None).Items.FirstOrDefault(sample => sample.Id == selected.Id));
-		_liveGrid.DataBindingComplete += (_, _) => { if (!_liveDisposed) UpdateLiveStatus(); };
+		_liveGrid.DataBindingComplete += _ => { if (!_liveDisposed) UpdateLiveStatus(); };
 		VisibleChanged += LiveSourcePolicyChanged;
 		_contentTabs.SelectedIndexChanged += LiveSourcePolicyChanged;
 		_liveTitleAlignment.SelectedIndex = 0;
@@ -297,7 +295,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 		if (IsDisposed)
 			return;
 		_visualGrid.Capabilities = (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum;
-		await _crudComboBox.SetCrudParameters(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked);
+		await _visualGridDropDown.SetParametersAsync(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked);
 		if (IsDisposed)
 			return;
 		await _visualGrid.RefreshGrid();
@@ -377,7 +375,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 		var value = _flagsCheckedListBox.SelectedEnum;
 		if (value != null) {
 			_visualGrid.Capabilities = (DataSourceCapabilities)value;
-			_crudComboBox.Capabilities = (DataSourceCapabilities)value;
+			_visualGridDropDown.Capabilities = (DataSourceCapabilities)value;
 		}
 	}
 
@@ -389,7 +387,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	private void VisualGrid_EntitySelected(VisualGrid arg1, object arg2) => _textWriter.WriteLine("{0}: Entity Selected - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 
 	// Expose the edited property and its before/after values in the event trace.
-	private void VisualGrid_EntityEditing(VisualGrid arg1, CrudEntityPropertyChangedEventArgs args)
+	private void VisualGrid_EntityEditing(VisualGrid arg1, VisualEntityPropertyChangedEventArgs args)
 		=> _textWriter.WriteLine("{0}: Entity Changing - ID: {1}, Property: {2}, Old Value: {3}, New Value: {4}", arg1.Name, ((Employee)args.Entity).ID, args.PropertyName, args.OldValue, args.NewValue);
 
 	// Record a completed employee deletion.
@@ -411,11 +409,11 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	private void CreateUpdateErrorCheckBox_CheckedChanged(object sender, EventArgs args) => _dataSource.GenerateUpdateError = _generateUpdateErrorCheckBox.Checked;
 
 	// Open the same employee source and bindings through the standalone modal editor.
-	private async void CrudDialogButton_Click(object sender, EventArgs args)
-		=> await RunDemoActionAsync(() => CrudDialog.ShowAsync(this, "Employees", _gridBindings, _flagsCheckedListBox.SelectedEnum != null ? (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum : DataSourceCapabilities.Default, _dataSource));
+	private async void VisualGridDialogButton_Click(object sender, EventArgs args)
+		=> await RunDemoActionAsync(() => VisualGridDialog.ShowAsync(this, "Employees", _gridBindings, _flagsCheckedListBox.SelectedEnum != null ? (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum : DataSourceCapabilities.Default, _dataSource));
 
 	// Show the employee chosen by the independent reference picker.
-	private void CrudComboBox_EntitySelectionChanged(CrudComboBox arg1, object arg2) {
+	private void VisualGridDropDown_EntitySelectionChanged(VisualGridDropDown arg1, object arg2) {
 		var selectedEmployee = arg2 as Employee;
 		_textWriter.WriteLine("{0}: Selected {1}", arg1.Name, selectedEmployee != null ? selectedEmployee.FirstName : "(None)");
 	}
@@ -437,7 +435,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 		if (Updating)
 			return;
 		_visualGrid.AutoPageSize = _autoSizeCheckBox.Checked;
-		await RunDemoActionAsync(() => _crudComboBox.SetCrudParameters(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked));
+		await RunDemoActionAsync(() => _visualGridDropDown.SetParametersAsync(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked));
 	}
 
 	// Toggle selection of a newly created employee.
@@ -457,7 +455,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	// Apply the same loading-feedback choice to both employee presentations.
 	private void SuppressLoadingIndicatorCheckedChanged(object sender, EventArgs args) {
 		_visualGrid.SuppressLoadingIndicator = _suppressLoadingIndicatorCheckBox.Checked;
-		_crudComboBox.Grid.SuppressLoadingIndicator = _suppressLoadingIndicatorCheckBox.Checked;
+		_visualGridDropDown.Grid.SuppressLoadingIndicator = _suppressLoadingIndicatorCheckBox.Checked;
 	}
 
 	// Capture immutable synthetic values on a worker while retaining cancellation ownership.
@@ -504,7 +502,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	// Publish the completed snapshot and update native status on the owner dispatcher.
 	private async Task RefreshLiveSnapshotCoreAsync() {
 		await _liveSource.RefreshAsync(_liveCancellation.Token);
-		await _liveController.RefreshAsync(_liveCancellation.Token);
+		await _liveGrid.RefreshDataSourceAsync(_liveCancellation.Token);
 		if (!IsDisposed)
 			UpdateLiveStatus();
 	}
@@ -566,7 +564,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 
 	// Apply the laboratory presentation choices, then refresh the current immutable snapshot.
 	private async void LivePresentationChanged(object sender, EventArgs args) {
-		if (_liveController == null || _liveImageAlignment.SelectedIndex < 0 || _liveImageResize.SelectedIndex < 0 || _liveTitleAlignment.SelectedIndex < 0)
+		if (_liveSource == null || _liveImageAlignment.SelectedIndex < 0 || _liveImageResize.SelectedIndex < 0 || _liveTitleAlignment.SelectedIndex < 0)
 			return;
 		_liveGrid.GridTitleAlignment = new[] { ContentAlignment.MiddleLeft, ContentAlignment.MiddleCenter, ContentAlignment.MiddleRight }[_liveTitleAlignment.SelectedIndex];
 		_liveImageColumn.ImageAlignment = (ResizeAlignment)(_liveImageAlignment.SelectedIndex + 1);

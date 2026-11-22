@@ -12,20 +12,18 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
+// Resolves the clicked grid and applies its screen-owned save/restore policy.
+// The designer partial creates the native menu items and wires their actions.
 /// <summary>Provides explicit save and temporary default restoration for a screen-owned grid configuration.</summary>
 [ToolboxItem(true)]
 public partial class VisualGridConfigurationContextMenu : ContextMenuStrip {
 
 	/// <summary>Creates the native configuration commands for designer or runtime attachment.</summary>
-	public VisualGridConfigurationContextMenu() {
-		InitializeComponent();
-	}
+	public VisualGridConfigurationContextMenu() => InitializeComponent();
 
 	/// <summary>Lets the supplying screen's component container own this menu's lifetime.</summary>
 	public VisualGridConfigurationContextMenu(IContainer container)
-		: this() {
-		container?.Add(this);
-	}
+		: this() => container?.Add(this);
 
 	/// <summary>Chooses whether restoring declared defaults affects only the live view or also persists them.</summary>
 	[Category("Behavior")]
@@ -35,9 +33,7 @@ public partial class VisualGridConfigurationContextMenu : ContextMenuStrip {
 	/// <summary>The fixed commands are created by this component's designer, rather than serialized again by each consuming form.</summary>
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public new ToolStripItemCollection Items {
-		get => base.Items;
-	}
+	public new ToolStripItemCollection Items => base.Items;
 
 	// Only already configured screen-owned grids can execute these commands; opening never reads storage.
 	private void ConfigurationMenuOpening(object sender, CancelEventArgs args) {

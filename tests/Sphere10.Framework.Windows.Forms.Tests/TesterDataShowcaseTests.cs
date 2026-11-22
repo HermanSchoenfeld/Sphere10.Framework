@@ -447,7 +447,7 @@ public class TesterDataShowcaseTests {
 			settings.RecordsGrid.PageSize = 7;
 			await settings.SaveAsync();
 			await WaitUntilAsync(() => records.Preferences.PageSize == 7 && records.VisibleEntities.Count() == 7);
-			Assert.That(records.GridBindings.Single(column => column.PreferenceKey == "EditCommand").DisplayType, Is.EqualTo(CrudCellDisplayType.EditCommand));
+			Assert.That(records.GridBindings.Single(column => column.PreferenceKey == "EditCommand").DisplayType, Is.EqualTo(VisualGridCellDisplayType.EditCommand));
 		});
 	}
 

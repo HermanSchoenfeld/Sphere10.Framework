@@ -8,6 +8,8 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
+// Owns designer-created controls, their native layout and control disposal.
+// Behavior is organized in the other VisualGrid partials; source ownership remains with the caller.
 partial class VisualGrid {
 	/// <summary>
 	/// Required designer variable.
@@ -52,6 +54,10 @@ partial class VisualGrid {
 	/// </summary>
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
+		if (disposing) {
+			_sourceAssignmentVersion++;
+			ReleaseDataSourceController();
+		}
 		if (disposing)
 			ReleaseDataSourceNotifications();
 		if (disposing)
@@ -60,6 +66,8 @@ partial class VisualGrid {
 			_rowDetails?.Dispose();
 		if (disposing)
 			_rowCellViews?.Dispose();
+		if (disposing)
+			_outlineViews.Dispose();
 		if (disposing)
 			this._initialLoadingCircle.Active = false;
 		if (disposing && (_components != null))
@@ -540,7 +548,7 @@ partial class VisualGrid {
 		this.Controls.Add(this._layoutPanel);
 		this.Controls.Add(this._initialLoadingCircle);
 		this.MinimumSize = new System.Drawing.Size(319, 87);
-		this.Name = "CrudGrid";
+		this.Name = "VisualGrid";
 		this.Size = new System.Drawing.Size(524, 306);
 		this.FontChanged += new System.EventHandler(this.GridViewportChanged);
 		this.DpiChangedAfterParent += new System.EventHandler(this.GridViewportChanged);

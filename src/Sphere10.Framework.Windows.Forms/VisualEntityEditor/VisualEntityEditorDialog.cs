@@ -15,16 +15,18 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class CrudEntityEditorDialog : Form {
-	private IDataSource<object>? _dataSource;
-	private ICrudEntityEditor<object>? _crudEntityEditor;
+// Runs entity editing, validation and save/delete/cancel decisions.
+// VisualEntityEditorDialog.Designer.cs owns the form controls and layout.
+public partial class VisualEntityEditorDialog : Form {
+	private IDataSource<object> _dataSource;
+	private IVisualEntityEditor<object> _entityEditor;
 	private DataSourceCapabilities _capabilities;
 	private bool _isNewEntity;
-	private object? _entity;
+	private object _entity;
 	private bool _confirmingClose;
 	private bool _closeConfirmed;
 
-	public CrudEntityEditorDialog() {
+	public VisualEntityEditorDialog() {
 		InitializeComponent();
 		UserAction = null;
 	}
@@ -33,11 +35,15 @@ public partial class CrudEntityEditorDialog : Form {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public CrudAction? UserAction { get; set; }
 
-	public void SetEntityEditor(IDataSource<object> dataSource, ICrudEntityEditor<object> entityEditor, DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
+	public bool HasChanges => _entityEditor.HasChanges;
+
+	public bool RequiresGridRefresh { get; protected set; }
+
+	public void SetEntityEditor(IDataSource<object> dataSource, IVisualEntityEditor<object> entityEditor, DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
 		_isNewEntity = isNewEntity;
 		_entity = entity;
 		_dataSource = dataSource;
-		_crudEntityEditor = entityEditor;
+		_entityEditor = entityEditor;
 		_capabilities = capabilities;
 		var editorControl = entityEditor.AsControl();
 		var targetPanelWidth = editorControl.Width;
@@ -48,8 +54,8 @@ public partial class CrudEntityEditorDialog : Form {
 		this.Size = new Size(this.Width + (targetPanelWidth - currentPanelWidth), this.Height + (targetPanelHeight - currentPanelHeight));
 		editorControl.Dock = DockStyle.Fill;
 		var canSave = (isNewEntity && _capabilities.HasFlag(DataSourceCapabilities.CanCreate)) || (!isNewEntity && _capabilities.HasFlag(DataSourceCapabilities.CanUpdate));
-		var ActionName = isNewEntity ? "Create" : canSave ? "Edit" : "View";
-		Text = $"{ActionName} {entity.GetType().Name}";
+		var actionName = isNewEntity ? "Create" : canSave ? "Edit" : "View";
+		Text = $"{actionName} {entity.GetType().Name}";
 		_entityEditorControlPanel.Controls.Add(editorControl);
 		_deleteButton.Visible = _capabilities.HasFlag(DataSourceCapabilities.CanDelete) && !isNewEntity;
 		_saveButton.Visible = canSave;
@@ -61,32 +67,25 @@ public partial class CrudEntityEditorDialog : Form {
 	}
 
 	public void CancelChanges() {
-		_crudEntityEditor.UndoChanges();
+		_entityEditor.UndoChanges();
 		UserAction = null;
 		RequiresGridRefresh = false;
 	}
 
 	public async Task<bool> SaveChanges() {
-		if (_isNewEntity) {
-			if (await Validate(CrudAction.Create)) {
-				await _dataSource.CreateAsync(_crudEntityEditor.GetEntityWithChanges());
-				_crudEntityEditor.AcceptChanges();
-				UserAction = CrudAction.Create;
-				RequiresGridRefresh = true;
-				return true;
-			}
-		} else {
-			if (await Validate(CrudAction.Update)) {
-				await _dataSource.UpdateAsync(_crudEntityEditor.GetEntityWithChanges());
-				_crudEntityEditor.AcceptChanges();
-				UserAction = CrudAction.Update;
-				RequiresGridRefresh = true;
-				return true;
-			}
+		var action = _isNewEntity ? CrudAction.Create : CrudAction.Update;
+		if (!await Validate(action)) {
+			RequiresGridRefresh = false;
+			return false;
 		}
-
-		RequiresGridRefresh = false;
-		return false;
+		if (_isNewEntity)
+			await _dataSource.CreateAsync(_entityEditor.GetEntityWithChanges());
+		else
+			await _dataSource.UpdateAsync(_entityEditor.GetEntityWithChanges());
+		_entityEditor.AcceptChanges();
+		UserAction = action;
+		RequiresGridRefresh = true;
+		return true;
 	}
 
 	public async Task<bool> DeleteEntity() {
@@ -94,7 +93,7 @@ public partial class CrudEntityEditorDialog : Form {
 			if (HasChanges)
 				CancelChanges();
 			if (await Validate(CrudAction.Delete)) {
-					await _dataSource.DeleteAsync(_entity);
+				await _dataSource.DeleteAsync(_entity);
 				UserAction = CrudAction.Delete;
 				RequiresGridRefresh = true;
 				return true;
@@ -106,7 +105,7 @@ public partial class CrudEntityEditorDialog : Form {
 	public async Task<bool> Validate(CrudAction action) {
 		const int rtfHeightPerLine = 20;
 		const int maxErrorsWithoutScrollbar = 5;
-		var result = await _dataSource.ValidateAsync(action != CrudAction.Delete ? _crudEntityEditor.GetEntityWithChanges() : _entity, action);
+		var result = await _dataSource.ValidateAsync(action != CrudAction.Delete ? _entityEditor.GetEntityWithChanges() : _entity, action);
 		var errors = result.ErrorMessages;
 		var extraHeight = rtfHeightPerLine * errors.Count().ClipTo(0, maxErrorsWithoutScrollbar) - _tableLayoutPanel.RowStyles[1].Height;
 		this.Size = new Size(this.Size.Width, (int)(this.Size.Height + extraHeight));
@@ -117,12 +116,6 @@ public partial class CrudEntityEditorDialog : Form {
 		}
 		return true;
 	}
-
-	public bool HasChanges {
-		get { return _crudEntityEditor.HasChanges; }
-	}
-
-	public bool RequiresGridRefresh { get; protected set; }
 
 	#region Event Handler
 
@@ -135,18 +128,19 @@ public partial class CrudEntityEditorDialog : Form {
 		if (_confirmingClose)
 			return;
 		_confirmingClose = true;
-		using var ConfirmationScope = Tools.Scope.ExecuteOnDispose(() => _confirmingClose = false);
-		try {
-			// Leave the closing callback before constructing another modal form.
-			await Task.Yield();
-			if (await DialogEx.ShowAsync(this, SystemIconType.Question, "Close", "Are you sure you want to cancel your changes?", "&No", "&Yes") != DialogExResult.Button2)
-				return;
-			CancelChanges();
-			_closeConfirmed = true;
-			Close();
-		} catch (Exception error) {
-			_closeConfirmed = false;
-			await ExceptionDialog.ShowAsync(this, error);
+		using (Tools.Scope.ExecuteOnDispose(() => _confirmingClose = false)) {
+			try {
+				// Leave the closing callback before constructing another modal form.
+				await Task.Yield();
+				if (await DialogEx.ShowAsync(this, SystemIconType.Question, "Close", "Are you sure you want to cancel your changes?", "&No", "&Yes") != DialogExResult.Button2)
+					return;
+				CancelChanges();
+				_closeConfirmed = true;
+				Close();
+			} catch (Exception error) {
+				_closeConfirmed = false;
+				await ExceptionDialog.ShowAsync(this, error);
+			}
 		}
 	}
 

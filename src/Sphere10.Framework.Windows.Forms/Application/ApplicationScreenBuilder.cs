@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Configures one native screen independently of its navigation commands.</summary>
 public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<ApplicationScreenBuilder> {
 	private Func<ApplicationScreenActivationContext, ApplicationScreen> _activator;
-	private Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> _settingsEditor;
+	private Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> _settingsEditor;
 
 	/// <summary>Starts a registration whose type is supplied through WithScreen.</summary>
 	public ApplicationScreenBuilder() {
@@ -34,7 +34,7 @@ public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<Application
 	}
 
 	/// <summary>Supplies an editor for the actual settings object while Options owns validation and persistence.</summary>
-	public ApplicationScreenBuilder WithSettingsEditor(Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> editorFactory) {
+	public ApplicationScreenBuilder WithSettingsEditor(Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> editorFactory) {
 		Guard.ArgumentNotNull(editorFactory, nameof(editorFactory));
 		_settingsEditor = editorFactory;
 		return this;

@@ -152,7 +152,7 @@ public class SearchTextBoxTests {
 	// Wait for the existing grid queries started by text changes or the native clear action.
 	private static async Task ObserveBinding(VisualGrid grid, int expectedTotal, Action change) {
 		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		EventHandler onComplete = (_, _) => {
+		EventHandlerEx<VisualGrid> onComplete = _ => {
 			if (grid.TotalRecords == expectedTotal)
 				completion.TrySetResult();
 		};

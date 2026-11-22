@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
-using Sphere10.Framework.Windows.Forms.Crud;
+using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using FormsApplication = System.Windows.Forms.Application;
 
@@ -24,7 +24,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudDropdownSizingTests {
+public class VisualGridDropDownSizingTests {
 	[TestCase(9f)]
 	[TestCase(18f)]
 	[TestCase(null)]
@@ -32,7 +32,7 @@ public class CrudDropdownSizingTests {
 		var Source = new SizingDataSource(CreateRecords(2));
 		var Binding = CreateBinding(Source, new Size(1000, 600));
 		using var Font = FontSize.HasValue ? new Font(Owner.Font.FontFamily, FontSize.Value) : null;
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		if (Font != null)
 			Picker.Font = Font;
 		Owner.Controls.Add(Picker);
@@ -56,7 +56,7 @@ public class CrudDropdownSizingTests {
 		var Binding = CreateBinding(Source);
 		foreach (var Column in Binding.GridBindings.Cast<VisualGridColumn<Employee>>())
 			Column.ExpandsToFit = Column.SortName == StretchProperty;
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
@@ -87,7 +87,7 @@ public class CrudDropdownSizingTests {
 	public void EmptyResultKeepsConfiguredDimensionsAndAllChromeUsable() => RunWithMessageLoop(async Owner => {
 		var Source = new SizingDataSource(Array.Empty<Employee>());
 		var Binding = CreateBinding(Source);
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
@@ -103,7 +103,7 @@ public class CrudDropdownSizingTests {
 	public void AutomaticPageSizeUsesCompleteRowsAndStopsReadingAtConfiguredDimensions() => RunWithMessageLoop(async Owner => {
 		var Source = new SizingDataSource(CreateRecords(1000));
 		var Binding = CreateBinding(Source);
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
@@ -129,7 +129,7 @@ public class CrudDropdownSizingTests {
 		var Binding = CreateBinding(Source, new Size(520, 300));
 		foreach (var Column in Binding.GridBindings.Cast<VisualGridColumn<Employee>>())
 			Column.ExpandsToFit = false;
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
@@ -148,7 +148,7 @@ public class CrudDropdownSizingTests {
 			Record.Name = new string('W', 60);
 		var Source = new SizingDataSource(Records);
 		var Binding = CreateBinding(Source);
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
@@ -180,7 +180,7 @@ public class CrudDropdownSizingTests {
 			Record.Name = new string('W', 60);
 		var Source = new SizingDataSource(Records);
 		var Binding = CreateBinding(Source);
-		using var Picker = new CrudReferencePicker(Binding, null);
+		using var Picker = new VisualGridReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
@@ -214,7 +214,7 @@ public class CrudDropdownSizingTests {
 		var Source = new SizingDataSource(Records) { DelayFirstRead = true };
 		var Binding = CreateBinding(Source);
 		var Entity = new Employee { Name = "Owner", Manager = Records[0] };
-		using var Editor = new DefaultCrudEntityEditor { Dock = DockStyle.Fill };
+		using var Editor = new VisualEntityEditor { Dock = DockStyle.Fill };
 		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Control View;
 		Action OpenPopup;
@@ -236,7 +236,7 @@ public class CrudDropdownSizingTests {
 			Owner.Controls.Add(Crud);
 			Crud.GridBindings = new[] {
 				new VisualGridColumn<Employee> {
-					ColumnName = "Manager", PropertyName = nameof(Employee.Manager), DataType = typeof(Employee), DisplayType = CrudCellDisplayType.DropDownList,
+					ColumnName = "Manager", PropertyName = nameof(Employee.Manager), DataType = typeof(Employee), DisplayType = VisualGridCellDisplayType.DropDownList,
 					ReferenceBinding = Binding, PropertyValue = Employee => Employee.Manager!, SetPropertyValue = (Employee, Value) => Employee.Manager = (Employee?)Value,
 					CanEditCell = true, ExpandsToFit = true
 				}
@@ -254,7 +254,7 @@ public class CrudDropdownSizingTests {
 		var Inspected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var InspectTimer = new System.Windows.Forms.Timer { Interval = 25 };
 		InspectTimer.Tick += async (_, _) => {
-			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
+			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<VisualGridReferencePicker>().FirstOrDefault();
 			if (Picker == null)
 				return;
 			InspectTimer.Stop();
@@ -310,13 +310,13 @@ public class CrudDropdownSizingTests {
 		var WorkingArea = Screen.FromControl(Owner).WorkingArea;
 		Owner.ClientSize = new Size(420, 120);
 		Owner.Location = new Point(WorkingArea.Right - Owner.Width, WorkingArea.Bottom - Owner.Height);
-		using var Combo = new CrudComboBox { Width = 180, Location = new Point(230, 80), AllowResizeDropDown = true };
+		using var Combo = new VisualGridDropDown { Width = 180, Location = new Point(230, 80), AllowResizeDropDown = true };
 		using var ClosePopup = Tools.Scope.ExecuteOnDispose(Combo.HideDropDown);
 		Owner.Controls.Add(Combo);
 		var Records = CreateRecords(2);
 		var Source = new SizingDataSource(Records);
 		var Binding = CreateBinding(Source);
-		await Combo.SetCrudParameters(Binding.GridBindings, null!, CrudReferenceBinding.ReadOnlyCapabilities, Source, Binding.MaximumDropDownSize, true);
+		await Combo.SetParametersAsync(Binding.GridBindings, null!, VisualGridReferenceBindingBase.ReadOnlyCapabilities, Source, Binding.MaximumDropDownSize, true);
 		Combo.ShowDropDown();
 		await WaitForStableLayout(Combo.Grid, Source);
 		Assert.That(Combo.IsDroppedDown, Is.True);
@@ -345,7 +345,7 @@ public class CrudDropdownSizingTests {
 	[Test]
 	public void DisposingDuringReadDoesNotAttemptToResizeTheDestroyedPicker() => RunWithMessageLoop(async Owner => {
 		var Source = new SizingDataSource(CreateRecords(100)) { DelayFirstRead = true };
-		using var Picker = new CrudReferencePicker(CreateBinding(Source), null);
+		using var Picker = new VisualGridReferencePicker(CreateBinding(Source), null);
 		Owner.Controls.Add(Picker);
 		var Loading = Picker.LoadItemsAsync();
 		await Source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -359,7 +359,7 @@ public class CrudDropdownSizingTests {
 		Assert.That(ResizedAfterDisposal, Is.False);
 	});
 
-	private static CrudReferenceBinding<Employee> CreateBinding(SizingDataSource Source, Size? MaximumSize = null) => new(Source, new[] {
+	private static VisualGridReferenceBinding<Employee> CreateBinding(SizingDataSource Source, Size? MaximumSize = null) => new(Source, new[] {
 		new VisualGridColumn<Employee> { ColumnName = "ID", DataType = typeof(int), SortName = nameof(Employee.ID), PropertyValue = Employee => Employee.ID },
 		new VisualGridColumn<Employee> { ColumnName = "Name", DataType = typeof(string), SortName = nameof(Employee.Name), PropertyValue = Employee => Employee.Name, ExpandsToFit = true },
 		new VisualGridColumn<Employee> { ColumnName = "Unsigned Int Field", DataType = typeof(uint), SortName = nameof(Employee.UIntField), PropertyValue = Employee => Employee.UIntField }
@@ -378,7 +378,7 @@ public class CrudDropdownSizingTests {
 		Assert.That(Grid.Rows.Sum(Row => Row.Height) + Grid.Rows.Skip(1).Max(Row => Row.Height), Is.GreaterThan(Grid.DisplayRectangle.Height));
 	}
 
-	private static void AssertChromeFits(CrudReferencePicker Picker) {
+	private static void AssertChromeFits(VisualGridReferencePicker Picker) {
 		AssertFitsAncestors(Picker.Grid, Picker);
 		AssertFitsAncestors(FindControl<Grid>(Picker, "_grid"), Picker);
 		foreach (var PanelName in new[] { "_topPanel", "_bottomPanel" }) {
@@ -404,7 +404,7 @@ public class CrudDropdownSizingTests {
 		}
 	}
 
-	private static Task WaitForStableLayout(CrudReferencePicker Picker, SizingDataSource Source) => WaitForStableLayout(Picker.Grid, Source, Picker);
+	private static Task WaitForStableLayout(VisualGridReferencePicker Picker, SizingDataSource Source) => WaitForStableLayout(Picker.Grid, Source, Picker);
 
 	private static async Task WaitForStableLayout(VisualGrid Crud, SizingDataSource Source, Control? PopupContent = null, Func<string> diagnostics = null) {
 		PopupContent ??= Crud;

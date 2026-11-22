@@ -6,24 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using Sphere10.Framework.Windows.Forms.Crud;
+using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Observes accepted entity identity even when two choices have the same displayed caption.</summary>
-public sealed class CrudComboBoxControlStateEventProvider : ControlStateEventProviderBase<CrudComboBox> {
+public sealed class VisualGridDropDownControlStateEventProvider : ControlStateEventProviderBase<VisualGridDropDown> {
 	private object _entity;
 
 	/// <summary>Uses completed semantic grid state rather than native placeholder indices or intermediate legacy events.</summary>
-	protected override void RegisterStateChangedListener(CrudComboBox control, EventHandlerEx eventHandler) {
+	protected override void RegisterStateChangedListener(VisualGridDropDown control, EventHandlerEx eventHandler) {
 		_entity = control.SelectedEntity;
 		control.VisualGrid.StateChanged += GridStateChanged;
 		control.VisualGrid.DataBindingComplete += GridDataBindingComplete;
 	}
 
 	/// <summary>Detaches the accepted-entity listener.</summary>
-	protected override void DeregisterStateChangedListener(CrudComboBox control, EventHandlerEx eventHandler) {
+	protected override void DeregisterStateChangedListener(VisualGridDropDown control, EventHandlerEx eventHandler) {
 		control.VisualGrid.StateChanged -= GridStateChanged;
 		control.VisualGrid.DataBindingComplete -= GridDataBindingComplete;
 		_entity = null;
@@ -39,7 +38,7 @@ public sealed class CrudComboBoxControlStateEventProvider : ControlStateEventPro
 	}
 
 	// Automatic snapshot remapping updates identity without becoming an edited reference value.
-	private void GridDataBindingComplete(object sender, EventArgs args) {
+	private void GridDataBindingComplete(VisualGrid grid) {
 		if (Control != null)
 			_entity = Control.SelectedEntity;
 	}

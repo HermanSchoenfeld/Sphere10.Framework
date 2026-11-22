@@ -40,7 +40,7 @@ public class VisualGridReadOnlyCellTests {
 			ColumnName = $"Column {index}", DataType = typeof(string), CanEditCell = columnEditable,
 			PropertyHasValue = row => row.HasValue, PropertyValue = row => row.Value, SetPropertyValue = (row, value) => row.Value = value
 		}).ToArray();
-		await crud.SetDataSource(new ListDataSource<Row>(new ExtendedList<Row>(rows)), canUpdate ? DataSourceCapabilities.Default : CrudReferenceBinding.ReadOnlyCapabilities);
+		await crud.SetDataSource(new ListDataSource<Row>(new ExtendedList<Row>(rows)), canUpdate ? DataSourceCapabilities.Default : VisualGridReferenceBindingBase.ReadOnlyCapabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
 		var cells = Enumerable.Range(1, rows.Length).SelectMany(row => Enumerable.Range(0, 8).Select(column => native[row, column])).ToArray();
@@ -102,7 +102,7 @@ public class VisualGridReadOnlyCellTests {
 		using var large = new Bitmap(16, 64);
 		var source = new ArrayDataSource<Row>();
 		source.ReplaceData(new[] { new Row { Value = small } });
-		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Image", DisplayType = CrudCellDisplayType.Image, PropertyValue = entity => entity.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Image", DisplayType = VisualGridCellDisplayType.Image, PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
@@ -212,7 +212,7 @@ public class VisualGridReadOnlyCellTests {
 			},
 			new VisualGridColumn<Row> { ColumnName = "Always read only", DataType = typeof(string), CanEditCell = false, PropertyValue = entity => entity.Value }
 		};
-		await crud.SetDataSource(source, grantCapability ? CrudReferenceBinding.ReadOnlyCapabilities : DataSourceCapabilities.Default);
+		await crud.SetDataSource(source, grantCapability ? VisualGridReferenceBindingBase.ReadOnlyCapabilities : DataSourceCapabilities.Default);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
 		var cell = native[1, 0];
@@ -258,7 +258,7 @@ public class VisualGridReadOnlyCellTests {
 		var editor = (GridTextBox)context.Cell.Editor;
 		editor.Control.Text = "Unaccepted draft";
 		if (revokeCapability)
-			crud.Capabilities = CrudReferenceBinding.ReadOnlyCapabilities;
+			crud.Capabilities = VisualGridReferenceBindingBase.ReadOnlyCapabilities;
 		else
 			crud.AllowCellEditing = false;
 		Assert.That(context.IsEditing(), Is.False);

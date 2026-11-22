@@ -14,18 +14,20 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<object> {
-	public event EventHandlerEx<CrudEntityPropertyChangedEventArgs>? PropertyChanged;
+// Adapts an entity and its reference bindings to the property-grid editing surface.
+// VisualEntityEditor.Designer.cs owns the native editor controls.
+public partial class VisualEntityEditor : UserControlEx, IVisualEntityEditor<object> {
+	public event EventHandlerEx<VisualEntityPropertyChangedEventArgs> PropertyChanged;
 
-	private object? _entity;
-	private CrudEntityTypeDescriptor? _entityDescriptor;
+	private object _entity;
+	private VisualEntityTypeDescriptor _entityDescriptor;
 
-	public DefaultCrudEntityEditor() {
+	public VisualEntityEditor() {
 		AOTFixes.Retain();
 		InitializeComponent();
 	}
 
-	public IDictionary<string, CrudReferenceBinding> ReferenceBindings { get; } = new Dictionary<string, CrudReferenceBinding>(StringComparer.Ordinal);
+	public IDictionary<string, VisualGridReferenceBindingBase> ReferenceBindings { get; } = new Dictionary<string, VisualGridReferenceBindingBase>(StringComparer.Ordinal);
 
 	/// <summary>Root property names omitted from the next edit session without changing global model metadata.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -67,17 +69,17 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 
 	public Control AsControl() => this;
 
-	public void SetEntity(DataSourceCapabilities Capabilities, object Entity, bool IsNewEntity) {
-		Guard.ArgumentNotNull(Entity, nameof(Entity));
-		_entity = Entity;
-		_entityDescriptor = new CrudEntityTypeDescriptor(Entity, ReferenceBindings, !Capabilities.HasFlag(IsNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate), HiddenProperties, PropertyFilter);
+	public void SetEntity(DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
+		Guard.ArgumentNotNull(entity, nameof(entity));
+		_entity = entity;
+		_entityDescriptor = new VisualEntityTypeDescriptor(entity, ReferenceBindings, !capabilities.HasFlag(isNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate), HiddenProperties, PropertyFilter);
 		_propertyGrid.SelectedObject = _entityDescriptor;
 		_propertyGrid.Enabled = true;
 		if (AutoExpandFirstLevel && _propertyGrid.IsHandleCreated)
 			ExpandFirstLevel();
 	}
 
-	public object GetEntityWithChanges() => _entity!;
+	public object GetEntityWithChanges() => _entity;
 
 	public void UndoChanges() {
 		_entityDescriptor?.UndoChanges();
@@ -101,18 +103,22 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 			ExpandFirstLevel();
 	}
 
+	protected void NotifyPropertyChanged(VisualEntityPropertyChangedEventArgs change) {
+		OnPropertyChanged(_entity, change.PropertyName, change.OldValue, change.NewValue);
+		PropertyChanged?.Invoke(change);
+	}
+
+	protected virtual void OnPropertyChanged(object entity, object propertyName, object oldValue, object newValue) {
+	}
+
 	private void PropertyGrid_PropertyValueChanged(object source, PropertyValueChangedEventArgs args) {
 		var path = new Stack<string>();
 		for (var item = args.ChangedItem; item != null; item = item.Parent)
 			if (item.PropertyDescriptor != null)
 				path.Push(item.PropertyDescriptor.Name);
-		var change = new CrudEntityPropertyChangedEventArgs(_entity!, string.Join(".", path), args.OldValue!, args.ChangedItem.Value!);
-		OnPropertyChanged(_entity!, change.PropertyName, change.OldValue, change.NewValue);
-		PropertyChanged?.Invoke(change);
+		var change = new VisualEntityPropertyChangedEventArgs(_entity, string.Join(".", path), args.OldValue, args.ChangedItem.Value);
+		NotifyPropertyChanged(change);
 		NotifyStateChanged();
-	}
-
-	protected virtual void OnPropertyChanged(object Entity, object PropertyName, object OldValue, object NewValue) {
 	}
 
 	// Category rows are presentation groups, so properties grouped beneath them still belong to the first level.

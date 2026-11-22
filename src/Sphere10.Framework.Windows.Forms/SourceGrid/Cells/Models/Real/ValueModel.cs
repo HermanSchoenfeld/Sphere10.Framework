@@ -56,4 +56,7 @@ public class ValueModel : IValueModel {
 
 		return newValue.Equals(valueModel);
 	}
+
+	/// <summary>Replaces an accepted display value without raising cell-edit notifications or normalizing the raw value.</summary>
+	internal void ReplaceValue(object value) => _value = value;
 }

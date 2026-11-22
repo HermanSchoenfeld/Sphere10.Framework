@@ -161,7 +161,7 @@ public class VisualGridAutoPageFillTests {
 			PageMode = VisualGridPageMode.Single,
 			PrepareReadOnlyCellsInBackground = true,
 			GridBindings = new IVisualGridColumn[] {
-				new VisualGridColumn<Row> { ColumnName = "Icon", DisplayType = CrudCellDisplayType.Image, DataType = typeof(Image), PropertyValue = row => row.Image },
+				new VisualGridColumn<Row> { ColumnName = "Icon", DisplayType = VisualGridCellDisplayType.Image, DataType = typeof(Image), PropertyValue = row => row.Image },
 				new VisualGridColumn<Row> { ColumnName = "Description", DataType = typeof(string), PropertyValue = row => row.Text }
 			}
 		};

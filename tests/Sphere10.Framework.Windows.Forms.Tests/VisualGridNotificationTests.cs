@@ -44,8 +44,8 @@ public class VisualGridNotificationTests {
 			using var grid = NewGrid(owner);
 			var source = new Source();
 			source.Publish(Rows("Original"));
-			var controller = new VisualGridDataSourceController<Row>(grid, source, selected => source.Data.SingleOrDefault(row => row.Id == selected.Id));
-			await controller.RefreshAsync();
+			grid.ConfigureDataSource(source, selected => source.Data.SingleOrDefault(row => row.Id == selected.Id));
+			await grid.RefreshDataSourceAsync();
 			Assert.That(source.Subscribers, Is.EqualTo(1));
 			grid.SelectedEntity = grid.VisibleEntities.Cast<Row>().First();
 			var native = grid.Controls.Find("_grid", true).OfType<Grid>().Single();
@@ -58,7 +58,7 @@ public class VisualGridNotificationTests {
 			ClickRow(native, 2);
 			Assert.That(((Row)grid.SelectedEntity).Id, Is.EqualTo(2), "The real row mouse route must stay active during source-driven reads.");
 			var obsoleteAccepted = false;
-			grid.DataBindingComplete += (_, _) => obsoleteAccepted |= grid.VisibleEntities.Cast<Row>().Any(row => row.Name.StartsWith("Obsolete", StringComparison.Ordinal));
+			grid.DataBindingComplete += _ => obsoleteAccepted |= grid.VisibleEntities.Cast<Row>().Any(row => row.Name.StartsWith("Obsolete", StringComparison.Ordinal));
 			await Task.Run(() => source.Publish(Rows("Latest")));
 			source.Release.TrySetResult();
 			await UntilAsync(() => grid.VisibleEntities.Cast<Row>().All(row => row.Name.StartsWith("Latest", StringComparison.Ordinal)));
@@ -75,14 +75,14 @@ public class VisualGridNotificationTests {
 			using var grid = NewGrid(owner);
 			var source = new Source();
 			source.Publish(Rows("Original"));
-			var controller = new VisualGridDataSourceController<Row>(grid, source);
-			await controller.RefreshAsync();
+			grid.ConfigureDataSource(source);
+			await grid.RefreshDataSourceAsync();
 			var reads = source.Reads;
 			source.HoldNextRead();
 			using var releaseOnFailure = Tools.Scope.ExecuteOnDispose(() => source.Release.TrySetResult());
 			await Task.Run(() => source.Publish(Rows("Next")));
 			await source.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			var presentation = controller.RefreshAsync();
+			var presentation = grid.RefreshDataSourceAsync();
 			source.Release.TrySetResult();
 			await presentation;
 			await Task.Delay(30);
@@ -152,7 +152,7 @@ public class VisualGridNotificationTests {
 	}
 
 	[Test]
-	public void GenericViewSubscriptionUsesActualHostedAndDetachedPresentationAndKeepsOnePendingUpdate() {
+	public void GridUsesActualHostedAndDetachedPresentationAndKeepsOnePendingUpdate() {
 		RunWithMessageLoop(async owner => {
 			using var host = new ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 			owner.Controls.Add(host);
@@ -160,8 +160,11 @@ public class VisualGridNotificationTests {
 			var second = new ObservedScreen { Title = "Other" };
 			host.ShowScreen(first);
 			var source = new Source();
+			using var grid = NewGrid(first);
+			await grid.SetDataSource(source);
+			await grid.RefreshGrid();
 			var changes = 0;
-			using var subscription = new DataSourceViewSubscription<Row>(first, source, () => { changes++; return Task.CompletedTask; });
+			grid.DataBindingComplete += _ => changes++;
 			host.ShowScreen(second);
 			await Task.Run(() => { source.Publish(Rows("One")); source.Publish(Rows("Two")); });
 			await Task.Delay(50);
@@ -177,20 +180,59 @@ public class VisualGridNotificationTests {
 			await Task.Run(() => source.Publish(Rows("Redocked inactive")));
 			await Task.Delay(50);
 			Assert.That(changes, Is.EqualTo(2));
-			subscription.SetActive(false);
+			grid.Visible = false;
 			host.ShowScreen(first);
 			await Task.Delay(30);
-			Assert.That(changes, Is.EqualTo(2), "An explicit inactive demand must survive visibility and host events.");
-			subscription.SetActive(true);
+			Assert.That(changes, Is.EqualTo(2), "An explicitly hidden grid must stay deferred across host events.");
+			grid.Visible = true;
 			await UntilAsync(() => changes == 3);
-			subscription.Dispose();
+			grid.ClearDataSource();
 			Assert.That(source.Subscribers, Is.Zero);
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void AnInactiveSourceRefreshRetainsPendingChangesUnlessAnExplicitRefreshJoins(bool explicitRefresh) {
+		RunWithMessageLoop(async owner => {
+			using var host = new ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+			owner.Controls.Add(host);
+			var first = new ObservedScreen { Title = "Observed" };
+			var second = new ObservedScreen { Title = "Other" };
+			host.ShowScreen(first);
+			using var grid = NewGrid(first);
+			var source = new Source();
+			source.Publish(Rows("Original"));
+			grid.ConfigureDataSource(source);
+			await grid.RefreshDataSourceAsync();
+			var changes = 0;
+			grid.DataBindingComplete += _ => changes++;
+			source.HoldNextRead();
+			using var release = Tools.Scope.ExecuteOnDispose(() => {
+				if (!source.Release.Task.IsCompleted)
+					source.Release.SetResult();
+			});
+			await Task.Run(() => source.Publish(Rows("In flight")));
+			await source.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			host.ShowScreen(second);
+			await Task.Run(() => source.Publish(Rows("Latest")));
+			var reads = source.Reads;
+			var refresh = explicitRefresh ? grid.RefreshDataSourceAsync() : grid.RefreshCompletion;
+			source.Release.SetResult();
+			await refresh;
+			Assert.That(source.Reads, Is.EqualTo(reads + (explicitRefresh ? 1 : 0)), "Only an explicit request may retry the held read while its screen is inactive.");
+			Assert.That(changes, Is.EqualTo(explicitRefresh ? 1 : 0));
+			Assert.That(grid.VisibleEntities.Cast<Row>().All(row => row.Name.StartsWith(explicitRefresh ? "Latest" : "Original", StringComparison.Ordinal)), Is.True);
+			host.ShowScreen(first);
+			await UntilAsync(() => changes == 1);
+			Assert.That(source.Reads, Is.EqualTo(reads + 1));
+			Assert.That(grid.VisibleEntities.Cast<Row>().All(row => row.Name.StartsWith("Latest", StringComparison.Ordinal)), Is.True);
 		});
 	}
 
 	private static Row[] Rows(string name) => Enumerable.Range(1, 3).Select(id => new Row { Id = id, Name = name + " " + id }).ToArray();
 
-	private static VisualGrid NewGrid(Form owner) {
+	private static VisualGrid NewGrid(Control owner) {
 		var grid = new VisualGrid {
 			Dock = DockStyle.Fill, PageMode = VisualGridPageMode.Single, PrepareReadOnlyCellsInBackground = true,
 			GridBindings = new[] { new VisualGridColumn<Row> {

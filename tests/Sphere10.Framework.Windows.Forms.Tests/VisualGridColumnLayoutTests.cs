@@ -163,7 +163,7 @@ public class VisualGridColumnLayoutTests {
 		using (var graphics = Graphics.FromImage(image))
 			graphics.Clear(Color.Magenta);
 		using var crud = NewGrid(owner, prepared);
-		var column = new VisualGridColumn<Image> { ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = value => value };
+		var column = new VisualGridColumn<Image> { ColumnName = "Image", DataType = typeof(Image), DisplayType = VisualGridCellDisplayType.Image, PropertyValue = value => value };
 		// Exercise the column's default for the center case, rather than assigning that value in every case.
 		if (alignment != DrawingResizeAlignment.CenterCenter)
 			column.ImageAlignment = alignment;
@@ -205,7 +205,7 @@ public class VisualGridColumnLayoutTests {
 		}
 		using var crud = NewGrid(owner, prepared);
 		crud.GridBindings = new[] { new VisualGridColumn<Image> {
-			ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = value => value,
+			ColumnName = "Image", DataType = typeof(Image), DisplayType = VisualGridCellDisplayType.Image, PropertyValue = value => value,
 			ImageAlignment = DrawingResizeAlignment.BottomRight, ImageResizeMethod = method
 		} };
 		var source = new ArrayDataSource<Image>();
@@ -231,7 +231,7 @@ public class VisualGridColumnLayoutTests {
 	private static IVisualGridColumn[] CommandColumns() {
 		return new IVisualGridColumn[] {
 			new VisualGridColumn<string> { ColumnName = "Name", PreferenceKey = "name", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = true },
-			new VisualGridColumn<string> { ColumnName = string.Empty, PreferenceKey = "edit", DataType = typeof(string), DisplayType = CrudCellDisplayType.EditCommand }
+			new VisualGridColumn<string> { ColumnName = string.Empty, PreferenceKey = "edit", DataType = typeof(string), DisplayType = VisualGridCellDisplayType.EditCommand }
 		};
 	}
 

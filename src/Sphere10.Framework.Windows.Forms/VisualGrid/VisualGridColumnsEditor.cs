@@ -15,7 +15,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Edits screen-owned column order, width and stretch through the native collection editor.</summary>
-public sealed class VisualGridColumnsEditor : ArrayEditor {
+internal sealed class VisualGridColumnsEditor : ArrayEditor {
 
 	/// <summary>Uses the existing fixed column schema rather than creating new column definitions.</summary>
 	public VisualGridColumnsEditor()

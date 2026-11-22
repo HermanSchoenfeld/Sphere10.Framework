@@ -28,7 +28,7 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
-		<Compile Update="VisualGrid\Controls\VisualGrid.Preferences.cs"><SubType>Code</SubType></Compile>
+		<Compile Update="VisualGrid\VisualGrid.*.cs"><SubType>Code</SubType><DependentUpon>VisualGrid.cs</DependentUpon></Compile>
 		<Compile Update="Charts\Controls\TelemetryChart.cs"><SubType>UserControl</SubType></Compile>
 		<Compile Update="Charts\Controls\TelemetryChart.Designer.cs"><DependentUpon>TelemetryChart.cs</DependentUpon></Compile>
 		<Compile Update="Charts\Controls\GraphChart.cs"><SubType>UserControl</SubType></Compile>
@@ -178,12 +178,14 @@
 		<Compile Update="Application\Forms\ServerPostBackForm.Designer.cs">
 			<DependentUpon>ServerPostBackForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="AppointmentBook\Controls\AppointmentBook.cs" />
-		<Compile Update="AppointmentBook\Controls\BaseAppointmentBook.cs" />
-		<Compile Update="AppointmentBook\Controls\BaseAppointmentBook.Designer.cs">
-			<DependentUpon>BaseAppointmentBook.cs</DependentUpon>
+		<Compile Update="VisualCalendar\Controls\VisualCalendar.cs" />
+		<Compile Update="VisualCalendar\Controls\BaseVisualCalendar.cs" />
+		<Compile Update="VisualCalendar\Controls\BaseVisualCalendar.Designer.cs">
+			<DependentUpon>BaseVisualCalendar.cs</DependentUpon>
 		</Compile>
-		<Compile Update="AppointmentBook\Controls\UnallocatedBook.cs" />
+		<Compile Update="VisualCalendar\Controls\UnallocatedCalendar.cs" />
+		<Compile Update="VisualCalendar\Controls\CalendarRecurrenceEditor.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="VisualCalendar\Controls\CalendarRecurrenceEditor.Designer.cs"><DependentUpon>CalendarRecurrenceEditor.cs</DependentUpon></Compile>
 		<Compile Update="Application\Forms\BlockMainForm.cs" />
 		<Compile Update="Application\Forms\BlockMainForm.Designer.cs">
 			<DependentUpon>BlockMainForm.cs</DependentUpon>
@@ -204,22 +206,22 @@
 		<Compile Update="ComboBoxes\Controls\ComboBoxEx.cs" />
 		<Compile Update="ComboBoxes\Controls\CustomComboBox.cs" />
 		<Compile Update="ComboBoxes\Controls\EnumComboBox.cs" />
-		<Compile Update="VisualGrid\Controls\CrudComboBox.cs" />
-		<Compile Update="VisualGrid\Forms\CrudDialog.cs" />
-		<Compile Update="VisualGrid\Forms\CrudDialog.Designer.cs">
-			<DependentUpon>CrudDialog.cs</DependentUpon>
+		<Compile Update="VisualGridDropDown\VisualGridDropDown.cs" />
+		<Compile Update="VisualGridDialog\VisualGridDialog.cs" />
+		<Compile Update="VisualGridDialog\VisualGridDialog.Designer.cs">
+			<DependentUpon>VisualGridDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="VisualGrid\Forms\CrudEntityEditorDialog.cs" />
-		<Compile Update="VisualGrid\Forms\CrudEntityEditorDialog.Designer.cs">
-			<DependentUpon>CrudEntityEditorDialog.cs</DependentUpon>
+		<Compile Update="VisualEntityEditor\VisualEntityEditorDialog.cs" />
+		<Compile Update="VisualEntityEditor\VisualEntityEditorDialog.Designer.cs">
+			<DependentUpon>VisualEntityEditorDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="VisualGrid\Controls\VisualGrid.cs" />
-		<Compile Update="VisualGrid\Controls\VisualGrid.Designer.cs">
+		<Compile Update="VisualGrid\VisualGrid.cs" />
+		<Compile Update="VisualGrid\VisualGrid.Designer.cs">
 			<DependentUpon>VisualGrid.cs</DependentUpon>
 		</Compile>
-		<Compile Update="VisualGrid\Controls\DefaultCrudEntityEditor.cs" />
-		<Compile Update="VisualGrid\Controls\DefaultCrudEntityEditor.Designer.cs">
-			<DependentUpon>DefaultCrudEntityEditor.cs</DependentUpon>
+		<Compile Update="VisualEntityEditor\VisualEntityEditor.cs" />
+		<Compile Update="VisualEntityEditor\VisualEntityEditor.Designer.cs">
+			<DependentUpon>VisualEntityEditor.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Database\Controls\ConnectionBarBase.cs" />
 		<Compile Update="Database\Controls\ConnectionBarBase.Designer.cs">
@@ -376,14 +378,14 @@
 			<SubType>Designer</SubType>
 			<DependentUpon>ServerPostBackForm.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="AppointmentBook\Controls\AppointmentBook.resx">
-			<DependentUpon>AppointmentBook.cs</DependentUpon>
+		<EmbeddedResource Update="VisualCalendar\Controls\VisualCalendar.resx">
+			<DependentUpon>VisualCalendar.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="AppointmentBook\Controls\BaseAppointmentBook.resx">
-			<DependentUpon>BaseAppointmentBook.cs</DependentUpon>
+		<EmbeddedResource Update="VisualCalendar\Controls\BaseVisualCalendar.resx">
+			<DependentUpon>BaseVisualCalendar.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="AppointmentBook\Controls\UnallocatedBook.resx">
-			<DependentUpon>UnallocatedBook.cs</DependentUpon>
+		<EmbeddedResource Update="VisualCalendar\Controls\UnallocatedCalendar.resx">
+			<DependentUpon>UnallocatedCalendar.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Application\Forms\BlockMainForm.resx">
 			<SubType>Designer</SubType>
@@ -393,17 +395,17 @@
 			<SubType>Designer</SubType>
 			<DependentUpon>SquareButton.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="VisualGrid\Forms\CrudDialog.resx">
-			<DependentUpon>CrudDialog.cs</DependentUpon>
+		<EmbeddedResource Update="VisualGridDialog\VisualGridDialog.resx">
+			<DependentUpon>VisualGridDialog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="VisualGrid\Forms\CrudEntityEditorDialog.resx">
-			<DependentUpon>CrudEntityEditorDialog.cs</DependentUpon>
+		<EmbeddedResource Update="VisualEntityEditor\VisualEntityEditorDialog.resx">
+			<DependentUpon>VisualEntityEditorDialog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="VisualGrid\Controls\VisualGrid.resx">
+		<EmbeddedResource Update="VisualGrid\VisualGrid.resx">
 			<DependentUpon>VisualGrid.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="VisualGrid\Controls\DefaultCrudEntityEditor.resx">
-			<DependentUpon>DefaultCrudEntityEditor.cs</DependentUpon>
+		<EmbeddedResource Update="VisualEntityEditor\VisualEntityEditor.resx">
+			<DependentUpon>VisualEntityEditor.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Database\Controls\ConnectionBarBase.resx">
 			<DependentUpon>ConnectionBarBase.cs</DependentUpon>

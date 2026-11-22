@@ -71,6 +71,9 @@ public class VisualGridSelectionPaintingTests {
 				stop.Cancel();
 				await sampling;
 			}
+			TestContext.Out.WriteLine($"Selected fill: {selectedColor:X8}; probe: {selectedPoint}; observed: {string.Join(", ", samples.GroupBy(color => color).Select(group => $"{group.Key:X8} x {group.Count()}"))}");
+			if (samples.Any(color => color != selectedColor))
+				SaveEvidence(owner, "grid-selected-refresh-failed.png");
 			Assert.That(samples.Count, Is.GreaterThan(20));
 			Assert.That(samples.All(color => color == selectedColor), Is.True, "Actual native paint sampling must never show the unselected white/grey fill during an unchanged selection refresh.");
 			Assert.That(native.Selection, Is.SameAs(selection));

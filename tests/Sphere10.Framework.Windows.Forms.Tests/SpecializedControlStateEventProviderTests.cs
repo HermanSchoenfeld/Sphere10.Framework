@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
-using Sphere10.Framework.Windows.Forms.Crud;
+using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.DataVisualization;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using NativeApplication = System.Windows.Forms.Application;
@@ -293,10 +293,10 @@ public class SpecializedControlStateEventProviderTests {
 	[Test]
 	public void CrudComboObservesDistinctAcceptedEntitiesWithEqualCaptions() {
 		RunWithMessageLoop(owner => {
-			using var combo = new CrudComboBox { AutoHideOnSelect = false, DisplayMember = _ => "Same Caption" };
+			using var combo = new VisualGridDropDown { AutoHideOnSelect = false, DisplayMember = _ => "Same Caption" };
 			owner.Controls.Add(combo);
 			owner.Controls.Add(combo.VisualGrid);
-			var provider = new CrudComboBoxControlStateEventProvider();
+			var provider = new VisualGridDropDownControlStateEventProvider();
 			using var cleanup = Tools.Scope.ExecuteOnDispose(provider.Clear);
 			provider.SetControl(combo);
 			var states = new List<object>();
@@ -317,7 +317,7 @@ public class SpecializedControlStateEventProviderTests {
 	[Test]
 	public void CrudComboAcceptsAChoiceDuringCollectionAndIgnoresAutomaticSnapshotRemapping() {
 		RunWithMessageLoop(async owner => {
-			using var combo = new CrudComboBox { AutoHideOnSelect = false, DisplayMember = _ => "Same Caption" };
+			using var combo = new VisualGridDropDown { AutoHideOnSelect = false, DisplayMember = _ => "Same Caption" };
 			owner.Controls.Add(combo);
 			owner.Controls.Add(combo.VisualGrid);
 			combo.VisualGrid.Dock = DockStyle.Fill;
@@ -337,7 +337,7 @@ public class SpecializedControlStateEventProviderTests {
 			var controller = new VisualGridArrayController<ChoiceRow>(combo.VisualGrid, source, row => row.Id,
 				_ => ++collectionCount == 1 ? Task.FromResult(original) : collected.Task);
 			await controller.RefreshAsync();
-			var provider = new CrudComboBoxControlStateEventProvider();
+			var provider = new VisualGridDropDownControlStateEventProvider();
 			using var cleanup = Tools.Scope.ExecuteOnDispose(provider.Clear);
 			provider.SetControl(combo);
 			var values = new List<object>();

@@ -14,37 +14,37 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A searchable, paged selection of existing records. Selecting does not edit the referenced record.</summary>
-public class CrudReferencePicker : UserControlEx {
-	public event EventHandler? SelectionAccepted;
+public class VisualGridReferencePicker : UserControlEx {
+	public event EventHandlerEx<VisualGridReferencePicker> SelectionAccepted;
 
-	public event EventHandler? SelectionCancelled;
+	public event EventHandlerEx<VisualGridReferencePicker> SelectionCancelled;
 
-	private readonly CrudReferenceBinding _binding;
+	private readonly VisualGridReferenceBindingBase _binding;
 	private readonly Label _status;
 	private readonly Button _clearButton;
-	private Task? _loadTask;
+	private Task _loadTask;
 	private bool _loading;
 
-	public CrudReferencePicker(CrudReferenceBinding Binding, object? SelectedEntity) {
-		Guard.ArgumentNotNull(Binding, nameof(Binding));
-		_binding = Binding;
-		this.SelectedEntity = SelectedEntity;
-		Guard.ArgumentGT(Binding.MaximumDropDownSize.Width, 0, nameof(Binding));
-		Guard.ArgumentGT(Binding.MaximumDropDownSize.Height, 0, nameof(Binding));
-		MaximumSize = Binding.MaximumDropDownSize;
+	public VisualGridReferencePicker(VisualGridReferenceBindingBase binding, object selectedEntity) {
+		Guard.ArgumentNotNull(binding, nameof(binding));
+		_binding = binding;
+		SelectedEntity = selectedEntity;
+		Guard.ArgumentGT(binding.MaximumDropDownSize.Width, 0, nameof(binding));
+		Guard.ArgumentGT(binding.MaximumDropDownSize.Height, 0, nameof(binding));
+		MaximumSize = binding.MaximumDropDownSize;
 		Size = MaximumSize;
 		Padding = new Padding(4);
-		Grid = new ReferenceGrid { Dock = DockStyle.Fill, BorderStyle = BorderStyle.None, MinimumSize = Size.Empty, Capabilities = CrudReferenceBinding.ReadOnlyCapabilities };
-		Grid.SelectedEntityDirect = SelectedEntity!;
+		Grid = new ReferenceGrid { Dock = DockStyle.Fill, BorderStyle = BorderStyle.None, MinimumSize = Size.Empty, Capabilities = VisualGridReferenceBindingBase.ReadOnlyCapabilities };
+		Grid.SelectedEntityDirect = selectedEntity;
 		Grid.EntitySelected += (_, entity) => {
-			if (!_loading)
+			if (!_loading && !Grid.IsReconcilingSelection)
 				AcceptSelection(entity);
 		};
-		_status = new Label { AutoEllipsis = true, Dock = DockStyle.Top, Height = Font.Height + 10, Padding = new Padding(3, 5, 3, 5), Text = $"Current: {Binding.GetDisplayText(SelectedEntity)}" };
+		_status = new Label { AutoEllipsis = true, Dock = DockStyle.Top, Height = Font.Height + 10, Padding = new Padding(3, 5, 3, 5), Text = $"Current: {binding.GetDisplayText(selectedEntity)}" };
 		var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Bottom, FlowDirection = FlowDirection.RightToLeft, WrapContents = false };
 		var cancelButton = new Button { AutoSize = true, Text = "Cancel", CausesValidation = false };
-		cancelButton.Click += (_, _) => SelectionCancelled?.Invoke(this, EventArgs.Empty);
-		_clearButton = new Button { AutoSize = true, Text = "Clear", Visible = Binding.AllowNull, CausesValidation = false };
+		cancelButton.Click += (_, _) => NotifySelectionCancelled();
+		_clearButton = new Button { AutoSize = true, Text = "Clear", Visible = binding.AllowNull, CausesValidation = false };
 		_clearButton.Click += (_, _) => AcceptSelection(null);
 		buttons.Controls.Add(cancelButton);
 		buttons.Controls.Add(_clearButton);
@@ -53,27 +53,19 @@ public class CrudReferencePicker : UserControlEx {
 		Controls.Add(buttons);
 	}
 
-	public VisualGrid Grid {
-		get;
-	}
+	public VisualGrid Grid { get; }
 
-	public object? SelectedEntity {
-		get; private set;
-	}
+	public object SelectedEntity { get; private set; }
 
-	public bool HasSelection {
-		get; private set;
-	}
+	public bool HasSelection { get; private set; }
 
-	public Exception? LoadError {
-		get; private set;
-	}
+	public Exception LoadError { get; private set; }
 
-	public void AcceptSelection(object? Entity) {
-		Guard.Argument(Entity != null || _binding.AllowNull, nameof(Entity), "This reference cannot be cleared.");
-		SelectedEntity = Entity;
+	public void AcceptSelection(object entity) {
+		Guard.Argument(entity != null || _binding.AllowNull, nameof(entity), "This reference cannot be cleared.");
+		SelectedEntity = entity;
 		HasSelection = true;
-		SelectionAccepted?.Invoke(this, EventArgs.Empty);
+		NotifySelectionAccepted();
 		NotifyStateChanged();
 	}
 
@@ -82,24 +74,40 @@ public class CrudReferencePicker : UserControlEx {
 	/// <summary>Reports accepted references instead of the popup's search, paging and temporary row selection.</summary>
 	protected override bool ShouldObserveChildStateChanges(Control child) => false;
 
-	protected override async void OnLoad(EventArgs Args) {
+	protected override async void OnLoad(EventArgs args) {
 		LimitDropDownSize();
-		base.OnLoad(Args);
+		base.OnLoad(args);
 		await LoadItemsAsync();
 	}
 
-	protected override void OnFontChanged(EventArgs Args) {
-		base.OnFontChanged(Args);
+	protected override void OnFontChanged(EventArgs args) {
+		base.OnFontChanged(args);
 		if (_status != null)
 			_status.Height = Font.Height + _status.Padding.Vertical;
 	}
 
-	protected override bool ProcessCmdKey(ref Message Message, Keys KeyData) {
-		if (KeyData == Keys.Escape) {
-			SelectionCancelled?.Invoke(this, EventArgs.Empty);
+	protected override bool ProcessCmdKey(ref Message message, Keys keyData) {
+		if (keyData == Keys.Escape) {
+			NotifySelectionCancelled();
 			return true;
 		}
-		return base.ProcessCmdKey(ref Message, KeyData);
+		return base.ProcessCmdKey(ref message, keyData);
+	}
+
+	protected void NotifySelectionAccepted() {
+		OnSelectionAccepted();
+		SelectionAccepted?.Invoke(this);
+	}
+
+	protected virtual void OnSelectionAccepted() {
+	}
+
+	protected void NotifySelectionCancelled() {
+		OnSelectionCancelled();
+		SelectionCancelled?.Invoke(this);
+	}
+
+	protected virtual void OnSelectionCancelled() {
 	}
 
 	private void LimitDropDownSize() {
@@ -115,18 +123,21 @@ public class CrudReferencePicker : UserControlEx {
 
 	private async Task LoadItemsInternalAsync() {
 		_loading = true;
-		using var loadingScope = Tools.Scope.ExecuteOnDispose(() => _loading = false);
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			await _binding.BindAsync(Grid);
-		});
-		if (error != null) {
-			LoadError = error;
-			if (!IsDisposed)
-				_status.Text = $"Unable to load records: {error.Message}";
+		using (Tools.Scope.ExecuteOnDispose(() => _loading = false)) {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => _binding.BindAsync(Grid));
+			if (error != null) {
+				LoadError = error;
+				if (!IsDisposed)
+					_status.Text = $"Unable to load records: {error.Message}";
+			}
 		}
 	}
 
+	#region Inner Types
+
 	private sealed class ReferenceGrid : VisualGrid {
-		public override Task EditEntity(object Entity) => Task.CompletedTask;
+		public override Task EditEntity(object entity) => Task.CompletedTask;
 	}
+
+	#endregion
 }

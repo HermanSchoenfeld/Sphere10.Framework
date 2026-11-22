@@ -34,7 +34,7 @@ public partial class ApplicationSettingsDialog : Form {
 	private readonly IApplication _application;
 	private readonly IServiceProvider _services;
 	private object _selectedOwner;
-	private ICrudEntityEditor<object> _editor;
+	private IVisualEntityEditor<object> _editor;
 	private Control _editorControl;
 	private bool _applying;
 	private ApplicationSettingsScreenPolicy _policy = ApplicationSettingsScreenPolicy.Default;
@@ -236,14 +236,14 @@ public partial class ApplicationSettingsDialog : Form {
 		var editorType = factory == null ? GetDeclaredEditorType(settings.GetType()) : null;
 		var context = new ApplicationSettingsEditorContext(settings, _application, _services, this,
 			(additional, members) => IncludeSettings(settings, additional, members));
-		ICrudEntityEditor<object> editor;
+		IVisualEntityEditor<object> editor;
 		if (factory != null)
 			editor = factory(context);
 		else if (editorType != null) {
-			Guard.Argument(!editorType.IsAbstract && !editorType.ContainsGenericParameters && typeof(ICrudEntityEditor<object>).IsAssignableFrom(editorType),
-				nameof(editorType), "A settings editor must implement ICrudEntityEditor<object>.");
+			Guard.Argument(!editorType.IsAbstract && !editorType.ContainsGenericParameters && typeof(IVisualEntityEditor<object>).IsAssignableFrom(editorType),
+				nameof(editorType), "A settings editor must implement IVisualEntityEditor<object>.");
 			var constructor = editorType.GetConstructor(new[] { typeof(ApplicationSettingsEditorContext) });
-			editor = (ICrudEntityEditor<object>)(constructor == null ? Tools.Object.Create(editorType) : constructor.Invoke(new object[] { context }));
+			editor = (IVisualEntityEditor<object>)(constructor == null ? Tools.Object.Create(editorType) : constructor.Invoke(new object[] { context }));
 		} else
 			editor = new ApplicationSettingsEditor {
 				PropertySort = PropertySort.CategorizedAlphabetical
@@ -329,7 +329,7 @@ public partial class ApplicationSettingsDialog : Form {
 	}
 
 	// Property changes remain provisional until the user explicitly saves the actual settings object.
-	private void EditorPropertyChanged(CrudEntityPropertyChangedEventArgs change) {
+	private void EditorPropertyChanged(VisualEntityPropertyChangedEventArgs change) {
 		var settings = GetSettings(_selectedOwner);
 		if (settings == null)
 			return;
@@ -445,7 +445,7 @@ public partial class ApplicationSettingsDialog : Form {
 	// The standard component-model attribute names a custom editor shared by any owner of that settings type.
 	private static Type GetDeclaredEditorType(Type settingsType) {
 		var editor = TypeDescriptor.GetAttributes(settingsType).OfType<EditorAttribute>()
-			.FirstOrDefault(attribute => Type.GetType(attribute.EditorBaseTypeName, false) == typeof(ICrudEntityEditor<object>));
+			.FirstOrDefault(attribute => Type.GetType(attribute.EditorBaseTypeName, false) == typeof(IVisualEntityEditor<object>));
 		return editor == null ? null : Type.GetType(editor.EditorTypeName, true);
 	}
 

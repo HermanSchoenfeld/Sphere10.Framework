@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 /// <summary>Adds a live provisional preview to the reusable native property editor for the GPU registration.</summary>
-public partial class ScreenHostingPreferencesEditor : DefaultCrudEntityEditor {
+public partial class ScreenHostingPreferencesEditor : VisualEntityEditor {
 	private readonly ScreenHostingDesignTestScreen.ScreenHostingPreferences _values;
 
 	/// <summary>Creates the designable editor with detached sample values.</summary>

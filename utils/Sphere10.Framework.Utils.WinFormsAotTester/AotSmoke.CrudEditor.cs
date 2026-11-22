@@ -24,7 +24,7 @@ internal static partial class AotSmoke {
 		var grid = screen.Controls.Find("_crudGrid", true).OfType<VisualGrid>().Single();
 		await grid.RefreshCompletion;
 		var reference = grid.GridBindings.Single(column => column.PropertyName == "Manager").ReferenceBinding;
-		var source = ((CrudReferenceBinding<Employee>)reference).DataSource;
+		var source = ((VisualGridReferenceBinding<Employee>)reference).DataSource;
 		var samples = (TestCrudDataSource)source;
 		var initialCount = source.Count;
 		Guard.Ensure(initialCount > 0 && grid.TotalRecords == initialCount);
@@ -107,12 +107,12 @@ internal static partial class AotSmoke {
 		Record("CrudEditorVerified");
 	}
 
-	private static async Task RunCrudEditorSession(Func<Task> open, Func<CrudEntityEditorDialog, ICrudEntityEditor<object>, PropertyGrid, Task> exercise) {
-		CrudEntityEditorDialog dialog = null;
+	private static async Task RunCrudEditorSession(Func<Task> open, Func<VisualEntityEditorDialog, IVisualEntityEditor<object>, PropertyGrid, Task> exercise) {
+		VisualEntityEditorDialog dialog = null;
 		var operation = open();
 		try {
 			for (var attempt = 0; dialog == null && attempt < 1000; attempt++) {
-				dialog = System.Windows.Forms.Application.OpenForms.OfType<CrudEntityEditorDialog>().SingleOrDefault(form => form.Visible && !form.IsDisposed);
+				dialog = System.Windows.Forms.Application.OpenForms.OfType<VisualEntityEditorDialog>().SingleOrDefault(form => form.Visible && !form.IsDisposed);
 				if (dialog != null)
 					break;
 				if (operation.IsCompleted) {
@@ -123,9 +123,9 @@ internal static partial class AotSmoke {
 			}
 			Guard.Ensure(dialog != null, "The CRUD editor did not become visible before the bounded UI wait expired.");
 			await Task.Yield();
-			var editor = Descendants(dialog).OfType<ICrudEntityEditor<object>>().Single();
+			var editor = Descendants(dialog).OfType<IVisualEntityEditor<object>>().Single();
 			Record("CrudEditorType=" + editor.GetType().FullName);
-			Guard.Ensure(editor.GetType().Name == "DefaultCrudEntityEditor", "The real grid did not create its configured default editor.");
+			Guard.Ensure(editor.GetType().Name == "VisualEntityEditor", "The real grid did not create its configured default editor.");
 			var properties = Descendants(dialog).OfType<PropertyGrid>().Single();
 			Guard.Ensure(properties.SelectedObject != null && properties.SelectedTab != null);
 			var root = properties.SelectedGridItem;
@@ -136,7 +136,7 @@ internal static partial class AotSmoke {
 			await operation.WaitAsync(TimeSpan.FromSeconds(15));
 		} finally {
 			// Own only this operation's modal form; cancellation avoids a second close-confirmation dialog on failure.
-			dialog ??= System.Windows.Forms.Application.OpenForms.OfType<CrudEntityEditorDialog>().SingleOrDefault(form => form.Visible && !form.IsDisposed);
+			dialog ??= System.Windows.Forms.Application.OpenForms.OfType<VisualEntityEditorDialog>().SingleOrDefault(form => form.Visible && !form.IsDisposed);
 			if (dialog != null && !dialog.IsDisposed && dialog.Visible) {
 				try {
 					dialog.CancelChanges();

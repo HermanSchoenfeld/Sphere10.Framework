@@ -149,8 +149,8 @@ public class ApplicationSettingsNativeTests {
 	public void OptionsRootUsesTheConfiguredProductName(string productName, string expectedCaption) {
 		RunWithMessageLoop(async owner => {
 			using var block = CreateBlock("Diagnostics");
-			await using var services = CreateApplication(new MemoryStore(), block);
-			var application = services.GetRequiredService<FormsUI.IApplication>();
+			using var main = new QuietMainForm();
+			await using var application = new CaptionApplication(main, new[] { block });
 			var productServices = new ServiceCollection();
 			if (productName != null)
 				productServices.AddSingleton<IProductInformationProvider>(new CaptionProductInformationProvider(productName));
@@ -192,7 +192,7 @@ public class ApplicationSettingsNativeTests {
 			var dialog = System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Single();
 			try {
 				Assert.That(dialog.SelectedOwner, Is.SameAs(definition));
-				Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(screen.ScreenSettings));
+				Assert.That(Find<VisualEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(screen.ScreenSettings));
 			} finally {
 				dialog.DialogResult = DialogResult.Cancel;
 				dialog.Close();
@@ -251,7 +251,7 @@ public class ApplicationSettingsNativeTests {
 			var screenNodes = Find<TreeView>(dialog).Nodes[0].Nodes[0].Nodes.Cast<TreeNode>().ToArray();
 			Assert.That(screenNodes.Select(node => node.Tag), Is.EqualTo(new[] { unopened, unmarked }));
 			Assert.That(dialog.SelectedOwner, Is.SameAs(unopened));
-			Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(unopened.Settings));
+			Assert.That(Find<VisualEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(unopened.Settings));
 			Assert.That(unopened.Settings, Is.TypeOf<UnopenedSettingsScreen.Preferences>());
 			Assert.That(store.Writes, Is.Zero, "Opening Options must not save or activate an unopened settings screen.");
 		});
@@ -272,7 +272,7 @@ public class ApplicationSettingsNativeTests {
 			actual.OnChanged += () => notifications++;
 			using var dialog = new ApplicationSettingsDialog(application, selectedOwner: definition);
 			dialog.Show(owner);
-			Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(actual));
+			Assert.That(Find<VisualEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(actual));
 
 			// Provisional edits affect this actual object, without persisting or publishing yet.
 			SetName(dialog, "Accepted");
@@ -582,7 +582,7 @@ public class ApplicationSettingsNativeTests {
 			var actual = new AttributedPreferences();
 			var attributed = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "Attributed", stableKey: "attributed", settings: actual);
 			var explicitEditor = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "Explicit", stableKey: "explicit",
-				settings: new AttributedPreferences(), settingsEditor: _ => new DefaultCrudEntityEditor());
+				settings: new AttributedPreferences(), settingsEditor: _ => new VisualEntityEditor());
 			block.AddScreenDefinition(attributed);
 			block.AddScreenDefinition(explicitEditor);
 			await using var services = CreateApplication(new MemoryStore(), block);
@@ -594,7 +594,7 @@ public class ApplicationSettingsNativeTests {
 			dialog.Show(owner);
 			Assert.That(Find<DeclaredEditor>(dialog).Context.Settings, Is.SameAs(actual));
 			dialog.SelectOwner(explicitEditor);
-			Assert.That(Find<DefaultCrudEntityEditor>(dialog), Is.TypeOf<DefaultCrudEntityEditor>());
+			Assert.That(Find<VisualEntityEditor>(dialog), Is.TypeOf<VisualEntityEditor>());
 			Assert.That(main.ScreenHost.Screens.Length, Is.EqualTo(count));
 			dialog.Close();
 		});
@@ -684,6 +684,13 @@ public class ApplicationSettingsNativeTests {
 	}
 
 	#region Inner Types
+
+	// A distinct CLR name makes the fallback-caption assertion detect type-name leakage.
+	private sealed class CaptionApplication : FormsUI.Application {
+		public CaptionApplication(BlockMainForm mainForm, IEnumerable<FormsUI.IApplicationBlock> blocks)
+			: base(mainForm, blocks) {
+		}
+	}
 
 	/// <summary>Supplies the product identity selected by application composition.</summary>
 	private sealed class CaptionProductInformationProvider : IProductInformationProvider {
@@ -822,13 +829,13 @@ public class ApplicationSettingsNativeTests {
 	}
 
 	/// <summary>Declares a custom class editor through the standard component-model attribute.</summary>
-	[Editor(typeof(DeclaredEditor), typeof(ICrudEntityEditor<object>))]
+	[Editor(typeof(DeclaredEditor), typeof(IVisualEntityEditor<object>))]
 	public class AttributedPreferences : SettingsObject {
 		public string Name { get; set; } = "Attributed";
 	}
 
 	// Observe the actual object and services supplied to a settings-class editor.
-	public sealed class DeclaredEditor : DefaultCrudEntityEditor {
+	public sealed class DeclaredEditor : VisualEntityEditor {
 		public DeclaredEditor(ApplicationSettingsEditorContext context) => Context = context;
 
 		public ApplicationSettingsEditorContext Context { get; }

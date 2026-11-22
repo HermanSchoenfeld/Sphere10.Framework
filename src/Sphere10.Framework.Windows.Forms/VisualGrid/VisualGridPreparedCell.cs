@@ -12,7 +12,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native cell slot whose value, image model and cached text editor survive compatible snapshot updates.</summary>
 internal sealed class VisualGridPreparedCell : Cell {
-	private readonly VisualGridPreparedValueModel _valueModel = new();
+	private readonly SourceGrid.Cells.Models.ValueModel _valueModel = new();
 	private readonly SourceGrid.Cells.Models.ModelContainer _modelContainer;
 	private readonly SourceGrid.Cells.Models.Image _imageModel;
 	private VisualGridPreparedTextEditor _textEditor;
@@ -26,12 +26,8 @@ internal sealed class VisualGridPreparedCell : Cell {
 	}
 
 	/// <summary>Whether callers have retained the models required for an in-place snapshot update.</summary>
-	public bool CanApplyPreparedValue {
-		get {
-			return ReferenceEquals(Model, _modelContainer) && ReferenceEquals(Model.ValueModel, _valueModel)
-					&& ReferenceEquals(Model.FindModel(typeof(SourceGrid.Cells.Models.Image)), _imageModel);
-		}
-	}
+	public bool CanApplyPreparedValue => ReferenceEquals(Model, _modelContainer) && ReferenceEquals(Model.ValueModel, _valueModel)
+		&& ReferenceEquals(Model.FindModel(typeof(SourceGrid.Cells.Models.Image)), _imageModel);
 
 	/// <summary>Publishes a prepared value without entering SourceGrid's cell-edit lifecycle.</summary>
 	public void ApplyPreparedValue(VisualGridPreparedValue prepared) {

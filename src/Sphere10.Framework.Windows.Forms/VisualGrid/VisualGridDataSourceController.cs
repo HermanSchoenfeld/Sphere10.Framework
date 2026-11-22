@@ -13,98 +13,79 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Binds a ranged source without materializing its entire dataset. Snapshot collection remains a separate responsibility.</summary>
-public sealed class VisualGridDataSourceController<T> {
-	public event EventHandler SelectionReconciled;
+/// <summary>Coordinates one grid-owned borrowed source without collecting or owning its data.</summary>
+internal sealed class VisualGridDataSourceController {
 	private readonly VisualGrid _grid;
-	private readonly IDataSource<T> _source;
-	private readonly Func<T, object> _resolvePublishedEntity;
+	private readonly IDataSource<object> _source;
+	private readonly Type _itemType;
+	private readonly Func<object, object> _resolvePublishedEntity;
+	private readonly int _assignmentVersion;
+	private readonly DataSourceCapabilities _capabilities;
 	private readonly AsyncSynchronizedGate _refresh = new();
-	private readonly int _ownerThread;
-	private bool _bound;
-	private Func<T, object> _visibleSelectionIdentity;
 
-	public VisualGridDataSourceController(VisualGrid grid, IDataSource<T> source, Func<T, object> resolvePublishedEntity = null) {
-		Guard.ArgumentNotNull(grid, nameof(grid));
-		Guard.ArgumentNotNull(source, nameof(source));
+	internal VisualGridDataSourceController(VisualGrid grid, IDataSource<object> source, Type itemType, Func<object, object> resolvePublishedEntity, DataSourceCapabilities capabilities, int assignmentVersion) {
 		_grid = grid;
 		_source = source;
+		_itemType = itemType;
 		_resolvePublishedEntity = resolvePublishedEntity;
-		_ownerThread = Environment.CurrentManagedThreadId;
-		_grid.DataBindingComplete += GridDataBindingComplete;
+		_assignmentVersion = assignmentVersion;
+		_capabilities = capabilities;
 	}
 
-	/// <summary>Optional stable identity for reconciling selection with the accepted visible page. Null preserves the existing selection policy.</summary>
-	/// <remarks>Runs on the owning dispatcher over published rows; it must not collect native resources.</remarks>
-	public Func<T, object> VisibleSelectionIdentity {
-		get => _visibleSelectionIdentity;
-		set {
-			Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThread, "Configure grid selection on its owning UI dispatcher.");
-			_visibleSelectionIdentity = value;
-			if (_bound)
-				_grid.PublishedSelectionIdentity = PublishedIdentity;
+	internal bool IsBound { get; private set; }
+
+	internal async Task BindAsync() {
+		using (await _refresh.EnterScopeAsync())
+			if (await BindCoreAsync())
+				ApplySelectionBinding();
+	}
+
+	internal async Task RefreshAsync(CancellationToken cancellationToken) {
+		using (await _refresh.EnterScopeAsync(cancellationToken)) {
+			if (!_grid.OwnsDataSourceController(this))
+				return;
+			_grid.InvalidateDataSource();
+			if (!await BindCoreAsync())
+				return;
+			cancellationToken.ThrowIfCancellationRequested();
+			if (!_grid.OwnsDataSourceController(this))
+				return;
+			ApplySelectionBinding();
+			await _grid.RefreshGrid();
 		}
 	}
 
-	/// <summary>Optional resource-publication stamp captured before a ranged query and checked again before native publication.</summary>
-	public Func<object> PublicationIdentity {
-		get => _grid.SourcePublicationIdentity;
-		set {
-			Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThread, "Configure publication identity on its owning UI dispatcher.");
-			_grid.SourcePublicationIdentity = value;
-		}
-	}
-
-	/// <summary>Call after publishing source changes, on the owning dispatcher. Rows stay interactive during the asynchronous read.</summary>
-	public void Invalidate() {
-		Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThread, "Invalidate the grid query on its owning UI dispatcher.");
-		if (!_grid.IsDisposed)
-			_grid.NotifyDataSourceChanged();
-	}
-
-	/// <summary>Call after publishing source changes, on the owning dispatcher. Rows stay interactive during the asynchronous read.</summary>
-	public async Task RefreshAsync(CancellationToken cancellationToken = default) {
-		Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThread, "Refresh the grid on its owning UI dispatcher.");
-		using var admission = await _refresh.EnterScopeAsync(cancellationToken);
-		if (_grid.IsDisposed)
+	internal void ReconcileSelection(VisualGrid sender) {
+		if (!IsBound || !_grid.OwnsDataSourceController(this))
 			return;
-		_grid.NotifyDataSourceChanged();
-		if (!_bound) {
-			await _grid.SetDataSource(_source);
-			_bound = true;
-		}
-		cancellationToken.ThrowIfCancellationRequested();
-		if (_grid.IsDisposed)
+		var identity = _grid.VisibleSelectionIdentity;
+		if (identity == null)
 			return;
-		_grid.ResolvePublishedEntity = Resolve;
-		_grid.PublishedSelectionIdentity = PublishedIdentity;
-		await _grid.RefreshGrid();
-	}
-
-	/// <summary>The owner's visible-selection identity over published rows, applied inside the publication; null when no identity is configured.</summary>
-	private object PublishedIdentity(object entity) => _visibleSelectionIdentity != null && entity is T typed ? _visibleSelectionIdentity(typed) : null;
-
-	private object Resolve(object selected) {
-		if (selected is not T typed)
-			return null;
-		var resolved = _resolvePublishedEntity == null ? selected : _resolvePublishedEntity(typed);
-		Guard.Ensure(resolved == null || resolved is T, "A published grid selection must have the source's item type.");
-		return resolved;
-	}
-
-	private void GridDataBindingComplete(object sender, EventArgs args) {
-		if (_visibleSelectionIdentity == null)
-			return;
-		if (_grid.HasDetailSelection) {
-			SelectionReconciled?.Invoke(this, EventArgs.Empty);
-			return;
-		}
-		if (_grid.SelectedEntity is T selected) {
-			var identity = _visibleSelectionIdentity(selected);
-			var published = _grid.VisibleEntities.FirstOrDefault(row => row is T typed && Equals(identity, _visibleSelectionIdentity(typed)));
+		if (!_grid.HasDetailSelection && _itemType.IsInstanceOfType(_grid.SelectedEntity)) {
+			var selected = _grid.SelectedEntity;
+			var key = identity(selected);
+			var published = _grid.VisibleEntities.FirstOrDefault(row => _itemType.IsInstanceOfType(row) && Equals(key, identity(row)));
 			if (!ReferenceEquals(published, selected))
 				_grid.SelectedEntity = published;
 		}
-		SelectionReconciled?.Invoke(this, EventArgs.Empty);
+		if (_grid.OwnsDataSourceController(this))
+			_grid.NotifySelectionReconciled();
 	}
+
+	private async Task<bool> BindCoreAsync() {
+		if (!_grid.OwnsDataSourceController(this))
+			return false;
+		if (!IsBound) {
+			if (!await _grid.BindDataSourceAsync(_source, _itemType, _capabilities, _assignmentVersion) || !_grid.OwnsDataSourceController(this))
+				return false;
+			IsBound = true;
+		}
+		return true;
+	}
+
+	private void ApplySelectionBinding() {
+		_grid.ResolvePublishedEntity = _resolvePublishedEntity;
+		_grid.PublishedSelectionIdentity = _grid.VisibleSelectionIdentity;
+	}
+
 }

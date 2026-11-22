@@ -46,7 +46,7 @@ public class ControlStateEventProviderManager {
 		[typeof(Expando)] = typeof(ExpandoControlStateEventProvider),
 		[typeof(TaskPane)] = typeof(ContainerControlStateEventProvider),
 		[typeof(PadLockButton)] = typeof(PadLockButtonControlStateEventProvider),
-		[typeof(Crud.CrudComboBox)] = typeof(CrudComboBoxControlStateEventProvider)
+		[typeof(VisualGridDropDown)] = typeof(VisualGridDropDownControlStateEventProvider)
 	};
 	private readonly HashSet<string> _controlStateEventProviders;
 

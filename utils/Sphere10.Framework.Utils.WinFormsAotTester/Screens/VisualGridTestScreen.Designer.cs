@@ -21,8 +21,8 @@ partial class VisualGridTestScreen {
 	private Sphere10.Framework.Windows.Forms.FlagsCheckedListBox _flagsCheckedListBox;
 	private System.Windows.Forms.TextBox _outputTextBox;
 	private System.Windows.Forms.CheckBox _generateDeleteErrorCheckBox;
-	private System.Windows.Forms.Button _crudDialogButton;
-	private Sphere10.Framework.Windows.Forms.Crud.CrudComboBox _crudComboBox;
+	private System.Windows.Forms.Button _gridDialogButton;
+	private Sphere10.Framework.Windows.Forms.VisualGridDropDown _visualGridDropDown;
 	private System.Windows.Forms.CheckBox _generateCreateErrorCheckBox;
 	private System.Windows.Forms.CheckBox _generateUpdateErrorCheckBox;
 	private System.Windows.Forms.Button _selectFirstEntityButton;
@@ -101,7 +101,7 @@ partial class VisualGridTestScreen {
 		_gridConfigurationMenu = new VisualGridConfigurationContextMenu(_components);
 		_outputTextBox = new System.Windows.Forms.TextBox();
 		_generateDeleteErrorCheckBox = new System.Windows.Forms.CheckBox();
-		_crudDialogButton = new System.Windows.Forms.Button();
+		_gridDialogButton = new System.Windows.Forms.Button();
 		_generateCreateErrorCheckBox = new System.Windows.Forms.CheckBox();
 		_generateUpdateErrorCheckBox = new System.Windows.Forms.CheckBox();
 		_selectFirstEntityButton = new System.Windows.Forms.Button();
@@ -110,7 +110,7 @@ partial class VisualGridTestScreen {
 		_refreshGrid = new System.Windows.Forms.Button();
 		_autoSizeCheckBox = new System.Windows.Forms.CheckBox();
 		_autoSelectOnCreateCheckBox = new System.Windows.Forms.CheckBox();
-		_crudComboBox = new Windows.Forms.Crud.CrudComboBox();
+		_visualGridDropDown = new Windows.Forms.VisualGridDropDown();
 		_flagsCheckedListBox = new FlagsCheckedListBox();
 		_visualGrid = new VisualGrid();
 		_allowCellEditingCheckBox = new System.Windows.Forms.CheckBox();
@@ -190,16 +190,16 @@ partial class VisualGridTestScreen {
 		_generateDeleteErrorCheckBox.UseVisualStyleBackColor = true;
 		_generateDeleteErrorCheckBox.CheckedChanged += GenerateDeleteErrorCheckBox_CheckedChanged;
 		//
-		// _crudDialogButton
+		// _gridDialogButton
 		//
-		_crudDialogButton.Location = new System.Drawing.Point(20, 614);
-		_crudDialogButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-		_crudDialogButton.Name = "_crudDialogButton";
-		_crudDialogButton.Size = new System.Drawing.Size(147, 27);
-		_crudDialogButton.TabIndex = 4;
-		_crudDialogButton.Text = "Test CRUD Dialog";
-		_crudDialogButton.UseVisualStyleBackColor = true;
-		_crudDialogButton.Click += CrudDialogButton_Click;
+		_gridDialogButton.Location = new System.Drawing.Point(20, 614);
+		_gridDialogButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+		_gridDialogButton.Name = "_gridDialogButton";
+		_gridDialogButton.Size = new System.Drawing.Size(147, 27);
+		_gridDialogButton.TabIndex = 4;
+		_gridDialogButton.Text = "Test CRUD Dialog";
+		_gridDialogButton.UseVisualStyleBackColor = true;
+		_gridDialogButton.Click += VisualGridDialogButton_Click;
 		//
 		// _generateCreateErrorCheckBox
 		//
@@ -296,19 +296,19 @@ partial class VisualGridTestScreen {
 		_autoSelectOnCreateCheckBox.UseVisualStyleBackColor = true;
 		_autoSelectOnCreateCheckBox.CheckedChanged += AutoSelectOnCreateCheckBox_CheckedChanged_1;
 		//
-		// _crudComboBox
+		// _visualGridDropDown
 		//
-		_crudComboBox.AllowResizeDropDown = true;
-		_crudComboBox.ControlSize = new System.Drawing.Size(524, 306);
-		_crudComboBox.DropDownSizeMode = CustomComboBox.SizeMode.UseInitialControlSize;
-		_crudComboBox.DropSize = new System.Drawing.Size(121, 106);
-		_crudComboBox.Location = new System.Drawing.Point(20, 648);
-		_crudComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-		_crudComboBox.Name = "_crudComboBox";
-		_crudComboBox.PlaceHolderText = "Select Entity";
-		_crudComboBox.Size = new System.Drawing.Size(146, 23);
-		_crudComboBox.TabIndex = 5;
-		_crudComboBox.EntitySelectionChanged += CrudComboBox_EntitySelectionChanged;
+		_visualGridDropDown.AllowResizeDropDown = true;
+		_visualGridDropDown.ControlSize = new System.Drawing.Size(524, 306);
+		_visualGridDropDown.DropDownSizeMode = CustomComboBox.SizeMode.UseInitialControlSize;
+		_visualGridDropDown.DropSize = new System.Drawing.Size(121, 106);
+		_visualGridDropDown.Location = new System.Drawing.Point(20, 648);
+		_visualGridDropDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+		_visualGridDropDown.Name = "_visualGridDropDown";
+		_visualGridDropDown.PlaceHolderText = "Select Entity";
+		_visualGridDropDown.Size = new System.Drawing.Size(146, 23);
+		_visualGridDropDown.TabIndex = 5;
+		_visualGridDropDown.EntitySelectionChanged += VisualGridDropDown_EntitySelectionChanged;
 		//
 		// _flagsCheckedListBox
 		//
@@ -596,8 +596,8 @@ partial class VisualGridTestScreen {
 		_editorsHeading.ForeColor = SystemColors.GrayText;
 		_editorsHeading.Margin = new Padding(0, 12, 0, 5);
 		_optionsPanel.Controls.Add(_editorsHeading);
-		_optionsPanel.Controls.Add(_crudDialogButton);
-		_optionsPanel.Controls.Add(_crudComboBox);
+		_optionsPanel.Controls.Add(_gridDialogButton);
+		_optionsPanel.Controls.Add(_visualGridDropDown);
 		_interactionHeading.Text = "SELECTION AND EDITING";
 		_interactionHeading.AutoSize = true;
 		_interactionHeading.ForeColor = SystemColors.GrayText;
@@ -628,10 +628,10 @@ partial class VisualGridTestScreen {
 		_optionsPanel.Controls.Add(_generateDeleteErrorCheckBox);
 		_flagsCheckedListBox.Width = 210;
 		_flagsCheckedListBox.Height = 160;
-		_crudComboBox.Width = 210;
-		_crudDialogButton.AutoSize = true;
-		_crudDialogButton.Text = "Open employee editor";
-		_crudDialogButton.MinimumSize = new Size(150, 32);
+		_visualGridDropDown.Width = 210;
+		_gridDialogButton.AutoSize = true;
+		_gridDialogButton.Text = "Open employee editor";
+		_gridDialogButton.MinimumSize = new Size(150, 32);
 		_selectFirstEntityButton.AutoSize = true;
 		_selectFirstEntityButton.MinimumSize = new Size(150, 32);
 		_refreshGrid.AutoSize = true;
