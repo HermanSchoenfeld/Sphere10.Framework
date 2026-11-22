@@ -30,6 +30,9 @@ public static class ControlExtensions {
 	/// <summary>Defers layout and drawing, optionally leaving the final paint to the next native paint cycle.</summary>
 	public static ControlRenderingScope EnterRenderingScope(this Control control, bool repaintImmediately) => new(control, repaintImmediately);
 
+	/// <summary>Defers layout of this control tree and lays it out once when the scope ends, without suspending its painting.</summary>
+	public static ControlLayoutScope EnterLayoutScope(this Control control) => new(control);
+
 	public static bool TryGetParentForm(this Control control, out Form parent) {
 		while (control != null) {
 			if (control is Form form) {
@@ -139,6 +142,53 @@ public static class ControlExtensions {
 	}
 
 	public static PointF GetCenterPoint(this Control control) => new PointF(control.Width / 2, control.Height / 2 - 1);
+
+	/// <summary>
+	/// Keeps the control exactly as tall as the reference, as a button beside a text box or combo box should be, now and after every rescaling.
+	/// A single-line box takes its height from its font while a button keeps the height its designer scaled, so no fixed size matches at
+	/// every display scale. The width is unaffected, so an auto-sized button still fits its text. Call it once, after the designer.
+	/// The reference must size itself, as a single-line text or combo box does; one that fills a layout row the control also sizes grows with
+	/// every pass (21 November 2026: a path box docked to fill its table row grew its Find button to 330 pixels).
+	/// </summary>
+	public static void KeepHeightOf(this Control control, Control reference) {
+		Guard.ArgumentNotNull(control, nameof(control));
+		Guard.ArgumentNotNull(reference, nameof(reference));
+		void Apply(object sender, EventArgs args) {
+			var height = reference.Height;
+			if (control.MinimumSize.Height == height && control.MaximumSize.Height == height)
+				return;
+			// Setting a maximum clips the current bounds to it, where a zero width means no limit only to layout: a zero width cut a
+			// fixed-size browse button to nothing. An unlimited width is therefore a large one, small enough that rescaling cannot overflow it.
+			var maximumWidth = control.MaximumSize.Width > 0 ? control.MaximumSize.Width : short.MaxValue;
+			control.MinimumSize = new Size(control.MinimumSize.Width, height);
+			control.MaximumSize = new Size(maximumWidth, height);
+			control.Height = height;
+		}
+		reference.SizeChanged += Apply;
+		control.SizeChanged += Apply;
+		Apply(null, EventArgs.Empty);
+	}
+
+	/// <summary>
+	/// Keeps the control vertically centred on the reference, as a label beside the box it names should be, now and after every rescaling.
+	/// Labels and boxes placed at fixed designer positions drift apart on a scaled display, because a label's height follows its text and a
+	/// box's its own rules. Both must share a parent that does not arrange them itself; in a flow or table layout, anchor the label to the
+	/// left only instead. Call it once, after the designer.
+	/// </summary>
+	public static void KeepCentredOn(this Control control, Control reference) {
+		Guard.ArgumentNotNull(control, nameof(control));
+		Guard.ArgumentNotNull(reference, nameof(reference));
+		Guard.Argument(ReferenceEquals(control.Parent, reference.Parent), nameof(reference), "The control and its reference must share a parent.");
+		void Apply(object sender, EventArgs args) {
+			var top = reference.Top + (reference.Height - control.Height) / 2;
+			if (control.Top != top)
+				control.Top = top;
+		}
+		reference.SizeChanged += Apply;
+		reference.LocationChanged += Apply;
+		control.SizeChanged += Apply;
+		Apply(null, EventArgs.Empty);
+	}
 
 	public static void InvokeEx(this Control control, Action action) {
 		if (!control.IsHandleCreated) {

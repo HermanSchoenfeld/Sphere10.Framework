@@ -341,7 +341,8 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 		screen.Wizard = this;
 		await screen.Initialize();
 		_initializedScreens.Add(screen);
-		_stepSizes[screen] = screen.Size;
+		// The designer size in 96-DPI units: a step that scaled itself is not scaled again below.
+		_stepSizes[screen] = screen.DesignSize;
 	}
 
 	// Posted by a DPI change, so it can run after Finish or Cancel began closing the dialog and releasing the steps.
@@ -354,12 +355,15 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 			SizeDialogTo(StepSize(_currentVisibleScreen));
 	}
 
-	private Size LargestStepSize() => _dialog.LogicalToDeviceUnits(new Size(Steps.Max(screen => _stepSizes[screen].Width), Steps.Max(screen => _stepSizes[screen].Height)));
+	private Size LargestStepSize() {
+		var sizes = Steps.Select(screen => screen.ScaleToDevice(_stepSizes[screen], _dialog)).ToArray();
+		return new Size(sizes.Max(size => size.Width), sizes.Max(size => size.Height));
+	}
 
-	// A step's size at the dialog's DPI: its designer width, and the height its content needs at that width when the step measures
+	// A step's size on the dialog: its designer width, and the height its content needs at that width when the step measures
 	// itself (WinFormsWizardScreen.MeasureHeight); otherwise its designer height.
 	private Size StepSize(WinFormsWizardScreen<T> screen) {
-		var size = _dialog.LogicalToDeviceUnits(_stepSizes[screen]);
+		var size = screen.ScaleToDevice(_stepSizes[screen], _dialog);
 		if (screen.MeasureHeight(size.Width) is { } height)
 			size.Height = height;
 		return size;

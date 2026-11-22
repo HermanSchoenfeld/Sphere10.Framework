@@ -77,8 +77,8 @@ partial class SplashScreen {
 		// 
 		// SplashScreen
 		// 
-		AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-		AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+		AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+		AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 		BackColor = System.Drawing.Color.White;
 		ClientSize = new System.Drawing.Size(600, 400);
 		ControlBox = false;

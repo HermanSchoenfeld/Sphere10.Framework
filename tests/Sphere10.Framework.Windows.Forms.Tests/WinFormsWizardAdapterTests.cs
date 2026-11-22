@@ -254,6 +254,16 @@ public class WinFormsWizardAdapterTests {
 		Assert.That(replacement, Is.Zero);
 	}
 
+	[Test]
+	public void AStepThatScalesItselfReportsItsDesignerSize() {
+		// Designed at half the current font's size, so autoscaling doubles the step as a 200 % display would.
+		// Read before the step is hosted, as the wizard records it.
+		using var step = new ScalingScreen();
+		Assert.That(step.Height, Is.GreaterThan(ScalingScreen.Designed.Height * 3 / 2), "The step must have scaled itself for this test to mean anything.");
+		Assert.That(step.DesignSize.Width, Is.EqualTo(ScalingScreen.Designed.Width).Within(2));
+		Assert.That(step.DesignSize.Height, Is.EqualTo(ScalingScreen.Designed.Height).Within(2), "A 680-unit step made a 1,790-pixel dialog, then a clipped one (21 November 2026).");
+	}
+
 	private static T FindControl<T>(Control parent, string name)
 		where T : Control => (T)parent.Controls.Find(name, true).Single();
 
@@ -306,6 +316,30 @@ public class WinFormsWizardAdapterTests {
 		FormsApplication.Run(owner);
 		Assert.That(failure, Is.Null, failure?.ToString());
 		Assert.That(completed, Is.True, "The native message loop must complete the test body.");
+	}
+
+	// A step and the bridge it derives from each have a designer that sets the size and scaling dimensions, as SystemExpert's steps do.
+	private class ScalingBridgeScreen : WinFormsWizardScreen<object> {
+		public ScalingBridgeScreen() => InitializeDesigner(this);
+
+		protected static void InitializeDesigner(ScalingBridgeScreen screen) {
+			screen.SuspendLayout();
+			screen.AutoScaleMode = AutoScaleMode.Font;
+			var current = screen.CurrentAutoScaleDimensions;
+			screen.AutoScaleDimensions = new SizeF(current.Width / 2, current.Height / 2);
+			screen.Size = ScalingScreen.Designed;
+			screen.ResumeLayout(false);
+			screen.PerformLayout();
+		}
+	}
+
+	private sealed class ScalingScreen : ScalingBridgeScreen {
+		public static readonly Size Designed = new(650, 330);
+
+		public ScalingScreen() {
+			InitializeDesigner(this);
+			Controls.Add(new Label { Text = "Field", Location = new Point(16, 16), AutoSize = true });
+		}
 	}
 
 	private sealed class DynamicScreen : WinFormsWizardScreen<object> {
