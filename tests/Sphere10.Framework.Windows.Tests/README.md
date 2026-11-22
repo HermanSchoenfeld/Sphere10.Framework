@@ -117,6 +117,7 @@ File, assembly and portable-executable inspection.
 
 | Fixture | Purpose |
 | --- | --- |
+| [FileHandleTableSizeTests](Files/FileHandleTableSizeTests.cs) | Growth of the buffer the system handle table is read into: a quarter more than Windows reported, doubling without a reported size, and the 512 MB limit. |
 | [FileToolDiscoveryTests](Files/FileToolDiscoveryTests.cs) | File-tool factories, cancellation and handle and dump worker dispatch. |
 | [ManagedAssemblyFixture](Files/ManagedAssemblyFixture.cs) | Small static methods that `ManagedAssemblyTests` decompiles to check direct-call references (helper, not a fixture). |
 | [ManagedAssemblyTests](Files/ManagedAssemblyTests.cs) | Metadata, decompilation, BAML-to-XAML decoding, resource inventory and project export without loading the target. |
@@ -135,10 +136,11 @@ Unmanaged memory.
 
 ### Networking
 
-Network interfaces and endpoints.
+Network interfaces, endpoints and the neighbour (ARP) table.
 
 | Fixture | Purpose |
 | --- | --- |
+| [WindowsNetworkNeighborTests](Networking/WindowsNetworkNeighborTests.cs) | The neighbour table read with its addresses, states and hardware-address lengths, and the ARP lookup's refusal of an IPv6 or missing address before anything is sent. |
 | [WindowsNetworkUtilTests](Networking/WindowsNetworkUtilTests.cs) | Interface counter layout, typed endpoint reads, cancellation and native read failures. |
 
 ### Packages
@@ -170,11 +172,20 @@ Registry access.
 
 | Fixture | Purpose |
 | --- | --- |
+| [RegistryHiveTests](Registry/RegistryHiveTests.cs) | Hive loading rejects a missing file and an invalid key name before any native call, a file that is not a hive fails and leaves nothing loaded, and the user profile list contains the current user's loaded hive. |
 | [RegistryUtilEditTests](Registry/RegistryUtilEditTests.cs) | Raw registry values, renames, deferred tree reads, read limits and cancellation in a caller-owned key. |
 
 ### Resources
 
 [Resources/Baml](Resources/Baml/README.md) holds the BAML, XAML and compiled fixture inputs used by `ManagedAssemblyTests`, with their provenance and rebuild recipe. The folder contains no fixtures.
+
+### ScheduledTasks
+
+Scheduled tasks.
+
+| Fixture | Purpose |
+| --- | --- |
+| [WindowsTaskDefinitionTests](ScheduledTasks/WindowsTaskDefinitionTests.cs) | Task XML reading of every trigger kind, clock triggers as recurrence rules, an unchanged definition written back with everything it does not model, one changed trigger rewritten alone and validation of a new definition. Two `Integration` cases register, read, change, disable and delete a task the test owns and list the computer's own tasks. |
 
 ### Scopes
 
@@ -224,6 +235,8 @@ Hardware, power and performance counters.
 | [ComputerHardwareInventoryTests](System/ComputerHardwareInventoryTests.cs) | Hardware inventory, memory capacity, monitor identifiers and driver dates. |
 | [ComputerPowerTests](System/ComputerPowerTests.cs) | Asynchronous power adapters and shutdown-reason validation. |
 | [WindowsPerformanceQueryTests](System/WindowsPerformanceQueryTests.cs) | PDH scalar and wildcard counters, time conversion, unavailable counters and native layouts. |
+| [WindowsMachineIdentifierGeneratorTests](System/WindowsMachineIdentifierGeneratorTests.cs) | Machine identifier determinism, format, pinned digests, source selection, normalisation, placeholder filtering and PCI-only adapter filtering. |
+| [BIOSMachineIdentifierTests](System/BIOSMachineIdentifierTests.cs) | System UUID identifier determinism, format, pinned digest and refusal of missing or placeholder UUIDs. |
 
 ### Tracing
 
@@ -242,8 +255,18 @@ Window and DPI scopes.
 
 | Fixture | Purpose |
 | --- | --- |
+| [DisplayFrameMotionTests](Display/DisplayFrameMotionTests.cs) | Row signatures, the vertical distance between two frames and the agreement of several strips. |
 | [ThreadDpiAwarenessScopeTests](Windowing/ThreadDpiAwarenessScopeTests.cs) | Nested thread DPI-awareness scopes restore the calling context and reject wrong-thread or asynchronous disposal. |
+| [WindowsTitleBarSpaceTests](Windowing/WindowsTitleBarSpaceTests.cs) | Stepping left past title-bar content to the first free place, giving up without room, and content columns found in plain, gradient and drawn pixel strips. |
+| [WindowsMediaTrackerTests](Windowing/WindowsMediaTrackerTests.cs) | The tracking strategies: provider reports shown as given; screen motion following fed frames, placing moving media ahead, settling, late reports and changed clips. |
 
 ### Generated COM compatibility
 
 `ShellLinkTests` verifies Unicode save/load/resolve; the existing startup fixture verifies that stored-field reads do not repair missing targets. `BitsInteropTests` is an explicit Windows integration fixture. Set `SPHERE10_BITS_TEST_URL` to a loopback HTTP endpoint serving `Sphere10 Native COM transfer fixture` followed by a newline, then select `GeneratedComWrappersTransferFilesAndDeliverCompletionCallbacks` with `NUnit.ExplicitMode=Relaxed`. It creates one uniquely named BITS job, checks credentials and file enumeration, receives the completion callback and verifies the downloaded content. Cleanup cancels only that owned job when it has not completed.
+
+### BITS
+
+| Fixture | Purpose |
+| --- | --- |
+| [BitsFileDownloadTests](BITS/BitsFileDownloadTests.cs) | `BitsFileDownload` argument, timeout and poll-interval validation and a cancelled request that creates no job. Its three explicit `WindowsIntegration` cases use the same `SPHERE10_BITS_TEST_URL` loopback endpoint to download the fixture into a new folder and to fail on a missing remote file, and a loopback port that nothing listens on to fail after the no-progress timeout. |
+| [BitsInteropTests](BITS/BitsInteropTests.cs) | The explicit generated COM wrapper transfer described under [Generated COM compatibility](#generated-com-compatibility). |

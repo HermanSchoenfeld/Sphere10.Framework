@@ -8,6 +8,8 @@ Razor components for .NET 10 Blazor Web Apps using Interactive Server rendering.
 
 - **CRUD grid:** typed columns, buffered editing, validation, confirmed deletion, search, sorting, paging and visible-row selection.
 - **Custom presentation:** display/editor templates, existing-record reference pickers, async row commands, resizable columns and optional automatic page sizing.
+- **Hierarchical rows:** source-owned child views, recursive expansion, independent sibling paging and custom detail templates for hierarchical or ordinary rows.
+- **Power-user screens:** icon-only toolbars, a standard File menu that screens extend, command state that follows each screen render, compact grids with icon row commands, a header reload icon and bound selection, a draggable `SplitContainer` and `FieldGrid` field layouts (label above control, or inline).
 - **Application workspace:** blocks, menus, retained screens, multiple-instance sessions and navigation guards built on the shared [Application.UI](../Sphere10.Framework.Application/README.md#shared-ui-framework) layer.
 - **Additional components:** paged/streaming tables, dialogs, wizards and plugin integration.
 - **Theme switching:** 20 scoped presets, including Classic blue and Blue plus styles adapted from owned templates, with one stylesheet per template and shared accessible controls.
@@ -135,6 +137,16 @@ The pages below explicitly use `@rendermode InteractiveServer`. Registering Inte
 The grid loads its collocated `BlazorGrid.razor.js` module on demand, and its isolated CSS is included through the host styles bundle. No global grid script, jQuery or grid-specific service registration is needed. `AddSphere10Blazor()` also registers the surrounding application, table, dialog and wizard services. A grid can be used without registering an ApplicationBlock or adding a modal host.
 
 Modal components import their own JavaScript module. Legacy `css/BlazorGrid.css` and `js/BlazorGrid.js` are compatibility assets; new hosts do not need them. The old DataTables helper still requires an application-provided DataTables plugin.
+
+### Icons
+
+The library ships no icon font. Command `Icon` values, `GridAction.Icon` and the grid's `OpenCommandIcon`, `EditCommandIcon` and `DeleteCommandIcon` are CSS classes that the host's icon set defines, rendered as `<span class="...">`. The grid's built-in reload and row-command icons, the pager and the identity avatar are inline SVG and need no font. Copy an icon set's stylesheet and font files into the host's `wwwroot` and load the stylesheet in `Components/App.razor`. The tester uses Font Awesome Free 5.15 from `wwwroot/modern/css/icons.css` and `wwwroot/modern/fonts`:
+
+```razor
+<link rel="stylesheet" href="@Assets["modern/css/icons.css"]" />
+```
+
+Its classes are then used directly, for example `.WithIcon("fas fa-save")` or `new GridAction<Person>("Delete", null, null) { Icon = "fas fa-trash-alt" }`. Keep the icon set's licence notice with its files; Font Awesome Free's fonts are SIL OFL 1.1, its icons CC BY 4.0 and its CSS MIT.
 
 ### JavaScript interop names
 
@@ -470,22 +482,25 @@ For a plain `ListDataSource<T>` without custom searching/sorting, use a positive
 | `PropertyHasValue` | Per-row availability predicate; false also suppresses the default display value. |
 | `Template` / `EditorTemplate` | Typed display and buffered editor fragments. |
 | `Format` | Display format for `IFormattable` values; it does not change editor parsing. |
-| `Width` / `ExpandsToFit` | Initial/minimum pixel width and whether the column shares spare viewport space. No column stretches implicitly. |
+| `Width` / `ExpandsToFit` | Initial/minimum pixel width and whether the column shares spare viewport space. A grid always spans its viewport: when no column is marked, the widest configured column takes the spare width. |
+| `Hidden` | Omits the column from the rendered table by default. An accepted column preference can show it, or hide a column that is visible by default. |
 | `ImageSource` / `ImageAlternativeText` | Optional image URL and accessible alternative text; ordinary display templates remain available. |
 | `ImageWidth` / `ImageHeight` | Image presentation box in CSS pixels (24 × 24 by default). |
 | `ImageAlignment` / `ImageResizeMethod` | Shared `ResizeAlignment` (default `CenterCenter`) and optional `ResizeMethod`; null retains original-size presentation. |
 
 Explicit `Columns` replace automatic generation. Without them, `AutoGenerateColumns` defaults to true and reflects readable public instance properties, excluding indexers and `[Browsable(false)]` members. Generated definitions honor `[DisplayName]`, `[ReadOnly]`, private setters and init-only properties. Complex values remain read-only unless you configure an editor.
 
+A hidden column stays in the declared schema and in captured preferences, so Options lists it with its **Hidden** choice and its width. Changing which columns are displayed replaces the rendered column set, which cancels an active row draft in the same way as replacing column instances. A nested detail grid receives its parent's displayed columns with `ShowHiddenColumns="true"`, so that it shows every column it is given.
+
 Create column definitions once, for example in a field or `OnInitialized`. Replacing column instances during an edit cancels that draft and starts a new column-layout measurement. `PropertyHasValue = false` makes a value unavailable for editing; do not use it merely because an editable reference is currently null.
 
-`AutoSizeColumns` defaults to true. The first nonempty rendered result establishes natural widths, including header text and reserved sort-indicator space. Paging, filtering, sorting and refresh retain those widths; a longer value on a later page does not change the table layout. Header-edge dragging establishes a manual width that takes precedence over automatic stretching. Only columns marked `ExpandsToFit` share spare viewport width, and a manually resized stretch column keeps its chosen width. Narrow viewports scroll horizontally rather than collapsing those minimums. Set `AutoSizeColumns="false"` to start from configured `Width` values without measuring cell content.
+`AutoSizeColumns` defaults to true. The first nonempty rendered result establishes natural widths, including header text and reserved sort-indicator space; an empty result measures the headers alone, provisionally, so a header never breaks mid-word, and the first nonempty result measures again. Cell text wraps between words and breaks a word only when it alone is wider than its cell. Paging, filtering, sorting and refresh retain those widths; a longer value on a later page does not change the table layout. Header-edge dragging establishes a manual width that takes precedence over automatic stretching. Columns marked `ExpandsToFit` share spare viewport width (when none is marked, the widest configured column does), and a manually resized stretch column keeps its chosen width. Narrow viewports scroll horizontally rather than collapsing those minimums. Set `AutoSizeColumns="false"` to start from configured `Width` values without measuring cell content.
 
-`Caption` is the visible table title and accessible caption. `CaptionAlignment` uses `BlazorGridHorizontalAlignment.Left`, `Center` or `Right`, with Left as the default. It does not reserve space for absent toolbar buttons.
+`Caption` is the visible table title and accessible caption. `CaptionAlignment` uses `BlazorGridHorizontalAlignment.Left`, `Center` or `Right`, with Left as the default. It does not reserve space for absent toolbar buttons. An empty or null `Caption` renders no caption element at all.
 
 Image columns use the same portable `Sphere10.Framework.ResizeAlignment` and `ResizeMethod` enums as Drawing. The browser maps those values to image-box fit and position; it does not load `System.Drawing`, resample server-side bitmaps or assume ownership of the URL's underlying resource. Use `ImageResizeMethod = ResizeMethod.AspectFit` for proportional fitting, `AspectFill` for cropping or `Stretch` to fill the box. `AspectFitPadded` fits within the presentation box. Supply trusted application image URLs and meaningful alternative text when the image conveys information.
 
-Default editors support strings/chars, booleans (including nullable tri-state values), numeric types, enums, GUIDs, `DateOnly`, `TimeOnly`, `DateTime`, `DateTimeOffset` and `TimeSpan`. Dates/times use the appropriate HTML inputs; offset timestamps and durations use text to preserve their full values. Built-in editor conversions use invariant culture, while default cell display uses the current culture. `Tools.BlazorGrid` provides the underlying conversion helpers.
+Default editors support strings/chars, booleans (including nullable tri-state values), numeric types, enums, GUIDs, `DateOnly`, `TimeOnly`, `DateTime`, `DateTimeOffset` and `TimeSpan`. Dates/times use the appropriate HTML inputs; offset timestamps and durations use text to preserve their full values. Built-in editor conversions use invariant culture, while default cell display uses the current culture. An enum cell shows `GetDisplayText()`, the member's `[Description]` or its name as Title Case words ("PaymentFailed" reads "Payment Failed"), unless its column sets a `Format` such as `"D"`; the enum editor's options show the same text while their values stay the member names. `Tools.BlazorGrid` provides the underlying conversion helpers.
 
 ### Selection, editing and validation
 
@@ -498,6 +513,10 @@ Default editors support strings/chars, booleans (including nullable tri-state va
 - Paging, search and other grid commands are disabled during editing or a foreground operation. An explicitly suppressed background refresh retains usable rows and navigation until its replacement is ready. Replacing the source, permission mask, page-size parameter or column definitions discards a pending draft.
 
 `SelectedItemChanged`, `ItemCreated`, `ItemUpdated` and `ItemDeleted` are `EventCallback<TItem>` parameters. Selection clearing passes the default value, normally null for entity classes. Async handlers should return `Task`.
+
+`SelectedItem` reads the current selection and is also a parameter, so `@bind-SelectedItem="_selected"` drives a detail panel from the grid and the grid from the screen. A supplied value is applied when it changes: null clears the selection, and an item is selected once the displayed page holds it and no row edit is open, so assigning a just-created record after `RefreshAsync()` selects it. An unchanged value never takes back a selection the user made later. `ItemOpened` (`EventCallback<TItem>`) opens a row: with it, double-click and Enter select and open the row instead of starting an inline edit, and F2 still edits. `OpenItemAsync(item)` does the same from code.
+
+Row events (click, keys, Open, Edit, Delete and custom actions) carry the item their row was rendered with, and a read or source notification can replace the rows before the event is handled. The grid therefore finds the item among the displayed rows by the controller's `EntityComparer` and acts on that row, and ignores the event when the item is no longer displayed, instead of throwing out of the handler and ending the circuit. With the default comparer a row replaced by a new instance no longer matches, so set `Controller.EntityComparer` (for example `new ProjectionEqualityComparer<OrderDTO, int>(order => order.ID)`) when a click made during a replacement should still open its record.
 
 ### Paging and external refresh
 
@@ -562,6 +581,99 @@ See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/gr
 for the WinForms API mapping and native/browser differences.
 
 Each grid owns its controller and browser subscriptions, but **does not own the data source**. If you supply a disposable source, its creator or DI scope must dispose it. Reads are serialized/coalesced and stale results are ignored after a newer request, source replacement or disposal. `IDataSource<T>` does not expose read cancellation tokens, so an already-running source call may still finish.
+
+### Power-user grids
+
+Dense record screens put their commands in the shell's menus and toolbar and keep the grid to its data. These parameters opt in to that presentation; their defaults keep the grid as described above.
+
+| Parameter | Default | Effect |
+| --- | --- | --- |
+| `Density` (`BlazorGridDensity?`) | null | `Compact` gives smaller paddings (rows keep .3rem above and below their text) and a smaller font. Null uses `ApplicationOptions.GridDensity`, which `BuildBlazorApplication().WithGridDensity(BlazorGridDensity.Compact)` sets for every grid of an application and which defaults to `Normal`. Default nested grids inherit the density. |
+| `ActionStyle` (`BlazorGridActionStyle`) | `Text` | `Icons` shows row commands as small icon buttons whose names are their tooltips and accessible names, in a column sized to its icons with no header text. `Text` keeps the 120-pixel column headed "Actions". |
+| `RowCommands` (`BlazorGridRowCommands` flags) | `None` | Built-in `Open`, `Edit` and `Delete` commands on each row, before the custom `Actions`. Open needs `ItemOpened`; Edit and Delete need the update and delete capabilities and replace the toolbar's Edit and Delete buttons. Delete selects the row and asks for confirmation: with `ActionStyle` Icons through the confirmation dialog of `ViewService` when a modal host is initialized, otherwise, and in the default text style, through the grid's own confirmation bar. |
+| `OpenCommandIcon`, `EditCommandIcon`, `DeleteCommandIcon` | null | Icon CSS classes for the built-in row commands; null uses the grid's inline SVG icons. Opening a row opens its record for editing, so the built-in Open icon is the edit pencil, never a folder; its accessible name stays "Open". |
+| `RowClick` (`BlazorGridRowClick`) | `Select` | `Open` with `ItemOpened`: a single click selects and opens the row, as record lists do. A click on a control inside the row (a row command, the detail toggle, an editor, a link, a button, an input or anything marked `data-grid-no-open` in a cell template) does only its own work, a click that ends a text selection opens nothing, a double-click opens once, Enter still opens and clicking the selected row keeps it selected. The grid's browser module reports the click. |
+| `ReloadPlacement` (`BlazorGridReloadPlacement`) | `Toolbar` | `Header` places a small reload icon in the end cell of the column header row; `Hidden` offers none. |
+| `Fill` | false | Stretches the grid to its container's height instead of `Height`; the rows scroll beneath the sticky header. The container needs a definite height, such as a `SplitContainer` panel. |
+| `Footer` (`BlazorGridFooterMode`) | `Always` | `Paged` shows the footer with the item count and pager only while the results span more than one page; `Hidden` never shows it, so pair it with `BlazorGridPageMode.Single`. |
+| `Caption` | `"Data grid"` | An empty caption renders no caption element. |
+| `SelectedItem`, `ItemOpened` | | Two-way selection for a detail panel, and opening by double-click (or a single click with `RowClick` Open), Enter or the Open command, as described under selection above. |
+
+The toolbar row is omitted when nothing remains in it: no search capability, reload not in the toolbar, no New button (no create capability or no `GridTypes.NewItem` trait), no Edit or Delete button and no bound `Preferences`. `GridAction<TItem>.Icon` is a custom action's icon class; an action without one shows its `IconURL` image, or its name.
+
+```razor
+@using Sphere10.Framework
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid
+
+<BlazorGrid TItem="Person" DataSource="_source" Columns="_columns" Actions="_actions" Caption=""
+	AllowedCapabilities="BrowseCapabilities" AllowCellEditing="false" PageSize="50" Height="600"
+	Density="BlazorGridDensity.Compact" ActionStyle="BlazorGridActionStyle.Icons" RowCommands="BlazorGridRowCommands.Open"
+	RowClick="BlazorGridRowClick.Open" ReloadPlacement="BlazorGridReloadPlacement.Header" Footer="BlazorGridFooterMode.Paged"
+	@bind-SelectedItem="_selected" ItemOpened="OpenAsync" />
+
+@code {
+	private const DataSourceCapabilities BrowseCapabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
+	private readonly PeopleDataSource _source = new();
+	private readonly BlazorGridColumn<Person>[] _columns = { BlazorGridColumn<Person>.For(person => person.Name), BlazorGridColumn<Person>.For(person => person.Age) };
+	private GridAction<Person>[] _actions;
+	private Person _selected;
+
+	protected override void OnInitialized() =>
+		_actions = new[] { new GridAction<Person>("Delete Person", null, null) { Icon = "fas fa-trash-alt", ActionWorkAsync = DeleteAsync } };
+
+	private Task OpenAsync(Person person) => Task.CompletedTask; // Open the person's record screen.
+
+	private Task DeleteAsync(Person person) => Task.CompletedTask; // Confirm, then delete through the source.
+}
+```
+
+The tester's **Application patterns → Power-user records** screen combines such a grid with icon toolbar commands, a File and a Product menu, and a detail panel in a `SplitContainer`, as described under [master-detail layouts](#master-detail-layouts-and-field-rows).
+
+## Hierarchical sources and custom row details
+
+Bind an `IHierarchicalDataSource<TNode>` to display a process tree, organizational graph or other source-owned hierarchy. The grid detects the interface and uses its stable node keys, child availability, synchronous `GetEntity` accessor and asynchronous `GetChildrenAsync` query. A node is still the row type used by columns, selection and CRUD. Its entity is the resolved payload supplied separately to a detail template.
+
+This component can be added to the Interactive Server host described above:
+
+```razor
+@using Sphere10.Framework
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveServer
+
+<BlazorGrid TItem="GraphNode<Record>" DataSource="_source" Columns="_columns"
+	Caption="Teams" PageSize="2" DetailHeight="260" PersistSettings="false" GridType="0" />
+
+@code {
+	private readonly ActionGraphDataSource<Record> _source = new(new[] {
+		new GraphNode<Record>(new Record(1, "Alpha team")) {
+			Connections = new[] { new GraphNode<Record>(new Record(2, "Team member")) }
+		}
+	}, node => node.Entity.Id);
+
+	private readonly BlazorGridColumn<GraphNode<Record>>[] _columns = {
+		new() {
+			ColumnName = "Name", PropertyName = nameof(Record.Name), SortName = nameof(Record.Name),
+			DataType = typeof(string), PropertyValue = node => node.Entity.Name,
+			CanEditCell = false, ExpandsToFit = true
+		}
+	};
+
+	public sealed record Record(int Id, string Name);
+}
+```
+
+`ActionGraphDataSource<TEntity>` serves an existing graph as read-only sibling pages. Each level searches, sorts and pages its own siblings. The graph source captures topology at construction; it does not fetch descendants from a server. A database or network implementation can instead supply child views through `IHierarchicalDataSource<TNode>` and resolve them asynchronously. The [data-source guide](../../docs/guidelines/patterns/data-sources.md) describes node identity, payloads and child-view ownership.
+
+To render a panel instead of the default child grid, set `DetailTemplate`, a `RenderFragment<BlazorGridDetailContext<TNode>>`. Its context contains `Node`, resolved `Entity` and `ChildDataSource`. For an ordinary `IDataSource<T>`, a template also enables row details; `Node` and `Entity` are the row and `ChildDataSource` is null. Known hierarchical leaves also supply a null child source without fetching children. `HasDetail` adds eligible custom panels without suppressing source-provided hierarchy, and `DetailIdentity` identifies ordinary rows across object replacements. Hierarchical sources always provide their own identities. The complete [GridDemo](../../utils/Sphere10.Framework.Utils.BlazorTester/Demos/GridDemo.razor) shows both the default nested grid and a custom record panel.
+
+`DetailsEnabled` defaults to true; disabling it closes details and cancels pending resolution. `MaximumDetailDepth` defaults to 8 and `MaximumExpandedDetails` to 16 across the root grid and its nested details. A cycle cannot expand again on the same path, while shared nodes can appear beneath independent parents. `DetailHeight` defaults to 240 CSS pixels and bounds a default child grid's viewport; browser layout remains independent of native WinForms control sizing.
+
+Root and child grids have independent selection and CRUD contexts. Child selection does not fire the parent's `SelectedItemChanged` or change its `SelectedItem`. A custom template can handle the child grid's callbacks directly when the application needs a combined selection policy. Default child grids inherit columns and allowed operations, but do not persist separate settings.
+
+The component borrows its bound root source and owns the child views returned by expansion. It releases each view through `IAsyncDisposable` or `IDisposable` after nested grid consumers finish their admitted work. Final disposal drains source I/O and detail resolution. Collapse, removal from the visible page, changed search/sort, replacement of the bound root and disposal cancel pending detail work and reject late results. A changed `GetChildQueryKey` reloads the child view while preserving the expanded row. With compatible node/query keys, pending acquisition finishes before a coalesced refresh uses the newest accepted node. Each accepted parent page refreshes expanded child captures even when the provider reuses node objects. The nested grid retains its controls, query, selection and compatible expansions as its source view is replaced. Retained rows stay paired with their accepted source, and CRUD waits for a page from the replacement source. A nested grid with a row draft keeps its current view and the draft until the edit is saved or cancelled, then adopts the replacement. The parent presents its accepted rows before expanded details reload, and those details reload together. Auto paging measures source rows only, so opening a detail scrolls the viewport instead of paging its row away. Custom templates borrow the context and must not retain or dispose its child source beyond the detail lifetime. `ExpandDetailAsync`, `CollapseDetailAsync` and `IsDetailExpanded` support application-driven expansion on the owning renderer context.
 
 ## Custom editors, reference pickers and actions
 
@@ -641,7 +753,7 @@ The picker displays the current value and a dropdown arrow in a compact cell edi
 
 The picker receives the **full eligible data source**, not `grid.Controller.Items` (the current page). It internally masks writes, edits and row commands. **Use selected** returns the selected existing object; **Cancel** preserves the current draft value; `AllowNull` enables Clear. The parent grid's Save/Cancel controls persistence of that chosen reference. Use shallow display delegates to avoid recursively traversing related entities.
 
-Custom row actions are application commands. They do not automatically run CRUD validation or enforce `CanUpdate`/`CanDelete`; use the built-in commands for normal persistence. `ActionWorkAsync` is awaited and takes precedence over the legacy synchronous `ActionWork`. Errors appear in the grid, and successful actions request a refresh.
+Custom row actions are application commands. They do not automatically run CRUD validation or enforce `CanUpdate`/`CanDelete`; use the built-in commands for normal persistence. `ActionWorkAsync` is awaited and takes precedence over the legacy synchronous `ActionWork`. Errors appear in the grid, and successful actions request a refresh. With `ActionStyle="BlazorGridActionStyle.Icons"` an action shows its `Icon` class with its `Name` as tooltip, as described under [power-user grids](#power-user-grids).
 
 ## Grid architecture and WinForms correspondence
 
@@ -652,6 +764,7 @@ Custom row actions are application commands. They do not automatically run CRUD 
 | Value access and templates | [BlazorGridColumn<T>](Grids/BlazorGridColumn.cs) and [BlazorGridCellEditContext<T>](Grids/BlazorGridCellEditContext.cs) |
 | Scalar conversion | [Tools.BlazorGrid](Grids/GridTool.cs) |
 | Existing-reference selection | [BlazorGridReferencePicker](UI/Controls/BlazorGrid/BlazorGridReferencePicker.razor) |
+| Hierarchy and custom row details | [BlazorGrid.Details.cs](UI/Controls/BlazorGrid/BlazorGrid.Details.cs) and [BlazorGridDetailContext<TNode>](Grids/BlazorGridDetailContext.cs) |
 | Browser layout/lifetime | Collocated isolated CSS and JavaScript |
 
 Both the WinForms `VisualGrid` and Blazor grid consume the same core `IDataSource<T>`, `DataSourceCapabilities`, `CrudAction` and `Result`. WinForms column bindings correspond to typed Blazor columns; entity/property editors correspond to the buffered row editor and Razor templates; native reference dropdowns correspond to `BlazorGridReferencePicker`. Browser rendering and interaction remain in this library. Blazor does not provide a recursive native PropertyGrid; use explicit editors for owned objects.
@@ -858,6 +971,38 @@ For stable entity URLs, optionally supply `NavigationUriFactory="GetScreenUri"`,
 
 Bookmarks identify registered screens, never arbitrary component type names. A session ID restores an existing screen in the current workspace; a fresh circuit recreates the screen from its registered definition. Retained component state lasts while the workspace remains mounted. Refreshing or leaving the workspace disposes its components; use a scoped state service or persistence when longer retention is required.
 
+### Offering a block to some users only
+
+`AvailableWhen(services => ...)` on a block builder offers that block only to circuits whose scoped services satisfy the predicate. Each circuit's screen host asks once while it is built, before it copies the startup definition. A block that declines does not exist in that circuit. It is absent from `AvailableBlocks`, `Blocks`, the block dock, the sidebar, the Screens menu and Options. Its permanent screens are never opened, and startup selection skips it, so the first available block with a default supplies the startup screen. A `?block=` route to it shows the same "not found" message as an unknown ID, and `RegisterBlockAsync` rejects it. A block without a predicate is offered to every circuit.
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Web.AspNetCore.Blazor;
+
+builder.Services.AddScoped<WorkspaceViewer>();
+builder.Services
+	.AddSphere10BlazorPlugin(plugin => plugin
+		.WithName("Administration")
+		.AddBlock(block => block
+			.WithId("administration")
+			.WithName("Administration")
+			.AvailableWhen(services => services.GetRequiredService<WorkspaceViewer>().IsAdministrator)
+			.AddScreen<UsersScreen>("Users", out var users, activationMode: ScreenActivationMode.SingleInstance)
+			.WithDefaultScreen(users)
+			.AddMenu("Administration", configure: menu => menu
+				.AddItem(users, "Users", id: "users")
+			)
+		)
+	);
+```
+
+`UsersScreen` is your own screen component. `WorkspaceViewer` stands for your own scoped service that already knows the signed-in user when the host is built, and `IsAdministrator` is its member. Resolve such state from the supplied provider and never capture a scoped service in the startup lambda. The predicate is synchronous. The host is scoped, so a prerendered request and the interactive circuit that follows each build one host and each ask once. The decision then holds for that circuit, and a change in a user's entitlement applies to their next circuit. A predicate that throws fails the construction of that circuit's host instead of showing or hiding the block.
+
+Availability is presentation only. It removes navigation, and it does not authorize anything. Every service behind the block's screens must still authorize the signed-in user on the server, because a request can reach a service without passing through the shell.
+
+The contributing plugin stays loaded in every circuit, so its services, lifecycle tasks and plugin-level preferences are unaffected. A directly constructed block declares the same rule as an `ActionApplicationBlock`, which takes the predicate in its constructor (`new ActionApplicationBlock(services => ...) { Id = "administration", Title = "Administration" }`). An `ApplicationBlock` subclass overrides the protected `DetermineAvailability(IServiceProvider)` hook instead, and a custom `IApplicationBlock` implements `CheckAvailability(IServiceProvider)`, which the host calls.
+
 ### Screen Options
 
 A screen declares its public nested `SettingsObject` class with
@@ -1041,11 +1186,11 @@ services
 
 Configuration runs once per scope. The callback configures that scope's application; command callbacks resolve their services from the executing circuit. `SetMenus` and `SetToolBarItems` snapshot ordinary action definitions, freezing their registration metadata. Block-owned commands borrowed for application presentation retain their canonical references and parents; screen commands must already belong to the circuit's block graph. A later `AddSphere10BlazorApplication` call replaces the earlier application configuration. The builder delegates to that same API. Its inherited `OnApplicationCreated` calls compose before `Build()`; the shared `ApplicationBuilderBase` also owns title/plugin composition and the terminal build guard. Blazor retains favicon settings and the actual DI registration. The tester uses the builder with [WorkspaceCommands.Configure](../../utils/Sphere10.Framework.Utils.BlazorTester/Application/WorkspaceCommands.cs) and its existing fluent plugin definitions.
 
-`ApplicationShell` composes commands from the application, the active screen's source plugin, its owning block and the screen, in that order. The platform shell owns this composition; applications supply commands through those owners. With no active screen, only application commands appear. Browsing a different navigation block does not change the active owner path. Application commands remain available even when a contextual command has the same local ID. A screen can replace a matching block command and extend File while keeping application commands. Register block toolbar commands with `ApplicationBlockBuilder.AddToolBarItem`, or build them with `AddToolBarItem`; override the typed arrays on `ApplicationScreen` for screen contributions. `BlazorMenuSeparator` supplies boundaries; composition removes redundant separators and keeps Help last. Toolbar screen commands may reference any definition owned by their block.
+`ApplicationShell` composes commands from the application, the active screen's source plugin, its owning block and the screen, in that order. The platform shell owns this composition; applications supply commands through those owners. With no active screen, only application commands appear. Browsing a different navigation block does not change the active owner path. Application commands remain available even when a contextual command has the same local ID. A screen can replace a matching block command and extend File while keeping application commands. The shell offers a standard File menu (ID `Application.FileMenuId`, `"file"`) first among the application menus: any application, block or screen menu with that ID extends it, application items first and separated from the block's and screen's items, and it is shown only while some layer contributes an item. A screen can also contribute a menu named after its record type, such as Product, which follows the application menus; the Screens, Options and Help placement is unchanged. Register block toolbar commands with `ApplicationBlockBuilder.AddToolBarItem`, or build them with `AddToolBarItem`; override the typed arrays on `ApplicationScreen` for screen contributions. `BlazorMenuSeparator` supplies boundaries; composition removes redundant separators and keeps Help last. Toolbar screen commands may reference any definition owned by their block.
 
 Keep commands shared by every workspace at application level. A block command belongs to the active screen's owning block; a screen command disappears when that screen is deactivated. Browsing another sidebar does not change the displayed screen's command context. Within the contextual layer, matching uses local IDs and a narrower action group replaces the matching block group as one command. Application groups remain separate. `ApplicationCommandBar.CommandKeySelector` lets independent layouts namespace renderer identities when different levels share an ID; the shell supplies this automatically without changing command registrations. Hidden items remain registered but are omitted from rendered controls, and menus containing only hidden items are omitted.
 
-Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Registered icons, long-title ellipsis/full tooltips and dirty indicators retain their separate space. The shell's **Screens** menu, placed like the native main form's between the block menus and Options/Help once a screen is open, lists the exact open sessions including permanent screens, checks the active one, disambiguates duplicate titles with occurrence numbers, and offers **Close All** and **Close All Others** for the screens that permit closing. Choosing an entry calls the normal guarded selection path without opening another instance; hidden retained and Empty sessions are excluded. Menu commands that implement `IApplicationCheckableMenuItem` render as checkable items.
+Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` to supply a dynamic tab caption; a render of the screen publishes a changed title. Registered icons, long-title ellipsis/full tooltips and dirty indicators retain their separate space. The shell's **Screens** menu, placed like the native main form's between the block menus and Options/Help once a screen is open, lists the exact open sessions including permanent screens, checks the active one, disambiguates duplicate titles with occurrence numbers, and offers **Close All** and **Close All Others** for the screens that permit closing. Choosing an entry calls the normal guarded selection path without opening another instance; hidden retained and Empty sessions are excluded. Menu commands that implement `IApplicationCheckableMenuItem` render as checkable items.
 
 The host defaults to `ScreenMode.MultiView`. The tester's toolbar toggle and View menu await `TrySetScreenModeAsync`; `ApplicationShell.ShowScreenModeSelector` provides an optional header selector. Entering `SingleView` preflights every ordinary tab that would close before removing any; permanent sessions are retained. The synchronous `ScreenMode` setter accepts transitions requiring no closures and rejects transitions requiring async guards; use the awaited method for runtime changes. During single-view navigation, hidden single-instance screens remain mounted and multi-instance screens are released. The multi-screen contract's `Screens` includes retained hidden sessions and `OpenScreens` supplies normal tab membership in presentation order; empty screens are excluded. `MoveScreenAsync` changes that order. `CloseScreensAsync` preflights a batch and preserves every screen if a guard rejects it. Components remain owned by the renderer. Docking is not part of the Blazor host.
 
@@ -1055,9 +1200,99 @@ Custom Sidebar content can capture its ApplicationShell with @ref and await shel
 
 ## Command presentation and availability
 
-ApplicationMenuItemBuilder.WithVisibility(false) hides a command from the sidebar, top menus and toolbar while retaining its registered identity. A hidden multi-instance screen can still be opened through ActivateScreenAsync with runtime parameters and an instance key, or through a deep link. Visibility is presentation metadata, not authorization.
+ApplicationMenuItemBuilder.WithVisibility(false) hides a command from the sidebar, top menus and toolbar while retaining its registered identity. A hidden multi-instance screen can still be opened through ActivateScreenAsync with runtime parameters and an instance key, or through a deep link. Visibility is presentation metadata, not authorization. To leave a whole block out of a user's circuit, including its routes and screens, use [AvailableWhen](#offering-a-block-to-some-users-only) on the block builder.
 
-EnabledWhen(Func<bool>) evaluates current command availability in both the rendered controls and `ExecuteMenuItemAsync(item, cancellationToken)`. Return the screen's dirty state to make Save available only while changes exist, and call NotifyScreenChanged after that state changes. Predicates on screen-owned commands may refer to that screen; shared registrations must not capture a circuit or user. Explicit programmatic screen activation remains independent of command availability.
+EnabledWhen(Func<bool>) evaluates current command availability in both the rendered controls and `ExecuteMenuItemAsync(item, cancellationToken)`. Return the screen's dirty state to make Save available only while changes exist. Predicates on screen-owned commands may refer to that screen; shared registrations must not capture a circuit or user. Explicit programmatic screen activation remains independent of command availability.
+
+Screen command state follows the screen. After each render an `ApplicationScreen` compares its title, unsaved state and the captions, icons, visibility, availability and checked state of its menus and toolbar items with the values it last published, and notifies its host only when they differ, so the shell's toolbar and menus refresh without the screen calling `NotifyScreenChanged`. Because values are compared rather than command objects, a screen may rebuild equivalent commands on each read without causing further renders. Call `NotifyScreenChanged()` only for a change that no render of the screen follows, such as one made by a service while the screen stays unchanged.
+
+Toolbars are icon-first. A command with an `Icon` shows only its icon on a toolbar, with its caption as tooltip and accessible name; `ApplicationMenuItemBuilder.WithToolBarText()` (or `ShowToolBarText = true` on a command object) shows the caption beside the icon for a command that needs it, and a command without an icon always shows its caption. `BuildBlazorApplication().WithToolBarText()` (`ApplicationOptions.ToolBarText`) captions every toolbar command of the application. A captioned button shows `ToolBarCaption` (`WithToolBarCaption`, the caption by default); screen commands show their plain name there and keep the name with its blocking reason as the tooltip. On a desktop width long command lists wrap within the toolbar while the toolbar content stays at the right of the first row. Menus show the icon and caption. Disabled toolbar commands are dimmed and their icons greyed. Group toolbar commands with `BlazorMenuSeparator`, which renders a vertical rule.
+
+```csharp
+public override BlazorUI.IApplicationMenu[] Menus => _menus;
+public override BlazorUI.IApplicationMenuItem[] ToolBarItems => _toolBarItems;
+
+protected override void OnInitialized() {
+	var newPerson = new ApplicationMenuItemBuilder()
+		.WithId("person-new")
+		.WithText("New Person")
+		.WithIcon("fas fa-plus")
+		.WithToolBarText()
+		.WithAction((_, token) => NewPersonAsync(token))
+		.Build();
+	var deletePerson = new ApplicationMenuItemBuilder()
+		.WithId("person-delete")
+		.WithText("Delete Person")
+		.WithIcon("fas fa-trash-alt")
+		.EnabledWhen(() => _selected != null)
+		.WithAction((_, _) => DeleteAsync(_selected))
+		.Build();
+	_menus = new BlazorUI.IApplicationMenu[] {
+		new ApplicationMenuBuilder()
+			.WithId(BlazorUI.Application.FileMenuId)
+			.WithText("File")
+			.AddItem(newPerson)
+			.Build(),
+		new ApplicationMenuBuilder()
+			.WithId("person")
+			.WithText("Person")
+			.AddItem(deletePerson)
+			.Build()
+	};
+	_toolBarItems = new BlazorUI.IApplicationMenuItem[] { newPerson, new BlazorMenuSeparator(), deletePerson };
+}
+```
+
+Here `BlazorUI` aliases `Sphere10.Framework.Web.AspNetCore.Blazor`, `_selected` is bound to a grid's `SelectedItem`, and `NewPersonAsync` opens a one-step wizard. Selecting a row renders the screen, which enables Delete Person in the toolbar and the Person menu.
+
+### Screen commands
+
+A screen whose commands are plain actions declares them once with `ApplicationScreen.Command` and places them with `UseCommands` instead of building the menu items itself. The default `Menus` and `ToolBarItems` then publish a File menu (`Application.FileMenuId`) holding the `File` commands, a menu named after the record type (`MenuId`, with `MenuText` read on every refresh) holding the `Menu` groups, and the `ToolBar` groups, with a `BlazorMenuSeparator` between groups. One command is one menu item wherever it appears. `EnabledWhen` and `BlockedBy` disable a command, and the blocker's reason is added to its caption and tooltip, as in "Lock Product (Product: Locked)"; `VisibleWhen` leaves it out, and a group with no visible command leaves no separator. Menu items are rebuilt only when a caption, a visibility or the menu caption changes, so availability is read live.
+
+```csharp
+protected override void OnInitialized() {
+	var newPerson = Command("person-new", "New Person", "fas fa-plus", NewPersonAsync);
+	var savePerson = Command("person-save", "Save Person", "fas fa-save", SaveAsync).EnabledWhen(() => _draft.IsDirty);
+	var deletePerson = Command("person-delete", "Delete Person", "fas fa-trash-alt", DeleteAsync)
+		.BlockedBy(() => _person.CanDelete ? string.Empty : "Person: Has Orders");
+	UseCommands(new ScreenCommandLayout {
+		File = [newPerson, savePerson],
+		MenuId = "person", MenuText = () => "Person",
+		Menu = [[deletePerson]],
+		ToolBar = [[newPerson], [savePerson], [deletePerson]]
+	});
+}
+
+// A screen with a busy guard runs every command under it and disables them all while it is busy.
+protected override bool IsBusy => _busy;
+
+protected override Task RunCommandAsync(Func<Task> action) => RunGuardedAsync(action);
+```
+
+`RunCommandAsync` runs the action directly by default and `IsBusy` is false. A screen that overrides `Menus` or `ToolBarItems` publishes its own items instead.
+
+#### Group box caption commands and state icons
+
+A toolbar command that acts on one group box's feature also appears as an icon in that group box's caption. `UI.Controls.GroupBoxCaption` renders the heading (`Text`, `Level` 2 by default) with the group box's `Commands` as `ScreenCommandIcon` buttons on the right, after any state icons given as its child content. A `ScreenCommandIcon` is the toolbar button's twin: the same icon, disabled exactly when the toolbar item is (`ScreenCommand.IsEnabled`: its `EnabledWhen` and `BlockedBy`, and the screen's `IsBusy`), the caption with its blocker as tooltip ("Change License Template (Product: Locked)"), the command's text as accessible name and the blocker as accessible description. A click runs `ScreenCommand.RunAsync()`, the shell's path through `RunCommandAsync`, and then renders the screen, which publishes any changed command state to the toolbar. The icon renders with its screen and also refreshes when the screen calls `NotifyScreenChanged`. The icons never make the caption taller than its heading, and the caption takes over the heading's bottom spacing (`--sphere10-group-caption-spacing`, 1rem by default). `UI.Controls.StateIcon` shows a state such as Locked as an icon in a fixed slot that keeps its size while the state is off, so showing it never moves anything beside it.
+
+```razor
+<section class="card">
+	<GroupBoxCaption Text="License Template" Commands="@(new[] { _changeTemplate })">
+		<StateIcon Icon="fas fa-lock" Text="Locked" Shown="_product.IsLocked" />
+	</GroupBoxCaption>
+	...
+</section>
+
+@code {
+	private ScreenCommand _changeTemplate;
+
+	protected override void OnInitialized() {
+		_changeTemplate = Command("template-change", "Change License Template", "fas fa-pen", ChangeTemplateAsync)
+			.BlockedBy(() => _product.IsLocked ? "Product: Locked" : string.Empty);
+		UseCommands(new ScreenCommandLayout { MenuId = "product", MenuText = () => "Product", Menu = [[_changeTemplate]], ToolBar = [[_changeTemplate]] });
+	}
+}
+``` Commands that need nested groups (`WithChildren`) or checkable items are built with `ApplicationMenuItemBuilder` as above.
 
 WithChildren(routeCommand, segmentCommand, summaryCommand) creates a ApplicationMenuGroup. Return the group from a screen's ToolBarItems to show one Export dropdown containing its action commands. The native command bar retains command execution coalescing, disabled child controls, outside-click dismissal, Escape and focus restoration. Groups inside dropdowns are expandable nested lists with labelled buttons and aria-expanded state. Click or Enter/Space expands a group; ArrowRight enters its first enabled command. Escape or ArrowLeft closes the innermost group and restores its opener; another Escape closes the top menu. Tab follows the visible native buttons. Long lists scroll inside the dropdown, which fits small viewports. Supply a disabled descriptive child such as No active sites for an empty application group. Replacing the menu data prunes unavailable expanded groups. Register screens as top-level block menu items rather than inside action groups; keep child command IDs unique.
 
@@ -1182,11 +1417,43 @@ activation/deactivation/disposal overrides and application-wide service startup
 and shutdown in application initializers/finalizers. A retained hidden component
 is still alive; a navigation guard only decides permission.
 
-Override `CanDeactivateAsync(CancellationToken)` to veto screen switching, closure or workspace navigation. Override `HasUnsavedChanges` to enable the browser's confirmation when leaving the page. Call the protected `NotifyScreenChanged()` after changing dirty state so the shell updates its navigation lock.
+Override `CanDeactivateAsync(CancellationToken)` to veto screen switching, closure or workspace navigation. Override `HasUnsavedChanges` to enable the browser's confirmation when leaving the page. A render of the screen publishes a changed dirty state, so the shell updates its navigation lock; call the protected `NotifyScreenChanged()` when the state changes without a render of the screen.
 
 Override `OnActivatedAsync`, `OnDeactivatedAsync` and `DisposeAsyncCore` for lifecycle work. If overriding `OnInitializedAsync`, await the base implementation so the component attaches to its session. The renderer creates and disposes screen components; never instantiate or dispose them through the host.
 
 Host transitions are serialized. Lifecycle callbacks must not await another transition on the same host; menu actions run outside the transition gate and may navigate. Cancellation and guard vetoes leave the selection unchanged before commit. A post-commit activation failure is propagated with the selected screen still active. Unregistering a block preflights all its open screens before removing any session. `CanNavigateAsync` checks hidden screens too.
+
+## Master-detail layouts and field rows
+
+`UI.Controls.SplitContainer` shows two panels separated by a draggable splitter, like the WinForms SplitContainer. `Orientation` is `SplitOrientation.Horizontal` (the default, first panel above) or `Vertical` (first panel to the left). `Panel1` and `Panel2` are the panels; `SplitterPosition` is the first panel's share in percent (default 50) and binds two-way through `SplitterPositionChanged`. `Panel1MinSize` and `Panel2MinSize` (CSS pixels, default 40) bound the drag, and `SplitterWidth` (default 5) sets the splitter's thickness. The splitter is a focusable `separator`: arrow keys move it by 2 percent, 10 with Shift, and Home and End move it to the minimum sizes. With a `SettingsKey` the position is remembered for the browser's user through `UserSettings` as a `SplitContainerSettings`. Other attributes, such as a class or a style giving the container its height, are applied to the container element.
+
+`UI.Controls.FieldGrid` lays out `FieldRow` children. `Layout` is `FieldLayout.Stacked` by default: each label above its control, the fields flowing across `Columns` equal columns (default 2, one on narrow screens), as on a record form. `FieldLayout.Inline` puts the labels in an aligned left column, reading "Label:" (the colon is added by the stylesheet with empty alternative text, so a control's accessible name stays the bare label), with the controls, sized to their values, on the right. A `FieldRow` with `For` labels its child control; without a child it shows `Value` as a read-only value labelled by its row. `Wide` makes a field, such as a text area, span every stacked column or stretch across the inline value column. `FieldGrid.Label` names the group, for example the record type of a form. `Compact`, true by default, tightens the gaps between fields (and, inline, trims Bootstrap controls to about a compact grid row); false uses the theme's control spacing. Use it for record forms, wizard steps and dialogs alike.
+
+```razor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+
+<SplitContainer @bind-SplitterPosition="_split" Panel1MinSize="120" Panel2MinSize="120" SettingsKey="MyCompany.MyApplication.People.Split" style="height: 70vh">
+	<Panel1>
+		@* The power-user grid above, with Fill="true" and @bind-SelectedItem="_selected". *@
+	</Panel1>
+	<Panel2>
+		@if (_selected != null) {
+			<FieldGrid Label="Person">
+				<FieldRow Label="Name" Value="@_selected.Name" />
+				<FieldRow Label="Age" Value="@_selected.Age.ToString()" />
+				<FieldRow Label="Notes" For="person-notes" Wide="true"><textarea id="person-notes" class="form-control form-control-sm" readonly>@_selected.Notes</textarea></FieldRow>
+			</FieldGrid>
+		}
+	</Panel2>
+</SplitContainer>
+
+@code {
+	private double _split = 55;
+	private Person _selected;
+}
+```
+
+The tester's wallet wizard steps and the New Product wizard of its Power-user records screen use the same rows for input: `<FieldRow Label="Wallet Name" For="wallet-name"><InputText id="wallet-name" ... /></FieldRow>`.
 
 ## Dialogs and other components
 
@@ -1230,6 +1497,14 @@ The `Modal.ViewService` API needs a rendered `UI.Dialogs.ModalHost` in the same 
 Both wizard generations adapt `Application.UI.IWizard<TModel, Type>` and reuse the shared workflow and fluent wizard builder. Common title/model/cancellation, step composition, reset and callback methods live in `Sphere10.Framework.Application`; Blazor supplies component constraints and factories. Component types, options, validation and modal rendering stay in Blazor. Types use the `Blazor` prefix, including `IBlazorWizard`, `IBlazorWizardBuilder`, `BlazorWizard`, `BlazorWizardBuilder`, `BlazorWizardHost` and step types; `WizardStepUpdateType` comes directly from `Sphere10.Framework.Application.UI`.
 
 Wizards expose `IsCancellable` and builders support `WithCancellation(bool)`. The current step's cancellation flag also applies. The wizard host enables Cancel and the modal close affordance only when cancellation is permitted; `CancelAsync()` still performs any application-specific guard. Both demos include an **Allow cancellation** option before opening the wizard.
+
+A dialog of the current generation is closed by its close button. What a click outside it, or the Escape key, does is its backdrop dismissal policy, `Modal.ModalOptions.BackdropDismissal`, which is `Close`, `Confirm` or `Ignore`. A wizard shown with `Views.WizardDialogAsync` or `ModalService.ShowAsync<BlazorWizardModal>` defaults to `Confirm`. It asks "Are you sure you want to close?" above the wizard, Yes cancels the wizard exactly as its close button does, and No returns to the wizard with its entries and focus intact. Escape is treated like the click outside, so it asks too. A wizard that cannot be cancelled shows no close button, is not asked about and stays open. Every other dialog defaults to `Close`, which keeps the earlier behavior. Pass the policy to change either default.
+
+```csharp
+await Views.WizardDialogAsync(wizard, new ModalOptions { BackdropDismissal = ModalBackdropDismissal.Ignore });
+```
+
+A custom dialog built on `UI.Dialogs.ModalTemplate` chooses its own default with the template's `DefaultBackdropDismissal` parameter. Dialogs of the original generation have no such policy, and a click outside them or Escape still closes them through their close button.
 
 Removing a modal host while a dialog is pending completes the interaction with `ModalResult.Cancel`, including cancellation during rendering or JavaScript startup. It does not surface an unhandled task cancellation through the originating UI event. Unrelated errors and cancellations still propagate. This lifecycle cleanup is independent of whether the user is permitted to press Cancel.
 

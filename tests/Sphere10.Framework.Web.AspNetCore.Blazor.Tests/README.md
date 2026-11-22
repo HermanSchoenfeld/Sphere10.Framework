@@ -66,12 +66,14 @@ Fixtures for the library's application shell, grid, themes, wizards and settings
 | Fixture | Purpose |
 | --- | --- |
 | [ApplicationAggregateTests](ApplicationAggregateTests.cs) | Shared and Blazor application contracts resolve to one scoped runtime per circuit, with live block membership, standalone blocks and frozen command snapshots. |
+| [ApplicationBlockAvailabilityTests](ApplicationBlockAvailabilityTests.cs) | Per-circuit block availability from scoped services, startup fallback, excluded permanent screens, routes, dock and Options, the empty workspace, predicate failure and rejected registration. Also the `CheckAvailability` template's provider guard, the delegate-taking `ActionApplicationBlock`, circuit copies deferring to their source, and the builder's unevaluated predicate. |
 | [ApplicationBlockTests](ApplicationBlockTests.cs) | Block and menu registration snapshots, stable ID validation, host ordering, independent activation policies and screen type validation. |
 | [ApplicationBuilderPatternTests](ApplicationBuilderPatternTests.cs) | Block builder screen and action shortcuts, policy validation, synchronous and asynchronous actions and toolbar items. |
 | [ApplicationBuilderSharingTests](ApplicationBuilderSharingTests.cs) | Shared builder configuration reaches Blazor sessions, generic screen validation and wizard builder chains. |
 | [ApplicationBuilderTests](ApplicationBuilderTests.cs) | Product information and branding from the builder source, head metadata, build freezing and the tester's configured branding. |
 | [ApplicationCommandRenderingTests](ApplicationCommandRenderingTests.cs) | Active-screen menu and toolbar contributions replace broader commands and restore on switching, alongside plugin commands, SingleView mounting and tab state. |
 | [ApplicationCommandScopeTests](ApplicationCommandScopeTests.cs) | Block activation replaces block commands, nested group overrides persist and dock selection honours guards. |
+| [ApplicationCommandPresentationTests](ApplicationCommandPresentationTests.cs) | Icon-only toolbar commands with caption tooltips, the toolbar text opt-in and its registration copy, the standard File menu merged first and omitted when empty, and screen command and title state published by a render without NotifyScreenChanged or a render loop. |
 | [ApplicationCommandStateTests](ApplicationCommandStateTests.cs) | Hidden registrations, disabled and predicate-enabled commands, toolbar groups and dropdowns, and coalesced selection. |
 | [ApplicationExitTests](ApplicationExitTests.cs) | Block guards across snapshots, screen vetoes, synchronous renderer rejection, worker confirmation, the demo exit command, forced dismissal and navigation after exit. |
 | [ApplicationGraphOwnershipTests](ApplicationGraphOwnershipTests.cs) | Canonical graph cloning, typed ownership bridges, grouped and toolbar commands, borrowed references, attachment rollback and circuit-local application parents. |
@@ -97,10 +99,12 @@ Fixtures for the library's application shell, grid, themes, wizards and settings
 | [ApplicationTabsTests](ApplicationTabsTests.cs) | Tab ordering, guarded and batch closure, SingleView retention and screen-command execution through canonical commands. |
 | [ApplicationToolBarContentTests](ApplicationToolBarContentTests.cs) | Toolbar content renders when no command items exist. |
 | [BlazorDefaultInterfaceDispatchTests](BlazorDefaultInterfaceDispatchTests.cs) | Blazor application and plugin overrides project through the shared interfaces. |
-| [BlazorGridBrowserTests](BlazorGridBrowserTests.cs) | Browser checks of settled grid geometry under fractional scaling, editing, the reference popup, column resizing and paging (explicit). |
+| [BlazorGridBrowserTests](BlazorGridBrowserTests.cs) | Browser checks of settled geometry under fractional scaling, editing, the reference popup, resizing, paging, nested hierarchy/cycle handling, custom panels and rows that open on a single click but not from the controls inside them (explicit). |
 | [BlazorGridColumnTests](BlazorGridColumnTests.cs) | Typed property factories, automatic definitions, metadata, scalar parsing and formatting, invariant culture and reference identity. |
 | [BlazorGridControllerTests](BlazorGridControllerTests.cs) | Capability intersection, zero-based query paging, stale-result rejection, buffered edits, validation and write rollback, creation, deletion and source ownership. |
+| [BlazorGridHierarchyTests](BlazorGridHierarchyTests.cs) | Source detection, child paging and ownership, resolved templates, cancellation and late results, source/query replacement, cycles, shared nodes, depth/admission limits and ordinary detail panels. |
 | [BlazorGridNotificationTests](BlazorGridNotificationTests.cs) | Source notifications refresh the current query and selection, wait for drafts and use the binding synchronization context. |
+| [BlazorGridPowerUserTests](BlazorGridPowerUserTests.cs) | Opt-in power-user grids: omitted caption, toolbar and footer, the header reload icon, icon actions in an untitled narrow column, built-in Open/Edit/Delete row commands with the pencil Open icon, double-click and Enter opening, single-click opening with `RowClick` Open (row-set numbering, one open per double-click, no deselection), enum cells and editor options as display text, row events for rows a read replaced (acting on the current row by `EntityComparer`, or ignored), compact density per grid and per application, bound selection and inherited presentation in default child grids. |
 | [BlazorGridReferencePickerTests](BlazorGridReferencePickerTests.cs) | The compact reference popover, dismissal generations, rebinding, disabled state, disposal and JavaScript import races. |
 | [BlazorGridRenderingTests](BlazorGridRenderingTests.cs) | Capability-controlled commands, editing, validation, paging controls, stored preferences, column widths and JavaScript initialization and disposal. |
 | [BlazorGridSettingsTests](BlazorGridSettingsTests.cs) | Grid settings JSON shape, declared column widths and validation. |
@@ -115,24 +119,28 @@ Fixtures for the library's application shell, grid, themes, wizards and settings
 | [DemoShellBrowserTests](DemoShellBrowserTests.cs) | Browser checks of the full-page shell, every theme preset, grid drafts, block browsing, endpoints and history (explicit). |
 | [DynamicWizardStepTests](DynamicWizardStepTests.cs) | Both wizard generations with successors registered at run time, validation, Back, live traits, replacement and resolver restoration. |
 | [EndpointSelectorTests](EndpointSelectorTests.cs) | Endpoint selector registration, two-way synchronization with the servers page, background notifications and disposal. |
+| [FieldGridTests](FieldGridTests.cs) | Field layouts: stacked by default with its column count, inline on request, labelled controls, labelled read-only values, wide fields and the group label. |
 | [GalleryRenderingTests](GalleryRenderingTests.cs) | Every compatibility URL renders its registered screen inside the sole application shell, with icons, modal isolation and local grid data. |
 | [GallerySettingsMigrationTests](GallerySettingsMigrationTests.cs) | Gallery settings and legacy import are restored before the first grid query. |
 | [GridDemoDataSourceTests](GridDemoDataSourceTests.cs) | Demo data source validation, protected deletion, search, typed sorting, paging, new items and live-snapshot replacement. |
+| [GroupBoxCaptionTests](GroupBoxCaptionTests.cs) | Group box caption pieces: a screen command icon with the toolbar item's enabled state, blocker tooltip, accessible name and action through the screen's hook, hidden commands, refresh on `NotifyScreenChanged`, the caption's heading, state icons and command icons, and the fixed `StateIcon` slot. |
 | [GuidedWorkspaceWizardTests](GuidedWorkspaceWizardTests.cs) | Solo and Team route changes, retained drafts, the preset detour, validation and completion rules. |
 | [IdentityControlTests](IdentityControlTests.cs) | Identity captions, templates, menu changes, duplicate suppression, failures and keyboard interop disposal. |
 | [LoadedPluginRegistrationTests](LoadedPluginRegistrationTests.cs) | Loaded plugin receipts versus DI registrations, failed and duplicate loads, nested registrations and contribution order. |
+| [ModalBackdropDismissalTests](ModalBackdropDismissalTests.cs) | What a click outside a current-generation modal or Escape does. Covers the default of each dialog kind, the caller's policy, the close question answered Yes and No above a wizard, wizards that refuse cancellation and the result the caller receives. |
 | [PluginBuilderTests](PluginBuilderTests.cs) | Fluent plugin and block configuration, independent builds, name validation, duplicate blocks and service-only plugins. |
 | [ScreenRegistrationBrowserTests](ScreenRegistrationBrowserTests.cs) | Browser check of same-type registrations with independent drafts and a menu-free bookmark after reload (explicit). |
 | [ScreenSettingsOwnershipTests](ScreenSettingsOwnershipTests.cs) | Web screens declare their own nested settings without activation. |
 | [SearchInputTests](SearchInputTests.cs) | Search result links, stale response rejection, clearing, dismissal, provider replacement, failure and disposal. |
 | [SharedPresentationAdapterTests](SharedPresentationAdapterTests.cs) | Shared `Application.UI` adapters, typed host dispatch and rejection of screens without component support. |
 | [SharedWizardAdapterTests](SharedWizardAdapterTests.cs) | Both Blazor wizard generations use the shared workflow, and the builders copy and reset shared configuration. |
-| [ShowcaseBrowserTests](ShowcaseBrowserTests.cs) | Browser checks of the application patterns showcase commands, themes, collections, guided wizard and block icons (explicit). |
+| [ShowcaseBrowserTests](ShowcaseBrowserTests.cs) | Browser checks of the application patterns showcase commands, the power-user records screen (icon toolbar, compact grid, row icons, reload icon, bound detail panel, File menu merge and splitter drag), themes, collections, guided wizard and block icons (explicit). |
+| [SplitContainerTests](SplitContainerTests.cs) | Split container orientation, layout variables and accessible splitter, clamped and reported moves, an unchanged binding that keeps a move, remembered positions and range validation. |
 | [ThemeComponentsBrowserTests](ThemeComponentsBrowserTests.cs) | Browser checks of the Bootstrap theme component gallery for every preset (explicit). |
 | [ThemeRenderingTests](ThemeRenderingTests.cs) | Stylesheet links and provider attributes, selector and toggle state, retained child state and subscription disposal. |
 | [ThemeTests](ThemeTests.cs) | Theme presets, scoped isolation, validated changes and notifications, custom registrations and the decorator. |
 | [UserSettingsCircuitTests](UserSettingsCircuitTests.cs) | The `UserSettings` facade binds to the circuit's browser provider across activities, lifecycle and failures. |
-| [WizardBrowserTests](WizardBrowserTests.cs) | Browser checks of validation, completion and modal cancellation in both wizard generations (explicit). |
+| [WizardBrowserTests](WizardBrowserTests.cs) | Browser checks of validation, completion and modal cancellation in both wizard generations, and of the close question that a click outside or Escape raises above a current-generation wizard (explicit). |
 | [WizardCancellationTests](WizardCancellationTests.cs) | Default and disabled cancellation, wizard and step permissions, cancel guards and conditional branches. |
 | [WizardNavigationTests](WizardNavigationTests.cs) | External dynamic navigation, apply-and-return steps and Back validation guards. |
 

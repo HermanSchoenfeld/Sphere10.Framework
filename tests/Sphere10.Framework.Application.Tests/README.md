@@ -35,7 +35,7 @@ Quote combined filter expressions so the shell does not interpret `|`. Use `--no
 
 ## Contents
 
-`ApplicationDependencyTests` carries the `Architecture` category. `UserSettingsAsyncTests` and `ApplicationProcessLoggingTests` are marked `[NonParallelizable]`. The other fixtures run their cases in parallel.
+`ApplicationDependencyTests` carries the `Architecture` category. `UserSettingsAsyncTests`, `ApplicationProcessLoggingTests` and `ProductUpdateCheckerSchedulerTests` are marked `[NonParallelizable]`. The other fixtures run their cases in parallel.
 
 ### Project root
 
@@ -92,6 +92,7 @@ The shared `Application.UI` contracts. [UI/TestApplicationModels.cs](UI/TestAppl
 | --- | --- |
 | [ApplicationActionTests](UI/ApplicationActionTests.cs) | Resolving services from the executing scope, awaited callback completion, cancellation and observable failures. |
 | [ApplicationAsyncLifecycleTests](UI/ApplicationAsyncLifecycleTests.cs) | Awaited task and resource completion, paired sync/async dispatch, pending-call coalescing, startup and shutdown cancellation, readiness retry, async disposal, failure cleanup and protected task inventories. |
+| [ApplicationBlockAvailabilityTests](UI/ApplicationBlockAvailabilityTests.cs) | Block availability decided once per host from its own provider before copying, startup and permanent-screen exclusion, the empty host, predicate failure, and rejected later registration or admission. The `CheckAvailability` template hands the supplied provider to the protected `DetermineAvailability` hook, rejects a null provider without asking it, and the delegate-taking test block (`ActionTestApplicationBlock` in `UI/TestApplicationModels.cs`) decides with its delegate. |
 | [ApplicationBuilderCompositionTests](UI/ApplicationBuilderCompositionTests.cs) | `Add` and `Configure` for items, menus, blocks and plugins, with retained definitions, immediate child builds in declaration order, null rejection, failed children left out and a terminal application. |
 | [ApplicationBuilderTests](UI/ApplicationBuilderTests.cs) | Independent products from shared builder factories, exact screen-definition references across caption configuration order, synchronous/asynchronous action replacement, screen/action exclusivity and incomplete-definition rejection. |
 | [ApplicationCommandMergeTests](UI/ApplicationCommandMergeTests.cs) | Application-level command protection, contextual block-to-screen replacement, callback identity, owner selection, menu extension, stable ordering, Help placement and separator normalization. |
@@ -121,9 +122,22 @@ The shared `Application.UI` contracts. [UI/TestApplicationModels.cs](UI/TestAppl
 | [ApplicationSettingsTests](UI/ApplicationSettingsTests.cs) | Screen, block and plugin settings discovered from attributes and builders, supplied instances, reset defaults, screen record IDs and keys, save notifications only after provider acceptance, and serialization without runtime ownership. |
 | [ApplicationUserInterfaceServicesTests](UI/ApplicationUserInterfaceServicesTests.cs) | Reentrant menu actions through the borrowed host, executing UI-service identity, interaction notifications, host composition, lazy owned fallback services and independent DI-service lifetime. |
 | [ScreenActivationPolicyTests](UI/ScreenActivationPolicyTests.cs) | Pure definition validation, compatible aliases, conflicting modes/kinds, platform type validation, atomic host indexing, retained instance lifetime and invalid type/mode rejection. |
-| [SharedFluentBuilderTests](UI/SharedFluentBuilderTests.cs) | Typed composition, callback order, canonical convenience-default inference, explicit overrides, independent owning graphs on repeated builds and wizard reset behavior. |
+| [SharedFluentBuilderTests](UI/SharedFluentBuilderTests.cs) | Typed composition, callback order, unevaluated block availability predicates built into a delegate-taking block, canonical convenience-default inference, explicit overrides, independent owning graphs on repeated builds and wizard reset behavior. |
 | [UserInterfaceServicesDispatchTests](UI/UserInterfaceServicesDispatchTests.cs) | Asynchronous interaction and UI dispatch through the shared interface and decorator without platform UI dependencies. |
 | [WizardTests](UI/WizardTests.cs) | Navigation and branch updates, owned step arrays, cancellation, retry, concurrent terminal requests, completion-once and decorator forwarding. |
+
+### Updates
+
+Product update contracts, the updater template, the release server's portable updater and the background checker. `ProductUpdateCheckerTests` drives a manual scheduler and controlled service completions, so no case waits for a timer. `ProductUpdateCheckerSchedulerTests` is `[NonParallelizable]` and runs one check on the real scheduler, waiting on the check itself with a deadline.
+
+| Fixture | Purpose |
+| --- | --- |
+| [ProductUpdateCheckerSchedulerTests](Updates/ProductUpdateCheckerSchedulerTests.cs) | The real scheduler accepting the checker's job, running the first check on a worker and queuing the next run one interval after that check ends. |
+| [ProductUpdateCheckerTests](Updates/ProductUpdateCheckerTests.cs) | First check after the initial delay and later checks one interval after the previous ends, one announcement for each version, updates offered again after a refusal, joined concurrent checks, logged failures that keep the schedule, repeated failed announcements, and shutdown that cancels and awaits the check in flight. |
+| [ProductUpdateRegistrationTests](Updates/ProductUpdateRegistrationTests.cs) | The module's default service and release-server updater, the host's own service and an updater registered before the module, no checker unless enabled, the checker started and stopped with the process, and one registration with the last options. |
+| [ProductUpdateTests](Updates/ProductUpdateTests.cs) | Release-server installer verification by path and through the caller's open stream, accepting a matching file and refusing another hash, a missing or invalid hash, another length and a missing file, plus the check answers (a version is required, an installer is not) and the default service. |
+| [ProductUpdaterBaseTests](Updates/ProductUpdaterBaseTests.cs) | The updater template: each operation calls its hook once with the caller's token, a missing answer is no update, a cancelled request never reaches its hook, one installation at a time, a failed installation logged and rethrown and a cancelled one not logged, and progress raised through the hook and the event. |
+| [ReleaseServerProductUpdaterTests](Updates/ReleaseServerProductUpdaterTests.cs) | The release server's portable updater answers the service's answer, refuses an offer without its installer's address, passes the token and cannot install by itself. |
 
 The shared `ApplicationBlockBase` stores `IApplicationMenu` directly, so different menu implementations can coexist. Concrete test models derive from the abstract storage foundations in [UI/TestApplicationModels.cs](UI/TestApplicationModels.cs). Test construction does not require unused concrete framework shims. Collection-valued metadata properties return arrays. The tests mutate returned slots and verify that stored membership, parent links and host selection remain intact. Blocks own canonical `ApplicationScreenDefinition` references. Commands, defaults and reverse activators refer to those exact objects within a graph. Snapshot factories clone that graph so independent products cannot reparent each other's commands. Presentation composition borrows references without changing their parents. Names and captions do not identify blocks or screens. Direct test screens and blocks implement the required writable ownership slots rather than relying on empty default implementations.
 

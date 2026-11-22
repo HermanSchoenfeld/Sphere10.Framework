@@ -58,7 +58,7 @@ Quote filter expressions so the shell does not interpret `|` or `&`. Add
 - Many fixtures create files and folders under the operating system's temporary directory and delete them afterwards.
 - `PackageScriptTests` runs `scripts/pack.ps1` and `scripts/publish.ps1`, which the project copies to `Packaging/` in the output folder. It needs `pwsh` on `PATH`, and some cases also run Windows PowerShell (`powershell`). A case whose executable is missing is ignored. A stub replaces `dotnet`, so no package is built or pushed.
 - `MailTlsIntegrationTests` temporarily changes the process-wide SMTP certificate policy, so the fixture is non-parallel.
-- `NetworkDiagnosticsTests` resolves `localhost` and traces the route to `127.0.0.1`. `MacAddressTests` reads the local network interfaces. Neither sends public network traffic.
+- `NetworkDiagnosticsTests` resolves `localhost` and traces the route to `127.0.0.1`. `MacAddressTests` reads the local network interfaces. `NetworkToolProbeTests` connects to listeners it opens on the loopback address, and its closed-port case waits about two seconds for Windows to refuse the connection. None of them sends public network traffic.
 - `ProcessSentryTests` starts `cmd.exe` on Windows and `/bin/sh` elsewhere.
 - `TextFileCacheTests`, `SchedulerTest` and `SchedulerJobLifecycleTests` are skipped on GitHub Actions.
 - `UrlIDTests` permutes ten million identifiers and takes longer than other fixtures.
@@ -93,6 +93,14 @@ Tests for the [cache domain](../../src/Sphere10.Framework/Cache).
 | [PooledCacheTests](Cache/PooledCacheTests.cs) | Several `ActionCache` instances sharing one `PooledCacheReaper`, including exhaustion and an integration run. |
 | [SessionCacheTests](Cache/SessionCacheTests.cs) | `SessionCache` item lifetime, session disposal and flush, and expiry. |
 | [TextFileCacheTests](Cache/TextFileCacheTests.cs) | `TextFileCache` stale-file reload and the retain-on-delete option. |
+
+### Calendar
+
+Tests for the [calendar domain](../../src/Sphere10.Framework/Calendar).
+
+| Fixture | Purpose |
+|---|---|
+| [CalendarRecurrenceTests](Calendar/CalendarRecurrenceTests.cs) | `CalendarRecurrence` occurrences for each frequency, rare rules, run times and next run with repetitions, and validation, plus `CalendarEvent` occurrences and rescheduling and `MemoryCalendar` identity, change notification and stale-event guards. |
 
 ### ClusteredStreams
 
@@ -335,6 +343,9 @@ Tests for the [crypto domain](../../src/Sphere10.Framework/Crypto). `SubRootTree
 | [HasherScopeTests](Crypto/HasherScopeTests.cs) | Borrowed hasher scopes reset and return their hasher once. This fixture is non-parallel. |
 | [HashersTests](Crypto/HashersTests.cs) | `Hashers.Aggregate` over empty and populated inputs. |
 | [LegacyDesTests](Crypto/LegacyDesTests.cs) | DES text encryption round trip through `Tools.Crypto`. |
+| [PasswordGeneratorTests](Crypto/PasswordGeneratorTests.cs) | Generated passwords meet the default and configured policies, honour the minimum length, have no whitespace and are shuffled. |
+| [PasswordHasherTests](Crypto/PasswordHasherTests.cs) | New hashes round-trip in the `SP10-PBKDF2-SHA512` format, fixed current-format and legacy vectors validate, wrong, malformed and weakened hashes fail, `NeedsRehash`, the placeholder and the `IPasswordHasher` service. |
+| [PasswordPolicyTests](Crypto/PasswordPolicyTests.cs) | The default policy's rules and messages, configured policies and a subclass adding a rule. |
 | [RaceConditionTests](Crypto/RaceConditionTests.cs) | Parallel borrowed hashers return correct digests for each standard hash function. |
 | [SeedGeneratorTests](Crypto/SeedGeneratorTests.cs) | `SeedGenerator` entropy policies, digest lengths and span overloads. |
 | [TypedCryptoInterfaceTests](Crypto/TypedCryptoInterfaceTests.cs) | Typed and base digital signature scheme contracts and configuration cloning. |
@@ -351,6 +362,7 @@ Tests for the [data source domain](../../src/Sphere10.Framework/DataSource).
 | [ArrayDataSourceTests](DataSource/ArrayDataSourceTests.cs) | `ArrayDataSource` search, sort, paging, formatting, replacement and storage isolation. |
 | [DataSourceLifetimeTests](DataSource/DataSourceLifetimeTests.cs) | `DataSourceLifetime` registration, stop draining, failure reporting and owner cancellation. |
 | [DataSourceNotificationTests](DataSource/DataSourceNotificationTests.cs) | Change notifications across refresh, publication, decorators, list CRUD and failing subscribers. |
+| [HierarchicalDataSourceTests](DataSource/HierarchicalDataSourceTests.cs) | Captured graph relationships, payload queries, lazy futures, cancellation, stable node and child-query identity, boxed hierarchy and child-view ownership. |
 | [ListDataSourceTests](DataSource/ListDataSourceTests.cs) | `ListDataSource` lazy and preloaded loading, shared fetches, failed fetch retry and row refresh. |
 | [PollingDataSourceTests](DataSource/PollingDataSourceTests.cs) | `PollingDataSource` scheduling, manual refresh, cancellation, failure reporting, stop and disposal. This fixture is non-parallel. |
 | [RefreshableDataSourceTests](DataSource/RefreshableDataSourceTests.cs) | `RefreshableDataSourceBase` fetch coalescing, source swaps, publication order, load direction and disposal. |
@@ -513,6 +525,7 @@ Tests for the [network domain](../../src/Sphere10.Framework/Network).
 | [MacAddressTests](Network/MacAddressTests.cs) | MAC address listing and the default salted address. |
 | [NetworkDiagnosticsTests](Network/NetworkDiagnosticsTests.cs) | Whois against a loopback server, host resolution and a loopback trace route. |
 | [NetworkProbeDataSourceTests](Network/NetworkProbeDataSourceTests.cs) | `NetworkProbeDataSource` commands, repetition, cancellation, stop and retained-data bounds. |
+| [NetworkToolProbeTests](Network/NetworkToolProbeTests.cs) | The server a WHOIS answer refers to, and the TCP port probe against open and released loopback ports, invalid arguments and cancellation. |
 | [NetworkProtocolTests](Network/NetworkProtocolTests.cs) | DNS response and TLS ClientHello decoding, including malformed input. |
 
 ### ObjectSpaces
@@ -567,6 +580,7 @@ Tests for the [scheduler domain](../../src/Sphere10.Framework/Scheduler).
 | Fixture | Purpose |
 |---|---|
 | [JobScheduleInterfaceTests](Scheduler/JobScheduleInterfaceTests.cs) | `IJobSchedule` ordering by next start time and comparison rules. |
+| [RecurrenceScheduleTests](Scheduler/RecurrenceScheduleTests.cs) | `OnRecurrenceSchedule` next start in UTC from a calendar rule, repetitions under way, iteration limit and rule end, rejection of an invalid rule, the `ScheduleBuilder` rule methods, surrogate round trip and a job run when its rule fires. This fixture is non-parallel. |
 
 ### Scopes
 
@@ -701,6 +715,7 @@ Tests for the [threading domain](../../src/Sphere10.Framework/Threading). `Produ
 | [ScopeAllocationDiagnostics](Threading/ScopeAllocationDiagnostics.cs) | Scope types and forwarders avoid boxing and per-acquisition allocation. One case is ignored. |
 | [SerialThreadPoolTests](Threading/SerialThreadPoolTests.cs) | `SerialThreadPool` ordering, rescheduling and failure handling. |
 | [ThreadAffineScopeTests](Threading/ThreadAffineScopeTests.cs) | Thread-affine scopes reject async disposal and capture their lock before open hooks. |
+| [ThrottleTests](Threading/ThrottleTests.cs) | Coalesced callbacks, failure completion and independence from a retired caller dispatcher. |
 | [ThroughputOptimizerTests](Threading/ThroughputOptimizerTests.cs) | `ThroughputOptimizer` direction, sizing and optimum tracking. |
 | [TypedSynchronizedObjectAdapterTests](Threading/TypedSynchronizedObjectAdapterTests.cs) | Typed synchronized object scopes and lock lifetime. |
 | [ValueAccessScopeTests](Threading/ValueAccessScopeTests.cs) | `CriticalObject` access scopes, hooks, thread affinity and storage forwarders. |
@@ -722,4 +737,5 @@ Tests for the [values domain](../../src/Sphere10.Framework/Values).
 | Fixture | Purpose |
 |---|---|
 | [CVarIntTests](Values/CVarIntTests.cs) | `CVarInt` stream and byte round trips and sizes. |
+| [EnumDisplayTextTests](Values/EnumDisplayTextTests.cs) | `GetDisplayText` enum text (description, Title Case words, acronyms, numbers, flags, undefined values) and `Tools.Text.ToTitleCaseWords`. |
 | [VarIntTests](Values/VarIntTests.cs) | `VarInt` stream and byte round trips and arithmetic operators. |

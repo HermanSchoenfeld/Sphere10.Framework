@@ -8,7 +8,7 @@ Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application dev
 
 ## Source organization
 
-Domain folders such as `Application`, `AppointmentBook`, `Charts`, `Database`,
+Domain folders such as `Application`, `VisualCalendar`, `Charts`, `Database`,
 `ExplorerBar`, `ListMerger`, `Logging`, `RichText`, `ToolStrips`, `VisualGrid` and
 `Wizard` own their related functionality.
 Their `Controls` folders contain reusable visual controls; their `Forms` folders
@@ -35,7 +35,7 @@ Every folder of `Sphere10.Framework.Windows.Forms` is a domain with its own READ
 |---|---|---|
 | [Attachment](Attachment/README.md) | Compact file/clipboard attachment selection with a modal editor and immutable content snapshots. | [source](Attachment/) |
 | [Application](Application/README.md) | Native WinForms application shell with plugins, blocks, menus, hosted screens, main forms, Options dialogs and startup integration. | [source](Application/) |
-| [AppointmentBook](AppointmentBook/README.md) | Scheduling grid control that shows appointments in named columns over a time period, with selection, drag-and-drop rescheduling and resizing. | [source](AppointmentBook/) |
+| [VisualCalendar](VisualCalendar/README.md) | Scheduling grid control that shows appointments in named columns over a day, a week or a month, with selection, drag-and-drop rescheduling and resizing, a data source that shows `ICalendar` objects and an editor for recurrence rules. | [source](VisualCalendar/) |
 | [Authentication](Authentication/README.md) | Modal logon and password-entry dialogs that delegate credential checks and password policy to caller-supplied callbacks. | [source](Authentication/) |
 | [Charts](Charts/README.md) | Designer-editable numeric and telemetry chart controls over captured data, with a shared Log Output workflow for chart observations. | [source](Charts/) |
 | [ComboBoxes](ComboBoxes/README.md) | Combo box controls with placeholders and validation, custom drop-down content, enum binding and image tile choices. | [source](ComboBoxes/) |
@@ -66,10 +66,15 @@ Every folder of `Sphere10.Framework.Windows.Forms` is a domain with its own READ
 | [SourceGrid.Extensions](SourceGrid.Extensions/README.md) | Ready-made grids built on SourceGrid for two-dimensional arrays, `IBoundList` data binding, read-only property sources, list editing and appointment planning. | [source](SourceGrid.Extensions/) |
 | [StateEvent](StateEvent/README.md) | Model-aware `FormEx` and `UserControlEx` base classes and the per-control observers that turn native edits into one `StateChanged` notification. | [source](StateEvent/) |
 | [Text](Text/README.md) | Fixed-length text record parsing and writing driven by field definitions or by attributes on a record class. | [source](Text/) |
-| [ToolStrips](ToolStrips/README.md) | Tool strip, menu strip and status strip helpers for merging items into an inherited form's strips, keeping toolbar height stable, and choosing a value from a toolbar button. | [source](ToolStrips/) |
+| [ToolStrips](ToolStrips/README.md) | Tool strip, menu strip and status strip helpers for merging items into an inherited form's strips, keeping toolbar height stable, choosing a value from a toolbar button, adjusting a number with a toolbar slider, starting or stopping an operation from one command, and offering toolbar commands from menus. | [source](ToolStrips/) |
+| [Updates](Updates/README.md) | The "New Version Available" notice for any update channel, and the release server's Windows updater with its BITS download, hash verification, installer launch and one-call registration. | [source](Updates/) |
 | [ValidationIndicator](ValidationIndicator/README.md) | A small status icon control that runs asynchronous validation handlers and shows valid, error, validating or disabled state with a message tooltip. | [source](ValidationIndicator/) |
-| [VisualGrid](VisualGrid/README.md) | The data-source-driven CRUD grid control with paging, search, sorting, entity editors, reference pickers, row details and per-user grid preferences. | [source](VisualGrid/) |
+| [VisualEntityEditor](VisualEntityEditor/README.md) | Entity editing, change tracking and modal validation shared by grids and application settings. | [source](VisualEntityEditor/) |
+| [VisualGrid](VisualGrid/README.md) | Data-source-driven grid with paging, search, sorting, row details and per-user preferences. | [source](VisualGrid/) |
+| [VisualGridDialog](VisualGridDialog/README.md) | Modal host for a configured VisualGrid over a borrowed source. | [source](VisualGridDialog/) |
+| [VisualGridDropDown](VisualGridDropDown/README.md) | Standalone grid dropdown and shared existing-reference selection. | [source](VisualGridDropDown/) |
 | [WindowHighlight](WindowHighlight/README.md) | A click-through outline drawn over another window's physical desktop bounds, and a one-use picker that lets the user select a desktop window with the mouse. | [source](WindowHighlight/) |
+| [WindowTitleBar](WindowTitleBar/README.md) | A small button kept beside the caption buttons of other applications' windows, with per-window images, click reporting and a menu helper. | [source](WindowTitleBar/) |
 | [Wizard](Wizard/README.md) | Windows Forms presentation of the shared application wizard, with screen base classes, a modal wizard dialog and a fluent builder. | [source](Wizard/) |
 
 ### Project root
@@ -78,7 +83,7 @@ Types declared in the project folder itself:
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Module registration that adds default About, Report Bug, Request Feature and Send Comments dialogs, `ApplicationBanner`, built-in control state event providers and `SessionEndingHandlerInitializer` unless the application registered its own |
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Module registration that adds default About, Report Bug, Request Feature and Send Comments dialogs, `ApplicationBanner`, a singleton `IMachineIdentifierGenerator` (`WindowsMachineIdentifierGenerator` with the default sources), built-in control state event providers and `SessionEndingHandlerInitializer` unless the application registered its own |
 <!-- domains:end -->
 
 ## Chart Library Dependency
@@ -199,15 +204,16 @@ chart.SetSamples(new[] {
 
 ## Chart Log Output
 
-Chart logging writes one line per device or group of a sample, each carrying the
-sample time. A reading's group is the part of its series before ` / ` (for
-example `GPU 0 / Temperature`); readings without one share the title's line, so a
-plain chart still logs one line per sample.
-`ChartLogOutputBehavior.FormatSampleLines(title, capturedAtUtc, readings)` (and
-`Tools.WinForms.Charts.FormatLogLines`) formats those lines without
-accessing controls or writing output; `FormatSample` still joins a whole sample
-into one line for summaries. A raw sampler can format on a worker and enqueue each
-line through a shared toolbar selector with `includesTimestamp: true`. Disable chart capture when that sampler supplies
+Chart logging writes one log entry per captured moment: every reading of a sample
+shares one line that carries the sample time, however many devices or series the
+sample spans. `ChartLogOutputBehavior.FormatSample(title, capturedAtUtc, readings)`
+(and `Tools.WinForms.Charts.FormatLogSample`) formats that line without accessing
+controls or writing output. A raw sampler can format on a worker and enqueue the
+line through a shared toolbar selector with `includesTimestamp: true`.
+`FormatSampleLines` (and `Tools.WinForms.Charts.FormatLogLines`) splits a sample
+into one line per device or group, where a group is the part of a series before
+` / ` (for example `GPU 0 / Temperature`). Use it only when the source being logged
+warrants a line per device; it is not the default. Disable chart capture when that sampler supplies
 the shared output, so repainting retained history does not duplicate records.
 
 Register `LogOutputLifetime` as an application-owned singleton when outputs must
@@ -335,7 +341,7 @@ private async void EditButton_Click(object sender, EventArgs args) {
 }
 ```
 
-Use `ShowAsync` on `DialogEx`, `ExceptionDialog`, `EnterTextDialog`, `ReviewTextDialog`, `PasswordDialog`, `LogonDialog`, and `CrudDialog`; use `GenericEditorForm.ShowFormAsync` and `QuestionDialogSession.AskQuestionAsync`. Password input returns `(DialogResult Result, string Password)`; text input returns `(bool Accepted, string UserInput)`. These helpers dispose the dialogs they create after completion. When calling native `Form.ShowDialogAsync` on your own form, keep it in a `using` scope across the `await`.
+Use `ShowAsync` on `DialogEx`, `ExceptionDialog`, `EnterTextDialog`, `ReviewTextDialog`, `PasswordDialog`, `LogonDialog`, and `VisualGridDialog`; use `GenericEditorForm.ShowFormAsync` and `QuestionDialogSession.AskQuestionAsync`. Password input returns `(DialogResult Result, string Password)`; text input returns `(bool Accepted, string UserInput)`. These helpers dispose the dialogs they create after completion. When calling native `Form.ShowDialogAsync` on your own form, keep it in a `using` scope across the `await`.
 
 `DialogEx` fits its message when shown on the owner's monitor. Short messages retain the designer's small size; longer confirmations grow the form and text viewport, widening when that reduces wrapping. Growth is bounded by the monitor working area and a 900 × 780 logical-pixel window limit, or a smaller caller-supplied `MaximumSize`. Text scrolls vertically once that limit is reached, with command buttons kept outside the scroll area. The existing 5,000-character text limit remains; use `ReviewTextDialog` for full reports.
 
@@ -374,9 +380,9 @@ For an existing dialog instance, configure `PreviewText`, `Instructions`, `Defau
 
 ## Byte and hexadecimal editing
 
-`HexEditorControl` is a designer-editable hex editor over any seekable `Stream`. Open content with `OpenFile(path, readOnly)`, `OpenStream(stream, ownsStream)` or `SetDocument(document, ownsDocument)`; `Document` assignment borrows. The control derives from `ApplicationControl`, so it also works as a hosted screen component. Nothing beyond the visible window is loaded: `HexEditorDocument` reads through a `StreamByteCache` (64 blocks of 4 KiB by default, configurable per document) and keeps pending edits in a piece table until `Save()`. Overwrites (`WriteByte`, `Overwrite`) are written in place as coalesced runs; insertions and deletions (`Insert`, `Delete`) change `Length`, and saving them resizes the stream and rewrites it from the first pending change, staging the tail in memory up to `MaxInMemoryRewriteBytes` (64 MiB) and in a temporary file beyond that. A stream that cannot be resized (a fixed `MemoryStream` over an array) rejects such a save and keeps the edits pending. `Revert()` discards everything. A non-writable stream, or `ReadOnly = true`, makes the document read-only. `BaseAddress` on the control or viewport shows a memory region's virtual address or a file slice's offset in the address column, status bar and Go To while every API offset stays document-relative.
+`HexEditorControl` is a designer-editable hex editor over any seekable `Stream`. Open content with `OpenFile(path, readOnly)`, `OpenStream(stream, ownsStream)` or `SetDocument(document, ownsDocument)`; `Document` assignment borrows. The control derives from `ApplicationControl`, so it also works as a hosted screen component. Nothing beyond the visible window is loaded: `HexEditorDocument` reads through a `StreamByteCache` (64 blocks of 4 KiB by default, configurable per document) and keeps pending edits in a piece table until `Save()`. Overwrites (`WriteByte`, `Overwrite`) are written in place as coalesced runs; insertions and deletions (`Insert`, `Delete`) change `Length`, and saving them resizes the stream and rewrites it from the first pending change, staging the tail in memory up to `MaxInMemoryRewriteBytes` (64 MiB) and in a temporary file beyond that. The toolbar's Save, Ctrl+S and the form's menu call `SaveAsync(cancellationToken)`, which writes on a worker thread: while `IsSaving` is true the document refuses edits, the status bar shows **Saving...**, and viewing, scrolling and searching continue, since the save holds the document's lock one 64 KiB step at a time and reads between steps see the pending content. A stream that cannot be resized (a fixed `MemoryStream` over an array) rejects such a save and keeps the edits pending. `Revert()` discards everything. A non-writable stream, or `ReadOnly = true`, makes the document read-only. `BaseAddress` on the control or viewport shows a memory region's virtual address or a file slice's offset in the address column, status bar and Go To while every API offset stays document-relative.
 
-The view shows an offset column (`AddressDigits` on the viewport: automatic, at least eight hex digits), hex bytes grouped in eights with 8, 16 or 32 per row (`BytesPerRow`), and a decoded text pane. The caret is synchronized across both panes; Tab switches the pane with keyboard input. Click or drag to select, Shift+click or Shift+arrows to extend, Ctrl+A to select all; arrows, Home/End, PageUp/PageDown and Ctrl+Home/End navigate; the mouse wheel scrolls. Typing hex digits overwrites nibbles; typing in the text pane overwrites bytes with character codes. **Insert** mode (Insert key, toolbar toggle or `InsertMode`) types and pastes new bytes at the caret instead, including at the end; Delete removes the selection or caret byte, and Backspace removes the byte before the caret in insert mode. Modified bytes stay highlighted until saved. The toolbar, the control's shortcuts and the form's menus expose **Save** (Ctrl+S), **Revert**, **Go To** (Ctrl+G, hexadecimal or decimal), **Find** (Ctrl+F, hexadecimal pairs or UTF-8 text, forward or backward), **Find Next/Previous** (F3, Shift+F3), **Copy Hex** and **Copy Text** (Ctrl+C copies in the active pane's format, Ctrl+Shift+C the other; `Viewport.MaxCopyBytes` bounds the selection), **Paste** (Ctrl+V, hexadecimal pairs in the hex pane or UTF-8 text in the text pane, replacing a selection) and **Select All**. `FindAsync(search, backward)` runs `HexEditorSearch` on a worker thread with a sliding window that never loads the stream and bypasses the viewport cache; the match is selected and reported in the status bar. The status bar shows the caret offset, selection range and length, document length, pending modification count and the Read-only/Overwrite mode. The data inspector lists Int8..UInt64, Single, Double, ASCII and UTF-8 at the caret with a big-endian toggle (`BigEndian`); `ShowDataInspector`, `ShowToolBar` and `ShowStatusBar` hide the panels.
+The view shows an offset column (`AddressDigits` on the viewport: automatic, at least eight hex digits), hex bytes grouped in eights with 1 to 256 per row (`BytesPerRow`, 16 by default), and a decoded text pane. The toolbar's **Bytes per row** list offers 8, 16, 24, 32, 48 and 64, dragging the line between the hex pane and the text pane chooses any other number, and the form's View menu offers 8, 16 and 32. The caret is synchronized across both panes; Tab switches the pane with keyboard input. Click or drag to select, Shift+click or Shift+arrows to extend, Ctrl+A to select all; arrows, Home/End, PageUp/PageDown and Ctrl+Home/End navigate; the mouse wheel scrolls. Typing hex digits overwrites nibbles; typing in the text pane overwrites bytes with character codes. **Insert** mode (Insert key, toolbar toggle or `InsertMode`) types and pastes new bytes at the caret instead, including at the end; Delete removes the selection or caret byte, and Backspace removes the byte before the caret in insert mode. Modified bytes stay highlighted until saved. The toolbar, the control's shortcuts and the form's menus expose **Save** (Ctrl+S), **Revert**, **Go To** (Ctrl+G, hexadecimal or decimal), **Find** (Ctrl+F, hexadecimal pairs or UTF-8 text, forward or backward), **Find Next/Previous** (F3, Shift+F3), **Copy Hex** and **Copy Text** (Ctrl+C copies in the active pane's format, Ctrl+Shift+C the other; `Viewport.MaxCopyBytes` bounds the selection), **Paste** (Ctrl+V, hexadecimal pairs in the hex pane or UTF-8 text in the text pane, replacing a selection) and **Select All**. `FindAsync(search, backward)` runs `HexEditorSearch` on a worker thread with a sliding window that never loads the stream and bypasses the viewport cache; the match is selected and reported in the status bar. The status bar shows the caret offset, selection range and length, document length, pending modification count and the Read-only/Overwrite/Insert/Saving mode. The data inspector lists Int8..UInt64, Single, Double, ASCII and UTF-8 at the caret with a big-endian toggle (`BigEndian`); `ShowDataInspector`, `ShowToolBar` and `ShowStatusBar` hide the panels.
 
 `HexEditorViewport` is the non-visual view model (visible row window, caret, half-open selection, active pane, typing) that `HexEditorView` paints and that tests drive without a message loop; `HexEditorDataInspector` produces `HexEditorInspection` values. `HexEditorView` is double-buffered, DPI-aware and uses a monospace font with ordinary WinForms colors (`OffsetForeColor`, `ModifiedForeColor`, `SelectionBackColor`, `InactiveSelectionBackColor` and friends default to `SystemColors`), so it follows light or dark system colors; the library has no separate theming facility. `StateChanged` publishes document edits, `ViewChanged` reports caret, selection and scroll changes, and `DocumentChanged` reports a replaced or closed document. All control access belongs on the creating UI thread.
 
@@ -547,9 +553,10 @@ It no longer clears native selection, an unsupported operation on .NET 10.
 See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/grids-and-screen-hosts.md)
 for the Blazor equivalents, shared contracts and platform differences.
 
-`RowDetails` supports arbitrary owned panels below rows and recursive child grids.
+`IHierarchicalDataSource` enables recursive child grids automatically; `CreateDetail`
+customizes their presentation and supports ordinary owned panels.
 `HeaderVisible`, `ColumnHeadersVisible` and `FooterVisible` are independent. See
-[row detail surfaces](../../docs/guidelines/patterns/grids-and-screen-hosts.md#general-native-row-detail-panels-and-recursive-tables)
+[row detail surfaces](../../docs/guidelines/patterns/grids-and-screen-hosts.md#hierarchical-sources-and-detail-controls)
 for worker preparation, identity, ownership, limits and the WinForms tester demos.
 
 The search editor shows a centered magnifier when empty and a red cross while
@@ -566,7 +573,7 @@ visibility without explicitly reading or rebinding the source. Normal Auto pagin
 may refresh if that layout change alters the viewport's page capacity. An untitled
 header collapses only when none of those controls is supported.
 
-Use `CrudCellDisplayType.Image` with an `Image`-typed column and its value getter
+Use `VisualGridCellDisplayType.Image` with an `Image`-typed column and its value getter
 for an image cell, such as an executable icon. These cells are read-only and do
 not instantiate the text editor. The grid borrows the supplied image; its data
 source/screen retains ownership and must keep it alive through presentation.
@@ -590,6 +597,13 @@ Natural header sizing reserves the actual sort glyph extent before the first
 sort, so a later ascending or descending indicator cannot cover the measured
 caption. Sorting keeps the established widths; explicit user widths still take
 precedence. SourceGrid's `SortIndicator.ReserveSpaceWhenUnsorted` defaults to true.
+
+Every column is sized by dragging a header boundary. The line is grabbed from
+either side, within four logical pixels scaled to the grid's DPI: inside a
+header's right edge the drag resizes that column, and inside the next header's
+left edge it resizes the column before it. Releasing the mouse after a resize
+does not also sort that column. A width the user drags is kept while a live
+refresh is reading and after the refresh completes.
 
 `VisualGrid` hides the create and delete buttons when their respective capabilities are unavailable. Delete is also hidden unless a visible row is selected. Toolbar and paging controls size to their contents, including scaled fonts and DPI.
 
@@ -665,6 +679,19 @@ their remaining rows without an attempt to fill from nonexistent data.
 
 For rapid live updates, set `SuppressLoadingIndicator = true`. Refresh begins immediately, without the normal stampede delay, loading animation or temporary grid disabling. It retains the logical busy state, joins an active refresh task and discards superseded query results. The default remains false for ordinary data loading. The WinForms tester's CRUD screen exposes the option for its grid and dropdown.
 
+An owner whose own work takes a while shows its own message with `ShowLoading(title, subtitle, image, disableInput)` and removes it with `HideLoading()`; `LoadingVisible` reports it. This is separate from the automatic indicator of a data source read and reads no data:
+
+```csharp
+grid.ShowLoading("Searching Modules…", "Reading The Modules Of Every Process");
+try {
+	rows = await SearchAsync(query, cancellationToken);
+} finally {
+	grid.HideLoading();
+}
+```
+
+The message shows an animated circle, or a copy of the supplied picture, above a bold title and an optional subtitle. By default it covers the grid so its rows cannot be used; `disableInput: false` shows a centred card and leaves the rows usable. A repeated call replaces the message, the grid's `Enabled` state is never changed, and `HideLoading` leaves the automatic indicator of a read in progress alone. Call both on the grid's UI thread.
+
 While a suppressed refresh awaits data, selection, deselection, paging and row
 context menus continue against the last committed page. A right click first
 selects its actual row. Internal native publication gates selection callbacks
@@ -706,7 +733,7 @@ show an indicator or change page/selection. The returned `Array` retains the
 source's declared item type, including an empty result, so exporters can retain
 typed CSV headers. It queries the bound source rather than calling a separate
 collector; snapshot sources therefore reuse their published inventory.
-With a controller's `PublicationIdentity` configured, export validates that stamp
+With the grid's `PublicationIdentity` configured, export validates that stamp
 at admission and completion and throws `InvalidOperationException` for a stale
 publication. Committed rows remain interactive, and source membership is never
 rolled back or replaced by this check.
@@ -716,12 +743,21 @@ Columns take their natural widths from the first nonempty result for a binding s
 `ColumnLayoutSource` optionally borrows another live grid's column definitions,
 display order, visibility and resolved widths while leaving queries, paging and
 selection local. The source remains the sole owner of column preferences.
-For recursive tables, set `RowDetails.ShareParentColumns = true` and omit a
+For recursive tables, set `ShareDetailColumns = true` and omit a
 separate child layout. Shared child hosts retain the parent's native column
 origin and horizontal scroll; hierarchy indentation is inside column content.
-`IndentColumnKey` selects the stable column key for that gutter, useful when a
+`DetailIndentColumnKey` selects the stable column key for that gutter, useful when a
 narrow icon column precedes the name. Children keep their own vertical scroll.
-See [native row details](../../docs/guidelines/patterns/grids-and-screen-hosts.md#general-native-row-detail-panels-and-recursive-tables)
+Nested child tables need a control per expanded row, so their expansion is bounded
+(`MaximumExpandedDetails`, at most 128). To show a whole tree, bind a source that
+serves an outline instead, such as a `KeyedHierarchyDataSource<T>` with
+`Presentation = HierarchyPresentation.Outline`. Set `Outline` to it, set
+`DetailsEnabled = false`, and choose `OutlineColumnKey`: that column indents each
+row by its depth and draws an expander beside a row with rows beneath it. A click on
+the expander, or Right and Left on the selected row, shows or hides them.
+`ExpandAllAsync`, `CollapseAllAsync` and `SetOutlineExpandedAsync` change the
+source's expansion and read it again.
+See [native row details](../../docs/guidelines/patterns/grids-and-screen-hosts.md#hierarchical-sources-and-detail-controls)
 for ownership, settings and complete examples.
 
 The owning screen keeps one `VisualGridSettings` value per logical grid inside
@@ -748,7 +784,7 @@ drags. Those operations remain transient: they do not overwrite the accepted
 screen settings section or become persistent merely because the screen closes
 or the application finalizes.
 
-A screen can drop a [VisualGridConfigurationContextMenu](VisualGrid/Controls/VisualGridConfigurationContextMenu.cs) component into its
+A screen can drop a [VisualGridConfigurationContextMenu](VisualGrid/VisualGridConfigurationContextMenu.cs) component into its
 designer and assign it to the grid's generic `HeaderContextMenuStrip` property.
 For code-based attachment after `InitializeComponent()`:
 
@@ -787,21 +823,28 @@ restore; Screen Options Reset remains provisional until Apply/OK.
 
 ### Snapshot collection and binding
 
-An existing ranged `IDataSource<T>` can bind through
-[VisualGridDataSourceController<T>](VisualGrid/VisualGridDataSourceController.cs).
-It binds once and serializes source-change publication without materializing the
-entire source into another snapshot. Search, sort, paging and total count stay
-with the source. Its optional selected-entity resolver maps a captured model to
-the source's current replacement. Create and refresh the controller on the
+Configure an existing ranged `IDataSource<T>` directly on the grid with
+`ConfigureDataSource(source, resolvePublishedEntity, visibleSelectionIdentity)`.
+Configuration is synchronous and performs no reads. Await
+`RefreshDataSourceAsync(cancellationToken)` for the first binding and subsequent
+source publications. The grid binds once and serializes publication without
+materializing the entire source into another snapshot. Search, sort, paging and
+total count stay with the source. The optional selected-entity resolver maps a
+captured model to the source's current replacement. Configure and refresh on the
 grid's owning dispatcher; the source remains responsible for worker execution.
 Set `SuppressLoadingIndicator` for an unobtrusive live refresh that keeps the
-committed page available while the next read is pending. The snapshot controller
-below composes this binding mechanism.
+committed page available while the next read is pending. `RefreshGrid()` remains
+the ordinary page refresh; `SetDataSource` remains the awaited assignment API.
+The snapshot controller below uses the same grid-owned binding mechanism.
 Where commands apply only to selected visible rows, explicitly configure
 `VisibleSelectionIdentity` with a stable key and update commands from
 `SelectionReconciled`. Accepted bindings then select the current matching row or
-clear a selection excluded from the page/filter. Both controllers expose this
-policy; its default is null, preserving existing selection behavior.
+clear a selection excluded from the page/filter. These members belong to the
+grid. The identity defaults to null, retaining selection outside the visible
+page. Child-detail selections are preserved. `PublicationIdentity` and
+`InvalidateDataSource()` reject obsolete publications without blocking input.
+The grid owns its internal binding controller and detaches it on replacement,
+clearing or disposal; callers retain ownership of their data sources.
 
 For read-only changing collections, use the nonvisual
 [VisualGridArrayController<T>](VisualGrid/VisualGridArrayController.cs) behind a
@@ -820,8 +863,8 @@ Create/configure/refresh it on the grid's UI thread with its dispatcher context;
 the capture determines its own worker execution. Late results are ignored
 after grid disposal. See [controller tests](../../tests/Sphere10.Framework.Windows.Forms.Tests/VisualGridArrayControllerTests.cs).
 
-For a source that owns acquisition, bind that same source through
-`VisualGridDataSourceController<T>`. An array-controller overload remains for
+For a source that owns acquisition, configure that same source on the grid.
+An array-controller overload remains for
 a polled source with a necessary separate `ArrayDataSource<T>` view
 projection, such as process hierarchy. The application or screen lifecycle
 sets the polling source's `Enabled` and `RefreshInterval`, requests explicit
@@ -847,26 +890,27 @@ the update until editing ends. Source replacement, clearing and disposal detach
 the subscription without disposing a borrowed source. Reference dropdowns inherit
 the same behavior and keep their popup open during selected-instance reconciliation.
 
-For another control which projects published values, use
-`DataSourceViewSubscription<T>` or `Tools.WinForms.Grids.CreateViewSubscription`.
-Its callback presents data rather than acquiring it. `SetActive` controls view
-demand; the helper also observes actual containing-screen host selection, native
-visibility and docking changes. An inactive view retains one pending update.
-Detached screens follow their own local host. Dispose the helper when the view is
-removed; application sources retain application lifetime ownership.
+VisualGrid owns this subscription and uses
+[`Throttle.ExecuteAsync`](../Sphere10.Framework/Threading/Throttle.cs) with a zero
+interval to coalesce continuous updates without waiting for a quiet period.
+Other controls keep subscriptions with their existing screen or control owner.
+That owner checks its native handle, visibility and actual local-host selection,
+retains a pending change while inactive, and dispatches presentation through
+`InvokeAsyncEx`. Detach on removal or disposal without disposing borrowed sources.
+Keep collection cadence and acquisition with the source's existing owner.
 
 ### References from a data source
 
-Assign a `CrudReferenceBinding<TEntity>` to a column's `ReferenceBinding` to select an existing record from a CRUD dropdown. Set `PropertyName` to the entity's property name so the default edit dialog uses the same picker:
+Assign a `VisualGridReferenceBinding<TEntity>` to a column's `ReferenceBinding` to select an existing record from a CRUD dropdown. Set `PropertyName` to the entity's property name so the default edit dialog uses the same picker:
 
 ```csharp
-var ManagerBinding = new CrudReferenceBinding<Employee>(EmployeeDataSource, EmployeeColumns,
+var ManagerBinding = new VisualGridReferenceBinding<Employee>(EmployeeDataSource, EmployeeColumns,
 	Employee => $"{Employee.FirstName} {Employee.LastName}");
 var ManagerColumn = new VisualGridColumn<Employee> {
 	ColumnName = "Manager",
 	PropertyName = nameof(Employee.Manager),
 	DataType = typeof(Employee),
-	DisplayType = CrudCellDisplayType.DropDownList,
+	DisplayType = VisualGridCellDisplayType.DropDownList,
 	PropertyValue = Employee => Employee.Manager,
 	SetPropertyValue = (Employee, Value) => Employee.Manager = (Employee)Value,
 	CanEditCell = true,
@@ -878,11 +922,15 @@ The picker is read-only, automatically fits complete rows, and supports paging, 
 
 Set `ExpandsToFit = true` on the column that should occupy spare width, such as the Name column in a reference picker. Other columns keep their initial measured widths. Multiple configured columns share extra space; none stretch implicitly when no column is configured. Resizing redistributes spare width from remembered minimum widths. Explicitly resized columns retain the chosen width and leave automatic stretching. Pages, search and refresh do not remeasure columns from their new values. Existing columns wider than the viewport use horizontal scrolling. Automatic page sizing continues to fit complete rows in the available grid height.
 
+`VisualGridColumn.MinimumWidth` (logical pixels, 0 by default) is the narrowest width natural sizing gives a column. Natural sizing measures only the rows the grid shows, so a tree whose top-level rows leave a column empty (made parent rows over a `KeyedHierarchyDataSource<T>`, for example) sets it on the value columns its nested rows fill. A width the user drags is not limited by it. `VisualGridColumn.MaximumWidth` is the widest: a column of a few very long values, such as joined hardware IDs, would otherwise push the other columns out of view. Longer values are cut, and `ExpandsToFit` still widens the column to fill the grid.
+
 Screen Options controls displayed column order through its `Columns` collection and exposes **Manual width** and **Stretch to fit** under each declared column. The latter overrides the binding's `ExpandsToFit`; clearing it restores the binding's default. A manual width takes precedence over stretch. Accepted screen settings update the visible columns and survive refresh. Configuration editing and persistence stay with the screen; the grid retains its ordinary paging, search, sorting and column interaction.
 
-`VisualGrid.ReferenceBindings` and `DefaultCrudEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
+Set `Hidden = true` on a column that the grid should omit by default, such as an optional detail column. Each declared column also has a **Hidden** choice in Screen Options, which overrides the binding in either direction, and clearing it restores the binding's default. A hidden column has no native column, so it takes no width and cannot be the sort column, although the source still searches it and the default entity editor still uses its reference binding. It keeps its place in the `Columns` collection, together with its width and stretch choices, and reappears there when shown. `GridBindings` returns the complete declared schema in presentation order, while `VisibleGridBindings` returns the displayed columns in native column order. Use `VisibleGridBindings` to map a binding to a native column index. A grid that mirrors another grid's displayed columns, such as a child table, receives the parent's `VisibleGridBindings` and sets `ShowHiddenColumns = true` so that it shows every binding it is given.
 
-`CrudComboBox` uses the same column configuration. Its `MaximumDropDownSize` and optional `SetCrudParameters(size: ...)` configure the popup size, capped to the available screen space. Use `ExpandsToFit` in its grid bindings to choose which columns fill spare width.
+`VisualGrid.ReferenceBindings` and `VisualEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
+
+`VisualGridDropDown` uses the same column configuration. Its `MaximumDropDownSize` and optional `SetParametersAsync(size: ...)` configure the popup size, capped to the available screen space. Use `ExpandsToFit` in its grid bindings to choose which columns fill spare width.
 
 ### Default entity editor
 
@@ -892,7 +940,7 @@ The default CRUD dialog expands ordinary reference properties such as `Address` 
 
 Nested changes retain object identity. Cancel restores edited values on the original objects, including shared references. Save accepts the new baseline only after persistence succeeds, so a failed save can still be cancelled. Change events report full paths such as `Address.Street`.
 
-Custom converters, editors, and read-only metadata remain in use. Custom editor rollback covers editable object properties and `IList` membership. Applications needing domain-specific reference selection or factories, mutable collection-item editing, or opaque state should provide an `ICrudEntityEditor` implementation.
+Custom converters, editors, and read-only metadata remain in use. Custom editor rollback covers editable object properties and `IList` membership. Applications needing domain-specific reference selection or factories, mutable collection-item editing, or opaque state should provide an `IVisualEntityEditor` implementation.
 
 ### DatabaseConnectionPanel
 
@@ -960,6 +1008,8 @@ pathSelector.Path = @"C:\Data\file.txt";
 string selectedPath = pathSelector.Path;
 ```
 
+A settings or entity property marked `[PathSelector(PathSelectionMode.Folder)]` gets the same browse button in the [entity and settings editors](VisualEntityEditor/README.md); see the [PathSelector README](PathSelector/README.md).
+
 ### LogOutputSelectorControl
 
 `LogOutputSelectorControl` is a public, designer-editable control in `Sphere10.Framework.Windows.Forms`. It presents a compact unlabeled checkbox and themed log-document icon button, and can be used without depending on SystemExpert. Their tooltips are **Enable/Disable Logging** and **Log output options**. The checkbox's accessible description retains current output details; the icon opens the existing configuration details and wizard workflow.
@@ -996,7 +1046,7 @@ Hosted log views retain the originating navigation block, including after the so
 
 `Configuration` is a defensive `LogOutputConfiguration` snapshot. Configure/start/stop on the creating UI thread. `StartLogging()` accepts its already configured values for programmatic consumers; `ConfigureAsync(owner)` supplies the wizard and `ShowConfigurationAsync(owner)` supplies the details dialog. `LoggingStarting(configuration)` can veto before IO, including during restoration. `LoggingStateChanged`, `LoggingFailed`, `HasConfiguration`, `IsLogging` and `LastError` expose state and failures. Do not separately dispose the selected session or register it as another global owner.
 
-With **Remember After Close**, `LogOutputSelectorSettings` persists the accepted configuration and enabled choice through `UserSettings`. Call `RestoreSettings()` explicitly after the application logger and consumer hooks are ready. Construction/handle creation never read preferences or open output. The method returns false while a stable owner/provider is unavailable and can then be retried; completed restoration is idempotent. `SettingsKey` can supply an explicit stable ID; otherwise the owning screen/control type and named child path identify this selector independently of captions or docking. Set the key before restoring or accepting output. Restoration and unchanged disposal do not write preferences, and disposal closes a remembered active sink without changing its saved enabled choice. Turning Remember off deletes only that selector's stored preferences, including its cached record. Optional preference failures appear in `LastSettingsError`; output remains usable and failed accepted saves retry on disposal. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md#reusable-logging-preferences).
+With **Remember After Close**, `LogOutputSelectorSettings` persists the accepted configuration and enabled choice through `UserSettings`. Call `RestoreSettings()` explicitly after the application logger and consumer hooks are ready. Construction/handle creation never read preferences or open output. The method returns false while a stable owner/provider is unavailable and can then be retried; completed restoration is idempotent. `RestoreSettingsAsync(cancellationToken)` does the same but reads the settings store on a worker, so a slow store does not hold the UI thread, and then applies the values and resumes remembered output on the owning thread; a call while a read runs joins it. `SettingsKey` can supply an explicit stable ID; otherwise the owning screen/control type and named child path identify this selector independently of captions or docking. Set the key before restoring or accepting output. Restoration and unchanged disposal do not write preferences, and disposal closes a remembered active sink without changing its saved enabled choice. Turning Remember off deletes only that selector's stored preferences, including its cached record. Optional preference failures appear in `LastSettingsError`; output remains usable and failed accepted saves retry on disposal. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md#reusable-logging-preferences).
 
 Hosted screens bind a `LogOutputSelectorPreferences` property on their actual `ScreenSettings` object through `BindLogOutputPreferencesAsync`, for example `nameof(MyScreenSettings.LogOutput)`. A non-null selector `Preferences` selects screen ownership. `CapturePreferences()` returns configuration and the remembered `Enabled` choice; `ReadLegacyPreferencesAsync(provider)` reads existing standalone values without creating a record or opening output. Binding may import those values before the screen has its first typed settings record. Subsequent edits update the actual root object, and its successful `SaveAsync()` raises `OnChanged` for the screen and Options consumers.
 
@@ -1015,7 +1065,61 @@ selection retain the original objects. Replacement preserves a matching referenc
 before falling back to value equality. `ItemTextProvider` formats captions and
 `EmptyText` names the unselected state. Menu click and keyboard selection use the
 same event path. The selector owns its menu items and borrows the data objects;
-disposal clears its retained choices without disposing them.
+disposal clears its retained choices without disposing them. It fits its widest
+choice rather than the selected one, so the toolbar does not move when the
+selection changes, and its height follows the font, so it scales with the display.
+Leave `AutoSize` on; a fixed width stays in 96-DPI pixels and cuts the text on a
+scaled display. A list of unbounded names, such as event log channels, sets
+`MaximumWidth` in logical pixels and longer choices are cut.
+
+### ToolStripCommandMenu
+
+`ToolStripCommandMenu` is a menu whose entries mirror toolbar commands as they are
+when the menu opens. A screen that already owns a toolbar can offer the same
+commands from the application's menus without a second set of handlers. Choosing
+an entry clicks the command it mirrors, so the command keeps one caption, image,
+enabled and checked state:
+
+```csharp
+var view = new ToolStripCommandMenu("View");
+view.AddCommands(refreshButton, pauseButton);
+view.AddSeparator();
+view.AddCommand(modeSelector, "CPU Sample View");   // a selector's text shows its value, so name the entry
+menuStrip.Items.Add(view);
+screen.ScreenMenuStrip = menuStrip;                 // merged while the screen is active
+```
+
+Buttons become entries, drop-down buttons and choice selectors become submenus of
+their own items, and a split button leads its alternatives with its own action.
+Hidden commands, labels and hosted controls have no entry; a disabled command has
+a disabled one. Leading, repeated and trailing separators are dropped. `EmptyText`
+is the disabled entry shown while no command is available. The commands are
+borrowed and may live on any strip or on none. `RefreshCommands` rebuilds the
+entries on demand; opening the menu calls it, including when the menu's heading
+has been merged into another strip's heading of the same caption.
+
+### Start/stop buttons
+
+`ToolStripStartStopButton` and `StartStopButton` are one command for an operation
+that is either stopped or running. While stopped they show a green start triangle
+with `StartText`; while running they show a red stop square with `StopText`, so
+only the command that applies is on screen. The owner sets `Running` when the
+operation's state changes. A click raises `StartRequested` or `StopRequested` and
+changes nothing else, so a declined or failed start leaves the button as it was:
+
+```csharp
+var capture = new ToolStripStartStopButton { StartText = "Start Capture…", StopText = "Stop Capture" };
+capture.StartRequested += StartCapture;
+capture.StopRequested += StopCapture;
+toolbar.Items.Add(capture);
+
+// When the operation reports its state
+capture.Running = status.IsCapturing;
+```
+
+The tool strip button also takes `StartToolTipText` and `StopToolTipText`. Both
+controls draw their glyphs in code and own them. `StartStopButton` draws its glyph
+again at the display's size after a DPI change.
 
 ### ProgressBarEx
 
@@ -1096,16 +1200,13 @@ per-call DI scope retained through awaited modal completion. Closing disposes a
 transient or scoped dialog and its rendered banner images; a custom singleton
 remains owned by the application container and can be shown again.
 
-## 🛠️ Tools.Windows.Forms Discovery
+## 🛠️ Tools.WinForms Discovery
 
-Reference `Sphere10.Framework.Windows.Forms` and import `Tools` to discover the
-`Forms` static extension property on `Tools.Windows`. This C# 14 entry point is
-defined in the Forms assembly; the native Windows assembly does not reference
-Windows Forms. The returned utility and its groups retain no control instances.
+Reference `Sphere10.Framework.Windows.Forms` for the static `Tools.WinForms`
+helpers. Its cursor factories return new native cursors owned and disposed by
+the caller.
 
 ```csharp
-using Tools;
-
 // Create custom cursor from bitmap
 Cursor cursor = Tools.WinForms.CreateCursor(bitmap, hotspotX, hotspotY);
 
@@ -1115,12 +1216,12 @@ Cursor rawCursor = Tools.WinForms.LoadRawCursor(cursorBytes);
 
 ### Discover reusable native components
 
-`Forms` is a C# 14 static extension property contributed by the Windows Forms
-assembly to the existing `Tools.Windows` facade. Reference this library and import
-`using Tools;` for extension lookup, even when using the fully qualified
-`Tools.WinForms` spelling. The Windows assembly has no dependency back to
-Windows Forms. `Tools.WinForms` is a static class with one nested static class
-per domain, and explicit factory calls create the native controls.
+`Tools.WinForms` is a static partial class in this assembly, with a nested static
+class for each domain. Reference this library and call its factories directly to
+create native controls. The Windows assembly has no dependency back to Windows
+Forms. Scope factories such as `Tools.Scope.EnterRenderingScope` are contributed
+separately by `WinFormsScopeExtensions` through C# static extension members;
+import `using Tools;` for those scope calls.
 
 The utility groups return the existing concrete types with their normal
 defaults. No group stores a control, starts capture or creates an application
@@ -1131,8 +1232,8 @@ host. Constructors and direct APIs remain available for designer-authored UI.
 | `Tools.WinForms.Windowing` | `CreatePicker(dispatcher)` returns a one-use `WindowPicker`. The dispatcher needs a live native handle. Highlighting already uses `Tools.Scope.EnterHighlightScope(physicalBounds, color, thickness)`. |
 | `Tools.WinForms.Charts` | `CreateGraphChart`, `CreateBarChart`, `CreateTelemetryChart` and `CreateChart` return fresh chart surfaces. `CreateLogOutputBehavior` attaches the existing behavior to a bare DataVisualization chart; the three wrapper controls already own their logging behavior. `FormatLogSample` delegates the existing UTC/title/readings formatter without creating UI. |
 | `Tools.WinForms.Logging` | `CreateOutputSelector` returns an inactive `LogOutputSelectorControl`. `RegisterOutputLifetime` forwards cleanup registration to the current application's existing `LogOutputLifetime` service and returns null when that service is unavailable. |
-| `Tools.WinForms.Grids` | `CreateVisualGrid`, `CreateDataSourceController`, capture and passive-projection `CreateArrayController` overloads, `CreateArrayDetail` and `CreateControlDetail` expose the existing source and owned-panel adapters. |
-| `Tools.WinForms.Review` | `CreateHexEditor`, `ShowBytesAsync` and `ShowTextAsync` expose the byte editor and existing owned modal review/save workflows. |
+| `Tools.WinForms.Grids` | `CreateVisualGrid`, capture and passive-projection `CreateArrayController` overloads, `CreateDataSourceDetail` and `CreateControlDetail` expose the existing projection and owned-panel adapters. Configure a ranged source directly on its grid. |
+| `Tools.WinForms.Review` | `CreateHexEditor`, `ShowBytesAsync`, `EditBytesAsync` and `ShowTextAsync` expose the byte editor and existing owned modal review/save workflows. |
 | `Tools.WinForms.Controls` | `CreateChoiceSelector` and `CreateSearchBox` return the shared non-editable toolbar selector and textbox with inline clear action. |
 
 Create, configure and dispose native controls on their owning UI thread. The
@@ -1148,16 +1249,18 @@ borrows its chart; dispose the behavior and await its `Completion` or
 `DisposeAsync` before ending the UI loop. Wrapper charts expose their own
 `LogOutputBehavior`, so do not attach another behavior to their native chart.
 
-`ShowBytesAsync` shows the hex editor window over a copy of the bytes and returns
-that copy once the user saved it, or null when the window closed without saving.
+`ShowBytesAsync` stages fixed-length edits and copies saved changes into the
+supplied array after the window closes successfully. It returns whether changes
+were saved; cancelling leaves the supplied array unchanged. `EditBytesAsync`
+edits a copy that can grow and shrink, as a stream of any length can, and returns
+the saved content or null; the supplied array is never changed. In either editor,
+typing at the end of a document that can grow appends bytes, in overwrite mode too.
 `ShowTextAsync` reviews complete text and returns a saved path or null when the
 view closes. Token cancellation retains each underlying dialog's cancellation
 and cleanup contract. A proxy does not silently save, truncate or reinterpret
 the supplied content.
 
 ```csharp
-using Tools;
-
 var graph = Tools.WinForms.Charts.CreateGraphChart();
 var grid = Tools.WinForms.Grids.CreateVisualGrid();
 var output = Tools.WinForms.Logging.CreateOutputSelector();
@@ -1180,6 +1283,9 @@ editors, registration requirements, ownership and current limitations.
 | `PathSelectorControl` | File/folder path selection |
 | `LogOutputSelectorControl` | Optional wizard-configured file/application/stdout/stderr output, configuration details dialog and remembered preferences |
 | `ToolStripChoiceSelector` | Fixed toolbar choice through a checked native menu, retaining original data objects |
+| `ToolStripCommandMenu` | Menu whose entries mirror borrowed toolbar commands when it opens and click them when chosen |
+| `ToolStripStartStopButton` | One toolbar command that shows Start with a green triangle while stopped and Stop with a red square while running |
+| `StartStopButton` | The same single start/stop command as a plain button |
 | `ProgressBarEx` | Progress bar with text display |
 | `PropertyGridEx` | Enhanced property grid |
 | `RadioGroupBox` | Radio button group container |
@@ -1204,7 +1310,7 @@ editors, registration requirements, ownership and current limitations.
 | `SourceGrid` | Advanced data grid |
 | `LoadingCircle` | Loading animation |
 | `ExplorerBar` | Explorer-style navigation bar |
-| `AppointmentBook` | Appointment/calendar UI |
+| `VisualCalendar` | Appointment/calendar UI |
 | `ApplicationBlock` | Modular application sections with menus |
 
 ## Loading indicators
@@ -1363,9 +1469,15 @@ For a screen, set `ScreenMenuStrip` to its designer-owned `MenuStrip` and
 `ScreenToolBar` to its designer-owned `ToolStrip`. Its provider projects the
 actual controls, and the host moves those same native items into the active
 frame through the reusable merge controls, restoring their source owners on navigation or detach.
+Whatever is merged, `MainForm.ArrangeMenus` keeps the bar in one order: File, the
+View menu, Options, then the merged menus, then Screens and Help last.
 Owners cache command membership through `GetMenus()` / `GetToolBarItems()` hooks;
 configure membership before activation. Captions and checked/enabled state remain
-live on the native items. `MainForm` composes the host form plus the active
+live on the native items. Because merged items leave `ScreenToolBar.Items` while
+the screen is active, a screen that must change all its own commands at once (for
+example, to disable them under a cover) reads the protected `ScreenToolBarItems`,
+which lists them wherever they are without activating command membership.
+`MainForm` composes the host form plus the active
 plugin, block and screen on demand, without command binding registries.
 `MergeAction` / `MergeIndex` retain their native meaning.
 `ScreenToolBar` replaces the previous screen `ToolBar` property. Legacy
@@ -1450,6 +1562,25 @@ The same plugin instance remains available through native and shared DI contract
 Existing `AddApplicationBlock` calls and the `Application(form, blocks)` constructor remain supported. Their blocks appear directly in the application's live `Blocks` array without creating a plugin. The three-argument constructor accepts `loadedPlugins` that the caller has already loaded and captures their contributions without invoking lifecycle methods. Successfully registered plugin names must be unique, and a block reference cannot be contributed by two plugins.
 
 `IApplication.LoadedPlugins` returns a snapshot of the original loaded plugin instances. `Blocks` projects the host's current registered blocks and follows direct registration and guarded removal. Removing a contributed block does not unload its plugin. Browse navigation through `ScreenHost.SelectBlock` and perform screen operations through the host; plugins have no active UI selection. The shared `IApplication` resolves to the same application object and projects the same loaded plugins and live blocks. The selected block's navigation pane is rebuilt on demand.
+
+### Leaving a block out of an application
+
+`AvailableWhen(services => ...)` on `ApplicationBlockBuilder` supplies a predicate that decides whether this application offers the block, for example from its licensed edition:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Windows.Forms;
+
+var block = new ApplicationBlockBuilder()
+	.WithName("Administration")
+	.AvailableWhen(services => services.GetRequiredService<AdministrationService>().IsEnabled)
+	.AddScreen<DashboardScreen>("Dashboard")
+	.Build();
+```
+
+`IsEnabled` is a member of your own `AdministrationService`. The builder builds an `ActionApplicationBlock`, the `ApplicationBlock` subclass that takes the predicate in its constructor; construct one directly for a block without a builder. A block subclass decides instead by overriding the protected `DetermineAvailability(IServiceProvider)` hook, and the host asks through the public `CheckAvailability(IServiceProvider)`. Configure `AvailableWhen` before `Build`: the retained block's availability is fixed when it is built, so a later call throws `InvalidOperationException`. The screen host evaluates the predicate once, with the application's service provider, when the block is first offered for registration, and it keeps that answer while the main form lives. Startup registration and `IBlockManager.RegisterBlock` skip a block that declined. It gets no navigation button, its `ExecuteOnLoad` items and permanent screens do not run, and startup selection continues with the next block. `ScreenHost.RegisterBlockAsync` rejects it. A predicate that throws fails application initialization. The predicate needs the provider that `UseMainForm` or `AddMainForm` attaches to the main form, or the one the `Application` was constructed with. A block without a predicate is always offered.
+
+Availability is presentation only. It authorizes nothing, so the application's services must still enforce the licence or permission themselves.
 
 ### Native command context
 
@@ -1717,6 +1848,10 @@ the configured default without overwriting the preference. Override
 session arguments; their context action remains visible with an explanation.
 
 `BlockMainForm.RegisterBlock` initializes new permanent screens without replacing an ordinary active screen. If an active Empty screen refuses the transition, the new block remains unregistered and undisposed so the caller can retry after clearing the guard. For a standalone host, `InitializeScreens(blocks)` returns whether initialization was accepted. `UnregisterScreenTypes(block)` removes its definitions and owned screens after all close guards agree. The form's existing `UnregisterBlock` uses that path, allowing administrative removal of permanent screens and disposal of hidden Empty instances. `CanCloseScreens(Screens)` remains the application-exit guard: permanent lifetime does not prevent shutdown.
+
+The main window's status bar shows `IUserInterfaceServices.LoadingIndicator`: a loading circle and its message while any scope returned by `LoadingIndicator.Show(message)` lasts, from any thread. The screen host shows it while it creates a screen ("Opening …") and while it closes screens ("Closing …"), entered before the transition suspends drawing so it paints first. A screen that works in the background shows what it is doing the same way.
+
+Each screen change runs inside one rendering scope over the window, so the change paints once. Work a screen starts asynchronously after it is shown (such as reading and binding its tables) paints when it completes; `VisualGrid` binds a page and settles its geometry under one paint. Do not keep a rendering scope across message processing to wait for that work: suppressed redraw removes a window's native visibility, so its controls can neither be clicked nor take focus meanwhile, and a top-level window would pass clicks to the window behind it.
 
 The existing `OnHide(ref bool CancelHide)` and `ScreenHidden` event can cancel navigation, close, undock, redock, block removal, and changes to SingleView. Batch close and mode changes check all affected screens before removing any. `ScreenDisplayedFirstTime` runs once per instance; `ScreenDisplayed` runs on each subsequent selection or hosting transition. Closing or disposing the host also disposes hidden and detached instances, with `ScreenDestroyed` raised once per instance.
 
