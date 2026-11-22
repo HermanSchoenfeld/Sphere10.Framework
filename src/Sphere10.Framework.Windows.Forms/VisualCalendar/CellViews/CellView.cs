@@ -8,7 +8,7 @@
 
 using Sphere10.Framework.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 /// <summary>
 /// Draws one line of an appointment in the planning grid's style: a soft fill, tinted text and an outline around the whole appointment.
@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 internal class CellView : SourceGrid.Cells.Views.Cell {
 	private const float TextIndent = 5;
 
-	public CellView(BaseAppointmentBook parent, CellViewModel cellDisplay, bool selected = false) {
+	public CellView(BaseVisualCalendar parent, CellViewModel cellDisplay, bool selected = false) {
 		TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
 		BackColor = parent.GetAppointmentFillColor(cellDisplay);
 		ForeColor = parent.GetAppointmentTextColor(cellDisplay);

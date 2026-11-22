@@ -180,7 +180,7 @@ public class DemoPluginRegistrationTests {
 		Assert.That(freshScreens.Distinct().Count(), Is.EqualTo(freshScreens.Length));
 		Assert.That(normalScreens.Concat(freshScreens).Select(type => type.Name).Distinct(), Is.EquivalentTo(new[] {
 			"ApplicationServicesTestScreen",
-			"AppointmentBookScreen",
+			"VisualCalendarScreen",
 			"BlockSelectorStylesScreen",
 			"BloomFilterAnalysisScreen",
 			"CBACSVConverterScreen",
@@ -541,7 +541,15 @@ public class DemoPluginRegistrationTests {
 			var standalone = cpu.Controls.Find("StandaloneGrid", true).Cast<VisualGrid>().Single();
 			Assert.That(owned.Preferences, Is.Not.Null);
 			Assert.That(details.Preferences, Is.Not.Null);
-			Assert.That(standalone.Preferences, Is.Null);
+			// Working presentation values are independent of permission to save a screen-owned grid section.
+			using var configuration = new VisualGridConfigurationContextMenu();
+			configuration.Show(standalone, Point.Empty);
+			Assert.That(configuration.Visible, Is.False);
+			foreach (var grid in new[] { owned, details }) {
+				configuration.Show(grid, Point.Empty);
+				Assert.That(configuration.Visible, Is.True, grid.Name + " owns a configured settings section.");
+				configuration.Close();
+			}
 			Assert.That(owned.CaptureGridPreferences().PageSize, Is.EqualTo(5));
 			Assert.That(details.CaptureGridPreferences().PageSize, Is.EqualTo(3));
 			Assert.That(cpu.Controls.Find("PreferenceLogOutput", true).Cast<LogOutputSelectorControl>().Single().Preferences, Is.Not.Null);
@@ -602,7 +610,7 @@ public class DemoPluginRegistrationTests {
 		var screen = (VisualGridTestScreen)form.ActiveScreen;
 		var option = screen.Controls.Find("_suppressLoadingIndicatorCheckBox", true).OfType<CheckBox>().Single();
 		var grid = screen.Controls.Find("_crudGrid", true).OfType<VisualGrid>().Single();
-		var combo = screen.Controls.Find("_crudComboBox", true).OfType<Sphere10.Framework.Windows.Forms.Crud.CrudComboBox>().Single();
+		var combo = screen.Controls.Find("_visualGridDropDown", true).OfType<Sphere10.Framework.Windows.Forms.VisualGridDropDown>().Single();
 		Assert.That(grid.SuppressLoadingIndicator, Is.False);
 		Assert.That(combo.Grid.SuppressLoadingIndicator, Is.False);
 		option.Checked = true;

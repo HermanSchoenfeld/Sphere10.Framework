@@ -8,14 +8,14 @@
 
 using System;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public abstract class BaseAppointmentBookViewModel {
+public abstract class BaseVisualCalendarViewModel {
 	private TimePeriodType _timeView;
 	private DateTime _timePeriodStart;
 	private DateTime _timePeriodEnd;
 
-	public BaseAppointmentBookViewModel(DateTime timePeriodStart, TimePeriodType timeView) {
+	public BaseVisualCalendarViewModel(DateTime timePeriodStart, TimePeriodType timeView) {
 		Initialize(timePeriodStart, timeView);
 	}
 
@@ -68,6 +68,18 @@ public abstract class BaseAppointmentBookViewModel {
 	}
 
 	internal abstract string GetColumnHeaderText(int col);
+
+	/// <summary>How many columns a column's heading covers, itself included.</summary>
+	internal virtual int GetColumnHeaderSpan(int col) => 1;
+
+	/// <summary>How far a column's day is from the calendar's own day. A resource column has none; a day column of a week view has whole days.</summary>
+	internal virtual TimeSpan GetColumnOffset(int col) => TimeSpan.Zero;
+
+	/// <summary>The time a cell starts at, on the day its column shows.</summary>
+	internal DateTime RowToStartTime(int col, int row) => RowToStartTime(row) + GetColumnOffset(col);
+
+	/// <summary>The time a cell ends at, on the day its column shows.</summary>
+	internal DateTime RowToEndTime(int col, int row) => RowToEndTime(row) + GetColumnOffset(col);
 
 	internal abstract int GetColumnCount();
 

@@ -12,16 +12,18 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using Tools;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 [ToolboxItem(true)]
-public class AppointmentBook : BaseAppointmentBook {
-	public event EventHandlerEx<AppointmentBookFreeRegionSelected> AppointmentBookFreeRegionSelected;
+public class VisualCalendar : BaseVisualCalendar {
+	public event EventHandlerEx<VisualCalendarFreeRegionSelected> VisualCalendarFreeRegionSelected;
 
 	public event EventHandlerEx<AppointmentEvent> AppointmentSelected;
 
@@ -46,7 +48,7 @@ public class AppointmentBook : BaseAppointmentBook {
 	public event EventHandlerEx<AppointmentDropEvent> AppointmentDrop;
 
 	private AppointmentViewModel _selectedAppointment;
-	private IAppointmentBookDataSource _dataSource;
+	private IVisualCalendarDataSource _dataSource;
 	private Tuple<int, int> _resizingStart;
 	private Tuple<int, int> _resizingEnd;
 	private Tuple<int, int, bool> _lastDraggedOver;
@@ -54,18 +56,22 @@ public class AppointmentBook : BaseAppointmentBook {
 	private ResizedAppointmentBorder _resizingBorder;
 	private TimePeriodType _timePeriodType;
 	private DateTime _timePeriodStart;
-	private AppointmentBookViewModelFilter _columnFilter;
+	private VisualCalendarViewModelFilter _columnFilter;
+	private VisualCalendarView _view;
+	private TimePeriodType _slotPeriodType;
+	private DayOfWeek _firstDayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+	private int _refreshGeneration;
 	private static readonly Icon _cannotDropIcon = SystemIcons.Error;
 
-	public AppointmentBook()
+	public VisualCalendar()
 		: this(new DataSourceToViewModelConverter()) {
 	}
 
-	protected AppointmentBook(DataSourceToViewModelConverter viewModelGenerator) {
+	protected VisualCalendar(DataSourceToViewModelConverter viewModelGenerator) {
 		_dataSource = null;
-		_timePeriodType = TimePeriodType.DailyHourly;
+		_timePeriodType = _slotPeriodType = TimePeriodType.DailyHourly;
 		_timePeriodStart = DateTime.Now.ToMidnight();
-		_columnFilter = AppointmentBookViewModelFilter.All;
+		_columnFilter = VisualCalendarViewModelFilter.All;
 		_lastDraggedOver = Tuple.Create(int.MinValue, int.MinValue, false);
 		ViewModelGenerator = viewModelGenerator;
 		_resizing = false;
@@ -91,7 +97,7 @@ public class AppointmentBook : BaseAppointmentBook {
 		set => base.CanResize = value;
 	}
 
-	public virtual IAppointmentBookDataSource DataSource {
+	public virtual IVisualCalendarDataSource DataSource {
 		get => _dataSource;
 		set {
 			_dataSource = value;
@@ -111,8 +117,8 @@ public class AppointmentBook : BaseAppointmentBook {
 		get; set;
 	}
 
-	public new virtual AppointmentBookViewModel ViewModel {
-		get => base.ViewModel as AppointmentBookViewModel;
+	public new virtual VisualCalendarViewModel ViewModel {
+		get => base.ViewModel as VisualCalendarViewModel;
 		set {
 			base.ViewModel = value; // base will bind
 		}
@@ -120,9 +126,28 @@ public class AppointmentBook : BaseAppointmentBook {
 
 	public virtual DateTime TimePeriodStart => _timePeriodStart;
 
+	/// <summary>Whether the calendar shows a day, a week or a month. A day and a month have a column for each of the data source's columns;
+	/// a week has a column for each day. Changing it keeps the date and the row size.</summary>
+	[Category("Appearance"), DefaultValue(VisualCalendarView.Day), Description("Whether the calendar shows a day, a week or a month.")]
+	public virtual VisualCalendarView View {
+		get => _view;
+		set => SetView(value, _timePeriodStart);
+	}
+
+	/// <summary>The day a week starts on. It defaults to the current culture's.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public DayOfWeek FirstDayOfWeek {
+		get => _firstDayOfWeek;
+		set {
+			_firstDayOfWeek = value;
+			if (_view == VisualCalendarView.Week)
+				SetView(_view, _timePeriodStart);
+		}
+	}
+
 	public virtual TimePeriodType TimePeriodType => _timePeriodType;
 
-	public virtual AppointmentBookViewModelFilter ColumnFilter {
+	public virtual VisualCalendarViewModelFilter ColumnFilter {
 		get => _columnFilter;
 		set {
 			_columnFilter = value;
@@ -135,8 +160,41 @@ public class AppointmentBook : BaseAppointmentBook {
 
 	#endregion
 
+	/// <summary>Shows the day, week or month that contains a date. The time-of-day views keep the current row size.</summary>
+	public void SetView(VisualCalendarView view, DateTime date) {
+		_view = view;
+		ApplyTimePeriod(view == VisualCalendarView.Month ? TimePeriodType.Monthly : _slotPeriodType, date);
+	}
+
+	/// <summary>Shows the day, week or month that contains a date, laying it out from the data source on a worker as
+	/// <see cref="RefreshFromDataSourceAsync"/> does. The period properties change at once; the calendar keeps showing the previous
+	/// period until the new one is ready. Call it on the UI thread.</summary>
+	public Task SetViewAsync(VisualCalendarView view, DateTime date, CancellationToken cancellationToken = default) {
+		_view = view;
+		return SelectTimePeriod(view == VisualCalendarView.Month ? TimePeriodType.Monthly : _slotPeriodType, date) ? RefreshFromDataSourceAsync(cancellationToken) : Task.CompletedTask;
+	}
+
+	/// <summary>Shows a period by its row size: a month for the monthly size, otherwise the day or week in view.</summary>
 	public void SetTimePeriod(TimePeriodType timePeriodTime, DateTime startTime) {
-		_timePeriodStart = startTime;
+		if (timePeriodTime == TimePeriodType.Monthly)
+			_view = VisualCalendarView.Month;
+		else if (_view == VisualCalendarView.Month)
+			_view = VisualCalendarView.Day;
+		ApplyTimePeriod(timePeriodTime, startTime);
+	}
+
+	private void ApplyTimePeriod(TimePeriodType timePeriodTime, DateTime startTime) {
+		if (SelectTimePeriod(timePeriodTime, startTime))
+			RefreshFromDataSource();
+	}
+
+	// Takes a period and asks the data source for it; true when the view model must then be read from the data source again.
+	private bool SelectTimePeriod(TimePeriodType timePeriodTime, DateTime startTime) {
+		if (timePeriodTime != TimePeriodType.Monthly)
+			_slotPeriodType = timePeriodTime;
+		// A week is shown from its first day, whichever of its days was asked for.
+		_timePeriodStart = _view == VisualCalendarView.Week ? startTime.Date.AddDays(-(((int)startTime.DayOfWeek - (int)_firstDayOfWeek + 7) % 7)) : startTime;
+		startTime = _timePeriodStart;
 		_timePeriodType = timePeriodTime;
 		if (DataSource != null) {
 			DateTime dataSourceStartTime;
@@ -148,18 +206,27 @@ public class AppointmentBook : BaseAppointmentBook {
 					break;
 				default:
 					dataSourceStartTime = startTime.ToMidnight();
-					dataSourceEndTime = startTime.ToEndOfDay();
+					dataSourceEndTime = (_view == VisualCalendarView.Week ? startTime.AddDays(6) : startTime).ToEndOfDay();
 					break;
 			}
 			DataSource.SetTimeRange(dataSourceStartTime, dataSourceEndTime);
-			RefreshFromDataSource();
-		} else if (ViewModel != null) {
+			return true;
+		}
+		if (ViewModel != null) {
 			ViewModel.SetTimePeriod(_timePeriodType, _timePeriodStart);
 			BindToViewModel();
 		}
+		return false;
 	}
 
 	public void SetTimePeriodType(TimePeriodType timePeriodType) {
+		// A week's columns are built for the week, and a change to or from the month changes the view, so both go through the period.
+		if (_view == VisualCalendarView.Week || timePeriodType == TimePeriodType.Monthly != (_view == VisualCalendarView.Month)) {
+			SetTimePeriod(timePeriodType, _timePeriodStart);
+			return;
+		}
+		if (timePeriodType != TimePeriodType.Monthly)
+			_slotPeriodType = timePeriodType;
 		if (ViewModel != null) {
 			_timePeriodType = timePeriodType;
 			ViewModel.SetTimePeriodType(timePeriodType);
@@ -242,7 +309,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 			var column = ViewModel.GetColumnAt(col);
 
 			var appointmentDragObject = new AppointmentDragObject {
-				SourceColumn = column.ColumnDataObject,
+				SourceColumn = Own(column, appointment),
 				Appointment = appointment.AppointmentDataObject
 			};
 
@@ -312,14 +379,25 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 	// Appointment Selection
 	public override void ClearSelection() => base.ClearSelection();
 
+	/// <summary>Reads the data source and lays the period out on the calling thread. A refresh still running from
+	/// <see cref="RefreshFromDataSourceAsync"/> is superseded.</summary>
 	public virtual void RefreshFromDataSource() {
-		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
-		ViewModel = _dataSource != null ? ViewModelGenerator.Convert(_dataSource, TimePeriodStart, TimePeriodType, ColumnFilter) : null;
-		if (_selectedAppointment != null) {
-			_selectedAppointment = ViewModel.FindAppointmentByDataObject(_selectedAppointment.AppointmentDataObject);
-			if (_selectedAppointment != null)
-				SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
-		}
+		_refreshGeneration++;
+		ApplyViewModel(CreateViewModel(_dataSource, _view, TimePeriodStart, TimePeriodType, ColumnFilter));
+	}
+
+	/// <summary>Reads the data source and lays the period out on a worker, then shows the result on the UI thread. Use it when a data source
+	/// computes many appointments, as <see cref="CalendarViewDataSource"/> does for recurring events. The calendar keeps showing what it shows
+	/// until the new layout is ready; only the latest refresh is shown, so a refresh or period change made meanwhile wins. Call it on the UI
+	/// thread. The data source's reads must allow another thread while the UI does not change the source.</summary>
+	public virtual async Task RefreshFromDataSourceAsync(CancellationToken cancellationToken = default) {
+		Guard.Ensure(!InvokeRequired, "Refresh the calendar from its UI thread.");
+		var generation = ++_refreshGeneration;
+		var (dataSource, view, start, period, filter) = (_dataSource, _view, TimePeriodStart, TimePeriodType, ColumnFilter);
+		var viewModel = dataSource == null ? null : await Task.Run(() => CreateViewModel(dataSource, view, start, period, filter), cancellationToken);
+		cancellationToken.ThrowIfCancellationRequested();
+		if (generation == _refreshGeneration && !IsDisposed)
+			ApplyViewModel(viewModel);
 	}
 
 	internal void FireAppointmentResizingStarted(int col, int row, ResizedAppointmentBorder borderType) {
@@ -383,14 +461,14 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 					return;
 			}
 
-			var newStartTime = ViewModel.RowToStartTime(minRow);
-			var newEndTime = ViewModel.RowToEndTime(maxRow);
-			OnAppointmentResizing(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime);
+			var newStartTime = ViewModel.RowToStartTime(_resizingStart.Item1, minRow);
+			var newEndTime = ViewModel.RowToEndTime(_resizingStart.Item1, maxRow);
+			OnAppointmentResizing(Own(column, appointment), appointment.AppointmentDataObject, newStartTime, newEndTime);
 			if (AppointmentResizing != null)
 				AppointmentResizing(
 					new AppointmentResizingEvent {
 						Source = this,
-						SourceColumn = column.ColumnDataObject,
+						SourceColumn = Own(column, appointment),
 						Appointment = appointment.AppointmentDataObject,
 						SelectedStartTime = newStartTime,
 						SelectedEndTime = newEndTime,
@@ -422,10 +500,10 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 					return;
 			}
 
-			var newStartTime = ViewModel.RowToStartTime(minRow);
-			var newEndTime = ViewModel.RowToEndTime(maxRow);
+			var newStartTime = ViewModel.RowToStartTime(_resizingStart.Item1, minRow);
+			var newEndTime = ViewModel.RowToEndTime(_resizingStart.Item1, maxRow);
 			string errorMessage;
-			var resizeAccepted = OnAppointmentRescheduled(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime, out errorMessage);
+			var resizeAccepted = OnAppointmentRescheduled(Own(column, appointment), appointment.AppointmentDataObject, newStartTime, newEndTime, out errorMessage);
 			if (!resizeAccepted)
 				await DialogEx.ShowAsync(this, SystemIconType.Error, "Scheduling Error", errorMessage ?? "Unable to reschedule appointment", "OK");
 			else {
@@ -433,7 +511,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 					foreach (EventHandlerEx<AppointmentResizingFinishedEvent> handler in AppointmentResizingFinished.GetInvocationList()) {
 						var eventArgs = new AppointmentResizingFinishedEvent {
 							Source = this,
-							SourceColumn = column.ColumnDataObject,
+							SourceColumn = Own(column, appointment),
 							Appointment = appointment.AppointmentDataObject,
 							SelectedStartTime = newStartTime,
 							SelectedEndTime = newEndTime,
@@ -450,7 +528,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 			}
 
 			if (resizeAccepted)
-				RescheduleAppointment(appointment.AppointmentDataObject, column.ColumnDataObject, column.ColumnDataObject, newStartTime, newEndTime);
+				RescheduleAppointment(appointment.AppointmentDataObject, Own(column, appointment), Own(column, appointment), newStartTime, newEndTime);
 		} catch (Exception error) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
@@ -466,13 +544,13 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 			if (appointment == null)
 				return false;
 
-			var dragAccepted = OnAppointmentDragStarting(column.ColumnDataObject, appointment.AppointmentDataObject);
+			var dragAccepted = OnAppointmentDragStarting(Own(column, appointment), appointment.AppointmentDataObject);
 			if (dragAccepted) {
 				if (AppointmentResizingFinished != null) {
 					foreach (EventHandlerEx<AppointmentDragStartingEvent> handler in AppointmentDragStarting.GetInvocationList()) {
 						var eventArgs = new AppointmentDragStartingEvent {
 							Source = this,
-							SourceColumn = column.ColumnDataObject,
+							SourceColumn = Own(column, appointment),
 							Appointment = appointment.AppointmentDataObject
 						};
 						handler.Invoke(eventArgs);
@@ -525,16 +603,16 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 			if (appointment == null)
 				throw new ArgumentException("dragObject", "Appointment property is null");
 
-			var draggingOverStartTime = base.HasColHeaders && row == -1 ? appointment.StartTime : ViewModel.RowToStartTime(row);
+			var draggingOverStartTime = base.HasColHeaders && row == -1 ? appointment.StartTime : ViewModel.RowToStartTime(col, row);
 			var draggingOverEndTime = draggingOverStartTime.Add(appointment.EndTime.Subtract(appointment.StartTime));
-			var dragCompatible = OnAppointmentDragging(appointment, dragOverColumn.ColumnDataObject, draggingOverStartTime, draggingOverEndTime);
+			var dragCompatible = OnAppointmentDragging(appointment, Target(dragOverColumn, sourceColumn), draggingOverStartTime, draggingOverEndTime);
 			if (dragCompatible) {
 				if (AppointmentDragging != null) {
 					foreach (EventHandlerEx<AppointmentDraggingEvent> handler in AppointmentDragging.GetInvocationList()) {
 						var eventArgs = new AppointmentDraggingEvent {
 							Source = this,
 							SourceColumn = sourceColumn,
-							DestinationColumn = dragOverColumn.ColumnDataObject,
+							DestinationColumn = Target(dragOverColumn, sourceColumn),
 							DestinationStartTime = draggingOverStartTime,
 							DestinationEndTime = draggingOverEndTime,
 							Appointment = appointment
@@ -573,13 +651,13 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 				startTime = appointment.StartTime;
 				endTime = appointment.EndTime;
 			} else {
-				var rowStart = ViewModel.RowToStartTime(row);
+				var rowStart = ViewModel.RowToStartTime(col, row);
 				var offset = rowStart.Subtract(appointment.StartTime);
 				startTime = appointment.StartTime.Add(offset);
 				endTime = appointment.EndTime.Add(offset);
 			}
 
-			var dragAccepted = OnAppointmentDropStarting(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
+			var dragAccepted = OnAppointmentDropStarting(sourceColumn, Target(column, sourceColumn), appointment, startTime, endTime);
 			if (dragAccepted) {
 				if (AppointmentResizingFinished != null) {
 					foreach (EventHandlerEx<AppointmentDropStartingEvent> handler in AppointmentDropStarting.GetInvocationList()) {
@@ -587,7 +665,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 							new AppointmentDropStartingEvent {
 								Source = this,
 								SourceColumn = sourceColumn,
-								TargetColumn = column.ColumnDataObject,
+								TargetColumn = Target(column, sourceColumn),
 								StartTime = startTime,
 								EndTime = endTime,
 								Appointment = appointment
@@ -623,19 +701,19 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 				startTime = appointment.StartTime;
 				endTime = appointment.EndTime;
 			} else {
-				var rowStart = ViewModel.RowToStartTime(row);
+				var rowStart = ViewModel.RowToStartTime(col, row);
 				var offset = rowStart.Subtract(appointment.StartTime);
 				startTime = appointment.StartTime.Add(offset);
 				endTime = appointment.EndTime.Add(offset);
 			}
 
-			OnAppointmentDrop(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
+			OnAppointmentDrop(sourceColumn, Target(column, sourceColumn), appointment, startTime, endTime);
 			if (AppointmentDrop != null)
 				AppointmentDrop(
 					new AppointmentDropEvent {
 						Source = this,
 						SourceColumn = sourceColumn,
-						TargetColumn = column.ColumnDataObject,
+						TargetColumn = Target(column, sourceColumn),
 						StartTime = startTime,
 						EndTime = endTime,
 						Appointment = appointment
@@ -682,8 +760,8 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		base.OnSelectingFinished(startCol, startRow, endCol, endRow);
 		if (startCol == endCol) {
 			var appointmentColumn = ViewModel.GetColumnAt(startCol);
-			var startTime = ViewModel.RowToStartTime(Math.Min(startRow, endRow));
-			var endTime = ViewModel.RowToEndTime(Math.Max(startRow, endRow));
+			var startTime = ViewModel.RowToStartTime(startCol, Math.Min(startRow, endRow));
+			var endTime = ViewModel.RowToEndTime(startCol, Math.Max(startRow, endRow));
 			FireFreeRegionSelected(appointmentColumn.ColumnDataObject, startTime, endTime);
 		}
 		ClearSelection();
@@ -703,7 +781,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 	protected override void OnCellDoubleClick(int col, int row) {
 		var appointment = ViewModel.GetAppointmentBlockAt(col, row);
 		if (appointment != null)
-			FireAppointmentDoubleClick(appointment.Column.ColumnDataObject, appointment.AppointmentDataObject);
+			FireAppointmentDoubleClick(Own(appointment.Column, appointment), appointment.AppointmentDataObject);
 	}
 
 	#endregion
@@ -734,9 +812,9 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 	protected void FireFreeRegionSelected(AppointmentColumn column, DateTime startTime, DateTime endTime) {
 		try {
 			OnFreeRegionSelected(column, startTime, endTime);
-			if (AppointmentBookFreeRegionSelected != null) {
-				foreach (EventHandlerEx<AppointmentBookFreeRegionSelected> handler in AppointmentBookFreeRegionSelected.GetInvocationList()) {
-					var eventArg = new AppointmentBookFreeRegionSelected {
+			if (VisualCalendarFreeRegionSelected != null) {
+				foreach (EventHandlerEx<VisualCalendarFreeRegionSelected> handler in VisualCalendarFreeRegionSelected.GetInvocationList()) {
+					var eventArg = new VisualCalendarFreeRegionSelected {
 						Source = this,
 						Column = column,
 						StartTime = startTime,
@@ -791,7 +869,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 
 			FireAppointmentDropEvent(appointmentDragObject, col, row);
 			if (this.ViewModel.ContainsColumn(appointmentDragObject.SourceColumn))
-				args.Effect = DragDropEffects.Move; // drag-n-drop occured within same appointment book control
+				args.Effect = DragDropEffects.Move; // drag-n-drop occured within same visual calendar control
 			else
 				args.Effect = DragDropEffects.Copy; // drag-n-drop occured between two separate controls
 		} catch (Exception error) {
@@ -935,6 +1013,43 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		NotifyStateChanged();
 	}
 
+	/// <summary>The two-line caption above the time column, which names the week by its first and last days in the week view.</summary>
+	protected override string GetPeriodCaption()
+		=> _view == VisualCalendarView.Week && ViewModel != null ? $"{ViewModel.TimePeriodStart:d MMM} -{Environment.NewLine}{ViewModel.TimePeriodStart.AddDays(6):d MMM yyyy}" : base.GetPeriodCaption();
+
+	// A week shares the width between its days, so all seven are in sight; a long text cannot widen one day at the others' cost.
+	protected override (int Minimum, int Maximum) GetColumnWidthLimits(int columns) {
+		var limits = base.GetColumnWidthLimits(columns);
+		if (_view != VisualCalendarView.Week || columns == 0)
+			return limits;
+		var narrowestDay = LogicalToDeviceUnits(60);
+		var share = Math.Max(narrowestDay, DataColumnsWidth / columns);
+		return (Math.Min(limits.Minimum > 0 ? limits.Minimum : share, share), share);
+	}
+
+	// A day column of the week view stands for no column of the data source; the appointment's own column does.
+	private static AppointmentColumn Own(ColumnViewModel column, AppointmentViewModel appointment) => appointment?.SourceColumn ?? column.ColumnDataObject;
+
+	// An appointment dropped on a day column stays in its own column; only its day and time change.
+	private static AppointmentColumn Target(ColumnViewModel column, AppointmentColumn source) => column.ColumnDataObject is DayColumn ? source : column.ColumnDataObject;
+
+	// Reads the data source into a view model. It touches no control, so it runs on a worker for the asynchronous refresh.
+	private VisualCalendarViewModel CreateViewModel(IVisualCalendarDataSource dataSource, VisualCalendarView view, DateTime start, TimePeriodType period, VisualCalendarViewModelFilter filter)
+		=> dataSource == null ? null
+			: view == VisualCalendarView.Week ? ViewModelGenerator.ConvertWeek(dataSource, start, period, filter)
+			: ViewModelGenerator.Convert(dataSource, start, period, filter);
+
+	// Binds a view model to the grid and keeps the selected appointment selected when the new layout still shows it.
+	private void ApplyViewModel(VisualCalendarViewModel viewModel) {
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
+		ViewModel = viewModel;
+		if (_selectedAppointment != null) {
+			_selectedAppointment = ViewModel?.FindAppointmentByDataObject(_selectedAppointment.AppointmentDataObject);
+			if (_selectedAppointment != null)
+				SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
+		}
+	}
+
 	protected void SelectAppointmentInternal(Appointment appointment, bool fireEvent) {
 		var appointmentViewModel = ViewModel.FindAppointmentByDataObject(appointment);
 		if (appointmentViewModel != null) {
@@ -951,7 +1066,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 				}
 			}
 			if (fireEvent)
-				FireAppointmentSelected(appointmentViewModel.Column.ColumnDataObject, appointment);
+				FireAppointmentSelected(Own(appointmentViewModel.Column, appointmentViewModel), appointment);
 		}
 		// If appointmentViewModel is null it could mean that column is hidden, or is old. In either way, we defensively ignore.
 	}
@@ -970,7 +1085,7 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 				}
 			}
 			if (fireEvent)
-				FireAppointmentDeselectoed(selected.Column.ColumnDataObject, selected.AppointmentDataObject);
+				FireAppointmentDeselectoed(Own(selected.Column, selected), selected.AppointmentDataObject);
 		}
 	}
 

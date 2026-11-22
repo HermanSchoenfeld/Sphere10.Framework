@@ -8,7 +8,7 @@
 
 using System.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 internal class AppointmentDragObject {
 	public AppointmentColumn SourceColumn { get; set; }

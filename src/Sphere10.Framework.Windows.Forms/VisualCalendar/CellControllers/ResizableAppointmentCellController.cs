@@ -11,13 +11,13 @@ using System.Drawing;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 internal class ResizableAppointmentCellController : BaseCellController {
 	private readonly Sphere10.Framework.Drawing.RectangleBorder _logicalBorder;
 	private bool _resizing;
 
-	internal ResizableAppointmentCellController(AppointmentBook owner, bool resizeTopBorderAllowed, bool resizeBottomBorderAllowed) : base(owner) {
+	internal ResizableAppointmentCellController(VisualCalendar owner, bool resizeTopBorderAllowed, bool resizeBottomBorderAllowed) : base(owner) {
 		if (!resizeTopBorderAllowed && !resizeBottomBorderAllowed) {
 			throw new ArgumentException("resizeTopBorderAllowed, resizeBottomBorderAllowed", "At least 1 argument must be true");
 		}
@@ -27,9 +27,9 @@ internal class ResizableAppointmentCellController : BaseCellController {
 		ResizeBorder2 = resizeBottomBorderAllowed ? ResizedAppointmentBorder.Bottom : ResizedAppointmentBorder.Top;
 	}
 
-	public new AppointmentBook Owner {
-		get => base.Owner as AppointmentBook;
-		set => base.Owner = value as AppointmentBook;
+	public new VisualCalendar Owner {
+		get => base.Owner as VisualCalendar;
+		set => base.Owner = value as VisualCalendar;
 	}
 
 	public ResizedAppointmentBorder ResizeBorder1 { get; set; }

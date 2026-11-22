@@ -11,14 +11,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public class AppointmentBookDataSource : IAppointmentBookDataSource {
-	private readonly IDictionary<AppointmentColumn, List<Appointment>> _appointmentBook;
+public class VisualCalendarDataSource : IVisualCalendarDataSource {
+	private readonly IDictionary<AppointmentColumn, List<Appointment>> _visualCalendar;
 	private readonly IList<Appointment> _unallocatedAppointments;
 
-	public AppointmentBookDataSource() {
-		_appointmentBook = new Dictionary<AppointmentColumn, List<Appointment>>();
+	public VisualCalendarDataSource() {
+		_visualCalendar = new Dictionary<AppointmentColumn, List<Appointment>>();
 		_unallocatedAppointments = new List<Appointment>();
 		StartTime = DateTime.Now.ToMidnight();
 		EndTime = StartTime.ToEndOfDay();
@@ -29,11 +29,11 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 			Name = name,
 			UserObject = userObject
 		};
-		_appointmentBook.Add(column, new List<Appointment>());
+		_visualCalendar.Add(column, new List<Appointment>());
 		return column;
 	}
 
-	#region IAppointmentBookDataSource
+	#region IVisualCalendarDataSource
 
 	public DateTime StartTime { get; private set; }
 
@@ -61,25 +61,25 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 		//	UnallocatedColumn to Column
 
 		if (sourceColumnIsUnallocated && destColumnIsUnallocated) {
-			throw new NotSupportedException("Dragging/resizing an appointment from an unallocated book to an unallocated book is not supported");
+			throw new NotSupportedException("Dragging/resizing an appointment from an unallocated calendar to an unallocated calendar is not supported");
 		} else if (!sourceColumnIsUnallocated && !destColumnIsUnallocated) {
 			if (sourceColumn != destColumn) {
 				// Column to Column
 				CheckColumnExists(sourceColumn);
 				CheckColumnExists(destColumn);
-				_appointmentBook[sourceColumn].Remove(appointment);
-				_appointmentBook[destColumn].Add(appointment);
+				_visualCalendar[sourceColumn].Remove(appointment);
+				_visualCalendar[destColumn].Add(appointment);
 			}
 		} else if (!sourceColumnIsUnallocated) {
 			//	Column to UnallocatedColumn
 			CheckColumnExists(sourceColumn);
-			_appointmentBook[sourceColumn].Remove(appointment);
+			_visualCalendar[sourceColumn].Remove(appointment);
 			_unallocatedAppointments.Add(appointment);
 		} else {
 			//	UnallocatedColumn to Column
 			CheckColumnExists(destColumn);
 			_unallocatedAppointments.Remove(appointment);
-			_appointmentBook[destColumn].Add(appointment);
+			_visualCalendar[destColumn].Add(appointment);
 		}
 
 		appointment.StartTime = newStartTime;
@@ -106,7 +106,7 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 			_unallocatedAppointments.Add(appointment);
 		} else {
 			CheckColumnExists(column);
-			_appointmentBook[column].Add(appointment);
+			_visualCalendar[column].Add(appointment);
 		}
 		return appointment;
 	}
@@ -119,12 +119,12 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 			_unallocatedAppointments.Remove(appointment);
 		} else {
 			CheckColumnExists(column);
-			_appointmentBook[column].Remove(appointment);
+			_visualCalendar[column].Remove(appointment);
 		}
 	}
 
 	public virtual IEnumerable<AppointmentColumn> GetColumns() {
-		return _appointmentBook.Keys;
+		return _visualCalendar.Keys;
 	}
 
 	public IEnumerable<Appointment> GetAppointments(AppointmentColumn column) {
@@ -135,7 +135,7 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 			return _unallocatedAppointments;
 		} else {
 			CheckColumnExists(column);
-			return _appointmentBook[column];
+			return _visualCalendar[column];
 		}
 	}
 
@@ -145,7 +145,7 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 
 		CheckColumnExists(column);
 		var overlappingAppointments =
-			_appointmentBook[column]
+			_visualCalendar[column]
 				.Where(a => startTime < a.EndTime && endTime > a.StartTime)
 				.Except(appointment);
 
@@ -162,7 +162,7 @@ public class AppointmentBookDataSource : IAppointmentBookDataSource {
 	#region Auxillary
 
 	void CheckColumnExists(AppointmentColumn column) {
-		if (!_appointmentBook.ContainsKey(column))
+		if (!_visualCalendar.ContainsKey(column))
 			throw new SoftwareException("Column '{0}' does not exist", column.Name);
 	}
 

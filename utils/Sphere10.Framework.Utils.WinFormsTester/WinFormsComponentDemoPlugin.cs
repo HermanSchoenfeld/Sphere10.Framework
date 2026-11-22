@@ -49,7 +49,7 @@ public static class WinFormsComponentDemoPlugin {
 				.AddScreen<PlaceHolderTestScreen>("Placeholder")
 				.AddScreen<DraggableControlsTestScreen>("Draggable Controls")
 				.AddScreen<RegionToolTestScreen>("Cultures And Regions")
-				.AddScreen<AppointmentBookScreen>("Appointment Book")
+				.AddScreen<VisualCalendarScreen>("Visual Calendar")
 				.AddScreen<MiscTestScreen>("Miscellaneous Controls")
 				.AddScreen<DecayGaugeScreen>("Decay Gauge")
 				.AddScreen<LoadingCircleTestScreen>("Loading Indicator")
@@ -74,7 +74,7 @@ public static class WinFormsComponentDemoPlugin {
 					.AddShowScreenItem<PlaceHolderTestScreen>("Placeholder", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<DraggableControlsTestScreen>("Draggable Controls", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<RegionToolTestScreen>("Cultures And Regions", (Image)Resources.Generic16x16.Clone())
-					.AddShowScreenItem<AppointmentBookScreen>("Appointment Book", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<VisualCalendarScreen>("Visual Calendar", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<MiscTestScreen>("Miscellaneous Controls", (Image)Resources.Generic16x16.Clone())
 				)
 				.AddMenuItem("Feedback", (Image)Resources.Tests232x32.Clone(), configure: menu => menu

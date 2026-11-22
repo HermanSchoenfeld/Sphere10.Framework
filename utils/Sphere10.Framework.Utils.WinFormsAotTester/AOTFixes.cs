@@ -21,7 +21,7 @@ internal static class AOTFixes {
 	[DynamicDependency(Preserve.All, typeof(global::Sphere10.Framework.Utils.WinFormsTester.Screens.ScreenHostingDesignTestScreen.ScreenHostingPreferences))]
 	[DynamicDependency(Preserve.All, typeof(global::Sphere10.Framework.Utils.WinFormsTester.SettingsTest.SettingsDemoScreenSettings))]
 	[DynamicDependency(Preserve.PublicConstructors, typeof(global::Sphere10.Framework.Utils.WinFormsTester.ApplicationServicesTestScreen))]
-	[DynamicDependency(Preserve.PublicConstructors, typeof(global::Sphere10.Framework.Utils.WinFormsTester.AppointmentBookScreen))]
+	[DynamicDependency(Preserve.PublicConstructors, typeof(global::Sphere10.Framework.Utils.WinFormsTester.VisualCalendarScreen))]
 	[DynamicDependency(Preserve.PublicConstructors, typeof(global::Sphere10.Framework.Utils.WinFormsTester.BloomFilterAnalysisScreen))]
 	[DynamicDependency(Preserve.PublicConstructors, typeof(global::Sphere10.Framework.Utils.WinFormsTester.CBACSVConverterScreen))]
 	[DynamicDependency(Preserve.PublicConstructors, typeof(global::Sphere10.Framework.Utils.WinFormsTester.ChartGalleryScreen))]

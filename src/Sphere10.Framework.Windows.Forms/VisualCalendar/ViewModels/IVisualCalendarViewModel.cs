@@ -8,9 +8,9 @@
 
 using System;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook.ViewModels;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar.ViewModels;
 
-public interface IAppointmentBookViewModel {
+public interface IVisualCalendarViewModel {
 	void SetTimePeriod(TimePeriodType timePeriod, DateTime startTime);
 }
 

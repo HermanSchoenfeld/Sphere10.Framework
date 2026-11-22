@@ -156,39 +156,31 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		}
 	}
 
+	// A range that starts in the removed rows has already gone with its cell. One that starts above them loses only the rows it
+	// shares with them, which can be fewer than were removed, and stops being a range once its cell spans a single cell again.
 	public void ShrinkOrRemoveSpannedRows(int startIndex, int count) {
-		const int startCol = 0;
-		const int endCol = 1000;
-		var removeRange = new CellRange(startIndex, startCol, startIndex + count - 1, endCol);
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
-			var intersection = range.Intersect(removeRange);
-			if (intersection.IsEmpty() == false) {
-				var cell = _grid[range.Start];
-				var span = cell.RowSpan - count;
-				if (span <= 1 && cell.ColumnSpan <= 1) {
-					cell.RowSpan = 1;
-					this.SpannedRangesCollection.Remove(range);
-				} else
-					cell.RowSpan = span;
-			}
+			var removed = Math.Min(range.End.Row, startIndex + count - 1) - Math.Max(range.Start.Row, startIndex) + 1;
+			if (removed <= 0)
+				continue;
+			var cell = _grid[range.Start];
+			var span = Math.Max(1, cell.RowSpan - removed);
+			cell.RowSpan = span;
+			if (span == 1 && cell.ColumnSpan <= 1)
+				this.SpannedRangesCollection.Remove(range);
 		}
 	}
 
 	public void ShrinkOrRemoveSpannedColumns(int startIndex, int count) {
-		const int startRow = 0;
-		const int endRow = 1000;
-		var removeRange = new CellRange(startRow, startIndex, endRow, startIndex + count - 1);
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
-			var intersection = range.Intersect(removeRange);
-			if (intersection.IsEmpty() == false) {
-				var cell = _grid[range.Start];
-				var span = cell.ColumnSpan - count;
-				if (span <= 1 && cell.ColumnSpan <= 1) {
-					cell.ColumnSpan = 1;
-					this.SpannedRangesCollection.Remove(range);
-				} else
-					cell.ColumnSpan = span;
-			}
+			var removed = Math.Min(range.End.Column, startIndex + count - 1) - Math.Max(range.Start.Column, startIndex) + 1;
+			if (removed <= 0)
+				continue;
+			var cell = _grid[range.Start];
+			var span = Math.Max(1, cell.ColumnSpan - removed);
+			cell.ColumnSpan = span;
+			if (span == 1 && cell.RowSpan <= 1)
+				this.SpannedRangesCollection.Remove(range);
 		}
 	}
 }

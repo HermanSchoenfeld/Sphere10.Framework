@@ -10,20 +10,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
+public class VisualCalendarViewModel : BaseVisualCalendarViewModel {
 	private ColumnViewModel[] _allColumns;
 	private ColumnViewModel[] _visibleColumns;
-	private AppointmentBookViewModelFilter _columnFilter;
+	private VisualCalendarViewModelFilter _columnFilter;
 	protected IDictionary<Tuple<int, int>, AppointmentViewModel> _blockLookup;
 
-	public AppointmentBookViewModel(IEnumerable<ColumnViewModel> appointments, DateTime timePeriodStart, TimePeriodType timeView, AppointmentBookViewModelFilter columnFilter = AppointmentBookViewModelFilter.All)
+	public VisualCalendarViewModel(IEnumerable<ColumnViewModel> appointments, DateTime timePeriodStart, TimePeriodType timeView, VisualCalendarViewModelFilter columnFilter = VisualCalendarViewModelFilter.All)
 		: base(timePeriodStart, timeView) {
 		SetData(appointments, timePeriodStart, timeView, columnFilter);
 	}
 
-	public AppointmentBookViewModelFilter ColumnFilter {
+	public VisualCalendarViewModelFilter ColumnFilter {
 		get { return _columnFilter; }
 		set {
 			_columnFilter = value;
@@ -31,7 +31,7 @@ public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
 		}
 	}
 
-	public void SetData(IEnumerable<ColumnViewModel> appointments, DateTime timePeriodStart, TimePeriodType timeView, AppointmentBookViewModelFilter columnFilter = AppointmentBookViewModelFilter.All) {
+	public void SetData(IEnumerable<ColumnViewModel> appointments, DateTime timePeriodStart, TimePeriodType timeView, VisualCalendarViewModelFilter columnFilter = VisualCalendarViewModelFilter.All) {
 		base.Initialize(timePeriodStart, timeView);
 		_blockLookup = new Dictionary<Tuple<int, int>, AppointmentViewModel>();
 		_allColumns = appointments.ToArray();
@@ -43,6 +43,25 @@ public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
 	internal override string GetColumnHeaderText(int col) {
 		return _visibleColumns[col].Name;
 	}
+
+	// A day's heading covers the further columns of that day, which carry no name of their own.
+	internal override int GetColumnHeaderSpan(int col) {
+		if (_visibleColumns[col].ColumnDataObject is not DayColumn day)
+			return 1;
+		var span = 1;
+		while (col + span < _visibleColumns.Length && _visibleColumns[col + span].ColumnDataObject is DayColumn next && next.Date == day.Date && string.IsNullOrEmpty(_visibleColumns[col + span].Name))
+			span++;
+		return span;
+	}
+
+	/// <summary>The displayed columns, in order, after the column filter.</summary>
+	public ColumnViewModel[] Columns => (ColumnViewModel[])_visibleColumns.Clone();
+
+	internal override TimeSpan GetColumnOffset(int col) => col >= 0 && col < _visibleColumns.Length ? GetColumnOffset(_visibleColumns[col]) : TimeSpan.Zero;
+
+	// The monthly view lists days down its rows, so a column's own day has no meaning there.
+	private TimeSpan GetColumnOffset(ColumnViewModel column)
+		=> TimeView != TimePeriodType.Monthly && column.ColumnDataObject?.Date is { } date ? date.Date - TimePeriodStart.Date : TimeSpan.Zero;
 
 	internal ColumnViewModel GetColumnAt(int col) {
 		return _visibleColumns[col];
@@ -61,7 +80,8 @@ public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
 	}
 
 	internal bool ContainsColumn(AppointmentColumn column) {
-		return _visibleColumns.Any(vc => vc.ColumnDataObject == column);
+		// In the week view the data source's columns are behind the appointments, not the displayed day columns.
+		return _visibleColumns.Any(vc => vc.ColumnDataObject == column || vc.Appointments.Any(appointment => appointment.SourceColumn == column));
 	}
 
 	internal override int GetColumnCount() {
@@ -90,26 +110,30 @@ public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
 			for (int i = 0; i < _visibleColumns.Length; i++) {
 				var appointmentColumn = _visibleColumns[i];
 				appointmentColumn.Index = i;
+				// A day column shows its own day: its window and rows are the calendar's, moved by the column's offset.
+				var offset = GetColumnOffset(appointmentColumn);
+				var windowStart = TimePeriodStart + offset;
+				var windowEnd = TimePeriodEnd + offset;
 				for (int j = 0; j < appointmentColumn.Appointments.Length; j++) {
 					var appointmentBlock = appointmentColumn.Appointments[j];
 					appointmentBlock.Column = appointmentColumn;
 
-					if (appointmentBlock.AppointmentDataObject.EndTime <= TimePeriodStart || appointmentBlock.AppointmentDataObject.StartTime >= TimePeriodEnd)
+					if (appointmentBlock.AppointmentDataObject.EndTime <= windowStart || appointmentBlock.AppointmentDataObject.StartTime >= windowEnd)
 						continue;
 
 					// clip the appointment starttimes/endtimes (for the viewmodel)
-					if (appointmentBlock.AppointmentDataObject.StartTime < this.TimePeriodStart)
-						appointmentBlock.VisibleStartTime = TimePeriodStart;
+					if (appointmentBlock.AppointmentDataObject.StartTime < windowStart)
+						appointmentBlock.VisibleStartTime = windowStart;
 					else
 						appointmentBlock.VisibleStartTime = appointmentBlock.AppointmentDataObject.StartTime;
 
-					if (appointmentBlock.AppointmentDataObject.EndTime > TimePeriodEnd)
-						appointmentBlock.VisibleEndTime = TimePeriodEnd;
+					if (appointmentBlock.AppointmentDataObject.EndTime > windowEnd)
+						appointmentBlock.VisibleEndTime = windowEnd;
 					else
 						appointmentBlock.VisibleEndTime = appointmentBlock.AppointmentDataObject.EndTime;
 
-					var startRow = StartTimeToRow(appointmentBlock.VisibleStartTime);
-					var endRow = FinishTimeToRow(appointmentBlock.VisibleEndTime);
+					var startRow = StartTimeToRow(appointmentBlock.VisibleStartTime - offset);
+					var endRow = FinishTimeToRow(appointmentBlock.VisibleEndTime - offset);
 
 					// save the apppointment block in the lookup
 					for (int x = startRow; x <= endRow; x++)
@@ -164,20 +188,22 @@ public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
 
 
 			switch (ColumnFilter) {
-				case AppointmentBookViewModelFilter.All:
+				case VisualCalendarViewModelFilter.All:
 					_visibleColumns = _allColumns;
 					break;
-				case AppointmentBookViewModelFilter.ExcludeEmptyColumns:
+				case VisualCalendarViewModelFilter.ExcludeEmptyColumns:
 					_visibleColumns = (
 						from appointment in _allColumns
-						where appointment.Appointments.Any(block => block.VisibleStartTime < endTime && block.VisibleEndTime > startTime)
+						let offset = GetColumnOffset(appointment)
+						where appointment.Appointments.Any(block => block.VisibleStartTime < endTime + offset && block.VisibleEndTime > startTime + offset)
 						select appointment
 					).ToArray();
 					break;
-				case AppointmentBookViewModelFilter.ShowOnlyEmptyColumns:
+				case VisualCalendarViewModelFilter.ShowOnlyEmptyColumns:
 					_visibleColumns = (
 						from appointment in _allColumns
-						where !appointment.Appointments.Any(block => block.VisibleStartTime <= endTime && block.VisibleEndTime >= startTime)
+						let offset = GetColumnOffset(appointment)
+						where !appointment.Appointments.Any(block => block.VisibleStartTime <= endTime + offset && block.VisibleEndTime >= startTime + offset)
 						select appointment
 					).ToArray();
 					;

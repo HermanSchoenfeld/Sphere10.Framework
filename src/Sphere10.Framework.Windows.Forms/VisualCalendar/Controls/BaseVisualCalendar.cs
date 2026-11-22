@@ -15,29 +15,29 @@ using System.Windows.Forms;
 using Sphere10.Framework.Drawing;
 using Sphere10.Framework.Windows.Forms.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 [ToolboxItem(false)]
-public partial class BaseAppointmentBook : UserControlEx {
-	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseUpEvent;
+public partial class BaseVisualCalendar : UserControlEx {
+	public event EventHandlerEx<BaseVisualCalendar, int, int, MouseEventArgs> MouseUpEvent;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseDownEvent;
+	public event EventHandlerEx<BaseVisualCalendar, int, int, MouseEventArgs> MouseDownEvent;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseOverEvent;
+	public event EventHandlerEx<BaseVisualCalendar, int, int, MouseEventArgs> MouseOverEvent;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int> ClickEvent;
+	public event EventHandlerEx<BaseVisualCalendar, int, int> ClickEvent;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int> DoubleClickEvent;
+	public event EventHandlerEx<BaseVisualCalendar, int, int> DoubleClickEvent;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int> SelectionStarted;
+	public event EventHandlerEx<BaseVisualCalendar, int, int> SelectionStarted;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int> Selecting;
+	public event EventHandlerEx<BaseVisualCalendar, int, int> Selecting;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int> SelectionChanged;
+	public event EventHandlerEx<BaseVisualCalendar, int, int> SelectionChanged;
 
-	public event EventHandlerEx<BaseAppointmentBook, int, int, int, int> SelectionFinished;
+	public event EventHandlerEx<BaseVisualCalendar, int, int, int, int> SelectionFinished;
 
-	public event EventHandlerEx<BaseAppointmentBook> SelectionCleared;
+	public event EventHandlerEx<BaseVisualCalendar> SelectionCleared;
 
 	// Appointment fills reach the lightness of the planning grid's pastel cells; text keeps the hue at a readable depth.
 	private const float PastelLightness = 0.88f;
@@ -45,7 +45,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 	private const float OutlineShade = -0.2f;
 	private const int CellTextPadding = 8;
 	private readonly IDictionary<FontStyle, Font> _appointmentFonts;
-	private BaseAppointmentBookViewModel _viewModel;
+	private BaseVisualCalendarViewModel _viewModel;
 	private Tuple<int, int, DateTime, Point> _lastMouseDown;
 	private Tuple<int, int, DateTime, Point> _lastMouseUp;
 	private Tuple<int, int, DateTime, Point> _lastMouseOver;
@@ -56,7 +56,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 	internal GridSelectingState SelectState;
 	private readonly IDictionary<Tuple<int, int>, Tuple<SourceGrid.Cells.Cell, CellViewModel>> _cellDisplays;
 
-	public BaseAppointmentBook() {
+	public BaseVisualCalendar() {
 		CanResize = true;
 		HasRowHeaders = true;
 		HasColHeaders = true;
@@ -87,7 +87,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 
 	#region Properties
 
-	internal BaseAppointmentBookViewModel ViewModel {
+	internal BaseVisualCalendarViewModel ViewModel {
 		get => _viewModel;
 		set {
 			_viewModel = value;
@@ -147,6 +147,21 @@ public partial class BaseAppointmentBook : UserControlEx {
 		get; set;
 	}
 
+	/// <summary>The look of the appointments and free time slots. Changing it redraws the calendar.</summary>
+	/// <remarks><see cref="SoftenAppointmentColors"/> applies to the pastel style only. Override <see cref="GetAppointmentFillColor"/>,
+	/// <see cref="GetAppointmentTextColor"/>, <see cref="GetAppointmentBorderLine"/> and the free-slot line methods for a look of your own.</remarks>
+	[Category("Appearance"), DefaultValue(VisualCalendarStyle.Pastel), Description("The look of the appointments and free time slots.")]
+	public VisualCalendarStyle Style {
+		get => field;
+		set {
+			if (field == value)
+				return;
+			field = value;
+			if (ViewModel != null && !DesignMode)
+				BindToViewModel();
+		}
+	}
+
 	public int MaxColumnWidth {
 		get; set;
 	}
@@ -155,6 +170,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 		get; set;
 	}
 
+	/// <summary>The width of each of the two row header columns (hours and minutes), in logical pixels (96 DPI) that scale with the display.</summary>
 	public int RowHeaderColumnWidth {
 		get; set;
 	}
@@ -342,7 +358,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 
 	#endregion
 
-	/// <summary>Reports completed appointment-book gestures instead of the internal grid's intermediate selection.</summary>
+	/// <summary>Reports completed visual-calendar gestures instead of the internal grid's intermediate selection.</summary>
 	protected override bool ShouldObserveChildStateChanges(Control child) => false;
 
 	#region Binding
@@ -370,11 +386,12 @@ public partial class BaseAppointmentBook : UserControlEx {
 		if (HasColHeaders)
 			_grid.Rows[0].Height = 2 * lineHeight + CellTextPadding;
 
+		var (minColumnWidth, maxColumnWidth) = GetColumnWidthLimits(dataSourceColCount);
 		for (var index = 0; index < _grid.ColumnsCount; index++) {
-			if (this.MaxColumnWidth > 0)
-				_grid.Columns[index].MaximalWidth = this.MaxColumnWidth;
-			if (this.MinColumnWidth > 0)
-				_grid.Columns[index].MinimalWidth = this.MinColumnWidth;
+			if (maxColumnWidth > 0)
+				_grid.Columns[index].MaximalWidth = maxColumnWidth;
+			if (minColumnWidth > 0)
+				_grid.Columns[index].MinimalWidth = minColumnWidth;
 			_grid.Columns[index].AutoSizeMode = SourceGrid.AutoSizeMode.EnableStretch;
 		}
 		var rowHeaders = (
@@ -391,13 +408,13 @@ public partial class BaseAppointmentBook : UserControlEx {
 
 			_grid.Columns[0].AutoSizeMode = SourceGrid.AutoSizeMode.None;
 			_grid.Columns[0].MinimalWidth = 0;
-			_grid.Columns[0].MaximalWidth = RowHeaderColumnWidth;
-			_grid.Columns[0].Width = RowHeaderColumnWidth;
+			_grid.Columns[0].MaximalWidth = RowHeaderPixels;
+			_grid.Columns[0].Width = RowHeaderPixels;
 
 			_grid.Columns[1].AutoSizeMode = SourceGrid.AutoSizeMode.None;
 			_grid.Columns[1].MinimalWidth = 0;
-			_grid.Columns[1].MaximalWidth = RowHeaderColumnWidth;
-			_grid.Columns[1].Width = RowHeaderColumnWidth;
+			_grid.Columns[1].MaximalWidth = RowHeaderPixels;
+			_grid.Columns[1].Width = RowHeaderPixels;
 
 			// Like the planning grid, an hour spans its slot rows beside their minutes; whole-hour slots read as one time.
 			var wholeHourSlots = ViewModel.TimeView != TimePeriodType.Monthly && rowHeaders.All(rowHeader => rowHeader.Count() == 1);
@@ -420,8 +437,12 @@ public partial class BaseAppointmentBook : UserControlEx {
 			for (var i = 0 + colIndexOffset; i < _grid.ColumnsCount; i++)
 				_grid[0, i] = null;
 
-			for (var dataColIndex = 0; dataColIndex < dataSourceColCount; dataColIndex++)
-				_grid[0, dataColIndex + colIndexOffset] = new SourceGrid.Cells.Header(_viewModel.GetColumnHeaderText(dataColIndex));
+			// A heading can span further columns, as a day's does over the columns its overlapping appointments need.
+			for (var dataColIndex = 0; dataColIndex < dataSourceColCount;) {
+				var span = Math.Clamp(_viewModel.GetColumnHeaderSpan(dataColIndex), 1, dataSourceColCount - dataColIndex);
+				_grid[0, dataColIndex + colIndexOffset] = new SourceGrid.Cells.Header(_viewModel.GetColumnHeaderText(dataColIndex)) { ColumnSpan = span };
+				dataColIndex += span;
+			}
 		}
 
 		for (var row = 0; row < dataSourceRowCount; row++) {
@@ -442,6 +463,15 @@ public partial class BaseAppointmentBook : UserControlEx {
 		}
 		_grid.PerformResize();
 	}
+
+	/// <summary>The narrowest and widest a data column may be for the number of columns shown. Zero leaves a limit unset.</summary>
+	protected virtual (int Minimum, int Maximum) GetColumnWidthLimits(int columns) => (MinColumnWidth, MaxColumnWidth);
+
+	/// <summary>The width left for data columns beside the time column.</summary>
+	protected int DataColumnsWidth => Math.Max(0, _grid.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - SystemInformation.Border3DSize.Width * 2 - (HasRowHeaders ? 2 * RowHeaderPixels : 0));
+
+	// The row header width at this control's DPI.
+	private int RowHeaderPixels => LogicalToDeviceUnits(RowHeaderColumnWidth);
 
 	protected virtual void BindEmptyCell(SourceGrid.Cells.Cell cell, CellViewModel cellDisplay, int col, int row) {
 		cell.View = new EmptyCellView(this);
@@ -464,27 +494,68 @@ public partial class BaseAppointmentBook : UserControlEx {
 	/// <summary>The background of an appointment cell, lightened to a pastel tint of the appointment colour.</summary>
 	protected internal virtual Color GetAppointmentFillColor(CellViewModel cellDisplay) {
 		var color = cellDisplay.BackColor;
-		if (!SoftenAppointmentColors)
-			return color;
-		var lightness = color.GetBrightness();
-		return lightness >= PastelLightness ? color : color.GetShade((PastelLightness - lightness) / (1 - lightness));
+		switch (Style) {
+			case VisualCalendarStyle.Solid:
+				return color;
+			case VisualCalendarStyle.Outline:
+				return SystemColors.Window;
+			case VisualCalendarStyle.Pastel when !SoftenAppointmentColors:
+				return color;
+			default:
+				return Pastel(color);
+		}
 	}
 
 	/// <summary>The text of an appointment cell, darkened from the appointment colour so the hue stays recognisable.</summary>
 	protected internal virtual Color GetAppointmentTextColor(CellViewModel cellDisplay) {
-		if (!SoftenAppointmentColors)
-			return cellDisplay.TextColor;
 		var color = cellDisplay.BackColor;
-		var lightness = color.GetBrightness();
-		return lightness <= InkLightness ? color : color.GetShade(-(lightness - InkLightness) / lightness);
+		switch (Style) {
+			case VisualCalendarStyle.Solid:
+				// Perceived brightness decides which of black and white reads on the appointment's own color.
+				return (color.R * 299 + color.G * 587 + color.B * 114) / 1000 >= 150 ? Color.Black : Color.White;
+			case VisualCalendarStyle.Pastel when !SoftenAppointmentColors:
+				return cellDisplay.TextColor;
+			default:
+				return Ink(color);
+		}
 	}
 
 	/// <summary>The outline of an unselected appointment, tinted from its fill.</summary>
 	protected internal virtual BorderLine GetAppointmentBorderLine(CellViewModel cellDisplay) {
 		var line = AppointmentBorderLine;
-		if (SoftenAppointmentColors)
-			line.Color = GetAppointmentFillColor(cellDisplay).GetShade(OutlineShade);
+		switch (Style) {
+			case VisualCalendarStyle.Solid:
+				line.Color = cellDisplay.BackColor.GetShade(-0.35f);
+				break;
+			case VisualCalendarStyle.Outline:
+				line.Color = Ink(cellDisplay.BackColor);
+				line.Width = Math.Max(2, line.Width);
+				break;
+			case VisualCalendarStyle.Minimal:
+				return BorderLine.NoBorder;
+			default:
+				if (SoftenAppointmentColors)
+					line.Color = GetAppointmentFillColor(cellDisplay).GetShade(OutlineShade);
+				break;
+		}
 		return line;
+	}
+
+	/// <summary>The line below a free time slot.</summary>
+	protected internal virtual BorderLine GetFreeSlotHorizontalLine()
+		=> Style == VisualCalendarStyle.Minimal ? new BorderLine(Color.FromArgb(226, 226, 226), 1) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dot } : HorizontalBorderLine;
+
+	/// <summary>The line to the right of a free time slot.</summary>
+	protected internal virtual BorderLine GetFreeSlotVerticalLine() => Style == VisualCalendarStyle.Minimal ? BorderLine.NoBorder : VerticalBorderLine;
+
+	private static Color Pastel(Color color) {
+		var lightness = color.GetBrightness();
+		return lightness >= PastelLightness ? color : color.GetShade((PastelLightness - lightness) / (1 - lightness));
+	}
+
+	private static Color Ink(Color color) {
+		var lightness = color.GetBrightness();
+		return lightness <= InkLightness ? color : color.GetShade(-(lightness - InkLightness) / lightness);
 	}
 
 	protected override void OnFontChanged(EventArgs args) {

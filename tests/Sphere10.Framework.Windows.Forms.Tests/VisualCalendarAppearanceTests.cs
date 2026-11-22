@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.WinFormsTester;
-using Sphere10.Framework.Windows.Forms.AppointmentBook;
-using AppointmentBookControl = Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook;
+using Sphere10.Framework.Windows.Forms.VisualCalendar;
+using VisualCalendarControl = Sphere10.Framework.Windows.Forms.VisualCalendar.VisualCalendar;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -25,28 +25,28 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class AppointmentBookAppearanceTests {
+public class VisualCalendarAppearanceTests {
 	[Test]
 	public void AppointmentScreenCaptureUsesAFixedSchedule() {
 		RunWithMessageLoop(async owner => {
-			using var screen = new AppointmentBookScreen { Dock = DockStyle.Fill };
+			using var screen = new VisualCalendarScreen { Dock = DockStyle.Fill };
 			owner.Controls.Add(screen);
 			await Task.Yield();
 			var source = CreateSchedule();
-			var book = Find<AppointmentBookControl>(screen, "AppointmentBook");
-			var unallocated = Find<UnallocatedBook>(screen, "UnallocatedBook");
+			var book = Find<VisualCalendarControl>(screen, "VisualCalendar");
+			var unallocated = Find<UnallocatedCalendar>(screen, "UnallocatedCalendar");
 			book.DataSource = source;
 			unallocated.DataSource = source;
 			book.SelectAppointment(source.GetAppointments(source.GetColumns().ElementAt(1)).First());
 			await Task.Yield();
-			var path = SaveCapture(screen, "appointment-book-screen");
+			var path = SaveCapture(screen, "visual-calendar-screen");
 			Assert.That(File.Exists(path), Is.True);
 
 			// Sub-hour slots show the hour beside its minutes, as the planning grid does.
 			book.SetTimePeriodType(TimePeriodType.DailyHalfHourly);
 			unallocated.SetTimePeriodType(TimePeriodType.DailyHalfHourly);
 			await Task.Yield();
-			Assert.That(File.Exists(SaveCapture(screen, "appointment-book-half-hourly")), Is.True);
+			Assert.That(File.Exists(SaveCapture(screen, "visual-calendar-half-hourly")), Is.True);
 
 			// Both books keep font-based rows after binding and resizing, including the tray's empty rows.
 			foreach (var grid in new[] { book, unallocated }.Select(control => control.Controls.OfType<SourceGrid.Grid>().Single()))
@@ -58,7 +58,7 @@ public class AppointmentBookAppearanceTests {
 	public void AppointmentsUseThePlanningGridStyle() {
 		RunWithMessageLoop(async owner => {
 			var source = CreateSchedule();
-			using var book = new AppointmentBookControl { Dock = DockStyle.Fill };
+			using var book = new VisualCalendarControl { Dock = DockStyle.Fill };
 			owner.Controls.Add(book);
 			book.DataSource = source;
 			book.SelectAppointment(source.GetAppointments(source.GetColumns().ElementAt(1)).First());
@@ -95,7 +95,7 @@ public class AppointmentBookAppearanceTests {
 	public void AppointmentColorsCanBeDrawnUnchanged() {
 		RunWithMessageLoop(async owner => {
 			var source = CreateSchedule();
-			using var book = new AppointmentBookControl { Dock = DockStyle.Fill, SoftenAppointmentColors = false };
+			using var book = new VisualCalendarControl { Dock = DockStyle.Fill, SoftenAppointmentColors = false };
 			owner.Controls.Add(book);
 			book.DataSource = source;
 			await Task.Yield();
@@ -105,11 +105,54 @@ public class AppointmentBookAppearanceTests {
 		});
 	}
 
+	[Test]
+	public void EachStyleDerivesItsLookFromTheAppointmentColor() {
+		RunWithMessageLoop(async owner => {
+			var source = CreateSchedule();
+			using var book = new VisualCalendarControl { Dock = DockStyle.Fill };
+			owner.Controls.Add(book);
+			book.DataSource = source;
+			await Task.Yield();
+			var grid = book.Controls.OfType<SourceGrid.Grid>().Single();
+			Assert.That(book.Style, Is.EqualTo(VisualCalendarStyle.Pastel), "The established look stays the default.");
+
+			// Model cell (column 0, row 2) is the magenta "Site inspection"; (1, 2) is a free slot.
+			book.Style = VisualCalendarStyle.Solid;
+			Assert.That(View(grid, 3, 2).BackColor.ToArgb(), Is.EqualTo(Color.Magenta.ToArgb()), "The solid style fills with the appointment's own color.");
+			Assert.That(View(grid, 3, 2).ForeColor.ToArgb(), Is.EqualTo(Color.White.ToArgb()), "Text takes whichever of black and white reads on it.");
+			Assert.That(Outline(grid, 3, 2).Color.GetBrightness(), Is.LessThan(Color.Magenta.GetBrightness()));
+
+			book.Style = VisualCalendarStyle.Outline;
+			Assert.That(View(grid, 3, 2).BackColor.ToArgb(), Is.EqualTo(SystemColors.Window.ToArgb()));
+			Assert.That(View(grid, 3, 2).ForeColor.GetHue(), Is.EqualTo(Color.Magenta.GetHue()).Within(2f));
+			Assert.That(Outline(grid, 3, 2).Width, Is.EqualTo(2));
+			Assert.That(Outline(grid, 3, 2).Color.GetHue(), Is.EqualTo(Color.Magenta.GetHue()).Within(2f));
+
+			book.Style = VisualCalendarStyle.Minimal;
+			Assert.That(View(grid, 3, 2).BackColor.GetBrightness(), Is.GreaterThanOrEqualTo(0.85f));
+			Assert.That(Outline(grid, 3, 2), Is.EqualTo(Sphere10.Framework.Drawing.BorderLine.NoBorder));
+			var free = (Sphere10.Framework.Drawing.RectangleBorder)View(grid, 1, 2).Border;
+			Assert.That(free.Right, Is.EqualTo(Sphere10.Framework.Drawing.BorderLine.NoBorder), "The minimal style has no column lines.");
+			Assert.That(free.Bottom.DashStyle, Is.EqualTo(System.Drawing.Drawing2D.DashStyle.Dot));
+
+			book.Style = VisualCalendarStyle.Pastel;
+			Assert.That(View(grid, 3, 2).BackColor.GetBrightness(), Is.GreaterThanOrEqualTo(0.85f));
+			Assert.That(((Sphere10.Framework.Drawing.RectangleBorder)View(grid, 1, 2).Border).Right, Is.EqualTo(SourceGrid.Cells.Views.ViewBase.DefaultBorder.Right));
+			foreach (var style in Enum.GetValues<VisualCalendarStyle>()) {
+				book.Style = style;
+				await Task.Yield();
+				Assert.That(File.Exists(SaveCapture(book, "visual-calendar-style-" + style.ToString().ToLowerInvariant())), Is.True);
+			}
+		});
+	}
+
+	private static Sphere10.Framework.Drawing.BorderLine Outline(SourceGrid.Grid grid, int row, int column) => ((Sphere10.Framework.Drawing.RectangleBorder)View(grid, row, column).Border).Top;
+
 	private static SourceGrid.Cells.Views.Cell View(SourceGrid.Grid grid, int row, int column) => (SourceGrid.Cells.Views.Cell)grid[row, column].View;
 
 	// A schedule with the saturated colours, multi-line details and lengths that the sample generator produces.
-	private static MyAppointmentBookDataSource CreateSchedule() {
-		var source = new MyAppointmentBookDataSource();
+	private static MyVisualCalendarDataSource CreateSchedule() {
+		var source = new MyVisualCalendarDataSource();
 		var day = source.StartTime;
 		var colors = new[] { Color.Magenta, Color.Red, Color.Gold, Color.OrangeRed, Color.DeepPink, Color.DodgerBlue, Color.LimeGreen, Color.DarkOrange };
 		var columns = Enumerable.Range(1, 8).Select(index => source.NewColumn($"Resource {index}", null)).ToArray();
@@ -141,13 +184,13 @@ public class AppointmentBookAppearanceTests {
 	}
 
 	private static string SaveCapture(Control control, string name) {
-		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "appointment-book-captures");
+		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "visual-calendar-captures");
 		Directory.CreateDirectory(directory);
 		using var image = new Bitmap(control.Width, control.Height);
 		control.DrawToBitmap(image, new Rectangle(Point.Empty, control.Size));
 		var path = Path.Combine(directory, name + ".png");
 		image.Save(path, ImageFormat.Png);
-		TestContext.Progress.WriteLine("Appointment book capture: " + path);
+		TestContext.Progress.WriteLine("Visual calendar capture: " + path);
 		return path;
 	}
 
@@ -172,7 +215,7 @@ public class AppointmentBookAppearanceTests {
 		};
 		using var watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		watchdog.Tick += (_, _) => {
-			failure = new AssertionException("The appointment book test timed out.");
+			failure = new AssertionException("The visual calendar test timed out.");
 			System.Windows.Forms.Application.ExitThread();
 		};
 		owner.Shown += async (_, _) => {

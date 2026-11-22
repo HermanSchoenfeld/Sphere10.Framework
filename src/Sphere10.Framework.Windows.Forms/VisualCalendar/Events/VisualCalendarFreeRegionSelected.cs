@@ -8,9 +8,9 @@
 
 using System;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public class AppointmentBookFreeRegionSelected : AppointmentBookEvent {
+public class VisualCalendarFreeRegionSelected : VisualCalendarEvent {
 
 	public AppointmentColumn Column { get; internal set; }
 

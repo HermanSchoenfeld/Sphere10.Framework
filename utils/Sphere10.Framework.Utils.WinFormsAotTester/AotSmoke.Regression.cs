@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.AppointmentBook;
+using Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
@@ -36,7 +36,7 @@ internal static partial class AotSmoke {
 		if (_case is "all" or "enums")
 			VerifyEnumControls();
 		if (_case is "all" or "appointment")
-			await VerifyAppointmentBook(main);
+			await VerifyVisualCalendar(main);
 		if (_case is "all" or "visualgrid")
 			await VerifyVisualGrid(main);
 		if (_case is "all" or "options")
@@ -92,15 +92,15 @@ internal static partial class AotSmoke {
 		return (TScreen)await main.ScreenHost.OpenScreenAsync(block, definition);
 	}
 
-	private static async Task VerifyAppointmentBook(BlockMainForm main) {
+	private static async Task VerifyVisualCalendar(BlockMainForm main) {
 		Record("AppointmentActivate");
-		var screen = await OpenRegistered<AppointmentBookScreen>(main);
+		var screen = await OpenRegistered<VisualCalendarScreen>(main);
 		await Task.Yield();
 		var controls = Descendants(screen).ToArray();
 		var time = controls.OfType<EnumComboBox>().Single(item => item.Name == "_timeViewSelector");
 		var filter = controls.OfType<EnumComboBox>().Single(item => item.Name == "_columnFilterComboBox");
-		var book = controls.OfType<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook>().Single(item => item.Name == "AppointmentBook");
-		var unallocated = controls.OfType<UnallocatedBook>().Single();
+		var book = controls.OfType<Sphere10.Framework.Windows.Forms.VisualCalendar.VisualCalendar>().Single(item => item.Name == "VisualCalendar");
+		var unallocated = controls.OfType<UnallocatedCalendar>().Single();
 		Guard.Ensure(time.Items.Count == 4 && filter.Items.Count == 3);
 		Guard.Ensure(book.DataSource != null && ReferenceEquals(book.DataSource, unallocated.DataSource));
 		Guard.Ensure(book.DataSource.GetColumns().Count() == 10);
@@ -110,8 +110,8 @@ internal static partial class AotSmoke {
 		await Task.Yield();
 		Guard.Ensure(time.Text == "By Half Hour");
 		Guard.Ensure(book.TimePeriodType == TimePeriodType.DailyHalfHourly && unallocated.TimePeriodType == TimePeriodType.DailyHalfHourly);
-		filter.SelectedEnum = AppointmentBookViewModelFilter.All;
-		Guard.Ensure(book.ColumnFilter == AppointmentBookViewModelFilter.All);
+		filter.SelectedEnum = VisualCalendarViewModelFilter.All;
+		Guard.Ensure(book.ColumnFilter == VisualCalendarViewModelFilter.All);
 		screen.Refresh();
 		CaptureControl(screen, "appointment.png");
 		Record("AppointmentUnallocatedCount=" + unallocatedCount);

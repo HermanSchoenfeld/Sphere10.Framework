@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public class DataSourceToUnallocatedViewModelConverter : DataSourceToViewModelConverter {
-	public override AppointmentBookViewModel Convert(IAppointmentBookDataSource dataSource, DateTime timePeriodStart, TimePeriodType timeView, AppointmentBookViewModelFilter columnFilter) {
+	public override VisualCalendarViewModel Convert(IVisualCalendarDataSource dataSource, DateTime timePeriodStart, TimePeriodType timeView, VisualCalendarViewModelFilter columnFilter) {
 		DateTime startTime;
 		DateTime endTime;
 		switch (timeView) {
@@ -28,7 +28,7 @@ public class DataSourceToUnallocatedViewModelConverter : DataSourceToViewModelCo
 				break;
 		}
 
-		return new UnallocatedBookViewModel(
+		return new UnallocatedCalendarViewModel(
 			"Unallocated",
 			from appointment in dataSource.GetAppointments(new UnallocatedColumn())
 			select Convert(appointment),

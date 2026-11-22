@@ -11,15 +11,15 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 internal class BaseCellController : SourceGrid.Cells.Controllers.ControllerBase {
 
-	internal BaseCellController(BaseAppointmentBook owner) {
+	internal BaseCellController(BaseVisualCalendar owner) {
 		Owner = owner;
 	}
 
-	protected BaseAppointmentBook Owner { get; set; }
+	protected BaseVisualCalendar Owner { get; set; }
 
 	protected Cursor CurrentCursor {
 		get { return Owner.Cursor; }

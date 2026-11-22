@@ -4,7 +4,7 @@ The tester's demonstration screens, with the sample entities, data sources, help
 
 Each demonstration is an `ApplicationScreen`, except the few forms and user controls noted in the table. `WinFormsDemoPlugin` registers the Workspace and Notes screens, which exercise screen hosting, activation modes, empty and permanent screens and the navigation samples. `WinFormsComponentDemoPlugin` registers the Controls, Data And Collections, Integration and Utilities blocks. Both plugins are in the project folder. A screen that remembers preferences declares a nested `SettingsObject` subclass and overrides `ScreenSettings` to return it. Those nested settings types, enums and records are not listed below. Screens that write chart or log output register it with `DemoLogOutputLifetime` from [Lifecycle](../Lifecycle/README.md), the wizard pages are in [Wizard](../Wizard/README.md), and the images and sounds come from [Resources](../Resources/README.md).
 
-The sample types here are test data rather than reusable components. `Employee`, `Address` and `TestCrudDataSource` feed the Visual Grid and CRUD examples, `MyAppointmentBookDataSource` feeds the appointment book, and `SyntheticByteStream` gives the hex editor a 512 MiB document without allocating it. `ComponentRegistryScreen.cs` and `TestLauncherScreen.cs` are fully commented out and declare no types. `FakeTransparentForm` and `DataSource1<TItem>` are not referenced by any screen.
+The sample types here are test data rather than reusable components. `Employee`, `Address` and `TestCrudDataSource` feed the Visual Grid and CRUD examples, `MyVisualCalendarDataSource` feeds the visual calendar, and `SyntheticByteStream` gives the hex editor a 512 MiB document without allocating it. `ComponentRegistryScreen.cs` and `TestLauncherScreen.cs` are fully commented out and declare no types. `FakeTransparentForm` and `DataSource1<TItem>` are not referenced by any screen.
 
 ## Contents
 
@@ -12,7 +12,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 |---|---|---|
 | [`Address`](Address.cs) | class | Street, city, post code and state values of the sample `Employee`. |
 | [`ApplicationServicesTestScreen`](ApplicationServicesTestScreen.cs) | class | Lists the owning application, its logger and each block's screen registrations, and writes a message through the application logger. |
-| [`AppointmentBookScreen`](AppointmentBookScreen.cs) | class | Appointment book with an unallocated-work tray beside it over `MyAppointmentBookDataSource`, using a pastel category palette and logging selection, drag and resize events. |
+| [`VisualCalendarScreen`](VisualCalendarScreen.cs) | class | Visual calendar in its day, week and month views and its four styles, with an unallocated-work tray beside it over `MyVisualCalendarDataSource`, logging selection, drag and resize events. Its data selector switches to two calendars of recurring events shown through `CalendarViewDataSource`, where a drag moves the whole event. |
 | [`BlockSelectorStylesScreen`](BlockSelectorStylesScreen.cs) | class | Switches the window's block selector shape and colour style live and shows every combination side by side on sample task panes. |
 | [`BloomFilterAnalysisScreen`](BloomFilterAnalysisScreen.cs) | class | Compares `BloomFilterMath` length and error estimates for an item count, error rate and round count in bit and byte units. |
 | [`CBACSVConverterScreen`](CBACSVConverterScreen.cs) | class | Rewrites the dates of a bank CSV export through the Framework `CsvReader` without breaking quoted fields. |
@@ -45,7 +45,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`LoggingTestScreen`](LoggingTestScreen.cs) | class | Writes sample messages and exceptions to the output chosen in a `LogOutputSelectorControl` and a text-box preview logger. |
 | [`MerkleTreeTestScreen`](MerkleTreeTestScreen.cs) | class | Builds Merkle trees, shows partition arithmetic and runs cancellable comparisons of the tree implementations. |
 | [`MiscTestScreen`](MiscTestScreen.cs) | class | Assorted experiments with list operations, scoped contexts, AES, compression, path templates, database creation, MAC addresses and member mapping. |
-| [`MyAppointmentBookDataSource`](MyAppointmentBookDataSource.cs) | class | Synthetic in-memory `IAppointmentBookDataSource` of resources and appointments. |
+| [`MyVisualCalendarDataSource`](MyVisualCalendarDataSource.cs) | class | Synthetic in-memory `IVisualCalendarDataSource` of resources and appointments. |
 | [`ObjectSpaceScreen`](ObjectSpaceScreen.cs) | class | Creates and edits a memory-stream ObjectSpace of sample accounts and identities, and saves or reopens it as a snapshot file. |
 | [`ObjectSpaceScreenBase`](ObjectSpaceScreenBase.cs) | class | Designer base that types `ScreenSettings` as the ObjectSpace screen's nested settings class. |
 | [`ObservableCollectionsTestScreen`](ObservableCollectionsTestScreen.cs) | class | Logs single-item and range notifications from an `ObservableExtendedList` and an `ObservableDictionary` beside their values. |
@@ -64,7 +64,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`ScreenHostingEmptyTestScreen`](ScreenHostingEmptyTestScreen.cs) | class | Single-instance empty-workspace screen that the host retains between uses. |
 | [`ScreenHostingPermanentTestScreen`](ScreenHostingPermanentTestScreen.cs) | class | Permanent notes screen whose lifetime the host controls. |
 | [`ScreenHostingPlainTestScreen`](ScreenHostingPlainTestScreen.cs) | class | Content-only screen for checking docking without menu or toolbar rows. |
-| [`ScreenHostingPreferencesEditor`](ScreenHostingPreferencesEditor.cs) | class | `DefaultCrudEntityEditor` with a live preview, used as the GPU inspector's settings editor. |
+| [`ScreenHostingPreferencesEditor`](ScreenHostingPreferencesEditor.cs) | class | `VisualEntityEditor` with a live preview, used as the GPU inspector's settings editor. |
 | [`ScreenHostingSettingsTestScreen`](ScreenHostingSettingsTestScreen.cs) | class | Single-instance lifecycle screen registered as the Workspace default. |
 | [`ScreenHostingTestScreen`](ScreenHostingTestScreen.cs) | class | Designable lifecycle screen shared by the instance, permanent and empty-screen examples, showing its instance number, show and hide events and a checkbox that cancels hiding. |
 | [`SettingsTest`](SettingsTest.cs) | class | Screen preferences declared through attributes beside standalone user and global `Test1Settings` records. |
@@ -85,7 +85,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`UserControl1`](CustomTestDropDownControl.cs) | class | Composite selection editor hosted in the custom dropdown example. |
 | [`ValidationIndicatorTestScreen`](ValidationIndicatorTestScreen.cs) | class | `ValidationIndicator` states set manually and by completed asynchronous validation, updated on the UI thread. |
 | [`VisualGridDetailSamplePanel`](VisualGridDetailSamplePanel.cs) | class | Designer-editable image-and-description panel shown as a Visual Grid row detail. |
-| [`VisualGridDetailsDemo`](VisualGridDetailsDemo.cs) | class | Visual Grid with expandable row details holding recursive child grids, the sample panel and an editable text box. |
+| [`VisualGridDetailsDemo`](VisualGridDetailsDemo.cs) | class | Visual Grid with source-owned hierarchy, recursive child grids and custom detail panels, including a sample panel and an editable text box. |
 | [`VisualGridTestScreen`](VisualGridTestScreen.cs) | class | Employee CRUD in a `VisualGrid` with reference editors, live snapshots from a polling data source and saved grid preferences. |
 | [`VisualInheritanceFixerBaseForm`](VisualInheritanceFixerBaseForm.cs) | class | Base form with designer-defined menu, toolbar and status strip items. |
 | [`VisualInheritanceFixerSubForm`](VisualInheritanceFixerSubForm.cs) | class | Form derived from `VisualInheritanceFixerBaseForm` that adds its own menu, toolbar and status items. |

@@ -10,23 +10,23 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using Sphere10.Framework.Windows.Forms.AppointmentBook;
+using Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>The appointment example's synthetic, in-memory scheduling data source.</summary>
-public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
-	private readonly IDictionary<AppointmentColumn, List<Appointment>> _appointmentBook;
+public class MyVisualCalendarDataSource : IVisualCalendarDataSource {
+	private readonly IDictionary<AppointmentColumn, List<Appointment>> _visualCalendar;
 	private readonly IList<Appointment> _unallocatedAppointments;
 
-	public MyAppointmentBookDataSource() {
-		_appointmentBook = new Dictionary<AppointmentColumn, List<Appointment>>();
+	public MyVisualCalendarDataSource() {
+		_visualCalendar = new Dictionary<AppointmentColumn, List<Appointment>>();
 		_unallocatedAppointments = new List<Appointment>();
 		StartTime = DateTime.Now.ToMidnight();
 		EndTime = StartTime.ToEndOfDay();
 	}
 
-	// IAppointmentBookDataSource
+	// IVisualCalendarDataSource
 	public DateTime StartTime {
 		get; private set;
 	}
@@ -40,7 +40,7 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 			Name = name,
 			UserObject = userObject
 		};
-		_appointmentBook.Add(column, new List<Appointment>());
+		_visualCalendar.Add(column, new List<Appointment>());
 		return column;
 	}
 
@@ -72,19 +72,19 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 				// Column to Column
 				CheckColumnExists(sourceColumn);
 				CheckColumnExists(destColumn);
-				_appointmentBook[sourceColumn].Remove(appointment);
-				_appointmentBook[destColumn].Add(appointment);
+				_visualCalendar[sourceColumn].Remove(appointment);
+				_visualCalendar[destColumn].Add(appointment);
 			}
 		} else if (!sourceColumnIsUnallocated) {
 			//	Column to UnallocatedColumn
 			CheckColumnExists(sourceColumn);
-			_appointmentBook[sourceColumn].Remove(appointment);
+			_visualCalendar[sourceColumn].Remove(appointment);
 			_unallocatedAppointments.Add(appointment);
 		} else {
 			//	UnallocatedColumn to Column
 			CheckColumnExists(destColumn);
 			_unallocatedAppointments.Remove(appointment);
-			_appointmentBook[destColumn].Add(appointment);
+			_visualCalendar[destColumn].Add(appointment);
 		}
 
 		appointment.StartTime = newStartTime;
@@ -110,7 +110,7 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 			_unallocatedAppointments.Add(appointment);
 		else {
 			CheckColumnExists(column);
-			_appointmentBook[column].Add(appointment);
+			_visualCalendar[column].Add(appointment);
 		}
 		return appointment;
 	}
@@ -123,11 +123,11 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 			_unallocatedAppointments.Remove(appointment);
 		else {
 			CheckColumnExists(column);
-			_appointmentBook[column].Remove(appointment);
+			_visualCalendar[column].Remove(appointment);
 		}
 	}
 
-	public virtual IEnumerable<AppointmentColumn> GetColumns() => _appointmentBook.Keys;
+	public virtual IEnumerable<AppointmentColumn> GetColumns() => _visualCalendar.Keys;
 
 	public IEnumerable<Appointment> GetAppointments(AppointmentColumn column) {
 		if (column == null)
@@ -137,7 +137,7 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 			return _unallocatedAppointments;
 		else {
 			CheckColumnExists(column);
-			return _appointmentBook[column];
+			return _visualCalendar[column];
 		}
 	}
 
@@ -151,7 +151,7 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 
 		CheckColumnExists(column);
 		var overlappingAppointments =
-			_appointmentBook[column]
+			_visualCalendar[column]
 				.Where(a => startTime < a.EndTime && endTime > a.StartTime)
 				.Except(appointment);
 
@@ -160,7 +160,7 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 
 	// Auxillary
 	void CheckColumnExists(AppointmentColumn column) {
-		if (!_appointmentBook.ContainsKey(column))
+		if (!_visualCalendar.ContainsKey(column))
 			throw new SoftwareException("Column '{0}' does not exist", column.Name);
 	}
 }

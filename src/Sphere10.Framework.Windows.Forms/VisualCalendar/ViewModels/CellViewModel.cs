@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public sealed class CellViewModel {
 

@@ -6,10 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 internal class EmptyCellController : BaseCellController {
-	internal EmptyCellController(BaseAppointmentBook owner) : base(owner) {
+	internal EmptyCellController(BaseVisualCalendar owner) : base(owner) {
 	}
 
 

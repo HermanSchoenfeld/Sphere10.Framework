@@ -63,7 +63,7 @@ public partial class BlockSelectorStylesScreen : ApplicationScreen {
 		var font = new Font("Tahoma", 8.25F);
 		Disposables.Add(font);
 		var expando = new Expando { Text = "Layout", Animate = false, AutoLayout = true, Font = font };
-		foreach (var item in new[] { "Tab Control", "Expandable Panels", "Appointment Book" })
+		foreach (var item in new[] { "Tab Control", "Expandable Panels", "Visual Calendar" })
 			expando.Items.Add(new TaskItem { Text = item, BackColor = Color.Transparent, UseVisualStyleBackColor = false });
 		pane.Expandos.Add(expando);
 		foreach (var (text, index) in SampleBlocks.Select((text, index) => (text, index))) {

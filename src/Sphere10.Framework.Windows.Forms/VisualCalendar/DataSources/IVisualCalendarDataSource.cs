@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public interface IAppointmentBookDataSource {
+public interface IVisualCalendarDataSource {
 	void SetTimeRange(DateTime startTime, DateTime endTime);
 
 	void Reschedule(Appointment appointment, AppointmentColumn sourceColumn, AppointmentColumn destColumn, DateTime newStartTime, DateTime newEndTime);

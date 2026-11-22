@@ -9,12 +9,12 @@
 using System;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 [ToolboxItem(true)]
-public class UnallocatedBook : AppointmentBook {
+public class UnallocatedCalendar : VisualCalendar {
 
-	public UnallocatedBook() : base(new DataSourceToUnallocatedViewModelConverter()) {
+	public UnallocatedCalendar() : base(new DataSourceToUnallocatedViewModelConverter()) {
 		HasRowHeaders = false;
 		_grid.AutoStretchColumnsToFitWidth = true;
 	}
@@ -24,10 +24,10 @@ public class UnallocatedBook : AppointmentBook {
 		set { base.CanResize = value; }
 	}
 
-	public new virtual UnallocatedBookViewModel ViewModel {
-		get { return base.ViewModel as UnallocatedBookViewModel; }
+	public new virtual UnallocatedCalendarViewModel ViewModel {
+		get { return base.ViewModel as UnallocatedCalendarViewModel; }
 		set {
-			base.ViewModel = value as UnallocatedBookViewModel; // base will bind
+			base.ViewModel = value as UnallocatedCalendarViewModel; // base will bind
 		}
 	}
 

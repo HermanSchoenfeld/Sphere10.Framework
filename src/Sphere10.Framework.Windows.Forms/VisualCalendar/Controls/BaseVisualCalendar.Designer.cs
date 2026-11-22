@@ -6,14 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-partial class BaseAppointmentBook {
+partial class BaseVisualCalendar {
 	/// <summary>
 	/// Required designer variable.
 	/// </summary>
-	private System.ComponentModel.IContainer _components = null;
-	internal SourceGrid.Grid _grid;
+	private System.ComponentModel.IContainer components = null;
 
 	/// <summary>
 	/// Clean up any resources being used.
@@ -21,13 +20,14 @@ partial class BaseAppointmentBook {
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
-			_components?.Dispose();
 			ReleaseAppointmentFonts();
+			components?.Dispose();
 		}
 		base.Dispose(disposing);
 	}
 
-	// Component Designer generated code
+	#region Component Designer generated code
+
 	/// <summary>
 	/// Required method for Designer support - do not modify
 	/// the contents of this method with the code editor.
@@ -53,13 +53,17 @@ partial class BaseAppointmentBook {
 		this._grid.TabStop = true;
 		this._grid.ToolTipText = "";
 		//
-		// BaseAppointmentBook
+		// BaseVisualCalendar
 		//
 		this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		this.Controls.Add(this._grid);
-		this.Name = "BaseAppointmentBook";
+		this.Name = "BaseVisualCalendar";
 		this.Size = new System.Drawing.Size(423, 327);
 		this.ResumeLayout(false);
 	}
+
+	#endregion
+
+	internal SourceGrid.Grid _grid;
 }

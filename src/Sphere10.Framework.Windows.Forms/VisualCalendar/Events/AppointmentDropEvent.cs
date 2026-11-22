@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public class AppointmentDropEvent : AppointmentEvent {
 	public AppointmentColumn TargetColumn { get; internal set; }

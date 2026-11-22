@@ -8,7 +8,7 @@
 
 using System.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public class SuperscriptRowHeaderCellView : SourceGrid.Cells.Views.RowHeader {
 	public SuperscriptRowHeaderCellView() {

@@ -8,9 +8,9 @@
 
 using System;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public class AppointmentBookEvent : EventArgs {
-	public AppointmentBook Source { get; internal set; }
+public class VisualCalendarEvent : EventArgs {
+	public VisualCalendar Source { get; internal set; }
 }
 

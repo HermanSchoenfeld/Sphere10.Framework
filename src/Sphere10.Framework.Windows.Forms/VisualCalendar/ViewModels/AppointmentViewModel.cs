@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public sealed class AppointmentViewModel {
 
@@ -29,6 +29,9 @@ public sealed class AppointmentViewModel {
 	}
 	public Guid ID { get; private set; }
 	public ColumnViewModel Column { get; internal set; }
+
+	/// <summary>The data source's column the appointment belongs to when it is displayed in a day column of the week view; otherwise null.</summary>
+	public AppointmentColumn SourceColumn { get; internal set; }
 	public DateTime VisibleStartTime { get; internal set; }
 	public DateTime VisibleEndTime { get; internal set; }
 	public Color Color { get; internal set; }

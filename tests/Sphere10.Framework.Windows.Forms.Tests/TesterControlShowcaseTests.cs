@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.WinFormsTester;
-using Sphere10.Framework.Windows.Forms.AppointmentBook;
+using Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -28,7 +28,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 public class TesterControlShowcaseTests {
 	[Test]
 	public void AppointmentsCanMoveThroughTheUnallocatedColumnWithoutReservingAResource() {
-		var source = new MyAppointmentBookDataSource();
+		var source = new MyVisualCalendarDataSource();
 		var resource = source.NewColumn("Room A", null);
 		var unallocated = new UnallocatedColumn();
 		var start = source.StartTime.AddHours(9);

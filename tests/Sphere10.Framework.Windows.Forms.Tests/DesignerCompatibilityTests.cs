@@ -28,10 +28,17 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture, NonParallelizable, Apartment(ApartmentState.STA)]
 public class DesignerCompatibilityTests {
 	private static readonly Type[] DesignedTypes = [
+		typeof(EnterTextDialog),
 		typeof(ImageAttachmentSelectorControl), typeof(ProductProductReportBugDialog), typeof(ProductProductRequestFeatureDialog),
-		typeof(ProductProductSendCommentsDialog), typeof(ProductAboutBox), typeof(ApplicationBar), typeof(BlockMainForm),
+		typeof(ProductProductSendCommentsDialog), typeof(ProductAboutBox), typeof(ProductUpdateDialog), typeof(ApplicationBar), typeof(BlockMainForm),
 		typeof(Utils.WinFormsTester.BlockSelectorStylesScreen), typeof(Utils.WinFormsTester.ExplorerBarDesignerScreen),
-		typeof(Utils.WinFormsTester.ExplorerBarThemeExportForm)
+		typeof(Utils.WinFormsTester.ExplorerBarThemeExportForm), typeof(Utils.WinFormsTester.VisualCalendarScreen),
+		typeof(HexEditorControl),
+		// The day/week/month and unallocated calendars are designed on the surface of the base they inherit.
+		typeof(VisualCalendar.BaseVisualCalendar), typeof(VisualCalendar.VisualCalendar), typeof(VisualCalendar.UnallocatedCalendar),
+		typeof(VisualCalendar.CalendarRecurrenceEditor),
+		// Internal to the library, so it is named rather than referenced.
+		typeof(WindowTitleBarButtons).Assembly.GetType("Sphere10.Framework.Windows.Forms.WindowTitleBarButtonForm", true)
 	];
 
 	[TestCaseSource(nameof(DesignedTypes))]
@@ -46,7 +53,7 @@ public class DesignerCompatibilityTests {
 
 	[TestCaseSource(nameof(DesignedTypes))]
 	public void TheDesignerFileHasTheGeneratedShape(Type type) {
-		var source = File.ReadAllText(DesignerFile(type));
+		var source = File.ReadAllText(DesignerFile(ref type));
 		Assert.That(source, Does.Match(@"private System\.ComponentModel\.IContainer components = null;"));
 		Assert.That(source, Does.Match(@"protected override void Dispose\(bool disposing\)"));
 		Assert.That(source, Does.Match(@"#region (Windows Form|Component) Designer generated code"));
@@ -63,13 +70,22 @@ public class DesignerCompatibilityTests {
 	}
 
 	// The designer file beside the type's source in Sphere10.Framework.Windows.Forms or the WinForms tester, found from this file's own
-	// path, since test binaries can be built outside the checkout. Older designer files are named *.designer.cs.
-	private static string DesignerFile(Type type, [CallerFilePath] string thisFile = "") {
+	// path, since test binaries can be built outside the checkout. Older designer files are named *.designer.cs. A type with no
+	// designer file of its own is designed on its nearest base that has one, and that base becomes the type whose fields are checked.
+	private static string DesignerFile(ref Type type, [CallerFilePath] string thisFile = "") {
 		var root = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", ".."));
 		var projects = new[] { Path.Combine(root, "src", "Sphere10.Framework.Windows.Forms"), Path.Combine(root, "utils", "Sphere10.Framework.Utils.WinFormsTester") };
-		var matches = projects.SelectMany(project => Directory.GetFiles(project, "*.cs", SearchOption.AllDirectories))
-			.Where(path => string.Equals(Path.GetFileName(path), type.Name + ".Designer.cs", StringComparison.OrdinalIgnoreCase)).ToArray();
-		Assert.That(matches, Has.Length.EqualTo(1), $"{type.Name}.Designer.cs");
-		return matches[0];
+		var files = projects.SelectMany(project => Directory.GetFiles(project, "*.cs", SearchOption.AllDirectories)).ToArray();
+		var requested = type;
+		for (var designed = type; designed != null && designed.Assembly == requested.Assembly; designed = designed.BaseType) {
+			var matches = files.Where(path => string.Equals(Path.GetFileName(path), designed.Name + ".Designer.cs", StringComparison.OrdinalIgnoreCase)).ToArray();
+			if (matches.Length == 0)
+				continue;
+			Assert.That(matches, Has.Length.EqualTo(1), $"{designed.Name}.Designer.cs");
+			type = designed;
+			return matches[0];
+		}
+		Assert.Fail($"{requested.Name} and its bases have no designer file.");
+		return null;
 	}
 }

@@ -6,13 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+using System;
 
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
+
+/// <summary>One column of a calendar. In a resource view every column shows the calendar's own day and stands for a person, room or
+/// calendar. In a day-per-column view, such as a week, each column sets <see cref="Date"/> and shows that day.</summary>
 public class AppointmentColumn {
 
 	public string Name { get; set; }
 
 	public object UserObject { get; set; }
 
-}
+	/// <summary>The day this column shows in the time-of-day views, or null to show the calendar's own day. The monthly view ignores it.</summary>
+	public DateTime? Date { get; set; }
 
+}

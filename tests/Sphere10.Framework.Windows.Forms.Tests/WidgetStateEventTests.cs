@@ -19,8 +19,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.ComponentModel;
-using Sphere10.Framework.Windows.Forms.AppointmentBook;
-using AppointmentBookControl = Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook;
+using Sphere10.Framework.Windows.Forms.VisualCalendar;
+using VisualCalendarControl = Sphere10.Framework.Windows.Forms.VisualCalendar.VisualCalendar;
 using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
@@ -181,10 +181,10 @@ public class WidgetStateEventTests {
 	public void AppointmentDeselectionClearsTheCommittedSelectionBeforeNotification() {
 		RunWithMessageLoop(async owner => {
 			var start = new DateTime(2026, 1, 1);
-			var source = new AppointmentBookDataSource();
+			var source = new VisualCalendarDataSource();
 			var column = source.NewColumn("Room", null);
 			var appointment = source.NewAppointment(column, "First", start.AddHours(9), start.AddHours(10), "Meeting", "", "", "", Color.CornflowerBlue, null);
-			using var book = new AppointmentBookControl { Dock = DockStyle.Fill };
+			using var book = new VisualCalendarControl { Dock = DockStyle.Fill };
 			book.SetTimePeriod(TimePeriodType.DailyHourly, start);
 			book.DataSource = source;
 			owner.Controls.Add(book);
@@ -204,10 +204,10 @@ public class WidgetStateEventTests {
 			var rows = Rows("Choice");
 			var source = new ArrayDataSource<Row>();
 			source.ReplaceData(rows);
-			var binding = new CrudReferenceBinding<Row>(source, new[] {
+			var binding = new VisualGridReferenceBinding<Row>(source, new[] {
 				new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), PropertyValue = row => row.Name }
 			}, row => row.Name);
-			using var picker = new CrudReferencePicker(binding, null);
+			using var picker = new VisualGridReferencePicker(binding, null);
 			owner.Controls.Add(picker);
 			await picker.LoadItemsAsync();
 			var accepted = new List<object>();

@@ -99,8 +99,8 @@
 //			OpenForm<CompressionTestForm>();
 //		}
 
-//		private void _appointmentBookButton_Click(object sender, EventArgs e) {
-//			OpenForm<AppointmentBookForm>();
+//		private void _visualCalendarButton_Click(object sender, EventArgs e) {
+//			OpenForm<VisualCalendarForm>();
 //		}
 
 //		private void _flagsCheckBoxListTesterButton_Click(object sender, EventArgs e) {

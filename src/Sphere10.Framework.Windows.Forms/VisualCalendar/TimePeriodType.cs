@@ -8,7 +8,7 @@
 
 using System.ComponentModel;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public enum TimePeriodType {
 	[Description("By Hour")] DailyHourly,

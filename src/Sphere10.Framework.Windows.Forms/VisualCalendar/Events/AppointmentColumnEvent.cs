@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public class AppointmentColumnEvent : AppointmentBookEvent {
+public class AppointmentColumnEvent : VisualCalendarEvent {
 	public AppointmentColumn SourceColumn { get; internal set; }
 }
 

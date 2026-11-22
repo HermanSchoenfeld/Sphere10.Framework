@@ -11,12 +11,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 public class DataSourceToViewModelConverter {
 
-	public virtual AppointmentBookViewModel Convert(IAppointmentBookDataSource dataSource, DateTime timePeriodStart, TimePeriodType timeView, AppointmentBookViewModelFilter columnFilter) {
-		return new AppointmentBookViewModel(
+	public virtual VisualCalendarViewModel Convert(IVisualCalendarDataSource dataSource, DateTime timePeriodStart, TimePeriodType timeView, VisualCalendarViewModelFilter columnFilter) {
+		return new VisualCalendarViewModel(
 			ConvertColumns(dataSource),
 			timePeriodStart,
 			timeView,
@@ -24,7 +24,31 @@ public class DataSourceToViewModelConverter {
 		);
 	}
 
-	protected virtual IEnumerable<ColumnViewModel> ConvertColumns(IAppointmentBookDataSource dataSource) {
+	/// <summary>Lays one week out with a column for each day. The appointments of every data source column share their day's column;
+	/// those that overlap go to further columns of that day, each filled from the left.</summary>
+	public virtual VisualCalendarViewModel ConvertWeek(IVisualCalendarDataSource dataSource, DateTime weekStart, TimePeriodType timeView, VisualCalendarViewModelFilter columnFilter) {
+		var all = dataSource.GetColumns().SelectMany(column => dataSource.GetAppointments(column).Select(appointment => (Column: column, Appointment: appointment))).ToArray();
+		var columns = new List<ColumnViewModel>();
+		for (var day = weekStart.Date; day < weekStart.Date.AddDays(7); day = day.AddDays(1)) {
+			var nextDay = day.AddDays(1);
+			var lanes = new List<List<AppointmentViewModel>> { new() };
+			foreach (var item in all.Where(item => item.Appointment.StartTime < nextDay && (item.Appointment.EndTime > day || item.Appointment.StartTime >= day))
+				.OrderBy(item => item.Appointment.StartTime).ThenBy(item => item.Appointment.Subject, StringComparer.CurrentCultureIgnoreCase)) {
+				var lane = lanes.FirstOrDefault(candidate => candidate.Count == 0 || candidate[^1].AppointmentDataObject.EndTime <= item.Appointment.StartTime);
+				if (lane == null)
+					lanes.Add(lane = new List<AppointmentViewModel>());
+				var viewModel = Convert(item.Appointment);
+				viewModel.SourceColumn = item.Column;
+				lane.Add(viewModel);
+			}
+			// Only a day's first column carries its name, so the further ones read as part of the same day.
+			for (var index = 0; index < lanes.Count; index++)
+				columns.Add(new ColumnViewModel(index == 0 ? day.ToString("ddd d MMM") : string.Empty, lanes[index].ToArray(), new DayColumn { Name = day.ToString("ddd d MMM"), Date = day }));
+		}
+		return new VisualCalendarViewModel(columns, weekStart.Date, timeView, columnFilter);
+	}
+
+	protected virtual IEnumerable<ColumnViewModel> ConvertColumns(IVisualCalendarDataSource dataSource) {
 		var appointmentColumnViewModels = new List<ColumnViewModel>();
 		foreach (var column in dataSource.GetColumns()) {
 			var appointmentViewModels = new List<AppointmentViewModel>();

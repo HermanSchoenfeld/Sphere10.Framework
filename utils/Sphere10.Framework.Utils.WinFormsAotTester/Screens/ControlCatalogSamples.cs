@@ -18,7 +18,6 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Data;
 using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.Crud;
 using Sphere10.Framework.Windows.Forms.DataVisualization;
 using Sphere10.Framework.Windows.Forms.Firebird;
 using Sphere10.Framework.Windows.Forms.MSSQL;
@@ -27,7 +26,7 @@ using Sphere10.Framework.Windows.Forms.Oracle;
 using Sphere10.Framework.Windows.Forms.PostgreSQL;
 using Sphere10.Framework.Windows.Forms.Sqlite;
 using Sphere10.Framework.Windows.Forms.TextBoxes;
-using Book = Sphere10.Framework.Windows.Forms.AppointmentBook;
+using Book = Sphere10.Framework.Windows.Forms.VisualCalendar;
 using SourceGrid = Sphere10.Framework.Windows.Forms.SourceGrid;
 using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
@@ -56,9 +55,9 @@ public static class ControlCatalogSamples {
 			Sample<ComboBoxEx>("Choices", () => Items(new ComboBoxEx())),
 			Sample<ConnectionBarBase>("Database", () => Composed(new ConnectionBarBase()), "Concrete designer base; provider-specific behavior is available under DatabaseConnectionBar."),
 			Sample<ConnectionPanelBase>("Database", () => Composed(new ConnectionPanelBase()), "Concrete designer base; provider-specific behavior is available under DatabaseConnectionPanel."),
-			Window<CrudDialog>(CreateCrudDialog, "Edit an isolated in-memory employee list; no application data is used."),
-			Window<CrudEntityEditorDialog>(CreateCrudEditorDialog, "Inspect an isolated employee using the real native CRUD entity dialog."),
-			Sample<CrudReferencePicker>("Data", () => new CrudReferencePicker(CreateReferenceBinding(), null), "Search and select an employee from the in-memory list."),
+			Window<VisualGridDialog>(CreateVisualGridDialog, "Edit an isolated in-memory employee list; no application data is used."),
+			Window<VisualEntityEditorDialog>(CreateCrudEditorDialog, "Inspect an isolated employee using the real native CRUD entity dialog."),
+			Sample<VisualGridReferencePicker>("Data", () => new VisualGridReferencePicker(CreateReferenceBinding(), null), "Search and select an employee from the in-memory list."),
 			Sample<CustomComboBox>("Choices", () => new CustomComboBoxScreen(), "Open both custom dropdowns, edit their borrowed controls, then reopen them."),
 			Sample<DatabaseConnectionBar>("Database", () => new ConnectionBarTestScreen(), "Configure a connection without connecting automatically; testing a connection is an explicit action."),
 			Sample<DatabaseConnectionPanel>("Database", () => new ConnectionPanelTestScreen(), "Choose a database provider and edit its parameters. No connection opens automatically."),
@@ -77,7 +76,7 @@ public static class ControlCatalogSamples {
 			Sample<FirebirdEmbeddedConnectionBar>("Database providers", () => new FirebirdEmbeddedConnectionBar(), "Edit local sample connection parameters. Selecting or editing this control does not connect to a database."),
 			Sample<FirebirdEmbeddedConnectionPanel>("Database providers", () => new FirebirdEmbeddedConnectionPanel(), "Edit local sample connection parameters. Selecting or editing this control does not connect to a database."),
 			Sample<DecimalBox>("Numbers", () => new DecimalBox { Text = "123.45" }),
-			Sample<DefaultCrudEntityEditor>("Data", CreateEntityEditor, "Edit the sample employee's properties; the sample is private to this view."),
+			Sample<VisualEntityEditor>("Data", CreateEntityEditor, "Edit the sample employee's properties; the sample is private to this view."),
 			Sample<DefaultWinFormsWizardScreen>("Wizards", () => Composed(new DefaultWinFormsWizardScreen()), "Concrete dictionary-model wizard screen, shown as a composed editable surface."),
 			Window<DialogEx>(() => new DialogEx()),
 			Sample<DropDownButton>("Buttons", () => new DropDownButton { Height = 40 }),
@@ -155,12 +154,17 @@ public static class ControlCatalogSamples {
 			Window<SplashScreen>(CreateSplashScreen),
 			Sample<SplitButton>("Buttons", CreateSplitButton),
 			Sample<SquareButton>("Buttons", () => new SquareButton { Text = "Press this square button", Height = 60 }),
+			Sample<StartStopButton>("Buttons", CreateStartStopButton, "Press the one button to start the sample operation, then press it again to stop it."),
 			Sample<TaskItem>("Layout", () => new TaskItem { Text = "TaskItem — click this task", Height = 48 }),
 			Sample<TaskPane>("Layout", () => new ExpandoTesterScreen()),
 			Sample<TelemetryChart>("Charts", () => new TelemetryChartTestScreen()),
 			Sample<TextBoxEx>("Text", () => new TextBoxEx { Text = "Editable TextBoxEx sample" }),
 			Sample<TextBoxUITypeEditor>("Editors", CreateTypeEditor),
+			Sample<ToolStripCheckBox>("Tool strip items", CreateCheckBoxCommand, "Check or clear the box on the toolbar; the state beside it follows."),
 			Sample<ToolStripChoiceSelector>("Tool strip items", CreateChoiceSelector, "Select an item from the native checked menu; the selected value is displayed beside it."),
+			Sample<ToolStripCommandMenu>("Tool strip items", CreateCommandMenu, "Open the Commands menu: each entry mirrors a toolbar command with its current caption and state, and choosing it clicks that command."),
+			Sample<ToolStripStartStopButton>("Tool strip items", CreateStartStopCommand, "Press the one command to start the sample operation, then press it again to stop it."),
+			Sample<ToolStripTrackBar>("Tool strip items", CreateTrackBarCommand, "Drag the slider; the number beside it follows."),
 			Window<ToolStripVisualInheritanceFixer>(() => new VisualInheritanceFixerSubForm(), "The component merges the inherited and derived tool strips. Use the original example's commands."),
 			Window<TextEditorForm>(() => new TextEditorForm("Edit this sample document.")),
 			Sample<UserControlEx>("Layout", () => Composed(new UserControlEx())),
@@ -177,10 +181,11 @@ public static class ControlCatalogSamples {
 			new ControlCatalogEntry(typeof(ApplicationSettingsDialog), "Application", "Edits the running application's actual owner settings.", null, true, ShowOptionsAsync),
 			new ControlCatalogEntry(typeof(WinFormsWizardDialog<>), "Wizards / generic", "Runs the closed WinFormsWizardDialog<LogOutputConfiguration>. Finish validates sample settings without creating an output or writing a file.", null, true, owner => ShowLogWizardAsync(owner, new LogOutputDestinationWizardScreen(), new LogOutputFormattingWizardScreen(), new LogOutputReviewWizardScreen())),
 			new ControlCatalogEntry(typeof(WinFormsWizardScreen<>), "Wizards / generic", "Closed WinFormsWizardScreen<LogOutputConfiguration> with a locally owned model.", null, true, owner => ShowLogWizardAsync(owner, Composed(new WinFormsWizardScreen<LogOutputConfiguration>()))),
-			Sample<Book.AppointmentBook>("Appointments", () => new AppointmentBookScreen()),
-			Sample<Book.BaseAppointmentBook>("Appointments", () => new AppointmentBookScreen()),
-			Sample<Book.UnallocatedBook>("Appointments", () => new AppointmentBookScreen()),
-			Sample<CrudComboBox>("Data", () => new VisualGridTestScreen()),
+			Sample<Book.VisualCalendar>("Appointments", () => new VisualCalendarScreen()),
+			Sample<Book.BaseVisualCalendar>("Appointments", () => new VisualCalendarScreen()),
+			Sample<Book.UnallocatedCalendar>("Appointments", () => new VisualCalendarScreen()),
+			Sample<Book.CalendarRecurrenceEditor>("Appointments", CreateRecurrenceEditor, "Choose how the rule repeats. Only the choices that frequency uses are enabled, and the rule is put into words beneath them."),
+			Sample<VisualGridDropDown>("Data", () => new VisualGridTestScreen()),
 			Sample<Chart>("Charts", () => new ChartGalleryScreen()),
 			Sample<SourceGrid.ArrayGrid>("SourceGrid", () => new SourceGridGalleryScreen()),
 			new ControlCatalogEntry(typeof(SourceGrid.CustomScrollControl), "SourceGrid / abstract", "Abstract scroll base, demonstrated by a populated, editable SourceGrid.Grid.", () => new SourceGridGalleryScreen()),
@@ -246,7 +251,7 @@ public static class ControlCatalogSamples {
 	}
 
 	private static Control CreateEntityEditor() {
-		var editor = new DefaultCrudEntityEditor();
+		var editor = new VisualEntityEditor();
 		editor.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, CreateEmployee(), false);
 		return editor;
 	}
@@ -267,22 +272,22 @@ public static class ControlCatalogSamples {
 		return source;
 	}
 
-	private static CrudReferenceBinding CreateReferenceBinding() {
-		return new CrudReferenceBinding<Employee>(CreateEmployees(), new[] {
+	private static VisualGridReferenceBindingBase CreateReferenceBinding() {
+		return new VisualGridReferenceBinding<Employee>(CreateEmployees(), new[] {
 			EmployeeColumn(nameof(Employee.FirstName), "First name", employee => employee.FirstName),
 			EmployeeColumn(nameof(Employee.LastName), "Last name", employee => employee.LastName)
 		}, employee => employee.FirstName + " " + employee.LastName);
 	}
 
-	private static Form CreateCrudDialog() {
-		var dialog = new CrudDialog();
-		_ = dialog.SetCrudParameters(new[] { EmployeeColumn(nameof(Employee.FirstName), "First name", employee => employee.FirstName), EmployeeColumn(nameof(Employee.LastName), "Last name", employee => employee.LastName) }, typeof(DefaultCrudEntityEditor), DataSourceCapabilities.Default, CreateEmployees());
+	private static Form CreateVisualGridDialog() {
+		var dialog = new VisualGridDialog();
+		_ = dialog.SetParametersAsync(new[] { EmployeeColumn(nameof(Employee.FirstName), "First name", employee => employee.FirstName), EmployeeColumn(nameof(Employee.LastName), "Last name", employee => employee.LastName) }, typeof(VisualEntityEditor), DataSourceCapabilities.Default, CreateEmployees());
 		return dialog;
 	}
 
 	private static Form CreateCrudEditorDialog() {
-		var dialog = new CrudEntityEditorDialog();
-		dialog.SetEntityEditor(null, new DefaultCrudEntityEditor(), DataSourceCapabilities.CanRead, CreateEmployee(), false);
+		var dialog = new VisualEntityEditorDialog();
+		dialog.SetEntityEditor(null, new VisualEntityEditor(), DataSourceCapabilities.CanRead, CreateEmployee(), false);
 		return dialog;
 	}
 
@@ -438,7 +443,7 @@ public static class ControlCatalogSamples {
 	}
 
 	private static VisualGridColumn<Employee> EmployeeColumn(string property, string caption, Func<Employee, object> value)
-		=> new VisualGridColumn<Employee> { PropertyName = property, ColumnName = caption, PropertyValue = value, DisplayType = CrudCellDisplayType.Text, DataType = typeof(string) };
+		=> new VisualGridColumn<Employee> { PropertyName = property, ColumnName = caption, PropertyValue = value, DisplayType = VisualGridCellDisplayType.Text, DataType = typeof(string) };
 
 	private static Control CreateMultiSelectionButton() {
 		var button = new MultiSelectionButton { Text = "Choose an action", Height = 36 };
@@ -505,6 +510,68 @@ public static class ControlCatalogSamples {
 		strip.Items.Add(selector);
 		strip.Items.Add(result);
 		return strip;
+	}
+
+	// The menu borrows the toolbar's commands, so each entry shows the caption and state its command has when the menu opens.
+	private static Control CreateCommandMenu() {
+		var result = new Label { AutoSize = true, Dock = DockStyle.Top, Padding = new Padding(3, 6, 3, 3), Text = "Choose a command from the toolbar or from the Commands menu." };
+		var refresh = new ToolStripButton("Refresh");
+		var export = new ToolStripButton("Export");
+		var delete = new ToolStripButton("Delete") { Enabled = false };
+		refresh.Click += (_, _) => result.Text = "Refresh was chosen.";
+		export.Click += (_, _) => result.Text = "Export was chosen.";
+		var toolBar = new ToolStrip { Dock = DockStyle.Top, GripStyle = ToolStripGripStyle.Hidden };
+		toolBar.Items.AddRange(new ToolStripItem[] { refresh, export, delete });
+		var menu = new ToolStripCommandMenu("&Commands");
+		menu.AddCommands(refresh, export);
+		menu.AddSeparator();
+		menu.AddCommand(delete);
+		var menuStrip = new MenuStrip { Dock = DockStyle.Top };
+		menuStrip.Items.Add(menu);
+		var panel = new Panel { Size = new Size(420, 96) };
+		panel.Controls.AddRange(new Control[] { result, toolBar, menuStrip });
+		return panel;
+	}
+
+	private static Control CreateRecurrenceEditor() => new Book.CalendarRecurrenceEditor {
+		Recurrence = CalendarRecurrence.Weekly(DateTime.Today.AddHours(9), CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Thursday, 2)
+	};
+
+	private static Control CreateCheckBoxCommand() {
+		var strip = new ToolStrip();
+		var option = new ToolStripCheckBox { Text = "Flatten Window Hierarchy" };
+		var result = new ToolStripLabel("Hierarchy");
+		option.CheckedChanged += () => result.Text = option.Checked ? "Flat" : "Hierarchy";
+		strip.Items.AddRange(new ToolStripItem[] { option, result });
+		return strip;
+	}
+
+	// The sample operation reports its state back, as a real owner does once its start or stop has completed.
+	private static Control CreateTrackBarCommand() {
+		var strip = new ToolStrip();
+		var slider = new ToolStripTrackBar { Minimum = 1, Maximum = 64, Value = 16 };
+		var result = new ToolStripLabel("16");
+		slider.ValueChanged += () => result.Text = slider.Value.ToString();
+		strip.Items.AddRange(new ToolStripItem[] { new ToolStripLabel("Bytes per row:"), slider, result });
+		return strip;
+	}
+
+	private static Control CreateStartStopCommand() {
+		var strip = new ToolStrip();
+		var command = new ToolStripStartStopButton { StartText = "Start Capture…", StopText = "Stop Capture" };
+		var result = new ToolStripLabel("Stopped");
+		command.StartRequested += () => { command.Running = true; result.Text = "Capturing"; };
+		command.StopRequested += () => { command.Running = false; result.Text = "Stopped"; };
+		strip.Items.Add(command);
+		strip.Items.Add(result);
+		return strip;
+	}
+
+	private static Control CreateStartStopButton() {
+		var button = new StartStopButton { StartText = "Start Monitoring", StopText = "Stop Monitoring", Height = 36 };
+		button.StartRequested += () => button.Running = true;
+		button.StopRequested += () => button.Running = false;
+		return button;
 	}
 
 	private static Control CreateSidebarToggle() {

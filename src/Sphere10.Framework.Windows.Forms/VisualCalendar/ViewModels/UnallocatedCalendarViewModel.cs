@@ -10,15 +10,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
-public class UnallocatedBookViewModel : AppointmentBookViewModel {
+public class UnallocatedCalendarViewModel : VisualCalendarViewModel {
 	private const string DefaultUnallocatedColumnName = "Unallocated";
 
 	ColumnViewModel _unallocatedColumn;
 	readonly IDictionary<int, CellViewModel> _rowToCellLookup;
 
-	public UnallocatedBookViewModel(string columnName, IEnumerable<AppointmentViewModel> unallocatedBlocks, DateTime timePeriodStart, TimePeriodType timeView)
+	public UnallocatedCalendarViewModel(string columnName, IEnumerable<AppointmentViewModel> unallocatedBlocks, DateTime timePeriodStart, TimePeriodType timeView)
 		: base(new[] { new ColumnViewModel(columnName, unallocatedBlocks.ToArray(), new UnallocatedColumn()) }, timePeriodStart, timeView) {
 		_rowToCellLookup = new Dictionary<int, CellViewModel>();
 		_unallocatedColumn = base.GetColumnAt(0);

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 [Flags]
 public enum CellTraits {
