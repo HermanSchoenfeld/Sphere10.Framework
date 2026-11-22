@@ -34,6 +34,11 @@ public static partial class Windows {
 		public static Task<WindowsWindowInfo[]> EnumerateAsync(bool includeProcessDetails, CancellationToken cancellationToken = default)
 			=> WindowsWindow.EnumerateAsync(includeProcessDetails, cancellationToken);
 
+		/// <summary>Enumerates top-level windows with optional captions, process details and early hidden/minimized filtering.</summary>
+		/// <remarks>Omit titles when a worker may be joined by a UI thread; own-process caption reads otherwise send synchronous window messages.</remarks>
+		public static Task<WindowsWindowInfo[]> EnumerateAsync(bool includeProcessDetails, bool includeTitles, bool visibleOnly, CancellationToken cancellationToken = default)
+			=> WindowsWindow.EnumerateAsync(includeProcessDetails, includeTitles, visibleOnly, cancellationToken);
+
 		/// <summary>Enumerates the chosen native window families using the existing worker query.</summary>
 		public static Task<WindowsWindowInfo[]> EnumerateAsync(WindowsWindowEnumerationScope scope, bool includeProcessDetails = true, CancellationToken cancellationToken = default)
 			=> WindowsWindow.EnumerateAsync(scope, includeProcessDetails, cancellationToken);
@@ -61,6 +66,18 @@ public static partial class Windows {
 
 		/// <summary>Reads verified physical visible-frame bounds with the existing outer-bound fallback.</summary>
 		public static Rectangle GetVisiblePhysicalBounds(WindowsWindowInfo expected) => WindowsWindow.GetVisiblePhysicalBounds(expected);
+
+		/// <summary>Verifies a picked window and resolves its top-level ancestor with physical visible-frame bounds on a worker.</summary>
+		public static Task<WindowsWindowTarget> GetTopLevelTargetAsync(WindowsWindowInfo expected, CancellationToken cancellationToken = default)
+			=> WindowsWindow.GetTopLevelTargetAsync(expected, cancellationToken);
+
+		/// <summary>Reads the executable path after verifying the captured window owner on a worker.</summary>
+		public static Task<string> GetExecutablePathAsync(WindowsWindowInfo expected, CancellationToken cancellationToken = default)
+			=> WindowsWindow.GetExecutablePathAsync(expected, cancellationToken);
+
+		/// <summary>Reads the executable path of the application a verified top-level window shows: a Store app's own rather than its frame host's.</summary>
+		public static Task<string> GetApplicationExecutablePathAsync(WindowsWindowInfo expected, CancellationToken cancellationToken = default)
+			=> WindowsWindow.GetApplicationExecutablePathAsync(expected, cancellationToken);
 
 		/// <summary>Posts a message to the captured exact window instance using the existing worker dispatch.</summary>
 		public static Task<NativeWindowMessageResult> PostAsync(WindowsWindowInfo target, uint message, UIntPtr wParam, IntPtr lParam, CancellationToken cancellationToken = default)

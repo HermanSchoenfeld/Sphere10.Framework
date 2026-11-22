@@ -28,6 +28,14 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool SetLayeredWindowAttributes(IntPtr window, uint colorKey, byte alpha, uint flags);
 
+		public const uint WDA_NONE = 0x00;
+		public const uint WDA_EXCLUDEFROMCAPTURE = 0x11;
+
+		/// <summary>Sets whether screen captures show one of the calling process's top-level windows. Excluding needs Windows 10 version 2004.</summary>
+		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetWindowDisplayAffinity(IntPtr window, uint affinity);
+
 		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool DestroyWindow(IntPtr window);
@@ -46,5 +54,15 @@ public static partial class WinAPI {
 
 		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
 		public static extern IntPtr GetAncestor(IntPtr window, uint flags);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetDesktopWindow();
+
+		/// <summary>Transfers region ownership to Windows on success; a null region restores the rectangular window.</summary>
+		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern int SetWindowRgn(IntPtr window, IntPtr region, [MarshalAs(UnmanagedType.Bool)] bool redraw);
+
+		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern int GetWindowRgn(IntPtr window, IntPtr region);
 	}
 }

@@ -20,6 +20,11 @@ namespace Sphere10.Framework.Windows;
 
 /// <summary>Queries borrowed native windows without transferring window ownership.</summary>
 public static class WindowsWindow {
+	// Windows draws every Store app's top-level window in its frame host (ApplicationFrameHost.exe); while the app is on the
+	// screen, the app's own window sits inside that frame as its child.
+	private const string StoreAppFrameClassName = "ApplicationFrameWindow";
+	private const string StoreAppContentClassName = "Windows.UI.Core.CoreWindow";
+
 	/// <summary>Reads the visible window beneath a physical desktop point and verifies its captured owner before returning highlight bounds.</summary>
 	public static Task<WindowsWindowTarget> ReadAtPhysicalPointAsync(Point point, CancellationToken cancellationToken = default)
 		=> Task.Run(() => ReadAtPhysicalPoint(point, () => cancellationToken.ThrowIfCancellationRequested()), cancellationToken);
@@ -42,6 +47,15 @@ public static class WindowsWindow {
 	/// <summary>Optionally omits process name/creation queries when the caller already owns a process inventory.</summary>
 	public static Task<WindowsWindowInfo[]> EnumerateAsync(bool includeProcessDetails, CancellationToken cancellationToken = default)
 		=> Task.Run(() => Enumerate(includeProcessDetails, () => cancellationToken.ThrowIfCancellationRequested()), cancellationToken);
+
+	/// <summary>Enumerates top-level windows with optional captions, process details and early visible-window filtering.</summary>
+	/// <remarks>
+	/// Omitting titles leaves <see cref="WindowsWindowInfo.Title"/> empty and avoids synchronous caption messages to this process's UI threads.
+	/// Visible-only inventory excludes hidden and minimized windows before querying their captions or processes; it does not test occlusion.
+	/// </remarks>
+	public static Task<WindowsWindowInfo[]> EnumerateAsync(bool includeProcessDetails, bool includeTitles, bool visibleOnly, CancellationToken cancellationToken = default)
+		=> Task.Run(() => Enumerate(WindowsWindowEnumerationScope.TopLevel, includeProcessDetails,
+			() => cancellationToken.ThrowIfCancellationRequested(), includeTitles, visibleOnly), cancellationToken);
 
 	public static WindowsWindowInfo[] Enumerate() => Enumerate(true, null);
 
@@ -75,6 +89,53 @@ public static class WindowsWindow {
 		return GetBoundsCore(expected, true);
 	}
 
+	/// <summary>Verifies a picked window and reads its top-level ancestor and visible physical bounds on a worker.</summary>
+	public static Task<WindowsWindowTarget> GetTopLevelTargetAsync(WindowsWindowInfo expected, CancellationToken cancellationToken = default) {
+		return Task.Run(() => ExecuteVerified(expected, () => {
+			cancellationToken.ThrowIfCancellationRequested();
+			var root = WinAPI.USER32.GetAncestor(expected.Handle, WinAPI.USER32.GA_ROOT);
+			Guard.Ensure(TryGetInfo(root, out var info), "The selected top-level window is no longer available.");
+			return new WindowsWindowTarget(info, GetVisiblePhysicalBounds(info));
+		}), cancellationToken);
+	}
+
+	/// <summary>Reads the executable path of a verified window owner on a worker.</summary>
+	public static Task<string> GetExecutablePathAsync(WindowsWindowInfo expected, CancellationToken cancellationToken = default) {
+		return Task.Run(() => ExecuteVerified(expected, () => {
+			cancellationToken.ThrowIfCancellationRequested();
+			using var process = WindowsProcess.Open(expected.ProcessId);
+			return process.ExecutablePath;
+		}), cancellationToken);
+	}
+
+	/// <summary>Reads, on a worker, the executable path of the application a verified top-level window shows.</summary>
+	/// <remarks>
+	/// That is the window's own process, except for a Store app: its top-level window belongs to the frame host that Windows
+	/// runs for every Store app, and the app's own window sits inside it. This returns the app's executable then, or the frame
+	/// host's while the frame holds no app window (the app is suspended). Use it to identify the application a user means, and
+	/// <see cref="GetExecutablePathAsync"/> for the process that owns the window.
+	/// </remarks>
+	public static Task<string> GetApplicationExecutablePathAsync(WindowsWindowInfo expected, CancellationToken cancellationToken = default) {
+		return Task.Run(() => ExecuteVerified(expected, () => {
+			cancellationToken.ThrowIfCancellationRequested();
+			using var process = WindowsProcess.Open(TryGetHostedApplicationProcessId(expected.Handle, out var hosted) ? hosted : expected.ProcessId);
+			return process.ExecutablePath;
+		}), cancellationToken);
+	}
+
+	/// <summary>Whether a top-level window is a Store app's frame that holds the app's own window, and the app's process.</summary>
+	internal static bool TryGetHostedApplicationProcessId(IntPtr window, out int processId) {
+		processId = 0;
+		if (GetClassName(window) != StoreAppFrameClassName)
+			return false;
+		var content = WinAPI.USER32.FindWindowExW(window, IntPtr.Zero, StoreAppContentClassName, null);
+		if (content == IntPtr.Zero || WinAPI.USER32.GetWindowThreadProcessId(content, out var contentProcess) == 0
+			|| WinAPI.USER32.GetWindowThreadProcessId(window, out var frameProcess) == 0 || contentProcess == frameProcess)
+			return false;
+		processId = checked((int)contentProcess);
+		return true;
+	}
+
 	/// <summary>Shares held process identity and HWND/thread/class admission across read-only window inspectors.</summary>
 	internal static T ExecuteVerified<T>(WindowsWindowInfo expected, Func<T> read) {
 		Debug.AssertNotMainThread();
@@ -100,6 +161,25 @@ public static class WindowsWindow {
 		return value.ToString();
 	}
 
+	// A failed query is not evidence of closure. Retire identities only after an observed window/process mismatch or exit.
+	internal static bool HasIdentityExpired(WindowsWindowInfo expected) {
+		Debug.AssertNotMainThread();
+		if (!WinAPI.USER32.IsWindow(expected.Handle))
+			return true;
+		var threadId = WinAPI.USER32.GetWindowThreadProcessId(expected.Handle, out var processId);
+		if (threadId != 0 && (threadId != expected.ThreadId || processId != expected.ProcessId))
+			return true;
+		var className = GetClassName(expected.Handle);
+		if (className.Length > 0 && className != expected.ClassName)
+			return true;
+		var expired = false;
+		Tools.Exceptions.ExecuteCapturingException(() => {
+			using var process = WindowsProcess.Open(expected.ProcessId);
+			expired = process.Identity.StartTimeUtc != expected.ProcessStartTimeUtc || process.HasExited;
+		}, out _, error => error is Win32Exception or InvalidOperationException or ArgumentException);
+		return expired;
+	}
+
 	private static WindowsWindowTarget ReadAtPhysicalPoint(Point point, Action checkpoint) {
 		Debug.AssertNotMainThread();
 		checkpoint?.Invoke();
@@ -118,7 +198,7 @@ public static class WindowsWindow {
 	private static WindowsWindowInfo[] Enumerate(bool includeProcessDetails, Action checkpoint)
 		=> Enumerate(WindowsWindowEnumerationScope.TopLevel, includeProcessDetails, checkpoint);
 
-	private static WindowsWindowInfo[] Enumerate(WindowsWindowEnumerationScope scope, bool includeProcessDetails, Action checkpoint) {
+	private static WindowsWindowInfo[] Enumerate(WindowsWindowEnumerationScope scope, bool includeProcessDetails, Action checkpoint, bool includeTitles = true, bool visibleOnly = false) {
 		Debug.AssertNotMainThread();
 		Guard.Argument(scope != 0 && (scope & ~WindowsWindowEnumerationScope.All) == 0, nameof(scope), "Select a supported window enumeration scope.");
 		var windows = new List<WindowsWindowInfo>();
@@ -127,7 +207,9 @@ public static class WindowsWindow {
 		WinAPI.USER32.WindowEnumCallback childCallback = (window, _) => {
 			Tools.Exceptions.ExecuteCapturingException(() => {
 				checkpoint?.Invoke();
-				if (visited.Add(window) && TryGetInfoCore(window, includeProcessDetails, false, out var info))
+				if (visibleOnly && (!WinAPI.USER32.IsWindowVisible(window) || WinAPI.USER32.IsIconic(window)))
+					return;
+				if (visited.Add(window) && TryGetInfoCore(window, includeProcessDetails, false, out var info, includeTitles))
 					windows.Add(info);
 			}, out callbackError);
 			return callbackError == null;
@@ -135,7 +217,9 @@ public static class WindowsWindow {
 		WinAPI.USER32.WindowEnumCallback callback = (window, _) => {
 			Tools.Exceptions.ExecuteCapturingException(() => {
 				checkpoint?.Invoke();
-				if ((scope & WindowsWindowEnumerationScope.TopLevel) != 0 && visited.Add(window) && TryGetInfoCore(window, includeProcessDetails, false, out var info))
+				if (visibleOnly && (!WinAPI.USER32.IsWindowVisible(window) || WinAPI.USER32.IsIconic(window)))
+					return;
+				if ((scope & WindowsWindowEnumerationScope.TopLevel) != 0 && visited.Add(window) && TryGetInfoCore(window, includeProcessDetails, false, out var info, includeTitles))
 					windows.Add(info);
 				// EnumChildWindows includes all descendants. Its BOOL return value has no error contract.
 				if ((scope & WindowsWindowEnumerationScope.Descendants) != 0)
@@ -166,20 +250,26 @@ public static class WindowsWindow {
 				if (window == IntPtr.Zero || !messageWindows.Add(window))
 					break;
 				after = window;
-				if (visited.Add(window) && TryGetInfoCore(window, includeProcessDetails, true, out var info))
+				if (visibleOnly && (!WinAPI.USER32.IsWindowVisible(window) || WinAPI.USER32.IsIconic(window)))
+					continue;
+				if (visited.Add(window) && TryGetInfoCore(window, includeProcessDetails, true, out var info, includeTitles))
 					windows.Add(info with { IsMessageOnly = true, ParentHandle = parent });
 			}
 		}
 		return windows.ToArray();
 	}
 
-	private static bool TryGetInfoCore(IntPtr handle, bool includeProcessDetails, bool? messageOnlyHint, out WindowsWindowInfo info) {
+	private static bool TryGetInfoCore(IntPtr handle, bool includeProcessDetails, bool? messageOnlyHint, out WindowsWindowInfo info, bool includeTitle = true) {
 		info = null;
 		if (!WinAPI.USER32.IsWindow(handle)) return false;
 		var threadId = WinAPI.USER32.GetWindowThreadProcessId(handle, out var processId);
 		if (threadId == 0 || processId == 0) return false;
-		var title = new StringBuilder(4096);
-		WinAPI.USER32.GetWindowText(handle, title, title.Capacity);
+		var title = string.Empty;
+		if (includeTitle) {
+			var buffer = new StringBuilder(4096);
+			WinAPI.USER32.GetWindowText(handle, buffer, buffer.Capacity);
+			title = buffer.ToString();
+		}
 		var className = GetClassName(handle);
 		var processName = string.Empty;
 		DateTime? processStarted = null;
@@ -199,7 +289,7 @@ public static class WindowsWindow {
 		// GetParent does not reliably return HWND_MESSAGE. Query the documented message-only family explicitly.
 		var messageOnly = messageOnlyHint ?? IsMessageOnlyWindow(handle, className);
 		var dpi = WinAPI.USER32.GetDpiForWindow(handle);
-		info = new WindowsWindowInfo(handle, title.ToString(), className, checked((int)processId), threadId, processName, processStarted,
+		info = new WindowsWindowInfo(handle, title, className, checked((int)processId), threadId, processName, processStarted,
 			WinAPI.USER32.IsWindowVisible(handle), error) {
 			IsMinimized = WinAPI.USER32.IsIconic(handle),
 			ParentHandle = messageOnly ? WinAPI.USER32.HWND_MESSAGE : (style.GetValueOrDefault() & WinAPI.USER32.WS_CHILD) != 0 ? parent : IntPtr.Zero,
