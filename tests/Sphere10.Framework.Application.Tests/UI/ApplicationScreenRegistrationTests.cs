@@ -208,6 +208,7 @@ public class ApplicationScreenRegistrationTests {
 	}
 
 	private class RegistrationOnlyBlock : ApplicationBlockBase {
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	private sealed class RejectPresentationReadsBlock : RegistrationOnlyBlock, IApplicationCommandProvider {

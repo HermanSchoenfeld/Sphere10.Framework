@@ -165,7 +165,11 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Block management
 
+	/// <summary>Registers a block this application offers. A block whose availability predicate declined is skipped.</summary>
 	public virtual void RegisterBlock(IApplicationBlock block) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		if (!ScreenHost.CheckBlockAvailability(block))
+			return;
 		if (_registeringBlocks)
 			RegisterBlockCore(block);
 		else
@@ -214,7 +218,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
 	internal bool RegisterBlocks(IEnumerable<IApplicationBlock> blocks, bool invokeOverrides = true) {
-		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		// Availability is decided once per block; a declined block gets no navigation button, load command or default.
+		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).Where(ScreenHost.CheckBlockAvailability).ToArray();
 		var definitions = ordered.Where(block => !IsBlockRegistered(block)).ToArray();
 		var accepted = ScreenHost.InitializeScreens(ordered, () => {
 			using (Tools.Scope.ExecuteOnDispose(() => _registeringBlocks = false)) {

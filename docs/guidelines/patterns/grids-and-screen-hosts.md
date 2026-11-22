@@ -287,8 +287,10 @@ Screens are registered types, not arbitrary types loaded from saved text.
 | Tabs | Selection, close, middle-click, reorder and context commands. | Same applicable interactions, including keyboard selection/reorder and context commands. |
 | Long titles | DPI-scaled width cap, ellipsis and full tooltip. | CSS width cap, ellipsis and full tooltip. |
 | Batch closure | Close, Close All, Close All Others; preflight all guards. | Equivalent context/host commands; preflight all guards. |
-| Screen changes | `Title`, screen lifecycle events and merged original menu/toolbar instances. | Override `Title`, expose screen commands, call `NotifyScreenChanged` for updated chrome/dirty state. |
+| Screen changes | `Title`, screen lifecycle events and merged original menu/toolbar instances. | Override `Title` and expose screen commands; each render publishes a changed title, dirty state or command state, and `NotifyScreenChanged` covers changes made without a render. |
+| File menu | The main form's designer File menu, extended by screen strips merged by text. | The shell's standard File menu (`Application.FileMenuId`), shown first once any layer contributes to it and extended by menus with that ID. |
 | Runtime block changes | Register/unregister with guards and permanent-screen initialization. | Same logical transition policy without constructing a second block owner. |
+| Block availability | `AvailableWhen` is decided once per application with its provider, and registration skips a block that declined. | `AvailableWhen` is decided once per circuit from its scoped services, and a block that declined has no copy, route or screens there. |
 | User startup choice | Make Startup Screen through app `UserSettings`. | Make Startup Screen through an explicit browser/application preference key. |
 | Startup fallback | Registered default order; permanent screens still created. | Registered default order; permanent screens still created; explicit bookmark wins over saved preference. |
 | Exit checks | Includes hidden retained and detached screens. | Includes all retained sessions; browser navigation lock also uses dirty state. |
@@ -338,7 +340,9 @@ are not copied into browser code.
 Both hosts offer their own navigation layout and command availability. WinForms
 uses its collapsible/sizable ExplorerBar pane; Blazor uses responsive shell
 sidebar/drawer controls. Command visibility is presentation, not authorization;
-permission enforcement remains with the application/service.
+permission enforcement remains with the application/service. Block availability
+is presentation too. It removes a block's navigation for one host and leaves
+every permission check with the services behind its screens.
 
 See the [WinForms host guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#multiple-screens-and-detachable-tabs),
 [Blazor host guide](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#default-permanent-and-empty-screens)

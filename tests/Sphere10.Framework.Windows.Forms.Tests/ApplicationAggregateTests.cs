@@ -132,6 +132,47 @@ public class ApplicationAggregateTests {
 		Assert.That(((ProbeMainForm)provider.GetRequiredService<IMainForm>()).IsDisposed, Is.False);
 	}
 
+	[TestCase(true)]
+	[TestCase(false)]
+	public async Task NativeStartupDecidesBlockAvailabilityOnceWithTheApplicationsProvider(bool available) {
+		var services = new ServiceCollection();
+		services.AddMainForm<ProbeMainForm>();
+		services.AddSingleton(new EditionRights { IncludesRestrictedBlock = available });
+		var evaluations = 0;
+		using var restricted = new ActionApplicationBlock(applicationServices => {
+			evaluations++;
+			return applicationServices.GetRequiredService<EditionRights>().IncludesRestrictedBlock;
+		}) { Name = "Restricted", Position = 1 };
+		restricted.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(CleanScreen), activationMode: ScreenActivationMode.PermanentSingleton));
+		restricted.DefaultScreenDefinition = restricted.ScreenDefinitions.Single();
+		using var general = new ApplicationBlock { Name = "General", Position = 2 };
+		general.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(DirtyScreen)));
+		general.DefaultScreenDefinition = general.ScreenDefinitions.Single();
+		services.AddApplicationBlock(restricted);
+		services.AddApplicationBlock(general);
+		await using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
+		Assert.That(evaluations, Is.Zero, "Composition and application construction must not decide availability.");
+
+		await application.InitializeAsync();
+		await application.InitializeAsync();
+
+		var expected = available ? new[] { restricted, general } : new[] { general };
+		Assert.That(application.Blocks, Is.EqualTo(expected));
+		Assert.That(application.ScreenHost.AvailableBlocks, Is.EqualTo(expected));
+		Assert.That(application.ScreenHost.Screens.Any(screen => ReferenceEquals(screen.Block, restricted)), Is.EqualTo(available),
+			"A declined block's permanent screens are never created.");
+		Assert.That(application.ScreenHost.ActiveScreen.Block, Is.SameAs(expected[0]), "Startup uses the first available block with a default.");
+		if (!available) {
+			application.BlockManager.RegisterBlock(restricted);
+			Assert.That(application.BlockManager.IsBlockRegistered(restricted), Is.False, "The block manager skips a block that declined.");
+			Assert.That(() => application.ScreenHost.RegisterBlockAsync(restricted), Throws.ArgumentException);
+			Assert.That(() => application.ScreenHost.RegisterScreenTypes(restricted), Throws.ArgumentException);
+			Assert.That(application.ScreenHost.AvailableBlocks, Is.EqualTo(expected));
+		}
+		Assert.That(evaluations, Is.EqualTo(1));
+	}
+
 	[Test]
 	public async Task HiddenRetainedScreensStillContributeUnsavedChanges() {
 		using var form = new ProbeMainForm();
@@ -295,6 +336,11 @@ public class ApplicationAggregateTests {
 	}
 
 	public sealed class CleanScreen : ApplicationScreen { }
+
+	// Stands in for application state, such as a licensed edition, that decides a block's availability.
+	private sealed class EditionRights {
+		public bool IncludesRestrictedBlock { get; set; }
+	}
 
 	private sealed class TrackingAction : WinFormsActionMenuItem {
 		public TrackingAction(string text, Action action) : base(text, action) { }

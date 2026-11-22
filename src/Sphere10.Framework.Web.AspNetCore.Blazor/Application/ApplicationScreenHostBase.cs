@@ -28,8 +28,13 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		: this(Array.Empty<IApplicationBlock>(), services) {
 	}
 
+	/// <summary>Copies the startup blocks this circuit's provider is offered into the host's own graph.</summary>
+	/// <remarks>The shared host asks each startup block for its availability once, before copying it. A block that declines has no copy, route, screen or settings here.</remarks>
 	protected ApplicationScreenHostBase(IEnumerable<IApplicationBlock> blocks, IServiceProvider services)
-		: base(ApplicationBlockSnapshot.CreateBlocks(blocks), services) {
+		: base(blocks, services, ApplicationBlockSnapshot.Create) {
+		// Browser routes address blocks by ID, so the blocks this host offers must stay distinguishable.
+		var offered = AvailableBlocks;
+		Guard.Argument(offered.Select(block => block.Id).Distinct(StringComparer.Ordinal).Count() == offered.Length, nameof(blocks), "Block IDs must be unique.");
 	}
 
 	/// <summary>The host's circuit-local commands and interactions, resolved lazily to avoid a host/service construction cycle.</summary>

@@ -142,10 +142,22 @@ public class ApplicationBlock : IApplicationBlock {
 		return Task.FromResult(true);
 	}
 
+	/// <summary>Decides whether the circuit host being built from the supplied provider offers this block.</summary>
+	/// <remarks>Availability is presentation only. Services must still authorize the operations behind the block.</remarks>
+	public bool CheckAvailability(IServiceProvider services) {
+		Guard.ArgumentNotNull(services, nameof(services));
+		return DetermineAvailability(services);
+	}
+
+	/// <summary>Decides availability against the circuit's scoped provider. This block is offered to every circuit; <see cref="ActionApplicationBlock"/> and other subclasses decide otherwise.</summary>
+	protected virtual bool DetermineAvailability(IServiceProvider services) => true;
+
 	#region Inner Types
 
-	// Shares only registration metadata with the portable application layer.
+	// Shares only registration metadata with the portable application layer; availability is decided by the owning web block.
 	private sealed class BlockMetadata : ApplicationBlockBase {
+		/// <inheritdoc />
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	#endregion

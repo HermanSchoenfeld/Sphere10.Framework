@@ -6,10 +6,28 @@ A running `IApplication` owns its blocks through an `IApplicationScreenHost`, an
 
 Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, website-launcher and user-interface services stay in `Sphere10.Framework.Application`. Lifecycle tasks are in [Initialization and finalization tasks](../Lifecycle/README.md), and the settings that screens, blocks and plugins own are in [Settings](../Settings/README.md). The [Application guide](../README.md#shared-ui-framework) covers ownership, lifecycles, navigation, builders and wizards in detail.
 
+## Loading indicator
+
+`IUserInterfaceServices.LoadingIndicator` is the application's `ILoadingIndicator`. `Show(message)` turns it on with that message and returns
+an `IScope`; disposing the scope turns it off. Work that overlaps keeps it on until the last scope ends, and the most recent message still
+shown is the one displayed. `LoadingIndicator` holds that state for every implementation, is safe from any thread and raises `Changed` on
+the thread that changed it, so a platform presents it by marshalling to its UI thread. The WinForms `MainForm` shows it in its status bar,
+and its screen host shows it while a screen opens or closes. `ApplicationUserInterfaceServices` and the console services own one;
+decorators forward it.
+
+```csharp
+using (userInterface.LoadingIndicator.Show("Reading Services…"))
+	services = await ReadServicesAsync(cancellationToken);
+```
+
 ## Awaiting notifications and navigation
 
 `IUserInterfaceServices` exposes `ReportErrorAsync` (exception, message and
-caption/message overloads), `ReportFatalErrorAsync` and `ReportInfoAsync`. Await
+caption/message overloads), `ReportFatalErrorAsync`, `ReportInfoAsync` and
+`ReportWarningAsync(title, message, cancellationToken)`. The interface's default
+`ReportWarningAsync` reports the warning as information, and so does
+`ApplicationUserInterfaceServices`. Decorators forward it, the console writes its
+message, and the WinForms main form shows a `DialogEx` with the warning icon. Await
 them: the returned task completes when the notification is dismissed, and carries
 failures back to the caller. There are no synchronous reporting
 aliases or completed-task bridges. Decorators forward the task and cancellation
@@ -45,9 +63,9 @@ try {
 |---|---|---|
 | [`ApplicationAction`](ApplicationAction.cs) | class | Menu callback that runs a plain, UI-aware or asynchronous service-provider action through `Execute` or `ExecuteAsync` |
 | [`ApplicationBase`](ApplicationBase.cs) | abstract class | Shared application lifecycle, task inventories, owned-resource cleanup, notifications and live projections of the host's blocks |
-| [`ApplicationBlockBase`](ApplicationBlockBase.cs) | abstract class | Block metadata, owned screen definitions and the default screen definition |
-| [`ApplicationBlockBuilderBase<TMenu, TBlock>`](ApplicationBlockBuilderBase.cs) | abstract class | Accumulates screen registrations and menu commands for platform block builders |
-| [`ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>`](ApplicationBlockBuilderBase.cs) | abstract class | Fluent block metadata, default-screen policy and child menu-builder composition |
+| [`ApplicationBlockBase`](ApplicationBlockBase.cs) | abstract class | Block metadata, owned screen definitions, the default screen definition and the availability template: `CheckAvailability(IServiceProvider)` guards the provider and calls the protected abstract `DetermineAvailability(IServiceProvider)` |
+| [`ApplicationBlockBuilderBase<TMenu, TBlock>`](ApplicationBlockBuilderBase.cs) | abstract class | Accumulates screen registrations, menu commands and the availability predicate, which each platform's `CreateBlock` builds into its delegate-taking `ActionApplicationBlock` or its own subclass; `ValidateAvailability` is the predicate's validation hook |
+| [`ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>`](ApplicationBlockBuilderBase.cs) | abstract class | Fluent block metadata, `AvailableWhen`, default-screen policy and child menu-builder composition |
 | [`ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>`](ApplicationBuilderBase.cs) | abstract class | Collects the application title, plugins and deferred callbacks before a platform registers or creates its host |
 | [`ApplicationCommandLayer`](ApplicationCommandLayer.cs) | class | A command provider's menu and toolbar contribution at an explicit `ApplicationCommandLevel` |
 | [`ApplicationCommandLevel`](ApplicationCommandLevel.cs) | enum | Scope of a command contribution: `Application`, `Block`, `Screen` or `Plugin` |
@@ -83,7 +101,7 @@ try {
 | [`ConsoleApplicationUserInterfaceServices`](ConsoleApplicationUserInterfaceServices.cs) | class | `IUserInterfaceServices` that writes reports to the console and exits the process, and whose dialogs and `AskYN` throw `NotSupportedException` |
 | [`IApplication`](IApplication.cs) | interface | Running application: logger, owned resources, loaded plugins, blocks, screen host, settings, lifecycle and exit |
 | [`IApplication<TPlugin, THost>`](IApplication.cs) | interface | `IApplication` with typed loaded plugins and screen host |
-| [`IApplicationBlock`](IApplicationBlock.cs) | interface | Block metadata: parent application, source plugin, name, position, settings, screen definitions, default screen and exit guard |
+| [`IApplicationBlock`](IApplicationBlock.cs) | interface | Block metadata: parent application, source plugin, name, position, settings, screen definitions, default screen, per-host availability and exit guard |
 | [`IApplicationCommandProvider`](IApplicationCommandProvider.cs) | interface | Portable `Menus` and `ToolBarItems` descriptors with empty defaults |
 | [`IApplicationCommandProvider<TMenu, TItem>`](IApplicationCommandProvider.cs) | interface | Typed menu and toolbar descriptors bridged to the neutral provider |
 | [`IApplicationMenu`](IApplicationMenu.cs) | interface | Menu with a parent block, text and items |
@@ -98,13 +116,15 @@ try {
 | [`IApplicationUIBuilder<TProduct>`](IApplicationUIBuilder.cs) | interface | Builder whose `Build` produces a UI definition, so parents can compose child builders through product interfaces |
 | [`IHelpableObject`](IHelpableObject.cs) | interface | Help metadata: help type, file name, URL, page number and topic identifiers |
 | [`IHelpServices`](IHelpServices.cs) | interface | Shows general help or the help of an `IHelpableObject` |
+| [`ILoadingIndicator`](ILoadingIndicator.cs) | interface | The application's loading indicator: on, with a message, while each scope returned by `Show` lasts |
 | [`IMultiApplicationScreenHost`](IMultiApplicationScreenHost.cs) | interface | Operations on retained and open screens in a host with several screens: show, close, move and batch close |
 | [`IMultiApplicationScreenHost<TBlock, TScreen>`](IMultiApplicationScreenHost.cs) | interface | Typed multiple-screen host operations |
 | [`IScreenMenuItem`](IScreenMenuItem.cs) | interface | Command that references a screen definition registered by its owning block |
 | [`ISingleApplicationScreenHost`](ISingleApplicationScreenHost.cs) | interface | Operations on the current screen only: close and check closure |
 | [`ISingleApplicationScreenHost<TBlock, TScreen>`](ISingleApplicationScreenHost.cs) | interface | Typed single-screen host operations |
-| [`IUserInterfaceServices`](IUserInterfaceServices.cs) | interface | Application dialogs, status, error and information reports, questions, exit, UI-thread dispatch and menu-command execution |
+| [`IUserInterfaceServices`](IUserInterfaceServices.cs) | interface | Application dialogs, status, loading indicator, error, warning and information reports, questions, exit, UI-thread dispatch and menu-command execution |
 | [`IWebsiteLauncher`](IWebsiteLauncher.cs) | interface | Opens a URL or the company, product or purchase website |
+| [`LoadingIndicator`](LoadingIndicator.cs) | class | Thread-safe `ILoadingIndicator` state that every user interface services implementation presents |
 | [`MultiApplicationScreenHostDecorator`](MultiApplicationScreenHostDecorator.cs) | abstract class | `MultiApplicationScreenHostDecorator<TConcrete>` over a plain `IMultiApplicationScreenHost` |
 | [`MultiApplicationScreenHostDecorator<TBlock, TScreen>`](MultiApplicationScreenHostDecorator.cs) | abstract class | Typed multiple-screen host decorator over an `IMultiApplicationScreenHost<TBlock, TScreen>` |
 | [`MultiApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>`](MultiApplicationScreenHostDecorator.cs) | abstract class | Forwards typed multiple-screen host operations to a wrapped host |
@@ -122,7 +142,7 @@ try {
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`ApplicationGridColumnPreferences`](Settings/ApplicationGridColumnPreferences.cs) | class | Sealed grid column preference with a schema `Key` and `Title`, an optional manual `Width` and an optional `ExpandsToFit` |
+| [`ApplicationGridColumnPreferences`](Settings/ApplicationGridColumnPreferences.cs) | class | Sealed grid column preference with a schema `Key` and `Title`, an optional manual `Width`, an optional `ExpandsToFit` and an optional `Hidden` |
 
 ### Wizard
 

@@ -22,6 +22,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	private readonly Dictionary<TBlock, TBlock> _availableBlocks = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<TBlock, TBlock> _blocks = new(ReferenceEqualityComparer.Instance);
+	private readonly Dictionary<TBlock, bool> _blockAvailability = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<ApplicationScreenDefinition, Dictionary<TBlock, TBlock>> _definitionBlocks = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<TBlock, ApplicationScreenDefinition[]> _blockDefinitions = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<TScreen, ScreenState> _screens = new(ReferenceEqualityComparer.Instance);
@@ -52,11 +53,15 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		Guard.ArgumentNotNull(services, nameof(services));
 		Services = services;
 		_lifetimeToken = _lifetime.Token;
-		var definitions = blocks.Select(block => snapshot == null ? block : snapshot(block)).ToArray();
+
+		// Each startup definition decides its availability once, before this host copies, validates or registers it.
+		var definitions = blocks.Where(block => block == null || CheckBlockAvailability(block)).Select(block => snapshot == null ? block : snapshot(block)).ToArray();
 		Guard.Argument(definitions.All(block => block != null), nameof(blocks), "Block definitions cannot be null.");
 		Guard.Argument(definitions.Distinct(ReferenceEqualityComparer.Instance).Count() == definitions.Length, nameof(blocks), "A block cannot be registered twice.");
 		ValidateDefinitions(ApplicationHelper.GetScreenDefinitions(definitions));
 		foreach (var block in definitions) {
+			// A host-owned copy carries the decision already made for its startup definition.
+			_blockAvailability[block] = true;
 			AddAvailableBlock(block);
 			RegisterTrackedBlock(block);
 		}
@@ -113,6 +118,10 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	/// <summary>Gets the borrowed service provider used for screen activation.</summary>
 	protected IServiceProvider Services { get; }
+
+	/// <summary>Gets the provider that block availability is decided against. Composite platform hosts override this to supply their application's provider.</summary>
+	/// <remarks>The constructor reads it while admitting startup blocks, before a derived constructor has run.</remarks>
+	protected virtual IServiceProvider AvailabilityServices => Services;
 
 	/// <summary>Indicates whether this host's initialization has completed.</summary>
 	protected bool IsInitialized => _initialized;
@@ -608,10 +617,22 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		ValidateDefinitions(pending);
 	}
 
+	/// <summary>Decides once whether this host offers the block and remembers the answer for the host's lifetime.</summary>
+	/// <remarks>A failing predicate propagates to the caller and leaves the block undecided.</remarks>
+	protected bool CheckBlockAvailability(TBlock block) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		if (!_blockAvailability.TryGetValue(block, out var available)) {
+			available = block.CheckAvailability(AvailabilityServices);
+			_blockAvailability.Add(block, available);
+		}
+		return available;
+	}
+
 	/// <summary>Captures a block in the available registration set.</summary>
 	protected void AddAvailableBlock(TBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.Argument(block.Parent == null || ReferenceEquals(block.Parent.ScreenHost, ScreenOwner), nameof(block), "The block belongs to another application's host.");
+		Guard.Argument(CheckBlockAvailability(block), nameof(block), "The block is not available to this host.");
 		_availableBlocks[block] = block;
 		IndexBlockDefinitions(block);
 	}
@@ -732,6 +753,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		_singleInstances.Clear();
 		_blocks.Clear();
 		_availableBlocks.Clear();
+		_blockAvailability.Clear();
 		_definitionBlocks.Clear();
 		_blockDefinitions.Clear();
 		_lifetime.Dispose();

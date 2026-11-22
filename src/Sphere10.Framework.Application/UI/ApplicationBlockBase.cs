@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Reusable block metadata and canonical screen definitions.</summary>
+/// <remarks>A template: <see cref="CheckAvailability"/> guards its provider and asks the <see cref="DetermineAvailability"/> hook. Platform blocks
+/// implement the hook, and their <c>ActionApplicationBlock</c> variants take the decision as a delegate.</remarks>
 public abstract class ApplicationBlockBase : IApplicationBlock {
 	private readonly List<ApplicationScreenDefinition> _screenDefinitions = new();
 	private ApplicationScreenDefinition _defaultScreenDefinition;
@@ -46,6 +48,13 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 		return Task.FromResult(true);
 	}
 
+	/// <summary>Decides whether the host being built from the supplied provider offers this block.</summary>
+	/// <remarks>A host asks once, before it copies or registers the block. Availability is presentation only and authorizes nothing.</remarks>
+	public bool CheckAvailability(IServiceProvider services) {
+		Guard.ArgumentNotNull(services, nameof(services));
+		return DetermineAvailability(services);
+	}
+
 	public virtual void AddScreenDefinition(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		if (!ContainsScreenDefinition(definition))
@@ -61,4 +70,8 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 		Guard.Argument(!ReferenceEquals(DefaultScreenDefinition, definition), nameof(definition), "The default screen definition cannot be removed.");
 		_screenDefinitions.RemoveAll(candidate => ReferenceEquals(candidate, definition));
 	}
+
+	/// <summary>Decides availability against the provider of the host being built; an always-available block returns true.</summary>
+	/// <remarks>Called by <see cref="CheckAvailability"/> with a non-null provider. An exception propagates to the host being built.</remarks>
+	protected abstract bool DetermineAvailability(IServiceProvider services);
 }

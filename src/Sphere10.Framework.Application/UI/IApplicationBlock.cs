@@ -31,6 +31,14 @@ public interface IApplicationBlock : IApplicationCommandProvider {
 
 	ApplicationScreenDefinition DefaultScreenDefinition { get; }
 
+	/// <summary>Decides whether the host being built from the supplied provider offers this block.</summary>
+	/// <remarks>A host asks once, before it copies or registers the block, and never offers a block that declined. Availability is presentation only and authorizes nothing.
+	/// A block implementing only this contract is offered to every host.</remarks>
+	bool CheckAvailability(IServiceProvider services) {
+		Guard.ArgumentNotNull(services, nameof(services));
+		return true;
+	}
+
 	/// <summary>Allows or vetoes application exit while this block supplies the active screen or navigation context.</summary>
 	/// <remarks>The application argument supplies runtime context even when a platform copies startup block definitions.</remarks>
 	Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {

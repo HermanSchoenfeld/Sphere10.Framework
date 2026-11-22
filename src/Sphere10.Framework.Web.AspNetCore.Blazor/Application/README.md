@@ -10,17 +10,18 @@ Each interactive circuit gets one `ApplicationScreenHost`, registered under `IAp
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`Application`](Application.cs) | class | Circuit-local application that projects the screen host's live blocks and the loaded startup plugins, holds application menus and toolbar items, and runs initialize, finalize and exit. |
-| [`ApplicationBlock`](ApplicationBlock.cs) | class | Web block with a title, icon URL, tooltip, menus, toolbar items, settings, screen registrations and an optional default screen. |
+| [`ActionApplicationBlock`](ActionApplicationBlock.cs) | class | `ApplicationBlock` whose per-circuit availability is decided by a `Func<IServiceProvider, bool>` taken in its constructor, for blocks constructed without the builder. |
+| [`Application`](Application.cs) | class | Circuit-local application that projects the screen host's live blocks and the loaded startup plugins, holds application menus and toolbar items, and runs initialize, finalize and exit. `FileMenuId` (`"file"`) identifies the standard File menu that the shell places first and every layer can extend. |
+| [`ApplicationBlock`](ApplicationBlock.cs) | class | Web block with a title, icon URL, tooltip, menus, toolbar items, settings, screen registrations, an optional default screen and the per-circuit availability template: `CheckAvailability(IServiceProvider)` guards the provider and calls the protected virtual `DetermineAvailability`, which offers the block to every circuit unless a subclass overrides it. |
 | [`ApplicationBlockBuilder`](ApplicationBlockBuilder.cs) | class | Fluent builder that adds screens, menus, menu items and toolbar items to a block and builds an `ApplicationBlock`. |
-| [`ApplicationBuilder`](ApplicationBuilder.cs) | class | Returned by `BuildBlazorApplication`, it collects the title, favicon, plugins and application callbacks and registers them in the service collection on `Build()`. |
+| [`ApplicationBuilder`](ApplicationBuilder.cs) | class | Returned by `BuildBlazorApplication`, it collects the title, favicon, default grid density (`WithGridDensity`), captioned toolbars (`WithToolBarText`), plugins and application callbacks and registers them in the service collection on `Build()`. |
 | [`ApplicationMenu`](ApplicationMenu.cs) | class | Immutable block menu with an ID, icon, text and an array of menu items. |
 | [`ApplicationMenuBuilder`](ApplicationMenuBuilder.cs) | class | Fluent builder for a block menu that adds show-screen items, action items and other items. |
 | [`ApplicationMenuGroup`](ApplicationMenuGroup.cs) | class | Group of action commands that application toolbars render as a dropdown. |
 | [`ApplicationMenuItemBase`](ApplicationMenuItemBase.cs) | abstract class | Base Blazor menu item with ID, icon, title, visibility and enablement, and hover and select notifications. |
-| [`ApplicationMenuItemBuilder`](ApplicationMenuItemBuilder.cs) | class | Fluent builder for one menu item's ID, title, icon, visibility, enablement condition and child items. |
-| [`ApplicationOptions`](ApplicationOptions.cs) | record | Immutable singleton host branding with the title, favicon URL and favicon content type, readable without a circuit. |
-| [`ApplicationScreen`](ApplicationScreen.cs) | abstract class | Base Razor component for a hosted screen that attaches to its session and exposes settings, commands, unsaved-change state and activation callbacks. |
+| [`ApplicationMenuItemBuilder`](ApplicationMenuItemBuilder.cs) | class | Fluent builder for one menu item's ID, title, icon, visibility, toolbar caption choice (`WithToolBarText`), enablement condition and child items. |
+| [`ApplicationOptions`](ApplicationOptions.cs) | record | Immutable singleton host branding and presentation defaults with the title, favicon URL, favicon content type, the `GridDensity` of grids that choose none and `ToolBarText` (caption every toolbar command), readable without a circuit. |
+| [`ApplicationScreen`](ApplicationScreen.cs) | abstract class | Base Razor component for a hosted screen that attaches to its session and exposes settings, commands, unsaved-change state and activation callbacks, and after each render publishes a changed title, unsaved state or command state to its host. Its [commands part](ApplicationScreen.Commands.cs) declares `ScreenCommand`s with `Command` and places them with `UseCommands`, publishing them through the default `Menus` and `ToolBarItems`, with the `RunCommandAsync` and `IsBusy` hooks for a screen's busy guard. |
 | [`ApplicationScreenActivation`](ApplicationScreenActivation.cs) | class | Immutable component parameters and optional instance key that an activator returns for a new screen session. |
 | [`ApplicationScreenActivationContext`](ApplicationScreenActivationContext.cs) | class | Circuit services, owning block and screen definition passed to a screen activator. |
 | [`ApplicationScreenBuilder`](ApplicationScreenBuilder.cs) | class | Configures one screen registration's settings, settings editor, default component parameters and activator. |
@@ -36,11 +37,13 @@ Each interactive circuit gets one `ApplicationScreenHost`, registered under `IAp
 | [`BlazorMenuSeparator`](BlazorMenuSeparator.cs) | class | Menu separator that command merging removes when it is leading, trailing or repeated. |
 | [`BlazorScreenMenuItem`](BlazorScreenMenuItem.cs) | class | Navigation command that opens a screen registration owned by its block. |
 | [`BlazorUserInterfaceServices`](BlazorUserInterfaceServices.cs) | class | Circuit-local command execution, error and information reporting, yes or no prompts and exit coordination over the screen host. |
+| [`ScreenCommand`](ScreenCommand.cs) | class | One command a screen offers while active: ID, caption (also the tooltip), icon, `EnabledWhen`, `BlockedBy` (a reason that disables it and is named in its caption) and `VisibleWhen`; `IsEnabled` and `RunAsync` give the shell's state and action to a group box caption icon (`UI.Controls.ScreenCommandIcon`). |
+| [`ScreenCommandLayout`](ScreenCommandLayout.cs) | class | Places a screen's commands in the File menu, a record-type menu (`MenuId`, `MenuText`, groups) and the icon toolbar (groups separated by rules). |
 | [`IApplication`](IApplication.cs) | interface | Circuit-local application contract over the screen host, with blocks, loaded plugins, application commands and lifecycle. |
 | [`IApplicationBlock`](IApplicationBlock.cs) | interface | Blazor block contract that adds a title, icon URL, tooltip and default-screen metadata to the shared block. |
 | [`IApplicationCheckableMenuItem`](IApplicationCheckableMenuItem.cs) | interface | Menu command with an `IsChecked` state, such as the active entry of the Screens menu. |
 | [`IApplicationMenu`](IApplicationMenu.cs) | interface | Blazor menu contract with its parent block, ID and icon. |
-| [`IApplicationMenuItem`](IApplicationMenuItem.cs) | interface | Blazor menu item metadata and registration-time notification handlers. |
+| [`IApplicationMenuItem`](IApplicationMenuItem.cs) | interface | Blazor menu item metadata, including `ShowToolBarText` for a toolbar caption beside the icon, `ToolBarCaption` for the caption a toolbar shows (the title by default), and registration-time notification handlers. |
 | [`IApplicationScreen`](IApplicationScreen.cs) | interface | Contract for a renderer-created screen component that implements the shared screen lifecycle and command provider. |
 | [`IApplicationScreenHost`](IApplicationScreenHost.cs) | interface | Blazor host contract that adds tab identity, component attachment and activation parameters to the shared screen hosts. |
 | [`IBlazorUserInterfaceServices`](IBlazorUserInterfaceServices.cs) | interface | Blazor-specific interaction services over the shared `IUserInterfaceServices`. |

@@ -382,7 +382,9 @@ public class ApplicationGraphTests {
 		}
 	}
 
-	private sealed class NeutralBlock : ApplicationBlockBase { }
+	private sealed class NeutralBlock : ApplicationBlockBase {
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
+	}
 
 	private sealed class ToolbarBlock : ApplicationBlock, FormsUI.IApplicationBlock {
 		public new FormsUI.IApplicationMenuItem[] ToolBarItems { get; set; }

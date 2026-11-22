@@ -30,6 +30,10 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 
 	protected string Tooltip { get; private set; }
 
+	/// <summary>The predicate deciding whether a host being built offers the block, or null when every host offers it.</summary>
+	/// <remarks>Each platform's <see cref="CreateBlock"/> builds a block that decides with it, such as its <c>ActionApplicationBlock</c>.</remarks>
+	protected Func<IServiceProvider, bool> Availability { get; private set; }
+
 	protected ApplicationScreenDefinition DefaultScreenDefinition { get; private set; }
 
 	protected Type DefaultScreen => DefaultScreenDefinition?.ScreenType;
@@ -95,6 +99,12 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 		OnConfigurationChanged(nameof(Tooltip));
 	}
 
+	protected void SetAvailability(Func<IServiceProvider, bool> predicate) {
+		ValidateAvailability(predicate);
+		Availability = predicate;
+		OnConfigurationChanged(nameof(Availability));
+	}
+
 	protected void SetDefaultScreen(Type screenType) {
 		ValidateScreenType(screenType);
 		SetDefaultScreen(ApplicationScreenRegistration.ForType(screenType));
@@ -134,6 +144,9 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 
 	protected virtual void ValidateName(string name) => Guard.ArgumentNotNull(name, nameof(name));
 
+	/// <summary>Validates an availability predicate before the builder records it.</summary>
+	protected virtual void ValidateAvailability(Func<IServiceProvider, bool> predicate) => Guard.ArgumentNotNull(predicate, nameof(predicate));
+
 	/// <summary>Validates the effective product configuration before publishing or updating its registrations.</summary>
 	protected virtual void ValidateConfiguration() => Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
 
@@ -169,6 +182,13 @@ public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TB
 
 	public TSelf WithPosition(int position) {
 		SetPosition(position);
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Offers the block only to hosts whose provider satisfies the predicate, which each host evaluates once while it is built.</summary>
+	/// <remarks>Availability is presentation only. The application's services must still authorize every operation behind the block.</remarks>
+	public TSelf AvailableWhen(Func<IServiceProvider, bool> predicate) {
+		SetAvailability(predicate);
 		return (TSelf)(object)this;
 	}
 

@@ -138,4 +138,7 @@ public class ApplicationBlock : ApplicationBlockBase, IApplicationBlock {
 
 	/// <summary>Supplies toolbar definitions declared directly by this block.</summary>
 	protected virtual IApplicationMenuItem[] GetToolBarItems() => Array.Empty<IApplicationMenuItem>();
+
+	/// <summary>Offers this block to every application; <see cref="ActionApplicationBlock"/> and other subclasses decide otherwise.</summary>
+	protected override bool DetermineAvailability(IServiceProvider services) => true;
 }

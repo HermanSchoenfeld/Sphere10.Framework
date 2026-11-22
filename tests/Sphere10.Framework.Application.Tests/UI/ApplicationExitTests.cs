@@ -741,6 +741,8 @@ public class ApplicationExitTests {
 			Report?.Invoke("block");
 			return Task.FromResult(Allowed);
 		}
+
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	private sealed class DetachBlock : ApplicationBlockBase {
@@ -754,6 +756,8 @@ public class ApplicationExitTests {
 				base.Parent = value;
 			}
 		}
+
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	private sealed class ExitHost : ApplicationScreenHost<ExitBlock, ExitScreen> {

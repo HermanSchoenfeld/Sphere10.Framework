@@ -357,6 +357,8 @@ public class ApplicationExitDirectionTests {
 			PermissionApplication = application;
 			return base.CanExitAsync(application, cancellationToken);
 		}
+
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	private sealed class GuardHost : ApplicationScreenHost<GuardBlock, GuardScreen> {

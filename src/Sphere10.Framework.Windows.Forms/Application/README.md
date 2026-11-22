@@ -40,9 +40,10 @@ Sphere10Framework.Instance
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ActionApplicationBlock`](ActionApplicationBlock.cs) | class | `ApplicationBlock` whose availability is decided by a `Func<IServiceProvider, bool>` taken in its constructor; `ApplicationBlockBuilder.AvailableWhen` builds one |
 | [`Application`](Application.cs) | class | `IApplication` adapter over a running `BlockMainForm` that installs blocks on the UI thread and runs application lifecycle and exit workflows |
-| [`ApplicationBlock`](ApplicationBlock.cs) | class | Native block with title, 32x32 and 8x8 images, CHM help file, menus, toolbar items and menu or tool strip placement |
-| [`ApplicationBlockBuilder`](ApplicationBlockBuilder.cs) | class | Fluent builder that adds screens, menus, images and help to an `ApplicationBlock` |
+| [`ApplicationBlock`](ApplicationBlock.cs) | class | Native block with title, 32x32 and 8x8 images, CHM help file, menus, toolbar items and menu or tool strip placement; offered to every application unless a subclass overrides the protected `DetermineAvailability` hook |
+| [`ApplicationBlockBuilder`](ApplicationBlockBuilder.cs) | class | Fluent builder that adds screens, menus, images and help to an `ApplicationBlock`, and builds an `ActionApplicationBlock` when `AvailableWhen` was configured before `Build` |
 | [`ApplicationMenu`](ApplicationMenu.cs) | class | Native menu with title, optional 32x32 image and menu items, parented to its block |
 | [`ApplicationMenuBuilder`](ApplicationMenuBuilder.cs) | class | Fluent builder that adds action items and screen items to an `ApplicationMenu` |
 | [`ApplicationMenuItemBase`](ApplicationMenuItemBase.cs) | abstract class | Base menu item with 16x16 image, explorer bar and tool strip visibility, and execute-on-load flag |
@@ -127,7 +128,7 @@ Sphere10Framework.Instance
 | [`BlockConfigurationScreen`](Forms/BlockConfigurationScreen.cs) | class | Empty designer user control for block configuration layouts |
 | [`BlockMainForm`](Forms/BlockMainForm.cs) | class | Main form with a collapsible navigation pane of block task panes that implements `IBlockManager` |
 | [`LiteMainForm`](Forms/LiteMainForm.cs) | class | Main form base with first-run events, exit confirmation, closing permissions and Screen Options |
-| [`MainForm`](Forms/MainForm.cs) | class | Main form that composes menus and toolbar commands around its `ApplicationScreenHost` |
+| [`MainForm`](Forms/MainForm.cs) | class | Main form that composes menus and toolbar commands around its `ApplicationScreenHost`, and shows its `LoadingIndicator` in the status bar |
 | [`ProductAboutBox`](Forms/ProductAboutBox.cs) | class | Default `IAboutBox` whose labels and link are filled from product information tokens |
 | [`ProductProductReportBugDialog`](Forms/ProductProductReportBugDialog.cs) | class | Default `IProductReportBugDialog` that submits a bug report with up to two attachments through the product support service, showing a loading circle while it sends |
 | [`ProductProductRequestFeatureDialog`](Forms/ProductProductRequestFeatureDialog.cs) | class | Default `IProductRequestFeatureDialog` that submits a feature request with up to two attachments through the product support service, showing a loading circle while it sends |

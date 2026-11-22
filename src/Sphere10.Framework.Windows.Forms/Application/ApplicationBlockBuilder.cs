@@ -28,7 +28,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	public ApplicationBlockBuilder AddScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, SettingsObject settings = null,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
-		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
+		Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> settingsEditor = null)
 		where TScreen : ApplicationScreen {
 		return AddScreen<TScreen>(title, out _, activationMode, screenKind, stableKey, settings, activator, settingsEditor);
 	}
@@ -38,7 +38,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
 		SettingsObject settings = null,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
-		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
+		Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> settingsEditor = null)
 		where TScreen : ApplicationScreen {
 		registration = new ApplicationScreenRegistration<TScreen>();
 		AddScreenDefinitionInternal(CreateScreenDefinition(typeof(TScreen), registration, title, activationMode, screenKind, stableKey, settings, activator, settingsEditor));
@@ -49,7 +49,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	public ApplicationBlockBuilder AddScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, SettingsObject settings = null,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
-		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null) {
+		Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> settingsEditor = null) {
 		return AddScreen(screenType, title, out _, activationMode, screenKind, stableKey, settings, activator, settingsEditor);
 	}
 
@@ -58,7 +58,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
 		SettingsObject settings = null,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
-		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null) {
+		Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> settingsEditor = null) {
 		registration = new ApplicationScreenRegistration(screenType);
 		AddScreenDefinitionInternal(CreateScreenDefinition(screenType, registration, title, activationMode, screenKind, stableKey, settings, activator, settingsEditor));
 		return this;
@@ -186,6 +186,12 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 		}
 	}
 
+	/// <summary>A built block's availability is fixed by the block type chosen when it was built.</summary>
+	protected override void ValidateAvailability(Func<IServiceProvider, bool> predicate) {
+		base.ValidateAvailability(predicate);
+		Guard.Ensure(_block == null, "Availability must be configured before the block is built.");
+	}
+
 	/// <summary>Registers the menu through the block's existing ownership rules.</summary>
 	protected override void OnMenuAdded(IApplicationMenu menu) => _block?.AddMenu(menu);
 
@@ -199,13 +205,14 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	/// <summary>Rejects screen types that cannot be hosted by native application controls.</summary>
 	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 
-	/// <summary>Builds the configured native block and attaches its owned menus.</summary>
+	/// <summary>Builds the configured native block, decided by the availability predicate when one is configured, and attaches its owned menus.</summary>
 	protected override ApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {
 		if (_block != null)
 			return _block;
-		_block = new ApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null) {
-			Position = Position
-		};
+		_block = Availability == null
+			? new ApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null)
+			: new ActionApplicationBlock(Availability, Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null);
+		_block.Position = Position;
 		foreach (var definition in ScreenDefinitions)
 			_block.AddScreenDefinition(definition);
 		if (DefaultScreenDefinition != null)
@@ -219,7 +226,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	private static ApplicationScreenDefinition CreateScreenDefinition(Type screenType, ApplicationScreenRegistration registration,
 		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, SettingsObject settings,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator,
-		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor) {
+		Func<ApplicationSettingsEditorContext, IVisualEntityEditor<object>> settingsEditor) {
 		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 		ApplicationHelper.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(title == null || title.Length > 0, nameof(title), "A screen title cannot be empty.");

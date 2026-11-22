@@ -35,6 +35,43 @@ public class SharedFluentBuilderTests {
 		Assert.That(block.ScreenDefinitions, Is.Empty, "Block preferences do not require a screen or menu registration.");
 	}
 
+	/// <summary>Verifies the block builder carries its availability predicate into the product without evaluating it.</summary>
+	[Test]
+	public void BlockBuilderCarriesTheAvailabilityPredicateWithoutEvaluatingIt() {
+		using var accepted = new ServiceCollection().BuildServiceProvider();
+		using var declined = new ServiceCollection().BuildServiceProvider();
+		var evaluations = 0;
+		var builder = new BlockBuilder()
+			.WithName("Restricted");
+		Assert.That(builder
+			.AvailableWhen(services => {
+				evaluations++;
+				return ReferenceEquals(services, accepted);
+			}), Is.SameAs(builder));
+		var block = builder.Build();
+
+		Assert.That(evaluations, Is.Zero, "Composition must not decide availability.");
+		Assert.That(block, Is.InstanceOf<ActionTestApplicationBlock>(), "A predicate is carried by the delegate-taking block, never assigned into a base.");
+		Assert.That(block.CheckAvailability(accepted), Is.True);
+		Assert.That(block.CheckAvailability(declined), Is.False);
+		Assert.That(evaluations, Is.EqualTo(2));
+		Assert.That(() => block.CheckAvailability(null), Throws.ArgumentNullException, "A predicate is never run without the host's provider.");
+		Assert.That(evaluations, Is.EqualTo(2));
+	}
+
+	/// <summary>Verifies a block built without a predicate is always available and that a null predicate is rejected.</summary>
+	[Test]
+	public void BlockBuilderLeavesABlockWithoutAPredicateAlwaysAvailable() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var block = new BlockBuilder()
+			.WithName("Open")
+			.Build();
+
+		Assert.That(block, Is.Not.InstanceOf<ActionTestApplicationBlock>());
+		Assert.That(block.CheckAvailability(provider), Is.True);
+		Assert.That(() => new BlockBuilder().AvailableWhen(null), Throws.ArgumentNullException);
+	}
+
 	/// <summary>Verifies optional definition references keep callback order and return the parent builder.</summary>
 	[Test]
 	public void OptionalDefinitionReferencesKeepCallbackOrderAndReturnTheParentBuilder() {
@@ -287,7 +324,9 @@ public class SharedFluentBuilderTests {
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<BlockBuilder, IApplicationMenu, MenuBuilder, TestApplicationBlock> {
 		/// <inheritdoc />
 		protected override TestApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {
-			var block = new TestApplicationBlock { Name = Name, Position = Position };
+			var block = Availability == null ? new TestApplicationBlock() : new ActionTestApplicationBlock(Availability);
+			block.Name = Name;
+			block.Position = Position;
 			foreach (var menu in menus)
 				block.AddMenu(menu);
 			return block;

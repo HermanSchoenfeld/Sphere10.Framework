@@ -251,7 +251,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 
 	/// <inheritdoc />
 	protected override ApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {
-		return ApplicationBlockSnapshot.Create(new BlockSource {
+		return ApplicationBlockSnapshot.Create(new BlockSource(Availability) {
 			Id = _id ?? Name, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip, BlockSettings = BlockSettings,
 			ScreenDefinitions = ScreenDefinitions, DefaultScreenDefinition = DefaultScreenDefinition,
 			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle,
@@ -293,6 +293,11 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 
 	/// <summary>Builder inputs are borrowed until the final snapshot owns their cloned graph.</summary>
 	private sealed class BlockSource : IApplicationBlock {
+		private readonly Func<IServiceProvider, bool> _availability;
+
+		/// <summary>Carries the configured availability predicate, or null when every circuit offers the block.</summary>
+		public BlockSource(Func<IServiceProvider, bool> availability) => _availability = availability;
+
 		/// <inheritdoc />
 		public IApplication Parent { get; set; }
 
@@ -340,6 +345,13 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 
 		/// <inheritdoc />
 		public ScreenKind DefaultScreenKind { get; init; }
+
+		/// <inheritdoc />
+		/// <remarks>The built snapshot defers to this decision, so each circuit runs the configured predicate.</remarks>
+		public bool CheckAvailability(IServiceProvider services) {
+			Guard.ArgumentNotNull(services, nameof(services));
+			return _availability == null || _availability(services);
+		}
 	}
 
 	#endregion

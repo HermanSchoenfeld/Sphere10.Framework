@@ -128,6 +128,7 @@ public class ApplicationCommandProviderContractTests {
 
 	// An ordinary block needs no redundant provider declaration or command storage for empty defaults.
 	private sealed class EmptyBlock : ApplicationBlockBase {
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	// A shared screen uses the inherited command defaults independently of native or web rendering.
@@ -143,6 +144,8 @@ public class ApplicationCommandProviderContractTests {
 		public TestApplicationMenu<TestApplicationMenuItem>[] Menus { get; init; }
 
 		public TestApplicationMenuItem[] ToolBarItems { get; init; }
+
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	// Retain the same specialized projection through the portable screen contract.

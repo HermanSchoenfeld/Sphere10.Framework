@@ -217,6 +217,8 @@ internal static class ApplicationBlockSnapshot {
 				Title = screen.Title,
 				Icon = screen.Icon,
 				IsVisible = screen.IsVisible,
+				ShowToolBarText = screen.ShowToolBarText,
+				ToolBarCaption = screen.ToolBarCaption,
 				CanExecute = screen.CanExecute,
 				Registration = screen.Registration
 			};
@@ -233,6 +235,8 @@ internal static class ApplicationBlockSnapshot {
 			Title = action.Title,
 			Icon = action.Icon,
 			IsVisible = action.IsVisible,
+			ShowToolBarText = action.ShowToolBarText,
+			ToolBarCaption = action.ToolBarCaption,
 			CanExecute = action.CanExecute,
 			Action = action.Action,
 			AsyncAction = action.AsyncAction
@@ -270,7 +274,7 @@ internal static class ApplicationBlockSnapshot {
 			"Action groups require children; screen registrations must remain top-level block menu items.");
 		Guard.Argument(items.Select(child => child.Id).Distinct(StringComparer.Ordinal).Count() == items.Length, nameof(item), "Action group child IDs must be unique.");
 		var snapshot = new ApplicationMenuGroup {
-			Id = item.Id, Title = item.Title, Icon = item.Icon, IsVisible = item.IsVisible, CanExecute = item.CanExecute, Items = items
+			Id = item.Id, Title = item.Title, Icon = item.Icon, IsVisible = item.IsVisible, ShowToolBarText = item.ShowToolBarText, ToolBarCaption = item.ToolBarCaption, CanExecute = item.CanExecute, Items = items
 		};
 		snapshot.CopySubscriptionsFrom(item);
 		return snapshot;
@@ -287,16 +291,23 @@ internal static class ApplicationBlockSnapshot {
 
 	#region Inner Types
 
-	// Preserve a contributed block's exit policy without retaining its mutable ownership links.
+	// Preserve a contributed block's exit and availability policies without retaining its mutable ownership links.
 	private sealed class BlockSnapshot : ApplicationBlock {
 		private readonly Func<SharedUI.IApplication, CancellationToken, Task<bool>> _exitGuard;
+		private readonly Func<IServiceProvider, bool> _availability;
 
-		/// <summary>Retains the source block's exit policy while the copy owns its graph.</summary>
-		public BlockSnapshot(IApplicationBlock source) => _exitGuard = source.CanExitAsync;
+		/// <summary>Retains the source block's exit and availability policies while the copy owns its graph.</summary>
+		public BlockSnapshot(IApplicationBlock source) {
+			_exitGuard = source.CanExitAsync;
+			_availability = source.CheckAvailability;
+		}
 
 		/// <inheritdoc />
 		public override Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default)
 			=> _exitGuard(application, cancellationToken);
+
+		/// <summary>A copy keeps deferring to its source's decision, so the configured predicate survives every startup copy.</summary>
+		protected override bool DetermineAvailability(IServiceProvider services) => _availability(services);
 	}
 
 	#endregion

@@ -91,6 +91,10 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	internal IApplicationBlock[] StartupBlocks => _engine.RegistrationBlocks;
 
+	// The running application's provider reaches a hosted control through its form; a standalone host has none.
+	private IServiceProvider ApplicationServices
+		=> FindForm() is LiteMainForm form ? form.ApplicationServices ?? (form.Application as Application)?.ApplicationServices : null;
+
 	public override void SelectBlock(IApplicationBlock block) {
 		ObjectDisposedException.ThrowIf(_disposing, this);
 		Guard.Argument(block == null || _engine.RegistrationBlocks.Contains(block, ReferenceEqualityComparer.Instance), nameof(block), "Block is not registered.");
@@ -333,6 +337,9 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	internal IScope EnterPresentationScope() => EnterUpdateScope();
 
+	// Decides once, against the running application's provider, whether this host offers the block.
+	internal bool CheckBlockAvailability(IApplicationBlock block) => _engine.CheckAvailability(block);
+
 	internal Task CompleteStartupScreenWritesAsync() {
 		_startupSettingsFinalizing = true;
 		return Task.WhenAll(_startupSettingsWrites.ToArray());
@@ -340,7 +347,8 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	internal bool InitializeScreens(IEnumerable<IApplicationBlock> blocks, Action registerBlocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		// A block this application does not offer is left out before its definitions, permanent screens or default can take part.
+		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).Where(CheckBlockAvailability).ToArray();
 		var allBlocks = ordered.Concat(_engine.RegistrationBlocks.Where(block => !ordered.Contains(block, ReferenceEqualityComparer.Instance))).ToArray();
 		var definitions = ApplicationHelper.GetScreenDefinitions(allBlocks);
 		var replaceEmpty = ActiveScreen?.ScreenKind == ScreenKind.Empty && definitions.Any(definition =>
@@ -450,10 +458,12 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		Guard.ArgumentNotNull(ScreenType, nameof(ScreenType));
 		ApplicationHelper.ValidateScreenType(ScreenType, typeof(ApplicationScreen));
+		var definition = requestedDefinition ?? ApplicationHelper.ResolveScreenRegistration(Block.ScreenDefinitions, ApplicationScreenRegistration.ForType(ScreenType));
+		// Shown before the transition suspends the window's drawing, so the status bar paints it ahead of the screen's construction.
+		using var loading = ShowLoadingIndicator($"Opening {(!string.IsNullOrWhiteSpace(Title) ? Title : definition?.Title ?? ScreenType.Name)}…");
 		using var update = EnterUpdateScope();
 		if (registerBlock)
 			RegisterScreenTypes(Block);
-		var definition = requestedDefinition ?? ApplicationHelper.ResolveScreenRegistration(Block.ScreenDefinitions, ApplicationScreenRegistration.ForType(ScreenType));
 		if (definition?.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
 			return null;
 		var Existing = Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, Block) && ReferenceEquals(GetBinding(screen).Definition, definition) && ApplicationHelper.IsSingleton(screen.ActivationMode));
@@ -576,6 +586,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		if (closing.Any(screen => screen?.ActivationMode == ScreenActivationMode.PermanentSingleton) || !CanCloseScreens(closing))
 			return false;
 		token.ThrowIfCancellationRequested();
+		using var loading = ShowLoadingIndicator(closing.Length == 1 ? $"Closing {closing[0].Title}…" : $"Closing {closing.Length} Screens…");
 		await SaveScreenSettingsAsync(closing, token);
 		CloseScreensCore(closing);
 		return true;
@@ -771,6 +782,9 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	}
 
 	private ScreenTransitionScope EnterUpdateScope(bool repaintImmediately = true) => new(this, repaintImmediately);
+
+	// The window's loading indicator for a screen change, or null for a host outside a window that offers one.
+	private IScope ShowLoadingIndicator(string message) => _disposing ? null : UserInterfaceServices?.LoadingIndicator.Show(message);
 
 	private static bool CanHide(ApplicationScreen? Screen) {
 		var Cancel = false;
@@ -1037,6 +1051,9 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 		protected override SharedUI.IApplicationScreenHost ScreenOwner => _owner;
 
+		// Blocks are admitted after construction, when the owning control can reach its application's provider; a standalone host decides against its own.
+		protected override IServiceProvider AvailabilityServices => _owner?.ApplicationServices ?? Services;
+
 		public SharedUI.ApplicationScreenDefinition[] Definitions => GetDefinitions();
 
 		public IApplicationBlock[] RegistrationBlocks => TrackedBlocks;
@@ -1046,6 +1063,8 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		public IApplicationBlock GetDefinitionOwner(SharedUI.ApplicationScreenDefinition definition) => GetDefinitionBlock(definition);
 
 		public void InitializeState() => MarkInitialized();
+
+		public bool CheckAvailability(IApplicationBlock block) => CheckBlockAvailability(block);
 
 		public ActionScope DeferChanges() => DeferNotifications();
 
@@ -1163,6 +1182,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			cancellationToken.ThrowIfCancellationRequested();
 			EnsureUsable();
 			Guard.ArgumentNotNull(block, nameof(block));
+			Guard.Argument(CheckBlockAvailability(block), nameof(block), "The block is not available.");
 			if (_owner.FindForm() is BlockMainForm form) {
 				if (!form.IsBlockRegistered(block))
 					form.RegisterBlock(block);

@@ -57,6 +57,28 @@ internal class TestApplicationBlock : ApplicationBlockBase, IApplicationCommandP
 			nameof(definition), "A referenced screen definition cannot be removed.");
 		base.RemoveScreenDefinition(definition);
 	}
+
+	/// <summary>Offers the block to every host, as an ordinary concrete block does.</summary>
+	protected override bool DetermineAvailability(IServiceProvider services) => true;
+}
+
+/// <summary>A test block whose availability is decided by a delegate supplied at construction, as the platform <c>ActionApplicationBlock</c> types are.</summary>
+internal class ActionTestApplicationBlock : TestApplicationBlock {
+	private readonly Func<IServiceProvider, bool> _availability;
+
+	public ActionTestApplicationBlock(Func<IServiceProvider, bool> availability) {
+		Guard.ArgumentNotNull(availability, nameof(availability));
+		_availability = availability;
+	}
+
+	public ActionTestApplicationBlock(string name, ApplicationScreenDefinition defaultScreen, Func<IServiceProvider, bool> availability)
+		: base(name, defaultScreen) {
+		Guard.ArgumentNotNull(availability, nameof(availability));
+		_availability = availability;
+	}
+
+	/// <inheritdoc />
+	protected override bool DetermineAvailability(IServiceProvider services) => _availability(services);
 }
 
 internal class TestApplicationMenu<TItem> : ApplicationMenuBase<TItem>
