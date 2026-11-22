@@ -58,6 +58,8 @@ public class AssemblyAttributesProductInformationProvider : IProductInformationP
 			ProductUrl = Sphere10AssemblyAttributesHelper.GetAssemblyProductLink(_assembly) ?? string.Empty,
 			AuthorName = Sphere10AssemblyAttributesHelper.GetAssemblyAuthorName(_assembly) ?? string.Empty,
 			AuthorEmail = Sphere10AssemblyAttributesHelper.GetAssemblyAuthorEmail(_assembly) ?? string.Empty,
+			PublisherName = Sphere10AssemblyAttributesHelper.GetAssemblyPublisherName(_assembly) ?? string.Empty,
+			PublisherIsCompany = Sphere10AssemblyAttributesHelper.GetAssemblyPublisherIsCompany(_assembly),
 			ProductVersion = version,
 			HelpResources = Sphere10AssemblyAttributesHelper.GetAssemblyProductHelpResources(_assembly)
 		};

@@ -20,6 +20,7 @@ The Application module reads `AssemblyApplicationSecretAttribute` (the applicati
 | [`AssemblyProductHelpPDFAttribute`](AssemblyProductHelpPDFAttribute.cs) | class | Declares a PDF manual path as a `HelpType.PDF` resource |
 | [`AssemblyProductHelpResourceAttribute`](AssemblyProductHelpResourceAttribute.cs) | abstract class | Base of the help-resource attributes, carrying a `HelpType` and a `Path` |
 | [`AssemblyProductLinkAttribute`](AssemblyProductLinkAttribute.cs) | class | Product website URL, read into `ProductInformation.ProductUrl` |
+| [`AssemblyProductPublisherAttribute`](AssemblyProductPublisherAttribute.cs) | class | Publisher `Name` and named `IsCompany`, read into `ProductInformation.PublisherName` and `PublisherIsCompany` |
 | [`AssemblyProductPurchaseLinkAttribute`](AssemblyProductPurchaseLinkAttribute.cs) | class | Product purchase URL, read into `ProductInformation.ProductPurchaseUrl` |
 | [`AssemblyApplicationSecretAttribute`](AssemblyApplicationSecretAttribute.cs) | class | Application secret that the module assigns to `EncryptedStringAttribute.ApplicationSharedSecret` |
 | [`ContextHelpAttribute`](ContextHelpAttribute.cs) | class | Numeric context-help topic `ID`, declared in the `Sphere10.Framework.Application.Help` namespace |

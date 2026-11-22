@@ -25,6 +25,8 @@ public class ProductInformation : SettingsObject {
 	public string ProductUrl { get; set; }
 	public string AuthorName { get; set; }
 	public string AuthorEmail { get; set; }
+	public string PublisherName { get; set; }
+	public bool PublisherIsCompany { get; set; }
 	public string ProductPurchaseUrl { get; set; }
 	public ICollection<Tuple<HelpType, string>> HelpResources = Array.Empty<Tuple<HelpType, string>>();
 }

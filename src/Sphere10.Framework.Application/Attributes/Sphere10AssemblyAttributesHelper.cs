@@ -141,5 +141,19 @@ internal static class Sphere10AssemblyAttributesHelper {
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Email ?? string.Empty);
 	}
 
+	/// <summary>Reads and formats the publisher name.</summary>
+	public static string GetAssemblyPublisherName(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductPublisherAttribute>(false);
+		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Name ?? string.Empty);
+	}
+
+	/// <summary>Reads whether the declared publisher is a company; false when no publisher is declared.</summary>
+	public static bool GetAssemblyPublisherIsCompany(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductPublisherAttribute>(false);
+		return attributes.Any() && attributes.First().IsCompany;
+	}
+
 }
 

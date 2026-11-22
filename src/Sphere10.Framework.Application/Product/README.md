@@ -22,7 +22,7 @@ Product identity read from assembly attributes or supplied in code, usage counte
 | [`IProductServicesProvider`](IProductServicesProvider.cs) | interface | Combines product information, usage services and the instance counter in one service |
 | [`IProductUsageServices`](IProductUsageServices.cs) | interface | Usage statistics, `IncrementUsageByOne` and encrypted per-user and per-machine property dictionaries |
 | [`ProductComment`](ProductComment.cs) | class | Support request carrying a user's comment about the product |
-| [`ProductInformation`](ProductInformation.cs) | class | `SettingsObject` with company, product, version, URL, author, copyright and help-resource details |
+| [`ProductInformation`](ProductInformation.cs) | class | `SettingsObject` with company, product, version, URL, author, publisher, copyright and help-resource details |
 | [`ProductInformationTokenResolver`](ProductInformationTokenResolver.cs) | class | Resolves the company, product, version, copyright and URL tokens from `ProductInformation` |
 | [`ProductUsageInformation`](ProductUsageInformation.cs) | class | First-use dates, days used and run counts for the machine and for the current user |
 | [`ProductUsageInformationTokenResolver`](ProductUsageInformationTokenResolver.cs) | class | Resolves the usage tokens, such as `DaysUsedByUser`, through the framework's `IProductUsageServices` |

@@ -53,6 +53,14 @@ public class AssemblyProductInformationTests {
 		);
 		assembly.SetCustomAttribute(
 			new CustomAttributeBuilder(
+				typeof(AssemblyProductPublisherAttribute).GetConstructor([typeof(string)]),
+				["Explicit publisher"],
+				[typeof(AssemblyProductPublisherAttribute).GetProperty(nameof(AssemblyProductPublisherAttribute.IsCompany))],
+				[true]
+			)
+		);
+		assembly.SetCustomAttribute(
+			new CustomAttributeBuilder(
 				typeof(AssemblyProductDistributionAttribute).GetConstructor([typeof(ProductDistribution)]),
 				[ProductDistribution.Beta]
 			)
@@ -74,6 +82,8 @@ public class AssemblyProductInformationTests {
 		Assert.That(information.ProductCode, Is.EqualTo(productCode));
 		Assert.That(information.AuthorName, Is.EqualTo("Explicit author"));
 		Assert.That(information.AuthorEmail, Is.EqualTo("author@example.invalid"));
+		Assert.That(information.PublisherName, Is.EqualTo("Explicit publisher"));
+		Assert.That(information.PublisherIsCompany, Is.True);
 		Assert.That(information.ProductVersion.Major, Is.EqualTo(2));
 		Assert.That(information.ProductVersion.Minor, Is.EqualTo(3));
 		Assert.That(information.ProductVersion.Build, Is.EqualTo(4));
@@ -106,6 +116,8 @@ public class AssemblyProductInformationTests {
 
 		Assert.That(information.ProductName, Is.Empty);
 		Assert.That(information.CompanyName, Is.Empty);
+		Assert.That(information.PublisherName, Is.Empty);
+		Assert.That(information.PublisherIsCompany, Is.False);
 		Assert.That(information.ProductCode, Is.EqualTo(Guid.Empty));
 		Assert.That(information.HelpResources, Is.Empty);
 		Assert.That(information.ProductVersion.Distribution, Is.EqualTo(ProductDistribution.ReleaseCandidate));
