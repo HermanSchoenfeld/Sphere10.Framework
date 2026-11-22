@@ -17,26 +17,17 @@ internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.Con
 
 	public CustomSortHeaderCellController(VisualGrid visualGrid) => _visualGrid = visualGrid;
 
-
 	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
 		base.OnMouseUp(sender, e);
-		if (e.Button != MouseButtons.Left)
+		// Releasing a dragged column boundary is not a click on the header.
+		if (e.Button != MouseButtons.Left || sender.Cell.FindController(typeof(SourceGrid.Cells.Controllers.Resizable)) is SourceGrid.Cells.Controllers.Resizable { EndedResize: true })
 			return;
 		var cellRect = sender.Grid.PositionToRectangle(sender.Position);
 		var mousePoint = new Point(e.X, e.Y);
-		var cell = sender.Grid.PositionAtPoint(e.Location);
-		var col = cell.Column;
-		var row = cell.Row;
 
-		var _logicalBorder = new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(Color.Black, 4));
-		float distanceFromBorder;
-		switch (_logicalBorder.GetPointPartType(cellRect, mousePoint, out distanceFromBorder)) {
-			case Sphere10.Framework.Drawing.RectanglePartType.ContentArea:
-				_visualGrid._grid_SortColumnPressed(sender.Position.Column);
-				break;
-
-		}
+		var logicalBorder = new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(Color.Black, SourceGrid.Cells.Controllers.Resizable.GetGrabWidth(sender.Grid)));
+		if (logicalBorder.GetPointPartType(cellRect, mousePoint, out _) == Sphere10.Framework.Drawing.RectanglePartType.ContentArea)
+			_visualGrid._grid_SortColumnPressed(sender.Position.Column);
 	}
-
 }
 

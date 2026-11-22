@@ -27,6 +27,9 @@ public class Resizable : ControllerBase {
 	private bool _isWidthResize = false;
 	private bool _isHeightResize = false;
 	private float _distanceFromBorder = 0;
+	private int _resizeColumn = -1;
+	private int _grabOffset;
+	private bool _endedResize;
 
 	/// <summary>
 	/// Resize both width nd height behavior
@@ -69,6 +72,13 @@ public class Resizable : ControllerBase {
 	/// </summary>
 	public bool IsHeightResizing => _isHeightResize;
 
+	/// <summary>Whether the last mouse release finished a resize, so other controllers of the same cell (a sortable header, say) do not
+	/// also treat it as a click.</summary>
+	public bool EndedResize => _endedResize;
+
+	/// <summary>How far either side of a boundary the pointer grabs it, in device pixels: four logical pixels at the grid's DPI.</summary>
+	public static int GetGrabWidth(GridVirtual grid) => Math.Max(4, (int)Math.Round(4 * grid.DeviceDpi / 96D));
+
 	#region IBehaviorModel Members
 
 	public override void OnMouseDown(CellContext sender, MouseEventArgs e) {
@@ -76,16 +86,20 @@ public class Resizable : ControllerBase {
 
 		_isHeightResize = false;
 		_isWidthResize = false;
+		_endedResize = false;
+		_resizeColumn = -1;
 
 		var cellRect = sender.Grid.PositionToRectangle(sender.Position);
 		var mousePoint = new Point(e.X, e.Y);
 
-		var partType = LogicalBorder.GetPointPartType(cellRect, mousePoint, out _distanceFromBorder);
-
-		if (((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width) &&
-			partType == Sphere10.Framework.Drawing.RectanglePartType.RightBorder)
+		if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width && TryGetWidthBoundary(sender, cellRect, mousePoint, out var column, out var boundary)) {
 			_isWidthResize = true;
-		else if (((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height) &&
+			_resizeColumn = column;
+			_grabOffset = boundary - mousePoint.X;
+			return;
+		}
+		var partType = GetBorder(sender.Grid).GetPointPartType(cellRect, mousePoint, out _distanceFromBorder);
+		if (((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height) &&
 					partType == Sphere10.Framework.Drawing.RectanglePartType.BottomBorder)
 			_isHeightResize = true;
 	}
@@ -93,6 +107,7 @@ public class Resizable : ControllerBase {
 	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
 		base.OnMouseUp(sender, e);
 
+		_endedResize = _isWidthResize || _isHeightResize;
 		_isWidthResize = false;
 		_isHeightResize = false;
 	}
@@ -107,15 +122,16 @@ public class Resizable : ControllerBase {
 		var mousePoint = new Point(e.X, e.Y);
 
 		float dummy;
-		var partType = LogicalBorder.GetPointPartType(cellRect, mousePoint, out dummy);
+		var partType = GetBorder(sender.Grid).GetPointPartType(cellRect, mousePoint, out dummy);
 
-		//sono già in fase di resizing
-		if (sender.Grid.MouseDownPosition == sender.Position) {
+		// Already resizing: the boundary follows the pointer, wherever on the line it was grabbed.
+		if (sender.Grid.MouseDownPosition == sender.Position && (_isWidthResize || _isHeightResize)) {
 			if (_isWidthResize) {
-				var newWidth = mousePoint.X - cellRect.Left;
+				var columnLeft = sender.Grid.Columns.GetLeft(_resizeColumn) - (sender.Grid.Columns.GetLeft(sender.Position.Column) - cellRect.Left);
+				var newWidth = mousePoint.X + _grabOffset - columnLeft;
 
 				if (newWidth > 0)
-					SetWidth(sender.Grid, sender.Position, (int)(newWidth + _distanceFromBorder));
+					sender.Grid.Columns.SetWidth(_resizeColumn, newWidth);
 
 				_widthCursor.ApplyCursor(sender, e);
 				_heightCursor.ResetCursor(sender, e);
@@ -129,7 +145,7 @@ public class Resizable : ControllerBase {
 				_widthCursor.ResetCursor(sender, e);
 			}
 		} else {
-			if (partType == Sphere10.Framework.Drawing.RectanglePartType.RightBorder && (ResizeMode & CellResizeMode.Width) == CellResizeMode.Width)
+			if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width && TryGetWidthBoundary(sender, cellRect, mousePoint, out _, out _))
 				_widthCursor.ApplyCursor(sender, e);
 			else if (partType == Sphere10.Framework.Drawing.RectanglePartType.BottomBorder && (ResizeMode & CellResizeMode.Height) == CellResizeMode.Height)
 				_heightCursor.ApplyCursor(sender, e);
@@ -156,17 +172,42 @@ public class Resizable : ControllerBase {
 		var cellRect = sender.Grid.PositionToRectangle(sender.Position);
 
 		float distance;
-		var partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
+		var partType = GetBorder(sender.Grid).GetPointPartType(cellRect, currentPoint, out distance);
 
-		if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width &&
-			partType == Sphere10.Framework.Drawing.RectanglePartType.RightBorder)
-			sender.Grid.Columns.AutoSizeColumn(sender.Position.Column);
+		if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width && TryGetWidthBoundary(sender, cellRect, currentPoint, out var column, out _))
+			sender.Grid.Columns.AutoSizeColumn(column);
 		else if ((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height &&
 							partType == Sphere10.Framework.Drawing.RectanglePartType.BottomBorder)
 			sender.Grid.Rows.AutoSizeRow(sender.Position.Row);
 	}
 
 	#endregion
+
+	// The boundary a column is resized by is grabbed from either side of the line: inside this cell's right edge it is this cell's last column,
+	// inside its left edge the column before it. People aim at the line itself, so a grab on one side only is too narrow to find.
+	private static bool TryGetWidthBoundary(CellContext sender, Rectangle cellRect, Point point, out int column, out int boundary) {
+		var grab = GetGrabWidth(sender.Grid);
+		var range = sender.Grid.PositionToCellRange(sender.Position);
+		column = -1;
+		boundary = 0;
+		if (point.X >= cellRect.Right - grab && point.X <= cellRect.Right + 1) {
+			column = range.End.Column;
+			boundary = cellRect.Right;
+			return true;
+		}
+		if (point.X < cellRect.Left + grab && range.Start.Column > 0 && sender.Grid.Columns.IsColumnVisible(range.Start.Column - 1)) {
+			column = range.Start.Column - 1;
+			boundary = cellRect.Left;
+			return true;
+		}
+		return false;
+	}
+
+	private Sphere10.Framework.Drawing.RectangleBorder GetBorder(GridVirtual grid) {
+		var grab = GetGrabWidth(grid);
+		return grab == 4 ? LogicalBorder
+			: new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(System.Drawing.Color.Black, grab), new Sphere10.Framework.Drawing.BorderLine(System.Drawing.Color.Black, grab));
+	}
 
 	private void SetWidth(GridVirtual grid, Position position, int width) {
 		var range = grid.PositionToCellRange(position);

@@ -46,7 +46,7 @@ Selection behaviour comes from an `IGridSelection` such as `FreeSelection`, `Row
 | [`MouseCursor`](Cells/Controllers/MouseCursor.cs) | class | Changes the mouse cursor while the pointer is over the cell |
 | [`MouseInvalidate`](Cells/Controllers/MouseInvalidate.cs) | class | Repaints the cell on mouse down, mouse up, enter and leave |
 | [`MouseSelection`](Cells/Controllers/MouseSelection.cs) | class | Selects cells and ranges with mouse down, drag and double click |
-| [`Resizable`](Cells/Controllers/Resizable.cs) | class | Resizes the row height or column width by dragging the cell border |
+| [`Resizable`](Cells/Controllers/Resizable.cs) | class | Resizes the row height or column width by dragging the cell border. A column boundary is grabbed from either side of the line (inside the cell's right edge for its own column, inside the next cell's left edge for the column before it) within `GetGrabWidth`, four logical pixels at the grid's DPI. `EndedResize` tells other controllers of the cell, such as a sortable header, that the last mouse release finished a resize |
 | [`RichTextBox`](Cells/Controllers/RichTextBox.cs) | class | Applies a font, colour, character offset, alignment or effect assigned to a rich text cell to its current selection |
 | [`RowFocus`](Cells/Controllers/RowFocus.cs) | class | Moves focus to the whole row when a cell of that row receives focus |
 | [`RowSelector`](Cells/Controllers/RowSelector.cs) | class | Selects the cell's whole row on click, or on mouse down for `SelectOnMouseDown` |
@@ -61,7 +61,7 @@ Selection behaviour comes from an `IGridSelection` such as `FreeSelection`, `Row
 |---|---|---|
 | [`ComboBox`](Cells/Editors/ComboBox.cs) | class | Editor that edits a value in a `ComboBoxEx` with optional standard values |
 | [`ControlsRepository`](Cells/Editors/ControlsRepository.cs) | class | Read-only dictionary of editor controls keyed by GUID and parented to the grid |
-| [`CrudReference`](Cells/Editors/CrudReference.cs) | class | Read-only editor that opens a CRUD reference picker dialog and shows the bound entity's display text |
+| [`VisualGridReference`](Cells/Editors/VisualGridReference.cs) | class | Read-only editor that opens the shared reference-picker dropdown and shows the bound entity's display text |
 | [`DateTimePicker`](Cells/Editors/DateTimePicker.cs) | class | Editor that edits dates with a `DateTimePicker` |
 | [`DropDownList`](Cells/Editors/DropDownList.cs) | class | Drop-down editor over a `ComboBoxEx` that can display a member of each item |
 | [`EditorBase`](Cells/Editors/EditorBase.cs) | class | Type-converting validator that every cell editor derives from, with editable mode and edit lifecycle |
