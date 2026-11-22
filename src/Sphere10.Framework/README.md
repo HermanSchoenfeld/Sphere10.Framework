@@ -47,6 +47,7 @@ Every folder of `Sphere10.Framework` is a domain with its own README, which list
 |---|---|---|
 | [Attributes](Attributes/README.md) | Declarative attributes for default dates, encrypted string members, enum error messages and metadata, and file extensions. | [source](Attributes/) |
 | [Cache](Cache/README.md) | Synchronized in-memory caches that fetch values on a miss and evict them under expiration, staleness and capacity policies. | [source](Cache/) |
+| [Calendar](Calendar/README.md) | A recurrence rule, events with occurrences, and a calendar contract that a person's calendar, a job schedule or an operating system's tasks can each implement. | [source](Calendar/) |
 | [ClusteredStreams](ClusteredStreams/README.md) | Multiplexes any number of resizable logical streams onto one root `Stream` through linked chains of fixed-size clusters, with pluggable attachments for indexes and other reserved data. | [source](ClusteredStreams/) |
 | [Collections](Collections/README.md) | Provides long-indexed extended lists and collections, B-trees, paged, file-mapped and stream-mapped storage, and observable, synchronized and projected wrappers over lists, dictionaries, sets, queues and stacks. | [source](Collections/) |
 | [Comparers](Comparers/README.md) | Reusable `IComparer<T>` and `IEqualityComparer<T>` implementations for sequences, byte arrays, tuples, projections and composed orderings. | [source](Comparers/) |
@@ -319,6 +320,7 @@ Windows Forms assembly and requires `using Tools;` for extension lookup.
 - 💾 [Persistable/](Persistable/) – Persistence abstractions
 - 🔧 [Saveable/](Saveable/) – Save/load patterns
 - ⏰ [Scheduler/](Scheduler/) – Task scheduling
+- 📆 [Calendar/](Calendar/) – Recurrence rules, calendar events and the calendar contract
 - 📏 [Sizing/](Sizing/) – Size calculations and measurements
 - 🎯 [Spans/](Spans/) – Span and memory utilities
 - 📝 [TextWriters/](TextWriters/) – Text writing abstractions
