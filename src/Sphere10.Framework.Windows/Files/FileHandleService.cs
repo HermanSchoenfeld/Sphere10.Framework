@@ -28,6 +28,9 @@ public sealed class FileHandleService {
 	private static readonly AsyncSynchronizedGate _workers = new();
 	private static ProcessIdentity? _unfinishedWorker;
 	private const int MaximumRows = 10000;
+	// The whole handle table is read into one buffer of at most this size, which holds about thirteen million handles of forty
+	// bytes each. A computer seldom has a hundredth of that, but one leaking process can hold millions.
+	internal const int MaximumHandleTableBytes = 512 * 1024 * 1024;
 	private readonly WindowsProcessWorkerHost _workerHost;
 
 	public FileHandleService()
@@ -37,6 +40,28 @@ public sealed class FileHandleService {
 	public FileHandleService(WindowsProcessWorkerHost workerHost) {
 		Guard.ArgumentNotNull(workerHost, nameof(workerHost));
 		_workerHost = workerHost;
+	}
+
+	/// <summary>Reads the native file-object address of one open file handle owned by the current process.</summary>
+	/// <remarks>The handle is borrowed and pinned during enumeration. Keep that exact handle open while using the returned identity;
+	/// after closure Windows can reuse the object address. Unavailable or redacted native identity is an error, never a guessed value.</remarks>
+	public static ulong GetObjectAddress(Microsoft.Win32.SafeHandles.SafeFileHandle handle) {
+		Guard.ArgumentNotNull(handle, nameof(handle));
+		ObjectDisposedException.ThrowIf(handle.IsClosed, handle);
+		Guard.Argument(!handle.IsInvalid, nameof(handle), "An open file handle is required to read its native object identity.");
+		var pinned = false;
+		using (Tools.Scope.ExecuteOnDispose(() => {
+			if (pinned)
+				handle.DangerousRelease();
+		})) {
+			handle.DangerousAddRef(ref pinned);
+			var nativeHandle = unchecked((ulong)(nuint)handle.DangerousGetHandle());
+			var entry = ReadHandleTable().FirstOrDefault(item => item.ProcessId.ToUInt64() == (ulong)Environment.ProcessId
+				&& item.HandleValue.ToUInt64() == nativeHandle);
+			var address = unchecked((ulong)(nuint)entry.Object);
+			Guard.Ensure(address != 0, "Windows did not expose the native object identity for this open file handle. Elevation or native handle-query permission may be required.");
+			return address;
+		}
 	}
 
 	public Task<FileHandleCapture> CaptureAsync(ProcessIdentity? identity = null, CancellationToken cancellationToken = default) {
@@ -355,15 +380,23 @@ public sealed class FileHandleService {
 		}
 	}
 
-	private static WinAPI.NTDLL.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] ReadHandleTable() {
+	/// <summary>The size of the buffer to read the handle table into next, after Windows refused one of <paramref name="size"/> bytes
+	/// and reported that it needed <paramref name="needed"/>. It fails once the largest supported buffer has been refused.</summary>
+	/// <remarks>The table can grow before the next read, so a quarter more than was needed is asked for. A Windows that reports no
+	/// needed size gets a buffer twice as large.</remarks>
+	internal static int NextHandleTableSize(int size, uint needed) {
+		Guard.Ensure(size < MaximumHandleTableBytes, "The Windows handle table exceeds the supported capture size.");
+		return (int)Math.Min(MaximumHandleTableBytes, Math.Max((long)size * 2, needed + needed / 4L + 65536));
+	}
+
+	private static unsafe WinAPI.NTDLL.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] ReadHandleTable() {
 		var size = 1024 * 1024;
-		for (var attempt = 0; attempt < 8; attempt++) {
-			Guard.Ensure(size <= 64 * 1024 * 1024, "The Windows handle table exceeds the supported capture size.");
+		for (var attempt = 0; attempt < 12; attempt++) {
 			using var allocation = new UnmanagedMemoryScope(size);
 			var buffer = allocation.Item;
 			var status = WinAPI.NTDLL.NtQuerySystemInformation(WinAPI.NTDLL.SystemExtendedHandleInformation, buffer, (uint)size, out var needed);
 			if (status is WinAPI.NTDLL.StatusInfoLengthMismatch or WinAPI.NTDLL.StatusBufferTooSmall) {
-				size = checked((int)Math.Max((long)size * 2, (long)needed + 65536));
+				size = NextHandleTableSize(size, needed);
 				continue;
 			}
 			Guard.Ensure(status >= 0, $"Windows native handle enumeration is unavailable (NTSTATUS 0x{status:X8}). Elevation or a different Windows version may be required.");
@@ -372,8 +405,8 @@ public sealed class FileHandleService {
 			var count = Marshal.ReadIntPtr(buffer).ToInt64();
 			Guard.Ensure(count >= 0 && count <= (size - headerSize) / rowSize, "Windows returned an invalid native handle-table layout.");
 			var rows = new WinAPI.NTDLL.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[checked((int)count)];
-			for (var index = 0; index < rows.Length; index++)
-				rows[index] = Marshal.PtrToStructure<WinAPI.NTDLL.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(IntPtr.Add(buffer, headerSize + index * rowSize));
+			// The rows are plain values in the native layout, so millions of them are copied as one block.
+			new ReadOnlySpan<WinAPI.NTDLL.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>((void*)IntPtr.Add(buffer, headerSize), rows.Length).CopyTo(rows);
 			return rows;
 		}
 		throw new InvalidOperationException("The Windows handle table kept growing during capture; refresh to retry.");
