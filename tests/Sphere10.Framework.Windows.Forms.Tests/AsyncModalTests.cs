@@ -497,10 +497,45 @@ public class AsyncModalTests {
 		using var Dialog = await WaitForDialog<EnterTextDialog>();
 		Assert.That(Pending.IsCompleted, Is.False);
 		Assert.That(Dialog.Owner, Is.SameAs(Owner));
+		Assert.That(((TextBox)Dialog.Controls.Find("_textBox", true).Single()).Multiline, Is.True, "Existing callers retain the multiline editor.");
 		Dialog.Controls.Find("_textBox", true).Single().Text = "edited";
 		Dialog.DialogResult = Result;
 		Assert.That(await Pending, Is.EqualTo((Accepted, "edited")));
 		Assert.That(Dialog.IsDisposed, Is.True);
+	});
+
+	[TestCase(DialogResult.OK, true, false)]
+	[TestCase(DialogResult.Cancel, false, false)]
+	[TestCase(DialogResult.OK, true, true)]
+	public void SingleLineTextPromptFitsInstructionsAndReturnsInput(DialogResult result, bool accepted, bool longInstructions) => RunWithMessageLoop(async owner => {
+		var instructions = longInstructions
+			? string.Join(" ", Enumerable.Repeat("Choose a descriptive profile name & keep the existing colours.", 5))
+			: "Name this profile:";
+		var pending = EnterTextDialog.ShowAsync(owner, "Profile name", instructions, multiline: false, prefill: "Current profile");
+		using var dialog = await WaitForDialog<EnterTextDialog>();
+		var input = (TextBox)dialog.Controls.Find("_textBox", true).Single();
+		var label = (Label)dialog.Controls.Find("_userInstructionLabel", true).Single();
+		var ok = (Button)dialog.Controls.Find("button1", true).Single();
+		var cancel = (Button)dialog.Controls.Find("button2", true).Single();
+		Assert.That(dialog.Owner, Is.SameAs(owner));
+		Assert.That(input.Text, Is.EqualTo("Current profile"));
+		Assert.That(input.Multiline, Is.False);
+		Assert.That(input.Height, Is.EqualTo(input.PreferredHeight));
+		Assert.That(label.Text, Is.EqualTo(instructions));
+		Assert.That(label.UseMnemonic, Is.False);
+		Assert.That(input.Top, Is.GreaterThan(label.Bottom));
+		Assert.That(ok.Top, Is.GreaterThan(input.Bottom));
+		Assert.That(cancel.Bottom, Is.LessThan(dialog.ClientSize.Height));
+		Assert.That(dialog.AcceptButton, Is.SameAs(ok));
+		Assert.That(dialog.CancelButton, Is.SameAs(cancel));
+		if (longInstructions)
+			Assert.That(label.Height, Is.GreaterThan(label.Font.Height * 2));
+		else
+			Assert.That(dialog.ClientSize.Height, Is.LessThan(dialog.LogicalToDeviceUnits(150)));
+		input.Text = "Renamed profile";
+		(result == DialogResult.OK ? ok : cancel).PerformClick();
+		Assert.That(await pending, Is.EqualTo((accepted, "Renamed profile")));
+		Assert.That(dialog.IsDisposed, Is.True);
 	});
 
 	[TestCase("button1", DialogResult.No)]
@@ -658,10 +693,10 @@ public class AsyncModalTests {
 	public void CrudCloseConfirmationCancelsBeforeAwaitAndClosesOnlyOnYes() => RunWithMessageLoop(async Owner => {
 		Assert.That(SynchronizationContext.Current, Is.TypeOf<WindowsFormsSynchronizationContext>());
 		using var Editor = new ChangedEntityEditor();
-		using var Dialog = new CrudEntityEditorDialog();
+		using var Dialog = new VisualEntityEditorDialog();
 		Dialog.SetEntityEditor(null!, Editor, DataSourceCapabilities.CanUpdate, new object(), false);
 		var Pending = Dialog.ShowDialogAsync(Owner);
-		await WaitForDialog<CrudEntityEditorDialog>();
+		await WaitForDialog<VisualEntityEditorDialog>();
 		Dialog.Close();
 		Assert.That(Dialog.Visible, Is.True);
 		Assert.That(Pending.IsCompleted, Is.False);
@@ -778,8 +813,8 @@ public class AsyncModalTests {
 		public TextFitDialog(string Text) : base(SystemIconType.Question, "Bounded Text", Text, false, "Close") { }
 	}
 
-	private sealed class ChangedEntityEditor : Control, ICrudEntityEditor<object> {
-		public event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged { add { } remove { } }
+	private sealed class ChangedEntityEditor : Control, IVisualEntityEditor<object> {
+		public event EventHandlerEx<VisualEntityPropertyChangedEventArgs> PropertyChanged { add { } remove { } }
 		public bool HasChanges { get; private set; } = true;
 		public Control AsControl() => this;
 		public void SetEntity(DataSourceCapabilities Capabilities, object Entity, bool IsNewEntity) { }

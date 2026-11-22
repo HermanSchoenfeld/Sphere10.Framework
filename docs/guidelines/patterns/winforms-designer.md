@@ -6,6 +6,14 @@ WinForms designer, including its real layout and event wiring.
 
 ## Files and construction
 
+Use the designer's default snap-line spacing throughout each screen: preserve the
+native control margins for label/input and button gaps, and use the default 3 px
+group-box margins to produce 6 px between adjacent groups. Layout-only nested
+table/flow panels should not add another margin around controls that already
+provide those gaps. Verify the resulting bounds at supported DPIs. A fixed tabbed
+settings window measures the tallest tab, including initially hidden pages, before
+choosing its height, while keeping the window within the monitor's working area.
+
 Use a matching `Foo.cs` / `Foo.Designer.cs` partial class pair and a public
 parameterless constructor that calls `InitializeComponent()`. The designer file
 declares control/component fields and initializes their real properties,
