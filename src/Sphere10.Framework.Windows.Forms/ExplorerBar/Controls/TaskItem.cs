@@ -33,6 +33,9 @@ public class TaskItem : Button {
 
 	#region Class Data
 
+	// The read-only default theme shared by items that have not joined an Expando.
+	private static readonly Lazy<ExplorerBarInfo> SharedDefaultSettings = new(() => ExplorerBarInfo.Default);
+
 	///// <summary>
 	///// System defined settings for the TaskItem
 	///// </summary>
@@ -104,8 +107,9 @@ public class TaskItem : Button {
 
 		this.BackColor = Color.Transparent;
 
-		// get the system theme settings
-		this.systemSettings = ExplorerBarInfo.Default;
+		// The default theme until the item joins an Expando, which replaces it with its own. Items only read it and never dispose it, so all
+		// share one copy instead of each deep-copying the theme with its bitmaps (a navigation pane creates one item per screen).
+		this.systemSettings = SharedDefaultSettings.Value;
 
 		this.customSettings = new TaskItemInfo();
 		this.customSettings.TaskItem = this;
@@ -279,15 +283,21 @@ public class TaskItem : Button {
 	#region Images
 
 	/// <summary>
+	/// The side of the item's square image in pixels: 16 at 96 DPI, scaled with the display so it keeps its size against the text.
+	/// </summary>
+	[Browsable(false)]
+	public int ImageSize => LogicalToDeviceUnits(16);
+
+	/// <summary>
 	/// Gets or sets the Image displayed by the TaskItem
 	/// </summary>
 	public new Image Image {
 		get => base.Image;
 
 		set {
-			// make sure the image is 16x16
-			if (value != null && (value.Width != 16 || value.Height != 16)) {
-				Bitmap bitmap = new Bitmap(value, 16, 16);
+			// make sure the image is the item's image size: 16x16 at 96 DPI, scaled with the display
+			if (value != null && (value.Width != ImageSize || value.Height != ImageSize)) {
+				Bitmap bitmap = new Bitmap(value, ImageSize, ImageSize);
 
 				base.Image = bitmap;
 			} else {
@@ -318,16 +328,16 @@ public class TaskItem : Button {
 		get => base.ImageList;
 
 		set {
-			// make sure the images inside the ImageList are 16x16
-			if (value != null && (value.ImageSize.Width != 16 || value.ImageSize.Height != 16)) {
+			// make sure the images inside the ImageList are the item's image size
+			if (value != null && (value.ImageSize.Width != ImageSize || value.ImageSize.Height != ImageSize)) {
 				// make a copy of the imagelist and resize all the images
 				ImageList imageList = new ImageList();
 				imageList.ColorDepth = value.ColorDepth;
 				imageList.TransparentColor = value.TransparentColor;
-				imageList.ImageSize = new Size(16, 16);
+				imageList.ImageSize = new Size(ImageSize, ImageSize);
 
 				foreach (Image image in value.Images) {
-					Bitmap bitmap = new Bitmap(image, 16, 16);
+					Bitmap bitmap = new Bitmap(image, ImageSize, ImageSize);
 
 					imageList.Images.Add(bitmap);
 				}
@@ -476,7 +486,7 @@ public class TaskItem : Button {
 
 			//
 			if (this.Text.Length == 0) {
-				return 16;
+				return ImageSize;
 			}
 
 			int textHeight = 0;
@@ -486,10 +496,10 @@ public class TaskItem : Button {
 			}
 
 			//
-			if (textHeight > 16) {
+			if (textHeight > ImageSize) {
 				this.preferredHeight = textHeight;
 			} else {
-				this.preferredHeight = 16;
+				this.preferredHeight = ImageSize;
 			}
 
 			return this.preferredHeight;
@@ -507,7 +517,7 @@ public class TaskItem : Button {
 		int width = this.Width - this.Padding.Right;
 
 		if (this.Image != null) {
-			width -= 16 + this.Padding.Left;
+			width -= ImageSize + this.Padding.Left;
 		}
 
 		//
@@ -823,9 +833,9 @@ public class TaskItem : Button {
 		if (this.Image != null) {
 			if (this.Enabled) {
 				if (this.RightToLeft == RightToLeft.Yes) {
-					e.Graphics.DrawImage(this.Image, this.Width - 16, 0, 16, 16);
+					e.Graphics.DrawImage(this.Image, this.Width - ImageSize, 0, ImageSize, ImageSize);
 				} else {
-					e.Graphics.DrawImage(this.Image, 0, 0, 16, 16);
+					e.Graphics.DrawImage(this.Image, 0, 0, ImageSize, ImageSize);
 				}
 			} else {
 				// fix: use ControlPaint.DrawImageDisabled() to draw 
@@ -835,7 +845,7 @@ public class TaskItem : Button {
 				//      v1.3
 
 				if (this.RightToLeft == RightToLeft.Yes) {
-					ControlPaint.DrawImageDisabled(e.Graphics, this.Image, this.Width - 16, 0, this.BackColor);
+					ControlPaint.DrawImageDisabled(e.Graphics, this.Image, this.Width - ImageSize, 0, this.BackColor);
 				} else {
 					ControlPaint.DrawImageDisabled(e.Graphics, this.Image, 0, 0, this.BackColor);
 				}
@@ -853,11 +863,11 @@ public class TaskItem : Button {
 					this.textRect.Width = this.Width - this.Padding.Right;
 
 					if (this.Image != null) {
-						this.textRect.Width -= 16;
+						this.textRect.Width -= ImageSize;
 					}
 				} else {
 					if (this.Image != null) {
-						this.textRect.X = 16 + this.Padding.Left;
+						this.textRect.X = ImageSize + this.Padding.Left;
 					}
 
 					this.textRect.Width = this.Width - this.textRect.X - this.Padding.Right;

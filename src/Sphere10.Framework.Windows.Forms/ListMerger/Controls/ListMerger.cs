@@ -29,6 +29,9 @@ public partial class ListMerger : UserControlEx {
 
 	public ListMerger() {
 		InitializeComponent();
+		// The arrows are 96-DPI bitmaps; buttons do not scale their images, so they would shrink against the buttons on a scaled display.
+		_moveRightButton.ScaleImageToDeviceDpi();
+		_moveLeftButton.ScaleImageToDeviceDpi();
 		DisplayMember = ValueMember = null;
 		MergeMode = ListMergeMode.Move;
 	}

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
@@ -25,6 +26,8 @@ public class ToolStripChoiceSelector : ToolStripDropDownButton {
 
 	public ToolStripChoiceSelector() {
 		DisplayStyle = ToolStripItemDisplayStyle.Text;
+		// Sized to its widest choice, the selector reads from the left like a combo box rather than centring a shorter choice.
+		TextAlign = ContentAlignment.MiddleLeft;
 		Text = _emptyText;
 	}
 
@@ -62,6 +65,22 @@ public class ToolStripChoiceSelector : ToolStripDropDownButton {
 	public Func<object, string> ItemTextProvider {
 		get => _itemTextProvider;
 		set { _itemTextProvider = value; UpdateSelection(); }
+	}
+
+	/// <summary>The widest the selector grows, in logical pixels (96 DPI) that scale with its toolbar's DPI; 0 lets it fit its widest choice.
+	/// A longer choice is cut. Use it for a list of unbounded names, such as event log channels.</summary>
+	[DefaultValue(0)]
+	public int MaximumWidth { get; set; }
+
+	/// <summary>Fits the widest choice rather than the selected one, so the toolbar keeps its layout when the selection changes, and takes its height
+	/// from the font, so it scales with the display. Leave <see cref="ToolStripItem.AutoSize"/> on rather than fixing a width in pixels.</summary>
+	public override Size GetPreferredSize(Size constrainingSize) {
+		var size = base.GetPreferredSize(constrainingSize);
+		var widest = _items.Select(GetItemText).Append(_emptyText).Max(text => TextRenderer.MeasureText(text, Font).Width);
+		size.Width += Math.Max(0, widest - TextRenderer.MeasureText(Text, Font).Width);
+		if (MaximumWidth > 0)
+			size.Width = Math.Min(size.Width, Owner?.LogicalToDeviceUnits(MaximumWidth) ?? MaximumWidth);
+		return size;
 	}
 
 	/// <summary>Replaces the choices and preserves the selected object when it remains present.</summary>
