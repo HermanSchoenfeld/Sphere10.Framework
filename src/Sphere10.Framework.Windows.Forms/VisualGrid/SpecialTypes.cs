@@ -9,3 +9,7 @@
 namespace Sphere10.Framework.Windows.Forms;
 
 internal sealed record VisualGridPreparedRowStyle(VisualGridRowStyle Value);
+
+internal sealed record VisualGridDetailRow(object Entity, object Identity, object QueryIdentity, bool Expandable);
+
+internal sealed record VisualGridDetailPath(VisualGridDetailPath Parent, VisualGridRowDetails Provider, object Identity);
