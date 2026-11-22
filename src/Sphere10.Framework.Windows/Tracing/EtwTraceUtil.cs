@@ -86,6 +86,48 @@ public static partial class Windows {
 			}, cancellationToken);
 		}
 
+		/// <summary>Starts CPU sampling (SampledProfile events) on the exact caller-owned system logger, at the system's existing sampling interval.</summary>
+		/// <remarks>
+		/// Sampling is enabled through the session's kernel enable flags, which every Windows build since Windows 8 honours for a system logger.
+		/// The System Profile Provider that <c>EnableTraceEx2</c> addresses is honoured only from build 20348; earlier builds accept that
+		/// request and deliver no samples. Windows also requires <c>SeSystemProfilePrivilege</c>, which an elevated administrator holds disabled,
+		/// so it is enabled on this worker for this call only. Select the sample's stack events with <see cref="SetStackTracing"/> first.
+		/// </remarks>
+		public static void EnableCpuSampling(EtwTraceSessionInfo expected) {
+			Debug.AssertNotMainThread();
+			using var privilege = Security.EnterScope("SeSystemProfilePrivilege");
+			SetSystemLoggerFlags(expected, WinAPI.ADVAPI32.EVENT_TRACE_FLAG_PROFILE);
+		}
+
+		public static Task EnableCpuSamplingAsync(EtwTraceSessionInfo expected, CancellationToken cancellationToken = default)
+			=> Task.Run(() => {
+				cancellationToken.ThrowIfCancellationRequested();
+				EnableCpuSampling(expected);
+			}, cancellationToken);
+
+		/// <summary>Replaces the kernel enable flags (<c>EVENT_TRACE_FLAG_*</c>) of the exact caller-owned system logger; zero disables them all.
+		/// The session's real-time delivery and other properties are unchanged.</summary>
+		public static void SetSystemLoggerFlags(EtwTraceSessionInfo expected, uint enableFlags) {
+			Debug.AssertNotMainThread();
+			var current = VerifySession(expected);
+			Guard.Ensure((current.LogFileMode & WinAPI.ADVAPI32.EVENT_TRACE_SYSTEM_LOGGER_MODE) != 0, "Kernel enable flags require the exact owned system-logger session.");
+			var structureSize = Marshal.SizeOf<WinAPI.ADVAPI32.EVENT_TRACE_PROPERTIES>();
+			var nameBytes = System.Text.Encoding.Unicode.GetBytes(current.Name + '\0');
+			var size = checked(structureSize + nameBytes.Length);
+			using var allocation = new UnmanagedMemoryScope(size);
+			Marshal.Copy(new byte[size], 0, allocation.Item, size);
+			// An update reads LogFileMode as the real-time choice (zero turns delivery off), so the session's own mode is passed back unchanged.
+			var properties = new WinAPI.ADVAPI32.EVENT_TRACE_PROPERTIES {
+				Wnode = new WinAPI.ADVAPI32.WNODE_HEADER { BufferSize = (uint)size, Guid = current.Guid, Flags = WinAPI.ADVAPI32.WNODE_FLAG_TRACED_GUID },
+				LogFileMode = current.LogFileMode, EnableFlags = enableFlags, LoggerNameOffset = (uint)structureSize
+			};
+			Marshal.StructureToPtr(properties, allocation.Item, false);
+			Marshal.Copy(nameBytes, 0, IntPtr.Add(allocation.Item, structureSize), nameBytes.Length);
+			var error = WinAPI.ADVAPI32.ControlTraceW(current.SessionId, null, allocation.Item, WinAPI.ADVAPI32.EVENT_TRACE_CONTROL_UPDATE);
+			if (error != 0)
+				throw new Win32Exception((int)error, "Unable to update the kernel enable flags of the exact owned system logger.");
+		}
+
 		/// <summary>Enables a manifest provider only on the exact session supplied by its owner.</summary>
 		public static void EnableProvider(EtwTraceSessionInfo expected, Guid providerId, ulong keywords, byte level = 5, uint timeoutMilliseconds = 1000) {
 			Debug.AssertNotMainThread();

@@ -43,6 +43,7 @@ public static partial class WinAPI {
 
 		public const uint EVENT_TRACE_REAL_TIME_MODE = 0x00000100;
 		public const uint EVENT_TRACE_SYSTEM_LOGGER_MODE = 0x02000000;
+		public const uint EVENT_TRACE_FLAG_PROFILE = 0x01000000;
 		public const uint PROCESS_TRACE_MODE_REAL_TIME = 0x00000100;
 		public const uint PROCESS_TRACE_MODE_EVENT_RECORD = 0x10000000;
 		public const uint EVENT_TRACE_CONTROL_UPDATE = 2;
@@ -462,6 +463,14 @@ public static partial class WinAPI {
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
 		public static extern int RegRenameKey(SafeRegistryHandle key, string subKeyName, string newKeyName);
+
+		/// <summary>Loads a hive file as a sub-key of HKEY_USERS or HKEY_LOCAL_MACHINE. The caller's token needs the backup and restore privileges enabled.</summary>
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "RegLoadKeyW")]
+		public static extern int RegLoadKey(SafeRegistryHandle key, string subKeyName, string file);
+
+		/// <summary>Unloads a hive loaded with <see cref="RegLoadKey"/>, writing its changes to the file. It fails while any key of the hive is open.</summary>
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "RegUnLoadKeyW")]
+		public static extern int RegUnLoadKey(SafeRegistryHandle key, string subKeyName);
 
 
 

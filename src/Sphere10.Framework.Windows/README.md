@@ -360,12 +360,19 @@ its original admission/mode. Reserved global logger names and SystemTraceControl
 are rejected; an existing session is never adopted or replaced. The caller owns
 the new session and uses the same exact-identity stop/consumer contracts.
 
-The System Profile Provider (`bfeb0324-1cee-496f-a409-2ac2b48a6322`, General
-keyword `1`) requires system-logger mode and appropriate Windows profiling
-rights. `SetStackTracingAsync` replaces only the selected owned system logger's
-classic stack-event list. It changes neither a global profiling interval nor
-registry memory policy. Admission/stack errors must remain independent coverage
-results; successful ordinary capture does not establish profiling permission.
+`EnableCpuSamplingAsync` starts sampling on that owned system logger through its
+kernel enable flag `EVENT_TRACE_FLAG_PROFILE` (`SetSystemLoggerFlags` updates the
+flags through ControlTrace UPDATE and keeps real-time delivery). Windows honours
+the flag on every build since Windows 8; the System Profile Provider
+(`bfeb0324-1cee-496f-a409-2ac2b48a6322`, General keyword `1`) that `EnableTraceEx2`
+addresses is honoured only from build 20348, and earlier builds such as Windows 10
+22H2 accept that request and deliver no samples. Sampling also needs
+`SeSystemProfilePrivilege`, which an elevated administrator holds disabled; the call
+enables it on its worker thread only. `SetStackTracingAsync` replaces only the
+selected owned system logger's classic stack-event list; call it before enabling
+sampling so the first samples carry stacks. Neither changes a global profiling
+interval nor registry memory policy. Admission/stack errors must remain independent
+coverage results; successful ordinary capture does not establish profiling permission.
 
 `EtwCpuProfileDecoder` reads the documented PerfInfo SampledProfile type 46 and
 StackWalk type 32 into detached nullable fields and raw-clock timestamps. It
