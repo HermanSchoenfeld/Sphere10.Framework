@@ -20,7 +20,7 @@ long count = list.Count;                     // 3
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`CollectionDifference<T, TKey>`](SpecialTypes.cs) | record | One keyed change between two sequences, carrying the previous and current item and a `CollectionDifferenceKind`. |
+| [`CollectionDifference<T, TKey>`](CollectionDifference.cs) | record | One keyed change between two sequences, carrying the previous and current item and a `CollectionDifferenceKind`. |
 | [`CollectionDifferenceKind`](CollectionDifferenceKind.cs) | enum | Classifies a `CollectionDifference<T, TKey>` as `Added`, `Removed` or `Modified`. |
 | [`Tools.Collection`](CollectionTool.cs) | tools | Compares sequences by unique keys (`CompareByKey`), generates and repeats sequences, partitions counts, binary-searches lists and resizes arrays within the 32-bit addressing limit. |
 
@@ -146,7 +146,7 @@ long count = list.Count;                     // 3
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`FileMappedBuffer`](FileMapped/FileMappedBuffer.cs) | class | Byte buffer mapped onto one file in pages, with a bounded number of pages cached in memory. |
+| [`FileMappedBuffer`](FileMapped/FileMappedBuffer.cs) | class | `MemoryPagedBuffer` over a file it opens from a `PagedFileDescriptor` and closes on dispose, with a bounded number of pages cached in memory. |
 | [`FilePageBase<TItem>`](FileMapped/FilePageBase.cs) | abstract class | Memory page that loads from and saves to its own region of a shared file stream. |
 | [`FilePagedListBase<TItem>`](FileMapped/FilePagedListBase.cs) | abstract class | Memory-paged list whose pages live in one file opened from a `PagedFileDescriptor` and access mode. |
 | [`IFilePage<TItem>`](FileMapped/IFilePage.cs) | interface | Memory page with the start and end positions of its region in the file. |
@@ -257,13 +257,14 @@ long count = list.Count;                     // 3
 | [`IMemoryPagedBuffer`](MemoryPaged/IMemoryPagedBuffer.cs) | interface | Byte buffer that is also a memory-paged list. |
 | [`IMemoryPagedList<TItem>`](MemoryPaged/IMemoryPagedList.cs) | interface | Disposable paged list that loads, saves and unloads pages under a memory limit and raises an event for each step. |
 | [`MemoryPageBase<TItem>`](MemoryPaged/MemoryPageBase.cs) | abstract class | Page that holds items in an in-memory store, measures them with an `IItemSizer` and saves or loads them through streams. |
-| [`MemoryPagedBuffer`](MemoryPaged/MemoryPagedBuffer.cs) | class | Byte buffer split into pages that swap to temporary files when the memory limit is reached. |
+| [`MemoryPagedBuffer`](MemoryPaged/MemoryPagedBuffer.cs) | class | Byte buffer split into pages that swap, past the memory limit, to temporary files or to their regions of a backing stream whose content it then holds. |
 | [`MemoryPagedBufferDecorator`](MemoryPaged/MemoryPagedBufferDecorator.cs) | abstract class | Shortcut of `MemoryPagedBufferDecorator<TMemoryPagedBuffer>` for an inner `IMemoryPagedBuffer`. |
 | [`MemoryPagedBufferDecorator<TMemoryPagedBuffer>`](MemoryPaged/MemoryPagedBufferDecorator.cs) | abstract class | Base decorator that forwards the buffer and paging members of an inner memory-paged buffer. |
 | [`MemoryPagedList<TItem>`](MemoryPaged/MemoryPagedList.cs) | class | Paged list of serialized items that keeps a bounded number of pages in memory and swaps the rest to temporary files. |
-| [`MemoryPagedListBase<TItem>`](MemoryPaged/MemoryPagedListBase.cs) | abstract class | Paged list base with a page cache bounded by `MaxMemory`, page lifecycle events, `Flush` and `FlushOnDispose`. |
+| [`MemoryPagedListBase<TItem>`](MemoryPaged/MemoryPagedListBase.cs) | abstract class | Paged list base with a page cache bounded by `MaxMemory`, evicting in the `PageReapPolicy` order its constructor takes (least recently used by default), page lifecycle events, `Save` (dirty pages stay cached), `Flush` (pages are unloaded) and `FlushOnDispose`. |
 | [`MemoryPagedListDecorator<TItem>`](MemoryPaged/MemoryPagedListDecorator.cs) | abstract class | Shortcut of `MemoryPagedListDecorator<TItem, TMemoryPagedList>` for an inner `IMemoryPagedList<TItem>`. |
 | [`MemoryPagedListDecorator<TItem, TMemoryPagedList>`](MemoryPaged/MemoryPagedListDecorator.cs) | class | Decorator that forwards an inner memory-paged list and relays its page events through virtual hooks. |
+| [`StreamSwappedMemoryPage<TItem>`](MemoryPaged/StreamSwappedMemoryPage.cs) | abstract class | Memory page that swaps its contents to its own region of a stream shared by every page of its list, leaving the stream open on dispose. |
 
 ### Observable
 
@@ -450,4 +451,4 @@ long count = list.Count;                     // 3
 | Type | Kind | Purpose |
 |---|---|---|
 | [`SampledCallTree<TFrame>`](Trees/SampledCallTree.cs) | class | Builds a detached call tree from sampled stacks, bounded by node count and depth, with counts of missing and truncated samples. |
-| [`SampledCallTreeNode<TFrame>`](Trees/SpecialTypes.cs) | record | One call-path node with parent, depth, frame and inclusive and exclusive sample counts. |
+| [`SampledCallTreeNode<TFrame>`](Trees/SampledCallTreeNode.cs) | record | One call-path node with parent, depth, frame and inclusive and exclusive sample counts. |

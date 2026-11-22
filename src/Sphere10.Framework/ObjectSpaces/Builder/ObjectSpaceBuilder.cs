@@ -29,6 +29,7 @@ public class ObjectSpaceBuilder {
 	private string _pagesPath;
 	private long _maxMemory;
 	private long _pageSize;
+	private CacheReapPolicy _pageReapPolicy;
 	private int _clusterSize;
 	private BTreeSpec _indexBTreeSpec;
 	private bool _clusterSizeSpecified;
@@ -55,6 +56,7 @@ public class ObjectSpaceBuilder {
 		_pagesPath = Sphere10FrameworkDefaults.TransactionalPageFolder;
 		_maxMemory = Sphere10FrameworkDefaults.ObjectSpaceMaxMemory;
 		_pageSize = Sphere10FrameworkDefaults.ObjectSpacePageSize;
+		_pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy;
 		_clusterSize = Sphere10FrameworkDefaults.ClusterSize;
 		_indexBTreeSpec = new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder);
 		_traits = ObjectSpaceTraits.None;
@@ -118,6 +120,12 @@ public class ObjectSpaceBuilder {
 
 	public ObjectSpaceBuilder WithPageSize(long bytes) {
 		_pageSize = bytes;
+		return this;
+	}
+
+	/// <summary>Selects the order in which the file backend evicts cached pages when its memory budget is reached.</summary>
+	public ObjectSpaceBuilder WithPageReapPolicy(CacheReapPolicy policy) {
+		_pageReapPolicy = policy;
 		return this;
 	}
 
@@ -313,7 +321,7 @@ public class ObjectSpaceBuilder {
 		ObjectSpace space;
 		switch (selectedType) {
 			case ObjectSpaceType.FileMapped:
-				var descriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, clusterSize, policy, endianness);
+				var descriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, clusterSize, policy, endianness, _pageReapPolicy);
 				space = new FileObjectSpace(descriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
 				break;
 			case ObjectSpaceType.MemoryMapped:

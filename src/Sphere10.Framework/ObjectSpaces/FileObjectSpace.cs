@@ -52,6 +52,9 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 
 	public Sphere10FrameworkFileDescriptor File { get; }
 
+	/// <summary>The order in which the file's page cache evicts pages, as <see cref="ObjectSpaceBuilder.WithPageReapPolicy"/> or <see cref="File"/> selected.</summary>
+	public CacheReapPolicy PageReapPolicy => _fileStream.PageReapPolicy;
+
 	public void Commit()  {
 		using (EnterAccessScope()) {
 			// flush all changed (stored in uncommitted pages)

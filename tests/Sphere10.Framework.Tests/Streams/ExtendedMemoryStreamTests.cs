@@ -223,6 +223,11 @@ public class ExtendedMemoryStreamTests {
 				var memPagedBuffer = new MemoryPagedBuffer(pageSize, maxOpenPages * pageSize);
 				stream = new ExtendedMemoryStream(memPagedBuffer);
 				return new Disposables(stream, memPagedBuffer);
+			case InnerListType.StreamBackedMemoryPagedBuffer:
+				var backingStream = new MemoryStream();
+				var streamBackedBuffer = new MemoryPagedBuffer(backingStream, pageSize, maxOpenPages * pageSize);
+				stream = new ExtendedMemoryStream(streamBackedBuffer);
+				return new Disposables(stream, streamBackedBuffer, backingStream);
 			case InnerListType.BinaryFile:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
 				var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, maxOpenPages * pageSize));
@@ -243,6 +248,7 @@ public class ExtendedMemoryStreamTests {
 	public enum InnerListType {
 		MemoryBuffer,
 		MemoryPagedBuffer,
+		StreamBackedMemoryPagedBuffer,
 		BinaryFile,
 		TransactionalBinaryFile
 	}

@@ -48,7 +48,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 
 	public Span<byte> AsSpan(long index, long count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
-	public void ExpandTo(long totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, totalBytes);
+	public void ExpandTo(long totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, Count, totalBytes);
 
 	public void ExpandBy(long newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
 

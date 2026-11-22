@@ -20,7 +20,7 @@ namespace Sphere10.Framework.Tests;
 public class BufferTests {
 	[Test]
 	public void SinglePage(
-		[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
+		[Values(StorageType.MemoryPagedBuffer, StorageType.StreamBackedMemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
 		StorageType storageType,
 		[Values(1, 2, 10, 57, 173)] int pageSize,
 		[Values(1, 2, int.MaxValue)] int maxOpenPages) {
@@ -45,7 +45,7 @@ public class BufferTests {
 
 	[Test]
 	public void TwoPages(
-		[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
+		[Values(StorageType.MemoryPagedBuffer, StorageType.StreamBackedMemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
 		StorageType storageType,
 		[Values(1, 2, 10, 57, 173)] int pageSize) {
 
@@ -95,7 +95,7 @@ public class BufferTests {
 
 	[Test]
 	public void RemoveAll(
-		[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
+		[Values(StorageType.MemoryPagedBuffer, StorageType.StreamBackedMemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
 		StorageType storageType,
 		[Values(1, 2, 10, 57, 173)] int pageSize,
 		[Values(1, 2, int.MaxValue)] int maxOpenPages) {
@@ -110,7 +110,7 @@ public class BufferTests {
 
 	[Test]
 	public void RemoveAllExcept1(
-		[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
+		[Values(StorageType.MemoryPagedBuffer, StorageType.StreamBackedMemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
 		StorageType storageType,
 		[Values(2, 10, 57, 173)] int pageSize,
 		[Values(1, 2, int.MaxValue)] int maxOpenPages) {
@@ -125,7 +125,7 @@ public class BufferTests {
 
 	[Test]
 	public void Rewind(
-		[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
+		[Values(StorageType.MemoryPagedBuffer, StorageType.StreamBackedMemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)]
 		StorageType storageType,
 		[Values(1, 2, 111)] int pageSize,
 		[Values(1, 2, int.MaxValue)] int maxOpenPages) {
@@ -159,6 +159,7 @@ public class BufferTests {
 	public enum StorageType {
 		MemoryBuffer,
 		MemoryPagedBuffer,
+		StreamBackedMemoryPagedBuffer,
 		BinaryFile,
 		TransactionalBinaryFile,
 		StreamMappedBuffer,
@@ -188,6 +189,12 @@ public class BufferTests {
 				throw new InvalidOperationException();
 			case StorageType.MemoryPagedBuffer:
 				buffer = new MemoryPagedBuffer(pageSize, maxMemory);
+				break;
+			case StorageType.StreamBackedMemoryPagedBuffer:
+				var backingStream = new MemoryStream();
+				buffer = new MemoryPagedBuffer(backingStream, pageSize, maxMemory);
+				disposables.Add(buffer);
+				disposables.Add(backingStream);
 				break;
 			case StorageType.BinaryFile:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);

@@ -43,6 +43,13 @@ public static class Sphere10FrameworkDefaults {
 	public const int MaxMemoryPerCollection = int.MaxValue; // Use all available memory
 
 	/// <summary>
+	/// Default order in which memory-paged lists, buffers, paged and transactional files and memory-paged
+	/// streams evict cached pages when their memory budget is reached: the least recently used page first.
+	/// Appends and other writes that keep touching recent pages then reach the backing store once per save.
+	/// </summary>
+	public const CacheReapPolicy PageCacheReapPolicy = CacheReapPolicy.LongestIdle;
+
+	/// <summary>
 	/// Default logical file page size, in bytes, for paged and transactional file descriptors.
 	/// For transactional files this also determines dirty page boundaries; retain the original
 	/// page size when recovering outstanding transaction pages.

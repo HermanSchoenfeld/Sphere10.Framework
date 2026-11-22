@@ -36,10 +36,11 @@ fixtures for these types are in
 | [`EncryptedStream`](EncryptedStream.cs) | class | `EncryptedStream<Stream>` over any stream. |
 | [`EncryptedStream<TStream>`](EncryptedStream.cs) | class | Length-preserving AES-CTR encryption with random access. It stores no header, padding or authentication tag, so authenticate the ciphertext separately. |
 | [`ExtendedMemoryStream`](ExtendedMemoryStream.cs) | class | Memory stream over an `IBuffer` rather than one contiguous array. |
-| [`FragmentedStream`](FragmentedStream.cs) | class | One logical stream over the fragments of an `IStreamFragmentProvider`, such as `ByteArrayStreamFragmentProvider`. |
+| [`FragmentedStream`](FragmentedStream.cs) | class | One logical, 64-bit stream over the fragments of an `IStreamFragmentProvider`, such as `ByteArrayStreamFragmentProvider`. |
 | [`HashingStream`](HashingStream.cs) | class | Write-only stream that hashes the written bytes and returns the digest from `GetDigest()`. |
 | [`IStreamFragmentProvider`](IStreamFragmentProvider.cs) | interface | Maps non-contiguous byte fragments into one logically contiguous byte range for `FragmentedStream`. |
 | [`IStreamProvider`](IStreamProvider.cs) | interface | Opens read and write streams for one resource. |
+| [`MemoryPagedStream`](MemoryPagedStream.cs) | class | `ExtendedMemoryStream` over an `IMemoryPagedBuffer`; over a backing stream it reads and writes through a bounded page cache, described [below](#memory-paged-streams). |
 | [`NonClosingStream`](NonClosingStream.cs) | class | `NonClosingStream<Stream>` over any stream. |
 | [`NonClosingStream<TInner>`](NonClosingStream.cs) | class | Leaves the inner stream open when it is closed or disposed. |
 | [`OnDisposeStream`](OnDisposeStream.cs) | class | `OnDisposeStream<Stream>` over any stream. |
@@ -56,6 +57,57 @@ fixtures for these types are in
 | [`Tools.Streams`](StreamTool.cs) | tools | Stream routing, byte-array reading, byte shifting, comparison, file writing, GZip and symmetric encryption helpers. |
 | [`WriteOnlyStream`](WriteOnlyStream.cs) | class | `WriteOnlyStream<Stream>` over any stream. |
 | [`WriteOnlyStream<TStream>`](WriteOnlyStream.cs) | class | Rejects reads with `NotSupportedException`. |
+
+## Memory-paged streams
+
+`MemoryPagedStream` is an `ExtendedMemoryStream` over an `IMemoryPagedBuffer`,
+so only a bounded set of the stream's pages is held in memory. Constructed
+over a backing stream, it reads and writes that stream through the page cache
+of a [`MemoryPagedBuffer`](../Collections/MemoryPaged/MemoryPagedBuffer.cs):
+page `n` holds the backing stream's bytes from `n × PageSize`, and many small
+random reads and writes to a cached page cost one access to the backing stream.
+
+```csharp
+using var stream = new MemoryPagedStream(file, leaveOpen: true);
+stream.Position = offset;
+stream.Write(record);   // lands in a cached page
+stream.Flush();         // writes each dirty page once, resizes the file to the stream's length, then flushes it
+```
+
+The defaults allow sixteen 64 KiB pages, or 1 MiB of cached pages. Capacity
+pressure evicts the least recently used page, unless the constructor's
+`pageReapPolicy` selects another order, and saves it first when it is dirty.
+`Flush` calls `IMemoryPagedList.Save`, which writes the dirty pages in page
+order and keeps every page cached, so a caller that flushes after each
+operation keeps its working set. `IMemoryPagedList.Flush` instead saves and
+unloads every page.
+
+The backing stream must support reading and seeking; writing and `SetLength`
+also need it to be writable. Positions and lengths are 64-bit. The backing
+stream grows as pages are written to it, and a shrink reaches it with the next
+save, so repeated resizing between saves costs at most one resize. Reads see
+pending writes and resizing immediately, and a page reads only the bytes it
+holds, so a shrink followed by growth reads zeros rather than older bytes.
+
+Use the backing stream only through the memory-paged stream while it is open.
+Instances are not thread safe. Standard `Stream` asynchronous operations use
+the same paths. A failed page write leaves the page dirty for a retry. Disposing
+the stream disposes the buffer it owns, which saves once, reports any failure
+without retrying it, and closes the backing stream only when `leaveOpen` is
+`false`; its default is `true`.
+
+Unlike `BufferedStream`, which provides read-ahead and immediate writes, a
+memory-paged stream holds writes across seeks. Unlike `TransactionalStream`, it
+writes pages straight to the backing stream, with no commit or rollback.
+
+
+## Fragmented streams
+
+`FragmentedStream` positions and lengths are 64-bit. As with other seekable
+streams, the position may be set past the end: a read there returns nothing,
+and a write extends the stream with a zero-filled gap, because a provider's
+`SetTotalBytes` growth reads as zeros. A provider that buffers implements
+`IStreamFragmentProvider.Flush`; the default does nothing.
 
 ## BufferedStream
 

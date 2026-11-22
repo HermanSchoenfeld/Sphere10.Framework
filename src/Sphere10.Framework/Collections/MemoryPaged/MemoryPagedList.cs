@@ -22,8 +22,9 @@ public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	/// <param name="pageSize">Logical items per page.</param>
 	/// <param name="maxMemory">Maximum bytes available for loaded pages.</param>
 	/// <param name="fixedItemSize">Fixed serialized size of an item.</param>
-	public MemoryPagedList(long pageSize, long maxMemory, int fixedItemSize)
-		: this(pageSize, maxMemory, new ConstantLengthItemSizer<TItem>(fixedItemSize, false)) {
+	/// <param name="pageReapPolicy">The order in which loaded pages are evicted when <paramref name="maxMemory"/> is reached.</param>
+	public MemoryPagedList(long pageSize, long maxMemory, int fixedItemSize, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy)
+		: this(pageSize, maxMemory, new ConstantLengthItemSizer<TItem>(fixedItemSize, false), pageReapPolicy) {
 	}
 
 	/// <summary>
@@ -32,12 +33,21 @@ public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	/// <param name="pageSize">Logical items per page.</param>
 	/// <param name="maxMemory">Maximum bytes available for loaded pages.</param>
 	/// <param name="itemSizer">Function that estimates the serialized size for each item.</param>
-	public MemoryPagedList(long pageSize, long maxMemory, Func<TItem, long> itemSizer)
-		: this(pageSize, maxMemory, new ActionItemSizer<TItem>(itemSizer)) {
+	/// <param name="pageReapPolicy">The order in which loaded pages are evicted when <paramref name="maxMemory"/> is reached.</param>
+	public MemoryPagedList(long pageSize, long maxMemory, Func<TItem, long> itemSizer, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy)
+		: this(pageSize, maxMemory, new ActionItemSizer<TItem>(itemSizer), pageReapPolicy) {
 	}
 
-	private MemoryPagedList(long pageSize, long maxMemory, IItemSizer<TItem> sizer)
-		: base(pageSize, maxMemory) {
+	/// <summary>
+	/// Creates a paged list whose items are measured by an item sizer, such as an item serializer.
+	/// </summary>
+	/// <param name="pageSize">Bytes per page.</param>
+	/// <param name="maxMemory">Maximum bytes available for loaded pages.</param>
+	/// <param name="sizer">Measures the serialized size of each item.</param>
+	/// <param name="pageReapPolicy">The order in which loaded pages are evicted when <paramref name="maxMemory"/> is reached.</param>
+	public MemoryPagedList(long pageSize, long maxMemory, IItemSizer<TItem> sizer, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy)
+		: base(pageSize, maxMemory, pageReapPolicy: pageReapPolicy) {
+		Guard.ArgumentNotNull(sizer, nameof(sizer));
 		_sizer = sizer;
 	}
 

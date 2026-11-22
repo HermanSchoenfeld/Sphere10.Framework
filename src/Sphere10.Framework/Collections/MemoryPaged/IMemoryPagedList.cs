@@ -42,6 +42,11 @@ public interface IMemoryPagedList<TItem> : IPagedList<TItem>, IDisposable {
 	event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
 	/// <summary>
+	/// Saves the dirty cached pages and keeps every page cached.
+	/// </summary>
+	void Save();
+
+	/// <summary>
 	/// Forces dirty pages to save and unloads any currently cached pages.
 	/// </summary>
 	void Flush();

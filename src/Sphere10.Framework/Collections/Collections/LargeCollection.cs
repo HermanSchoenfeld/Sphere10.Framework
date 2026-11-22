@@ -19,17 +19,26 @@ public class LargeCollection<TItem> : CollectionDecorator<TItem>, IDisposable {
 
 	protected new MemoryPagedList<TItem> InternalCollection; 
 
-	public LargeCollection(int pageSize, long maxMemory)
-		: this(pageSize, maxMemory, null) {
+	/// <summary>Creates a collection whose items are measured by the default Framework serializer for <typeparamref name="TItem"/>.</summary>
+	public LargeCollection(int pageSize, long maxMemory, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy)
+		: this(new MemoryPagedList<TItem>(pageSize, maxMemory, SerializerFactory.Default.GetSerializer<TItem>(), pageReapPolicy)) {
 	}
 
-	public LargeCollection(int pageSize, long maxMemory, Func<TItem, long> itemSizer)
-		: base(new MemoryPagedList<TItem>(pageSize, maxMemory, itemSizer)) {
-		InternalCollection = (MemoryPagedList<TItem>)base.InternalCollection;
-		Pages = InternalCollection.Pages;
+	/// <summary>Creates a collection whose items are measured by <paramref name="itemSizer"/>.</summary>
+	public LargeCollection(int pageSize, long maxMemory, Func<TItem, long> itemSizer, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy)
+		: this(new MemoryPagedList<TItem>(pageSize, maxMemory, itemSizer, pageReapPolicy)) {
+	}
+
+	private LargeCollection(MemoryPagedList<TItem> list)
+		: base(list) {
+		InternalCollection = list;
+		Pages = list.Pages;
 	}
 
 	public IReadOnlyList<IMemoryPage<TItem>> Pages { get; }
+
+	/// <summary>The order in which loaded pages are evicted when the memory budget is reached.</summary>
+	public CacheReapPolicy PageReapPolicy => InternalCollection.PageReapPolicy;
 
 	public void Dispose() {
 		InternalCollection.Dispose();

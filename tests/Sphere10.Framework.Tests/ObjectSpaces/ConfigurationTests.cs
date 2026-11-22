@@ -239,6 +239,18 @@ public class ConfigurationTests {
 	}
 
 	[Test]
+	public void FileBackendEvictsPagesInTheBuildersPageReapPolicy([Values(CacheReapPolicy.LeastUsed, CacheReapPolicy.LongestIdle)] CacheReapPolicy policy) {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
+		using (var space = (FileObjectSpace)CreateBuilder().UseFile(Path.Combine(folder, "space.dat")).WithPageReapPolicy(policy).AutoLoad().Build()) {
+			Assert.That(space.File.PageReapPolicy, Is.EqualTo(policy));
+			Assert.That(space.PageReapPolicy, Is.EqualTo(policy), "The policy must reach the file's page cache, not only its descriptor.");
+		}
+		using var defaults = (FileObjectSpace)CreateBuilder().UseFile(Path.Combine(folder, "defaults.dat")).AutoLoad().Build();
+		Assert.That(defaults.PageReapPolicy, Is.EqualTo(Sphere10FrameworkDefaults.PageCacheReapPolicy));
+	}
+
+	[Test]
 	public void FileDisposalDoesNotCommitFlushedUncommittedAutosaveChanges() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);

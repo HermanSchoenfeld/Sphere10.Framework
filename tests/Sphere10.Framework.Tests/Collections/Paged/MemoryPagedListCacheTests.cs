@@ -8,8 +8,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests;
 
@@ -167,5 +169,53 @@ public class MemoryPagedListCacheTests {
 		Assert.That(saves, Is.EqualTo(2));
 		Assert.That(list.CurrentOpenPages, Is.Zero);
 		Assert.That(list.ReadRange(0, expected.Length), Is.EqualTo(expected));
+	}
+
+	[Test]
+	[TestCase(CacheReapPolicy.LeastUsed, 1L)]
+	[TestCase(CacheReapPolicy.LongestIdle, 2L)]
+	public void PageReapPolicyChoosesTheEvictedPage(CacheReapPolicy policy, long retainedPage) {
+		using var list = new MemoryPagedList<int>(16, 2 * 16, sizeof(int), policy);
+		list.AddRange(Enumerable.Range(0, 12));
+		Assert.That(list.PageReapPolicy, Is.EqualTo(policy));
+		AssertEx.HasLoadedPages(list, 1, 2);
+		// Page 1 is used most, page 2 most recently; loading page 0 evicts one of them.
+		for (var read = 0; read < 8; read++)
+			Assert.That(list[4], Is.EqualTo(4));
+		Assert.That(list[8], Is.EqualTo(8));
+		Assert.That(list[0], Is.EqualTo(0));
+		AssertEx.HasLoadedPages(list, 0, retainedPage);
+	}
+
+	[Test]
+	public void LargeCollectionWithoutASizerMeasuresItemsWithTheirDefaultSerializer() {
+		using var collection = new LargeCollection<int>(4 * sizeof(int), 2 * 4 * sizeof(int));
+		var values = Enumerable.Range(1, 10).ToArray();
+		foreach (var value in values)
+			collection.Add(value);
+		Assert.That(collection, Is.EqualTo(values));
+		Assert.That(collection.Count, Is.EqualTo(values.Length));
+		Assert.That(collection.Pages.Count, Is.EqualTo(3), "Four-byte integers fill each 16-byte page four at a time.");
+	}
+
+	[Test]
+	public void EveryMemoryPagedEntryPointTakesItsPageReapPolicy() {
+		var directory = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using var deleteDirectory = Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(directory));
+		using (var buffer = new MemoryPagedBuffer(16, 32))
+			Assert.That(buffer.PageReapPolicy, Is.EqualTo(Sphere10FrameworkDefaults.PageCacheReapPolicy));
+		using (var buffer = new MemoryPagedBuffer(16, 32, CacheReapPolicy.LeastUsed))
+			Assert.That(buffer.PageReapPolicy, Is.EqualTo(CacheReapPolicy.LeastUsed));
+		using (var stream = new MemoryPagedStream(new MemoryStream(), 16, 32, pageReapPolicy: CacheReapPolicy.Oldest))
+			Assert.That(((MemoryPagedBuffer)stream.Buffer).PageReapPolicy, Is.EqualTo(CacheReapPolicy.Oldest));
+		using (var collection = new LargeCollection<int>(16, 32, _ => sizeof(int), CacheReapPolicy.Largest))
+			Assert.That(collection.PageReapPolicy, Is.EqualTo(CacheReapPolicy.Largest));
+		using (var collection = new LargeCollection<int>(16, 32))
+			Assert.That(collection.PageReapPolicy, Is.EqualTo(Sphere10FrameworkDefaults.PageCacheReapPolicy));
+		using (var file = new FileMappedBuffer(PagedFileDescriptor.From(Path.Combine(directory, "Mapped.dat"), 16, 32, CacheReapPolicy.LeastUsed)))
+			Assert.That(file.PageReapPolicy, Is.EqualTo(CacheReapPolicy.LeastUsed));
+		using (var transactional = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(Path.Combine(directory, "Transactional.dat"), directory, 16, 32, CacheReapPolicy.Smallest)))
+			Assert.That(transactional.PageReapPolicy, Is.EqualTo(CacheReapPolicy.Smallest));
+		Assert.That(() => new MemoryPagedBuffer(16, 32, CacheReapPolicy.None), Throws.ArgumentException);
 	}
 }

@@ -27,6 +27,8 @@ public class MemoryPagedListDecorator<TItem, TMemoryPagedList> : PagedListDecora
 		internalPagedList.PageUnloaded += (o, p) => OnPageUnloaded(p);
 	}
 
+	public virtual void Save() => InternalCollection.Save();
+
 	public virtual void Flush() => InternalCollection.Flush();
 
 	public virtual void Dispose() => InternalCollection.Dispose();

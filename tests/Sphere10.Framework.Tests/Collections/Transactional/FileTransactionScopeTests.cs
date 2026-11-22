@@ -18,6 +18,21 @@ namespace Sphere10.Framework.Tests;
 public class FileTransactionScopeTests {
 
 	[Test]
+	public void EnlistedFileTakesTheScopesPageReapPolicy() {
+		var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var txnBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var filePath = Path.Combine(fileBaseDir, "file.dat");
+		File.WriteAllBytes(filePath, new byte[] { 1, 2, 3 });
+		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir)))
+		using (var scope = new FileTransactionScope(txnBaseDir)) {
+			scope.BeginTransaction();
+			var file = scope.EnlistFile(filePath, 100, 1 * 100, CacheReapPolicy.Oldest);
+			Assert.That(file.AsBuffer.PageReapPolicy, Is.EqualTo(CacheReapPolicy.Oldest));
+			scope.Rollback();
+		}
+	}
+
+	[Test]
 	public void EnlistedFilesAggregateInNestedScopes() {
 		var RNG = new Random(1231);
 		var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);

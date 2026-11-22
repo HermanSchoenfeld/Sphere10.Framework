@@ -21,7 +21,7 @@ File-system utilities, endian-aware binary readers and writers, file content cac
 | [`FileTransaction`](FileTransaction.cs) | class | Commits or rolls back a set of enlisted transactional files under one header file, resuming an interrupted transaction on construction. |
 | [`FileTransactionScope`](FileTransactionScope.cs) | class | Ambient transactional scope that owns a `FileTransaction` and enlists files in it. |
 | [`FileTransactionState`](FileTransactionState.cs) | enum | State of a file transaction: `Unchanged`, `HasChanges`, `Committing` or `RollingBack`. |
-| [`PagedFileDescriptor`](PagedFileDescriptor.cs) | record | Path, page size and memory budget of a paged file. |
+| [`PagedFileDescriptor`](PagedFileDescriptor.cs) | record | Path, page size, memory budget and page eviction order (`PageReapPolicy`) of a paged file. |
 | [`Sphere10FrameworkFileDescriptor`](Sphere10FileDescriptor.cs) | record | Transactional file descriptor that adds cluster size, clustered-stream container policy and endianness. |
 | [`TextFileCache`](TextFileCache.cs) | class | Caches file contents as strings keyed by path and reloads them when the file changes. |
 | [`Tools.FileSystem`](FileSystemTool.cs) | tools | Path, file and directory operations, temporary locations, hashing, monitoring and compression. |

@@ -37,9 +37,9 @@ public class FileTransactionScope : SyncTransactionalScope<FileTransaction> {
 
 	protected override void RollbackInternal(FileTransaction transaction) => transaction.Rollback();
 
-	public ITransactionalFile EnlistFile(string filename, int pageSize, long maxMemory) {
+	public ITransactionalFile EnlistFile(string filename, int pageSize, long maxMemory, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy) {
 		CheckTransactionExists();
-		return Transaction.EnlistFile(filename, pageSize, maxMemory);
+		return Transaction.EnlistFile(filename, pageSize, maxMemory, pageReapPolicy);
 	}
 
 	public ITransactionalFile EnlistFile(ITransactionalFile file, bool ownsFile) {

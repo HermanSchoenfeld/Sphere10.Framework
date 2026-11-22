@@ -18,7 +18,7 @@ namespace Sphere10.Framework;
 public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
 	protected FilePagedListBase(PagedFileDescriptor pagedFileDescriptor, FileAccessMode accessMode = FileAccessMode.Default)
-		: base(pagedFileDescriptor.PageSize, pagedFileDescriptor.MaxMemory, autoLoad: false) {
+		: base(pagedFileDescriptor.PageSize, pagedFileDescriptor.MaxMemory, autoLoad: false, pageReapPolicy: pagedFileDescriptor.PageReapPolicy) {
 		FileDescriptor = pagedFileDescriptor;
 		AccessMode = accessMode;
 		Stream = FileAccessHelper.Open(pagedFileDescriptor, accessMode, out var requiresLoad, out var flushOnDispose);

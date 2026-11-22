@@ -249,6 +249,7 @@ The defaults follow the Balanced mixed workload of the profiler's retained [stud
 | `OptimizeAssumingAverageItemSize(bytes)` | Sets the dimension's inner cluster size, clipped to `SmallestRecommendedClusterSize` and `LargestRecommendedClusterSize` (currently 256 to 8192 bytes). Without it, a new dimension uses its backend default and an existing dimension keeps its stored size. Record the effective size. |
 | `WithPageSize(bytes)` | File transaction page size, which affects I/O and commit amplification. It has no effect on memory stores. |
 | `WithMaxMemory(bytes)` | File page-cache budget. Unloaded pages release their buffers, but the budget caps neither the identity tracker nor process memory. |
+| `WithPageReapPolicy(policy)` | Order in which the file page cache evicts pages when the budget is reached; `Sphere10FrameworkDefaults.PageCacheReapPolicy` (least recently used) by default. It has no effect on memory stores. |
 | `WithClusteredStreamsPolicy(policy)` | Outer container caching, allocation and integrity checks. Dimension containers use `FastAllocate` regardless of this setting. |
 | Index membership and key shape | Identifier, fixed-size and checksum-based variable-size indexes cost differently. Compare writes as well as lookups. |
 | `AutoSave()`, `Merkleized()`, `UsingHashFunction`, `WithEndianness` | Change flush, integrity and encoding work. Merkle settings, the hash function and the byte order are part of the stored format. Compare each supported variant on its own before combining them. |

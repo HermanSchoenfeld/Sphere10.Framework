@@ -158,7 +158,7 @@ public class MemoryPagedListTests {
 			Assert.That(3, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 1, 2);
 
-			// read from page[2] a few times to increase demand ticker
+			// read from page[2] so it is used more recently than page[1]
 			var xxx = collection[5] + collection[5];
 
 			collection.Add("page4");
@@ -168,7 +168,7 @@ public class MemoryPagedListTests {
 			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 2, 3);
 
-			// read from page[3] several times to increase demand ticker
+			// read from page[3] so it is used more recently than page[2]; eviction follows recency, not read counts
 			xxx = collection[6] + collection[6] + collection[6] + collection[6] + collection[6] + collection[6] + collection[6] + collection[6];
 
 			var item = collection[0];
@@ -193,7 +193,8 @@ public class MemoryPagedListTests {
 			Assert.That(unloads, Is.EqualTo(4));
 			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			Assert.That("page2", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 3, 1);
+			// page[0] was used after page[3], so page[3] is the least recently used page
+			AssertEx.HasLoadedPages(collection, 0, 1);
 
 			item = collection[3];
 			Assert.That(created, Is.EqualTo(4));
@@ -201,7 +202,7 @@ public class MemoryPagedListTests {
 			Assert.That(unloads, Is.EqualTo(4));
 			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			Assert.That("page2.2", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 3, 1);
+			AssertEx.HasLoadedPages(collection, 0, 1);
 
 			item = collection[4];
 			Assert.That(created, Is.EqualTo(4));
@@ -209,7 +210,7 @@ public class MemoryPagedListTests {
 			Assert.That(unloads, Is.EqualTo(5));
 			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			Assert.That("page3", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 3, 2);
+			AssertEx.HasLoadedPages(collection, 1, 2);
 
 			item = collection[5];
 			Assert.That(created, Is.EqualTo(4));
@@ -217,15 +218,15 @@ public class MemoryPagedListTests {
 			Assert.That(unloads, Is.EqualTo(5));
 			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			Assert.That("page3.3", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 3, 2);
+			AssertEx.HasLoadedPages(collection, 1, 2);
 
 			item = collection[6];
 			Assert.That(created, Is.EqualTo(4));
-			Assert.That(loads, Is.EqualTo(7));
-			Assert.That(unloads, Is.EqualTo(5));
+			Assert.That(loads, Is.EqualTo(8));
+			Assert.That(unloads, Is.EqualTo(6));
 			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			Assert.That("page4", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 3, 2);
+			AssertEx.HasLoadedPages(collection, 2, 3);
 
 			// Remove an illegal subrange
 			Assert.Throws<ArgumentOutOfRangeException>(() => collection.RemoveRange(3, 3));
@@ -286,7 +287,7 @@ public class MemoryPagedListTests {
 			Assert.That(2, Is.EqualTo(collection.Pages.Count()));
 			Assert.That(2, Is.EqualTo(collection.Pages[1].Size));
 			AssertEx.HasLoadedPages(collection, 0, 1);
-			// read this page[1] few times to bump ticker
+			// read page[1] so it is used more recently than page[0]
 			var xxx = collection[2] + collection[2];
 
 			// page 3
@@ -297,7 +298,7 @@ public class MemoryPagedListTests {
 			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
 			Assert.That(2, Is.EqualTo(collection.Pages[2].Size));
 			AssertEx.HasLoadedPages(collection, 1, 2);
-			// read this page[2] many times to bump ticker up
+			// read page[2] so it is used more recently than page[1]; eviction follows recency, not read counts
 			xxx = collection[3] + collection[3] + collection[3] + collection[3];
 
 			var item = collection[0];
@@ -322,15 +323,16 @@ public class MemoryPagedListTests {
 			Assert.That(unloads, Is.EqualTo(3));
 			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
 			Assert.That("34", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 2, 1);
+			// page[0] was used after page[2], so page[2] is the least recently used page
+			AssertEx.HasLoadedPages(collection, 0, 1);
 
 			item = collection[3];
 			Assert.That(created, Is.EqualTo(3));
-			Assert.That(loads, Is.EqualTo(5));
-			Assert.That(unloads, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(6));
+			Assert.That(unloads, Is.EqualTo(4));
 			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
 			Assert.That("56", Is.EqualTo(item));
-			AssertEx.HasLoadedPages(collection, 2, 1);
+			AssertEx.HasLoadedPages(collection, 1, 2);
 
 			// Remove an illegal subrange
 			Assert.Throws<ArgumentOutOfRangeException>(() => collection.RemoveRange(1, 2));

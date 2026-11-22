@@ -29,6 +29,8 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 	public event EventHandlerEx<object> Loading;
 	public event EventHandlerEx<object> Loaded;
 
+	// Appended by SetLength growth and never written to.
+	private static readonly byte[] ZeroBlock = new byte[64 * 1024];
 	private long _position;
 	private readonly bool _disposeSource;
 	private readonly IBuffer _source;
@@ -96,7 +98,7 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 		if (Length == 0)
 			return 0;
 		var bytesRead = (int)Math.Max(0, Math.Min(buffer.Length, Length - Position));
-		_source.ReadRange((int)Position, buffer[..bytesRead]);
+		_source.ReadRange(Position, buffer[..bytesRead]);
 		Position += bytesRead;
 		Debug.Assert(0 <= Position && Position <= Length);
 		return bytesRead;
@@ -135,13 +137,18 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 	}
 
 	public override void SetLength(long value) {
-		Guard.ArgumentInRange(value, 0, int.MaxValue, nameof(value));
+		Guard.ArgumentNotNegative(value, nameof(value));
 		if (value < Length) {
-			_source.RemoveRange((int)value, (int)(Length - value));
+			_source.RemoveRange(value, Length - value);
 			if (Position > value)
 				Position = value;
-		} else if (value > Length) {
-			_source.AddRange(Tools.Array.Gen((int)(value - Length), (byte)0).AsSpan());
+		} else {
+			// Grow with zeros one bounded block at a time, so growth never allocates its whole size.
+			for (var remaining = value - Length; remaining > 0;) {
+				var block = (int)Math.Min(remaining, ZeroBlock.Length);
+				_source.AddRange(ZeroBlock.AsSpan(0, block));
+				remaining -= block;
+			}
 		}
 	}
 
@@ -156,7 +163,7 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 		var updateAmount = (int)Math.Min(Length - Position, buffer.Length);
 		var addingAmount = buffer.Length - updateAmount;
 		if (updateAmount > 0) // Optimize bellow allocation (10mb clusters will allocate 10mb array)
-			_source.UpdateRange((int)Position, buffer[..updateAmount]);
+			_source.UpdateRange(Position, buffer[..updateAmount]);
 		if (addingAmount > 0)
 			_source.AddRange(buffer[updateAmount..]);
 		Position += updateAmount + addingAmount;

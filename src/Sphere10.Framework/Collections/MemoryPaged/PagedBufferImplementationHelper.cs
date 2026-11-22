@@ -16,6 +16,9 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <remarks>PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions</remarks>
 internal static class PagedBufferImplementationHelper {
+	// Appended by expansion and never written to.
+	private static readonly byte[] ZeroBlock = new byte[64 * 1024];
+
 	public static byte[] ReadRange(IPagedListDelegate<byte> source, long index, long count) {
 		source.CheckRequiresLoad();
 		source.NotifyAccessing();
@@ -76,16 +79,14 @@ internal static class PagedBufferImplementationHelper {
 			var bufferPage = (IBufferPage)page;
 			var pageStartIx = pageSegment.Item2;
 			var pageCount = pageSegment.Item3;
-			var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
-			var pageStartIxI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(pageStartIx);
-			var pageCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(pageCount);
-			var pageSpan = items.Slice(pageStartIxI - indexI, pageCountI);
+			// Absolute indexes are 64-bit; only the offset within the update span must fit an int.
+			var pageSpan = items.Slice((int)(pageStartIx - index), (int)pageCount);
 			source.DecCount(bufferPage.Count);
 			using (source.EnterOpenPageScope(page)) {
 				source.NotifyPageAccessing(page);
 				source.NotifyPageWriting(page);
 				source.UpdateVersion();
-				bufferPage.UpdateSpan(pageStartIxI, pageSpan);
+				bufferPage.UpdateSpan(pageStartIx, pageSpan);
 				source.IncCount(bufferPage.Count);
 				source.NotifyPageWrite(page);
 			}
@@ -106,9 +107,20 @@ internal static class PagedBufferImplementationHelper {
 		return ReadRange(source, index, count).AsSpan();
 	}
 
-	public static void ExpandTo(IPagedListDelegate<byte> source, long totalBytes) => throw new NotImplementedException();
+	public static void ExpandTo(IPagedListDelegate<byte> source, long count, long totalBytes) {
+		Guard.ArgumentInRange(totalBytes, count, long.MaxValue, nameof(totalBytes), "A buffer cannot be expanded to fewer bytes than it holds.");
+		ExpandBy(source, totalBytes - count);
+	}
 
-	public static void ExpandBy(IPagedListDelegate<byte> source, long newBytes) => throw new NotImplementedException();
+	/// <summary>Appends zero bytes, one bounded block at a time.</summary>
+	public static void ExpandBy(IPagedListDelegate<byte> source, long newBytes) {
+		Guard.ArgumentNotNegative(newBytes, nameof(newBytes));
+		while (newBytes > 0) {
+			var block = (int)Math.Min(newBytes, ZeroBlock.Length);
+			AddRange(source, ZeroBlock.AsSpan(0, block));
+			newBytes -= block;
+		}
+	}
 
 
 	public static ReadOnlySpan<byte> ReadPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, long index, long count) {

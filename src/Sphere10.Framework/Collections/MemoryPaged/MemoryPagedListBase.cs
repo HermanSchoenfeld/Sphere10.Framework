@@ -35,15 +35,20 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 
 	protected bool Disposing;
 
-	protected MemoryPagedListBase(long pageSize, long maxMemory, bool autoLoad = false) 
+	/// <param name="pageSize">Logical items per page.</param>
+	/// <param name="maxMemory">Bytes of pages that may be cached at once.</param>
+	/// <param name="autoLoad">Whether to load persisted pages now.</param>
+	/// <param name="pageReapPolicy">The order in which cached pages are evicted when <paramref name="maxMemory"/> is reached.</param>
+	protected MemoryPagedListBase(long pageSize, long maxMemory, bool autoLoad = false, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy)
 		: base(false) {
 		Guard.ArgumentInRange(pageSize, 1, int.MaxValue, nameof(pageSize));
 		Guard.ArgumentInRange(maxMemory, pageSize, long.MaxValue, nameof(maxMemory));
+		Guard.Argument(pageReapPolicy is not (CacheReapPolicy.None or CacheReapPolicy.ASAP), nameof(pageReapPolicy), "Pages must be evicted by usage, recency, age or size.");
 		PageSize = pageSize;
 		FlushOnDispose = false;
 		Disposing = false;
 		Pages = InternalPages.AsReadOnly().WithProjection(p => (IMemoryPage<TItem>)p);
-		_loadedPages = new PageCache(this, maxMemory);
+		_loadedPages = new PageCache(this, maxMemory, pageReapPolicy);
 
 		_loadedPages.ItemRemoved += (page, key) => {
 			var memPage = (IMemoryPage<TItem>)InternalPages[page];
@@ -91,6 +96,11 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	public long MaxMemory => _loadedPages.MaxCapacity;
 
 	/// <summary>
+	/// The order in which cached pages are evicted when <see cref="MaxMemory"/> is reached.
+	/// </summary>
+	public CacheReapPolicy PageReapPolicy => _loadedPages.ReapPolicy;
+
+	/// <summary>
 	/// Returns <c>true</c> when any page in the list is dirty.
 	/// </summary>
 	public virtual bool Dirty => InternalPages.Any(p => p.Dirty);
@@ -113,6 +123,15 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 		var canPurge = cachedItem.CanPurge;
 		cachedItem.CanPurge = false;
 		return new PageScope<TItem>(cachedItem, canPurge);
+	}
+
+	/// <summary>
+	/// Saves the dirty cached pages in page order and keeps every page cached.
+	/// </summary>
+	public virtual void Save() {
+		CheckNotDisposed();
+		foreach (var page in _loadedPages.CachedItems.Select(item => item.Value).Where(page => page.State == PageState.Loaded && page.Dirty).OrderBy(page => page.Number))
+			SavePage(page);
 	}
 
 	/// <summary>
@@ -203,13 +222,21 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 
 	private void CheckNotDisposed() => ObjectDisposedException.ThrowIf(Disposed, this);
 
+	private void SavePage(IMemoryPage<TItem> page) {
+		NotifyPageSaving(page);
+		page.Save();
+		NotifyPageSaved(page);
+		if (page.Dirty)
+			throw new InvalidOperationException("The page was modified by a save notification. Retry the operation to save those changes.");
+	}
+
 	#endregion
 
 	private sealed class PageCache : CacheBase<long, IMemoryPage<TItem>> {
 		private readonly MemoryPagedListBase<TItem> _owner;
 
-		public PageCache(MemoryPagedListBase<TItem> owner, long maxMemory)
-			: base(reapStrategy: CacheReapPolicy.LeastUsed, expirationStrategy: ExpirationPolicy.SinceLastAccessedTime, maxCapacity: maxMemory) {
+		public PageCache(MemoryPagedListBase<TItem> owner, long maxMemory, CacheReapPolicy reapPolicy)
+			: base(reapStrategy: reapPolicy, expirationStrategy: ExpirationPolicy.SinceLastAccessedTime, maxCapacity: maxMemory) {
 			_owner = owner;
 		}
 
@@ -255,11 +282,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 			var page = item.Value;
 			if (!page.Dirty || page.State is PageState.Deleting or PageState.Deleted)
 				return;
-			_owner.NotifyPageSaving(page);
-			page.Save();
-			_owner.NotifyPageSaved(page);
-			if (page.Dirty)
-				throw new InvalidOperationException("The page was modified by a save notification. Retry the operation to save those changes.");
+			_owner.SavePage(page);
 		}
 	}
 

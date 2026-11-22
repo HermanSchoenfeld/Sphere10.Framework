@@ -18,6 +18,25 @@ namespace Sphere10.Framework.Tests;
 public class FileTransactionTests {
 
 	[Test]
+	public void EnlistedFilesKeepTheirPageReapPolicyInTheTransactionHeader() {
+		var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var txnBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
+			var filePath = Path.Combine(fileBaseDir, "file.dat");
+			File.WriteAllBytes(filePath, new byte[] { 1, 2, 3 });
+			using var transaction = new FileTransaction(Path.Combine(txnBaseDir, "Test.txn"));
+			var file = transaction.EnlistFile(filePath, 100, 1 * 100, CacheReapPolicy.LeastUsed);
+			Assert.That(file.PageReapPolicy, Is.EqualTo(CacheReapPolicy.LeastUsed));
+			Assert.That(file.FileDescriptor.PageReapPolicy, Is.EqualTo(CacheReapPolicy.LeastUsed));
+
+			// Recovery re-enlists each file from the header it reads, so the header must carry the policy.
+			var header = Tools.Object.SerializeToByteArray(FileTransaction.FileTransactionSerializableSurrogate.Dehydrate(transaction));
+			var recovered = (FileTransaction.FileTransactionSerializableSurrogate)Tools.Object.DeserializeFromByteArray(header);
+			Assert.That(recovered.EnlistedFiles.Single().PageReapPolicy, Is.EqualTo(CacheReapPolicy.LeastUsed));
+		}
+	}
+
+	[Test]
 	public void Sequential_CommitCommit() {
 		var RNG = new Random(1231);
 		var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);

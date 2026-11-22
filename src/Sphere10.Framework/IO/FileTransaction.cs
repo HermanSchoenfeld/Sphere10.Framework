@@ -99,7 +99,7 @@ public class FileTransaction : IDisposable {
 		}
 	}
 
-	public TransactionalFileMappedBuffer EnlistFile(string filename, long pageSize, long maxMemory) {
+	public TransactionalFileMappedBuffer EnlistFile(string filename, long pageSize, long maxMemory, CacheReapPolicy pageReapPolicy = Sphere10FrameworkDefaults.PageCacheReapPolicy) {
 		Guard.ArgumentNotNullOrEmpty(filename, nameof(filename));
 
 		if (File.Exists(filename)) {
@@ -119,7 +119,7 @@ public class FileTransaction : IDisposable {
 			//return EnlistFile(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, UncommittedPageFileDirectory, pageSize, maxMemory, false), true);
 			return EnlistFile(
 				new TransactionalFileMappedBuffer(
-					TransactionalFileDescriptor.From(filename, UncommittedPageFileDirectory, pageSize, maxMemory), 
+					TransactionalFileDescriptor.From(filename, UncommittedPageFileDirectory, pageSize, maxMemory, pageReapPolicy),
 					FileAccessMode.Append
 				),
 				true
@@ -223,7 +223,7 @@ public class FileTransaction : IDisposable {
 		this.TransactionHeaderFile = transactionHeaderFile;
 		this.UncommittedPageFileDirectory = surrogate.UncomittedPageFileDirectory;
 		foreach (var enlistedSurrogate in surrogate.EnlistedFiles) {
-			EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.PageSize, enlistedSurrogate.MaxMemory);
+			EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.PageSize, enlistedSurrogate.MaxMemory, enlistedSurrogate.PageReapPolicy);
 		}
 	}
 
@@ -262,6 +262,7 @@ public class FileTransaction : IDisposable {
 		public string Filename { get; set; }
 		public long PageSize { get; set; }
 		public long MaxMemory { get; set; }
+		public CacheReapPolicy PageReapPolicy { get; set; } = Sphere10FrameworkDefaults.PageCacheReapPolicy;
 
 		public TransactionalFileSerializableSurrogate() {
 		}
@@ -274,6 +275,7 @@ public class FileTransaction : IDisposable {
 			to.Filename = from.FileDescriptor.Path;
 			to.PageSize = from.PageSize;
 			to.MaxMemory = from.MaxMemory;
+			to.PageReapPolicy = from.PageReapPolicy;
 		}
 
 		public static TransactionalFileSerializableSurrogate Dehydrate(TransactionalFileMappedBuffer transaction) {
