@@ -59,6 +59,8 @@ public class LogOutputSelectorControlTests {
 		Assert.That(control.LastError, Is.Null);
 		Assert.That(Directory.GetFiles(_directory), Is.Empty);
 		Assert.That(FindControl<CheckBox>(control, "_loggingCheckBox").Text, Is.Empty);
+		control.Caption = "Log Output";
+		Assert.That(FindControl<CheckBox>(control, "_loggingCheckBox").Text, Is.EqualTo("Log Output"));
 		Assert.That(TypeDescriptor.GetProperties(control)[nameof(control.Logger)].IsBrowsable, Is.False);
 	}
 
@@ -688,6 +690,27 @@ public class LogOutputSelectorControlTests {
 	}
 
 	[Test]
+	public void RestoreSettingsAsyncReadsTheStoreOnAWorkerAndResumesRememberedOutputOnTheUiThread() => RunWithMessageLoop(async owner => {
+		var configuration = FileConfiguration("async-restore.log");
+		configuration.RememberAfterClose = true;
+		using (var first = new LogOutputSelectorControl { SettingsKey = "Async-restore" })
+			first.StartLogging(configuration);
+		var store = new ThreadRecordingSettingsProvider(Path.Combine(_directory, "settings"));
+		UserSettings.Provider = new CachedSettingsProvider(store);
+		using var restored = new LogOutputSelectorControl { SettingsKey = "Async-restore" };
+		owner.Controls.Add(restored);
+		var restoring = restored.RestoreSettingsAsync();
+		var joined = restored.RestoreSettingsAsync();
+		Assert.That(restored.HasConfiguration, Is.False, "Nothing is applied before the read completes.");
+		Assert.That(await restoring && await joined, Is.True);
+		Assert.That(restored.HasConfiguration && restored.IsLogging, Is.True, "The remembered output resumed.");
+		Assert.That(restored.Configuration.FilePath, Is.EqualTo(configuration.FilePath));
+		Assert.That(store.ReadThreads, Is.Not.Empty.And.None.EqualTo(Environment.CurrentManagedThreadId), "The store is read on a worker.");
+		Assert.That(await restored.RestoreSettingsAsync(), Is.True, "A restored selector answers at once.");
+		Assert.That(restored.RestoreSettings(), Is.True);
+	});
+
+	[Test]
 	public void RememberedApplicationOutputUsesTheLoggerAssignedBeforeExplicitRestore() {
 		using var original = new RecordingLogger { Options = LogOptions.InfoEnabled };
 		using (var first = new LogOutputSelectorControl { SettingsKey = "Application-output", ApplicationLogger = original })
@@ -1282,6 +1305,20 @@ public class LogOutputSelectorControlTests {
 				throw new IOException("The optional preference save failed.");
 			}
 			base.SaveSetting(settings);
+		}
+	}
+
+	/// <summary>Records the threads that ask the store whether a setting exists.</summary>
+	private sealed class ThreadRecordingSettingsProvider : DirectoryFileSettingsProvider {
+		public ThreadRecordingSettingsProvider(string directory)
+			: base(directory) {
+		}
+
+		public SynchronizedList<int> ReadThreads { get; } = new();
+
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
+			ReadThreads.Add(Environment.CurrentManagedThreadId);
+			return base.ContainsSetting(settingsObjectType, id);
 		}
 	}
 

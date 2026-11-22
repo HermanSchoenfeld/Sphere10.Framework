@@ -68,6 +68,14 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	[Category("Appearance"), DefaultValue("Log Output")]
 	public string ScreenTitle { get; set; } = "Log Output";
 
+	/// <summary>Text shown beside the logging check box, such as "Log Output". Empty by default, leaving a compact check box that names itself
+	/// only in its tool tip.</summary>
+	[Category("Appearance"), DefaultValue("")]
+	public string Caption {
+		get => _loggingCheckBox.Text;
+		set => _loggingCheckBox.Text = value ?? string.Empty;
+	}
+
 	/// <summary>The current selected logger, or an actual NoOpLogger when inactive. Fetch again after a state change to use the new output.</summary>
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -254,43 +262,83 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	/// <summary>Restores optional preferences after the owner has assigned its application logger and preflight/failure handlers.
 	/// Returns false when no stable identity/provider is available yet, allowing the owner to retry after initialization.</summary>
 	public bool RestoreSettings() {
+		if (!CanRestoreSettings(out var key, out var provider, out var answer))
+			return answer;
+		var exists = false;
+		LogOutputSelectorSettings settings = null;
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+			exists = provider.ContainsSetting(typeof(LogOutputSelectorSettings), key);
+			settings = provider.Get<LogOutputSelectorSettings>(key);
+		}, out var readError);
+		ApplyRestoredSettings(provider, key, exists, settings, readError);
+		return true;
+	}
+
+	/// <summary>Restores optional preferences as <see cref="RestoreSettings"/> does, but reads the settings store on a worker, so a slow store does not
+	/// hold the UI thread; remembered output then starts on this thread. A call while a read runs joins it, and its token ends only its own wait.</summary>
+	public async Task<bool> RestoreSettingsAsync(CancellationToken cancellationToken = default) {
+		if (!CanRestoreSettings(out var key, out var provider, out var answer))
+			return answer;
+		_settingsRestore ??= ReadAndApplySettingsAsync(provider, key);
+		await _settingsRestore.WaitAsync(cancellationToken);
+		return true;
+	}
+
+	// Answers whether preferences still need reading; otherwise the answer is RestoreSettings' result (true once restored or owned by a screen).
+	private bool CanRestoreSettings(out string key, out ISettingsProvider provider, out bool answer) {
 		EnsureOwnerThread();
-		if (_ownsPreferences)
-			return true;
-		if (DesignMode || Tools.Runtime.IsDesignMode)
+		key = null;
+		provider = null;
+		answer = !(DesignMode || Tools.Runtime.IsDesignMode) && (_ownsPreferences || _restoreCompleted);
+		if (answer || DesignMode || Tools.Runtime.IsDesignMode)
 			return false;
-		if (_restoreCompleted)
-			return true;
-		var key = ResolveLogSettingsKey();
-		if (key == null || !TryGetSettingsProvider(out var provider))
-			return false;
+		key = ResolveLogSettingsKey();
+		return key != null && TryGetSettingsProvider(out provider);
+	}
+
+	private async Task ReadAndApplySettingsAsync(ISettingsProvider provider, string key) {
+		var exists = false;
+		LogOutputSelectorSettings settings = null;
+		Exception readError = null;
+		await Task.Run(() => Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+			exists = provider.ContainsSetting(typeof(LogOutputSelectorSettings), key);
+			settings = provider.Get<LogOutputSelectorSettings>(key);
+		}, out readError));
+		// Preferences the screen took over, or a synchronous restore, while the read ran take precedence.
+		if (!IsDisposed && !Disposing && !_ownsPreferences && !_restoreCompleted)
+			ApplyRestoredSettings(provider, key, exists, settings, readError);
+	}
+
+	// Runs on the owner thread. A failed read or invalid remembered values are recorded, and the selector keeps working without them.
+	private void ApplyRestoredSettings(ISettingsProvider provider, string key, bool exists, LogOutputSelectorSettings settings, Exception readError) {
 		_restoringSettings = true;
 		using var restoreScope = Tools.Scope.ExecuteOnDispose(() => _restoringSettings = false);
-		try {
-			var exists = provider.ContainsSetting(typeof(LogOutputSelectorSettings), key);
-			_outputSettingsProvider = provider;
-			_outputSettings = provider.Get<LogOutputSelectorSettings>(key);
-			_restoreCompleted = true;
-			// A choice already accepted by this instance takes precedence over older stored preferences.
-			if (_hasConfiguration || !exists || !_outputSettings.HasConfiguration || _outputSettings.Configuration?.RememberAfterClose != true)
-				return true;
-			_configuration = _outputSettings.Configuration.ValidateOptionsAndNormalize();
-			_hasConfiguration = true;
-			_rememberedEnabled = _outputSettings.IsLogging;
-			if (_rememberedEnabled)
-				Tools.Exceptions.Execute(StartLogging, error => LoggingFailed?.Invoke(error));
-			UpdateUiState();
-			return true;
-		} catch (Exception error) {
-			_restoreCompleted = true;
-			RecordSettingsFailure(error, "Could not restore logging preferences.");
-			if (_outputSettings == null)
-				Tools.Exceptions.Execute(() => {
-					_outputSettings = (LogOutputSelectorSettings)provider.NewSetting(typeof(LogOutputSelectorSettings), key);
-				}, recoveryError => RecordSettingsFailure(recoveryError, "Could not initialize logging preferences."));
-			UpdateUiState();
-			return true;
+		var error = readError;
+		if (error == null) {
+			Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+				_outputSettingsProvider = provider;
+				_outputSettings = settings;
+				_restoreCompleted = true;
+				// A choice already accepted by this instance takes precedence over older stored preferences.
+				if (_hasConfiguration || !exists || !_outputSettings.HasConfiguration || _outputSettings.Configuration?.RememberAfterClose != true)
+					return;
+				_configuration = _outputSettings.Configuration.ValidateOptionsAndNormalize();
+				_hasConfiguration = true;
+				_rememberedEnabled = _outputSettings.IsLogging;
+				if (_rememberedEnabled)
+					Tools.Exceptions.Execute(StartLogging, startError => LoggingFailed?.Invoke(startError));
+				UpdateUiState();
+			}, out error);
+			if (error == null)
+				return;
 		}
+		_restoreCompleted = true;
+		RecordSettingsFailure(error, "Could not restore logging preferences.");
+		if (_outputSettings == null)
+			Tools.Exceptions.Execute(() => {
+				_outputSettings = (LogOutputSelectorSettings)provider.NewSetting(typeof(LogOutputSelectorSettings), key);
+			}, recoveryError => RecordSettingsFailure(recoveryError, "Could not initialize logging preferences."));
+		UpdateUiState();
 	}
 
 	private LogOutputSession DetachSession(bool userStopped, out Exception stateError) {
@@ -560,7 +608,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			existing.Title = title;
 			// A docked view stays in its tab when the active screen refuses to hide; its output still resumes there.
 			existing.Host.ShowScreen(existing);
-			var resumed = LogOutputSession.Create(configuration, ApplicationLogger, existing.Logger);
+			var resumed = LogOutputSession.Create(configuration, existing.Logger);
 			_activeLogScreen = existing;
 			return resumed;
 		}
@@ -579,7 +627,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		Guard.Ensure(host.ShowScreenUndocked(screen), "The screen host did not accept the log output screen.");
 		if (ReferenceEquals(host, _standaloneScreenHost) && screen.FindForm() is { } window && FindForm() is { } owner)
 			window.Owner = owner;
-		var session = LogOutputSession.Create(configuration, ApplicationLogger, screen.Logger);
+		var session = LogOutputSession.Create(configuration, screen.Logger);
 		screen.ScreenDestroyed += OutputScreenDestroyed;
 		_logScreens.Add(screen);
 		_activeLogScreen = screen;
@@ -662,6 +710,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	private ISettingsProvider _outputSettingsProvider;
 	private string _settingsKey = string.Empty;
 	private bool _restoreCompleted;
+	private Task _settingsRestore;
 	private bool _restoringSettings;
 	private bool _settingsDirty;
 	private bool _rememberedEnabled;

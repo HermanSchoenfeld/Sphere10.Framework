@@ -15,12 +15,16 @@ namespace Sphere10.Framework;
 /// Base implementation of <see cref="ILogger"/> that filters messages using <see cref="Options"/>.
 /// </summary>
 public abstract class LoggerBase : ILogger {
+	private volatile LogOptions _options = Tools.Runtime.IsDebugBuild ? LogOptions.VerboseProfile : LogOptions.StandardProfile;
 
 	/// <summary>
 	/// Gets or sets the flags that control which messages are emitted.
 	/// Defaults to <see cref="LogOptions.VerboseProfile"/> in debug builds and <see cref="LogOptions.StandardProfile"/> otherwise.
 	/// </summary>
-	public LogOptions Options { get; set; } = Tools.Runtime.IsDebugBuild ? LogOptions.VerboseProfile : LogOptions.StandardProfile;
+	public LogOptions Options {
+		get => _options;
+		set => _options = value;
+	}
 
 	/// <summary>
 	/// Logs a debug message.
@@ -71,9 +75,10 @@ public abstract class LoggerBase : ILogger {
 	/// </summary>
 	/// <param name="exception">The exception.</param>
 	/// <param name="message">Additional context to append to the exception details.</param>
-	public void Exception(Exception exception, string message = null) {
-		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var exceptionMessage))
-			Log(LogLevel.Error, !string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage);
+	public virtual void Exception(Exception exception, string message = null) {
+		var options = Options;
+		if (options.HasFlag(LogOptions.ErrorEnabled))
+			Log(LogLevel.Error, FormatExceptionMessage(exception, options, message));
 	}
 
 	/// <summary>
@@ -82,5 +87,17 @@ public abstract class LoggerBase : ILogger {
 	/// <param name="logLevel">The logging level.</param>
 	/// <param name="message">The message.</param>
 	protected abstract void Log(LogLevel logLevel, string message);
+
+	/// <summary>
+	/// Formats an admitted exception using the caller's snapshot of the logging options.
+	/// </summary>
+	/// <param name="exception">Exception to format.</param>
+	/// <param name="options">The enabled error and exception detail flags.</param>
+	/// <param name="message">Additional context to prepend to the exception details.</param>
+	protected static string FormatExceptionMessage(Exception exception, LogOptions options, string message = null) {
+		if (!LoggerHelper.TryHydrateErrorMessage(exception, options, out var exceptionMessage))
+			return null;
+		return !string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage;
+	}
 }
 

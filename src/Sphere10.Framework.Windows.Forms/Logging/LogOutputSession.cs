@@ -9,22 +9,21 @@
 using System;
 using System.IO;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 // Each activation has a distinct logger. Its scope joins writes before disposing owned resources;
 // a worker that captured this logger immediately before Stop subsequently sees a closed, harmless output.
-internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposable {
+internal sealed class LogOutputSession : LoggerBase, IDisposable {
 	public event EventHandlerEx<Exception> LoggingFailed;
 
 	private ILogger _sink;
-	private ILogger _untimestampedSink;
-	private IDisposable _ownedSink;
-	private volatile LogOptions _options;
-	private bool _disposed;
-	private readonly bool _ownsSink;
+	private readonly IDisposable _ownedResource;
+	private readonly bool _timestampEnabled;
+	private readonly SynchronizedObject _sinkScope = new();
 	private readonly SynchronizedObject _queueScope = new();
 	private readonly Channel<QueuedMessage> _messages = Channel.CreateBounded<QueuedMessage>(512);
 	private Task _queueWorker;
@@ -34,24 +33,16 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 	private int _queuedCharacters;
 	private volatile bool _accepting = true;
 
-	private LogOutputSession(ILogger sink, ILogger untimestampedSink, IDisposable ownedSink, LogOptions options) {
+	private LogOutputSession(ILogger sink, IDisposable ownedResource, LogOutputConfiguration configuration) {
 		_sink = sink;
-		_untimestampedSink = untimestampedSink;
-		_ownedSink = ownedSink;
-		_ownsSink = ownedSink != null;
-		_options = options;
+		_ownedResource = ownedResource;
+		_timestampEnabled = configuration.TimestampEnabled;
+		Options = configuration.Options;
 	}
 
-	public LogOptions Options {
-		get => _options;
-		set => _options = value;
-	}
+	public bool IsLogging => _accepting && Volatile.Read(ref _sink) != null;
 
-	public bool IsLogging {
-		get => _accepting && System.Threading.Volatile.Read(ref _sink) != null;
-	}
-
-	public static LogOutputSession Create(LogOutputConfiguration configuration, ILogger applicationLogger, ILogger screenLogger = null) {
+	public static LogOutputSession Create(LogOutputConfiguration configuration, ILogger logger) {
 		IDisposable resource = null;
 		try {
 			ILogger sink;
@@ -69,8 +60,9 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 					}
 					break;
 				case LogOutputDestination.Application:
-					Guard.ArgumentNotNull(applicationLogger, nameof(applicationLogger));
-					sink = applicationLogger;
+				case LogOutputDestination.Screen:
+					Guard.ArgumentNotNull(logger, nameof(logger));
+					sink = logger;
 					break;
 				case LogOutputDestination.StandardOutput:
 					sink = new CompletingTextWriterLogger(Console.Out);
@@ -78,91 +70,79 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 				case LogOutputDestination.StandardError:
 					sink = new CompletingTextWriterLogger(Console.Error);
 					break;
-				case LogOutputDestination.Screen:
-					Guard.ArgumentNotNull(screenLogger, nameof(screenLogger));
-					sink = screenLogger;
-					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(configuration));
 			}
-			var untimestampedSink = sink;
-			if (configuration.TimestampEnabled)
-				sink = new TimestampLogger(sink, "yyyy-MM-dd HH:mm:ss.fff zzz");
-			return new LogOutputSession(sink, untimestampedSink, resource, configuration.Options);
+			return new LogOutputSession(sink, resource, configuration);
 		} catch {
 			resource?.Dispose();
 			throw;
 		}
 	}
 
-	public void Debug(string message) { if (message != null) Forward(LogOptions.DebugEnabled, (logger, _) => logger.Debug(message)); }
-	public void Info(string message) { if (message != null) Forward(LogOptions.InfoEnabled, (logger, _) => logger.Info(message)); }
-	public void Warning(string message) { if (message != null) Forward(LogOptions.WarningEnabled, (logger, _) => logger.Warning(message)); }
-	public void Error(string message) { if (message != null) Forward(LogOptions.ErrorEnabled, (logger, _) => logger.Error(message)); }
-
-	public void Exception(Exception exception, string message = null) => Forward(LogOptions.ErrorEnabled, (logger, options) => {
-		// Hydrate with our own detail flags, without changing a borrowed application logger's options.
-		new ExceptionOutputLogger(logger) { Options = options }.Exception(exception, message);
-	});
+	public override void Exception(Exception exception, string message = null) =>
+		Write(LogLevel.Error, options => FormatExceptionMessage(exception, options, message));
 
 	public bool EnqueueInfo(string message) => EnqueueInfo(message, false);
 
 	public bool EnqueueInfo(string message, bool includesTimestamp) {
 		if (message == null)
 			return false;
-		using var scope = _queueScope.EnterWriteScope();
-		if (!_accepting || message.Length > 1024 * 1024 - _queuedCharacters)
-			return false;
-		var queued = new QueuedMessage(message, includesTimestamp);
-		if (!_messages.Writer.TryWrite(queued))
-			return false;
-		_queuedCharacters += message.Length;
-		_lastQueuedWrite = queued.Completion.Task;
-		_queueWorker ??= Task.Run(ProcessQueueAsync);
-		return true;
+		using (_queueScope.EnterWriteScope()) {
+			if (!_accepting || message.Length > 1024 * 1024 - _queuedCharacters)
+				return false;
+			var queued = new QueuedMessage(message, includesTimestamp);
+			if (!_messages.Writer.TryWrite(queued))
+				return false;
+			_queuedCharacters += message.Length;
+			_lastQueuedWrite = queued.Completion.Task;
+			_queueWorker ??= Task.Run(ProcessQueueAsync);
+			return true;
+		}
 	}
 
 	public Task FlushAsync() {
-		using var scope = _queueScope.EnterReadScope();
-		return AwaitWritesAsync(_lastQueuedWrite);
+		using (_queueScope.EnterReadScope()) {
+			return AwaitWritesAsync(_lastQueuedWrite);
+		}
 	}
 
 	public void Dispose() {
 		var completion = DisposeAsync();
 		// Borrowed output may already have dispatched to the UI. Its owner controls that callback;
 		// synchronous Stop must never join it from the same dispatcher.
-		if (_ownsSink)
+		if (_ownedResource != null)
 			completion.GetAwaiter().GetResult();
 	}
 
 	public Task DisposeAsync() {
-		using var scope = _queueScope.EnterWriteScope();
-		if (_disposeTask != null)
-			return _disposeTask;
-		_accepting = false;
-		_messages.Writer.TryComplete();
-		var worker = _queueWorker ?? Task.CompletedTask;
-		return _disposeTask = Task.Run(async () => {
-			await worker.ConfigureAwait(false);
-			using (EnterWriteScope()) {
-				if (!_disposed) {
-					_disposed = true;
+		using (_queueScope.EnterWriteScope()) {
+			if (_disposeTask != null)
+				return _disposeTask;
+			_accepting = false;
+			_messages.Writer.Complete();
+			var worker = _queueWorker ?? Task.CompletedTask;
+			return _disposeTask = Task.Run(async () => {
+				await worker.ConfigureAwait(false);
+				using (_sinkScope.EnterWriteScope()) {
 					CloseSink();
 				}
-			}
-			if (_queueFailure != null)
-				ExceptionDispatchInfo.Capture(_queueFailure).Throw();
-		});
+				if (_queueFailure != null)
+					ExceptionDispatchInfo.Capture(_queueFailure).Throw();
+			});
+		}
 	}
+
+	protected override void Log(LogLevel level, string message) => Write(level, _ => message);
 
 	private async Task ProcessQueueAsync() {
 		await foreach (var message in _messages.Reader.ReadAllAsync().ConfigureAwait(false)) {
-			Tools.Exceptions.ExecuteCapturingException(() => Forward(LogOptions.InfoEnabled, (logger, _) => logger.Info(message.Text), queued: true, includesTimestamp: message.IncludesTimestamp), out var failure);
+			Tools.Exceptions.ExecuteCapturingException(() => Write(LogLevel.Info, _ => message.Text, queued: true, includesTimestamp: message.IncludesTimestamp), out var failure);
 			using (_queueScope.EnterWriteScope()) {
 				_queuedCharacters -= message.Text.Length;
 				_queueFailure ??= failure;
 			}
-			message.Completion.TrySetResult();
+			message.Completion.SetResult();
 		}
 	}
 
@@ -172,19 +152,26 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 			ExceptionDispatchInfo.Capture(_queueFailure).Throw();
 	}
 
-	private void Forward(LogOptions level, Action<ILogger, LogOptions> write, bool queued = false, bool includesTimestamp = false) {
+	private void Write(LogLevel level, Func<LogOptions, string> formatMessage, bool queued = false, bool includesTimestamp = false) {
 		Exception failure = null;
 		ILogger borrowedSink = null;
 		LogOptions options;
-		using (EnterWriteScope()) {
-			if (!queued && !_accepting || _sink == null || (_options & level) == 0)
+		using (_sinkScope.EnterWriteScope()) {
+			// Options may have changed while a synchronous caller waited for admission.
+			options = Options;
+			var enabled = level switch {
+				LogLevel.Debug => options.HasFlag(LogOptions.DebugEnabled),
+				LogLevel.Info => options.HasFlag(LogOptions.InfoEnabled),
+				LogLevel.Warning => options.HasFlag(LogOptions.WarningEnabled),
+				LogLevel.Error => options.HasFlag(LogOptions.ErrorEnabled),
+				_ => false
+			};
+			if (!queued && !_accepting || _sink == null || !enabled)
 				return;
-			options = _options;
-			var sink = includesTimestamp ? _untimestampedSink : _sink;
-			if (_ownedSink == null) {
-				borrowedSink = sink;
+			if (_ownedResource == null) {
+				borrowedSink = _sink;
 			} else {
-				Tools.Exceptions.ExecuteCapturingException(() => write(sink, options), out failure);
+				Tools.Exceptions.ExecuteCapturingException(() => WriteMessage(_sink, level, formatMessage(options), includesTimestamp), out failure);
 				if (failure != null)
 					Tools.Exceptions.ExecuteIgnoringException(CloseSink);
 			}
@@ -192,10 +179,11 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 		// External loggers may synchronously dispatch to this control's UI thread. Never hold our
 		// lifetime scope across borrowed code; its actual owner controls completion and disposal.
 		if (borrowedSink != null) {
-			Tools.Exceptions.ExecuteCapturingException(() => write(borrowedSink, options), out failure);
+			Tools.Exceptions.ExecuteCapturingException(() => WriteMessage(borrowedSink, level, formatMessage(options), includesTimestamp), out failure);
 			if (failure != null) {
-				using var scope = EnterWriteScope();
-				CloseSink();
+				using (_sinkScope.EnterWriteScope()) {
+					CloseSink();
+				}
 			}
 		}
 		if (failure == null)
@@ -204,22 +192,27 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 		ExceptionDispatchInfo.Capture(failure).Throw();
 	}
 
+	private void WriteMessage(ILogger sink, LogLevel level, string message, bool includesTimestamp) {
+		if (_timestampEnabled && !includesTimestamp)
+			message = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff zzz}: {message}";
+		sink.Log(level, message);
+	}
+
 	private void CloseSink() {
 		_accepting = false;
-		var resource = _ownedSink;
+		if (_sink == null)
+			return;
 		_sink = null;
-		_untimestampedSink = null;
-		_ownedSink = null;
-		resource?.Dispose();
+		_ownedResource?.Dispose();
 	}
+
+	#region Inner Types
 
 	private sealed class CompletingTextWriterLogger : TextWriterLogger {
 		private readonly TextWriter _writer;
 
 		public CompletingTextWriterLogger(TextWriter writer)
-			: base(writer) {
-			_writer = writer;
-		}
+			: base(writer) => _writer = writer;
 
 		protected override void Log(LogLevel level, string message) {
 			_writer.WriteLine($"[{level}] {message}");
@@ -227,18 +220,16 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 		}
 	}
 
-	private sealed class ExceptionOutputLogger : LoggerBase {
-		private readonly ILogger _logger;
-
-		public ExceptionOutputLogger(ILogger logger) => _logger = logger;
-
-		protected override void Log(LogLevel level, string message) => _logger.Error(message);
-	}
-
 	private sealed class QueuedMessage {
-		public QueuedMessage(string text, bool includesTimestamp) { Text = text; IncludesTimestamp = includesTimestamp; }
+		public QueuedMessage(string text, bool includesTimestamp) {
+			Text = text;
+			IncludesTimestamp = includesTimestamp;
+		}
+
 		public string Text { get; }
 		public bool IncludesTimestamp { get; }
 		public TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
+
+	#endregion
 }
