@@ -85,6 +85,31 @@ public class MergeableToolStripTests {
 	}
 
 	[Test]
+	public void MergedItemsGoBeforeAnItemKeptLastAndAreRestoredOnUnmerge() {
+		using var target = new MenuStrip();
+		using var source = new MergeableMenuStrip();
+		var file = new ToolStripMenuItem("&File");
+		var open = new ToolStripMenuItem("Open");
+		var exit = new ToolStripMenuItem("Exit");
+		file.DropDownItems.AddRange(new ToolStripItem[] { open, exit });
+		target.Items.Add(file);
+		ToolStripVisualInheritanceFixer.KeepLastWhenMerging(exit);
+		var localFile = new ToolStripMenuItem("File");
+		var export = new ToolStripMenuItem("Export Snapshot");
+		var print = new ToolStripMenuItem("Print");
+		localFile.DropDownItems.AddRange(new ToolStripItem[] { export, print });
+		source.Items.Add(localFile);
+
+		Assert.That(source.MergeInto(target, matchMenuText: true), Is.True);
+		Assert.That(file.DropDownItems.Cast<ToolStripItem>(), Is.EqualTo(new ToolStripItem[] { open, export, print, exit }), "Exit stays last; merged items keep their order before it.");
+
+		Assert.That(source.Unmerge(), Is.True);
+		Assert.That(file.DropDownItems.Cast<ToolStripItem>(), Is.EqualTo(new ToolStripItem[] { open, exit }));
+		Assert.That(localFile.DropDownItems.Cast<ToolStripItem>(), Is.EqualTo(new ToolStripItem[] { export, print }));
+		Assert.That((export.MergeAction, print.MergeAction), Is.EqualTo((MergeAction.Append, MergeAction.Append)), "The source items' own merge settings come back.");
+	}
+
+	[Test]
 	public void ExplicitMergeActionsAndIndicesKeepTheirNativeMeaning() {
 		using var target = new MenuStrip();
 		using var source = new MergeableMenuStrip();

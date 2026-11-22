@@ -24,7 +24,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 
 	private readonly record struct MovedItem(ToolStripItem Item, ToolStrip Owner, int Index);
 
-	private readonly record struct MenuAdjustment(ToolStripMenuItem Item, MergeAction Action, int Index, int MatchedIndex);
+	private readonly record struct MenuAdjustment(ToolStripItem Item, MergeAction Action, int Index, MergeAction AppliedAction, int AppliedIndex);
 
 	private readonly record struct MatchedMenu(ToolStripDropDownItem Source, ToolStripDropDownItem Target);
 
@@ -36,6 +36,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	[ThreadStatic]
 	private static bool _preparingOwner;
 	private static readonly PropertyDescriptor _visibleProperty = TypeDescriptor.GetProperties(typeof(Control))[nameof(Control.Visible)];
+	private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ToolStripItem, object> _keptLast = new();
 	private static readonly Action<ToolStripDropDownItem, EventArgs> _onDropDownShow = typeof(ToolStripDropDownItem)
 		.GetMethod("OnDropDownShow", BindingFlags.Instance | BindingFlags.NonPublic)
 		.CreateDelegate<Action<ToolStripDropDownItem, EventArgs>>();
@@ -112,6 +113,16 @@ public class ToolStripVisualInheritanceFixer : Component {
 
 	#region Merging
 
+	/// <summary>Keeps a menu item at the end of its menu when other items merge into that menu, as a File menu's Exit stays last. Items merged
+	/// into the menu by default (Append) are inserted before it, in their own order; explicit merge instructions keep their meaning.</summary>
+	public static void KeepLastWhenMerging(ToolStripItem item) {
+		Guard.ArgumentNotNull(item, nameof(item));
+		_keptLast.AddOrUpdate(item, null);
+	}
+
+	/// <summary>Whether <see cref="KeepLastWhenMerging"/> keeps the item at the end of its menu.</summary>
+	public static bool IsKeptLast(ToolStripItem item) => item != null && _keptLast.TryGetValue(item, out _);
+
 	/// <summary>Merges the original source items into a target, optionally combining default menu headings by displayed caption.</summary>
 	/// <remarks>
 	/// Explicit MergeAction and MergeIndex settings retain their native meaning. Mergeable targets return borrowed items before disposal;
@@ -142,6 +153,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 			if (canMerge)
 				_menuAdjustments.AddRange(MatchMenuHeadings(ToolStrip, InheritedToolStrip));
 			var matchedMenus = canMerge ? EnumerateMatchedMenus(ToolStrip.Items, InheritedToolStrip.Items).ToArray() : Array.Empty<MatchedMenu>();
+			_menuAdjustments.AddRange(InsertBeforeKeptLastItems(matchedMenus));
 
 			// Reverting an earlier contribution makes native code reapply later sources directly.
 			// Retain automatic matches until Unmerge so those reapplications still combine the same headings.
@@ -251,17 +263,38 @@ public class ToolStripVisualInheritanceFixer : Component {
 			if (match == null)
 				continue;
 			var matchedIndex = target.Items.IndexOf(match);
-			adjustments.Add(new MenuAdjustment(item, item.MergeAction, item.MergeIndex, matchedIndex));
+			adjustments.Add(new MenuAdjustment(item, item.MergeAction, item.MergeIndex, MergeAction.MatchOnly, matchedIndex));
 			item.MergeAction = MergeAction.MatchOnly;
 			item.MergeIndex = matchedIndex;
 		}
 		return adjustments.ToArray();
 	}
 
+	// A source item that would be appended to a matched menu goes before the items that menu keeps last, such as Exit.
+	private IEnumerable<MenuAdjustment> InsertBeforeKeptLastItems(MatchedMenu[] matchedMenus) {
+		foreach (var matched in matchedMenus) {
+			var targetItems = matched.Target.DropDownItems;
+			var keptFrom = targetItems.Count;
+			while (keptFrom > 0 && IsKeptLast(targetItems[keptFrom - 1]))
+				keptFrom--;
+			if (keptFrom == targetItems.Count)
+				continue;
+			var offset = 0;
+			foreach (ToolStripItem child in matched.Source.DropDownItems) {
+				if (child.MergeAction != MergeAction.Append || _menuAdjustments.Any(adjustment => ReferenceEquals(adjustment.Item, child)))
+					continue;
+				var index = keptFrom + offset++;
+				yield return new MenuAdjustment(child, child.MergeAction, child.MergeIndex, MergeAction.Insert, index);
+				child.MergeAction = MergeAction.Insert;
+				child.MergeIndex = index;
+			}
+		}
+	}
+
 	// Restore automatic settings after native history has unwound, retaining subsequent explicit client edits.
 	private void RestoreMenuHeadings() {
 		foreach (var adjustment in _menuAdjustments) {
-			if (adjustment.Item.MergeAction != MergeAction.MatchOnly || adjustment.Item.MergeIndex != adjustment.MatchedIndex)
+			if (adjustment.Item.MergeAction != adjustment.AppliedAction || adjustment.Item.MergeIndex != adjustment.AppliedIndex)
 				continue;
 			adjustment.Item.MergeAction = adjustment.Action;
 			adjustment.Item.MergeIndex = adjustment.Index;

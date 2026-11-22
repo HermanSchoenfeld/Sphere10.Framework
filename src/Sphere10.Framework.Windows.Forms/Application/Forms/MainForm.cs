@@ -37,6 +37,8 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	public MainForm() {
 		InitializeComponent();
+		// A screen's File commands merge above Exit, which always ends the menu.
+		ToolStripVisualInheritanceFixer.KeepLastWhenMerging(exitToolStripMenuItem);
 		_toolStripHeight = new ToolStripStableHeightBehavior(ToolStrip, ToolStripStableHeightBehavior.StandardLogicalHeight);
 		Disposed += (_, _) => _toolStripHeight.Dispose();
 		ScreenHost = new ApplicationScreenHost { Dock = DockStyle.Fill };
@@ -46,6 +48,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		ScreenHost.ActiveScreenChanged += OnActiveScreenChanged;
 		ScreenHost.ActiveScreenChanged += screen => _menuSelectedScreen = screen;
 		ScreenHost.Changed += ScreensChanged;
+		LoadingIndicator.Changed += LoadingIndicatorChanged;
 	}
 
 	#endregion
@@ -98,7 +101,6 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		get => _statusLabel.Text;
 		set => ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
 	}
-
 	[Browsable(false)]
 	protected ToolStripMenuItem HelpToolStripMenuItem => _helpToolStripMenuItem;
 
@@ -183,7 +185,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		// Shared plugin/block definitions create window-owned views; the screen retains its actual native source controls.
 		WinFormsCommandControls.MergeSources(this, MenuStrip, ToolStrip, GetContextCommandProviders(), this);
 		ActiveScreen?.MergeCommandsInto(MenuStrip, ToolStrip);
-		KeepHelpMenuLast();
+		ArrangeMenus();
 	}
 
 	// Return sources in reverse composition order before changing owner, docking, or disposing the window.
@@ -235,13 +237,33 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		}
 	}
 
-	// Preserve the existing application menu convention after native merge operations.
-	protected virtual void KeepHelpMenuLast() {
-		if (HelpToolStripMenuItem == null || HelpToolStripMenuItem.IsDisposed || !MenuStrip.Items.Contains(HelpToolStripMenuItem)
-			|| MenuStrip.Items.IndexOf(HelpToolStripMenuItem) == MenuStrip.Items.Count - 1)
+	/// <summary>
+	/// Keeps the menu bar in one order whatever the active screen merges into it: File, then View, then Options, then the screen's and
+	/// application's own menus, then Screens and Help last (owner, 21 November 2026). View is the merged menu captioned View; without one,
+	/// Options follows File. Only this form's own Options, Screens and Help headers move; merged menus keep their places.
+	/// </summary>
+	protected virtual void ArrangeMenus() {
+		var items = MenuStrip.Items;
+		var current = items.Cast<ToolStripItem>().ToArray();
+		bool Present(ToolStripItem item) => item != null && !item.IsDisposed && current.Contains(item);
+		var ordered = current.Where(item => !ReferenceEquals(item, _optionsMenuItem) && !ReferenceEquals(item, _screensMenuItem) && !ReferenceEquals(item, _helpToolStripMenuItem)).ToList();
+		if (Present(_optionsMenuItem)) {
+			var view = ordered.OfType<ToolStripMenuItem>().FirstOrDefault(item => string.Equals(item.Text?.Replace("&", string.Empty), "View", StringComparison.OrdinalIgnoreCase));
+			var after = view ?? (Present(fileToolStripMenuItem) ? fileToolStripMenuItem : null);
+			ordered.Insert(after == null ? 0 : ordered.IndexOf(after) + 1, _optionsMenuItem);
+		}
+		if (Present(_screensMenuItem))
+			ordered.Add(_screensMenuItem);
+		if (Present(_helpToolStripMenuItem))
+			ordered.Add(_helpToolStripMenuItem);
+		if (ordered.SequenceEqual(current))
 			return;
-		MenuStrip.Items.Remove(HelpToolStripMenuItem);
-		MenuStrip.Items.Add(HelpToolStripMenuItem);
+		for (var index = 0; index < ordered.Count; index++) {
+			if (ReferenceEquals(items[index], ordered[index]))
+				continue;
+			items.Remove(ordered[index]);
+			items.Insert(index, ordered[index]);
+		}
 	}
 
 	#endregion
@@ -342,6 +364,26 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	private void ScreensChanged() {
 		if (!IsDisposed && !Disposing && !_screensMenuItem.DropDown.Visible)
 			RebuildScreensMenu();
+	}
+
+	// A worker's change is posted, never waited for; it presents the indicator's state when the UI thread reaches it.
+	private void LoadingIndicatorChanged() {
+		if (InvokeRequired)
+			ExecuteInUIFriendlyContext(PresentLoadingIndicator, executeAsync: true);
+		else
+			PresentLoadingIndicator();
+	}
+
+	// The status bar paints the indicator at once, so work that then holds the UI thread (a screen opening or closing) is seen to be under way.
+	private void PresentLoadingIndicator() {
+		if (IsDisposed || Disposing)
+			return;
+		var active = LoadingIndicator.IsActive;
+		_loadingLabel.Text = LoadingIndicator.Message ?? string.Empty;
+		_loadingCircle.Visible = _loadingLabel.Visible = active;
+		_loadingCircle.LoadingCircleControl.Active = active;
+		if (active && _statusStrip.IsHandleCreated)
+			_statusStrip.Update();
 	}
 
 	// Await the real modal dialog and report a failed optional load without blocking the UI thread.
