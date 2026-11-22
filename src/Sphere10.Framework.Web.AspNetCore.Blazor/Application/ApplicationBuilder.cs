@@ -19,6 +19,8 @@ public class ApplicationBuilder : ApplicationBuilderBase<ApplicationBuilder, App
 	private readonly IServiceCollection _services;
 	private string _faviconUrl;
 	private string _faviconContentType;
+	private BlazorGridDensity _gridDensity;
+	private bool _toolBarText;
 
 	public ApplicationBuilder(IServiceCollection services)
 		: base(ApplicationOptions.DefaultTitle) {
@@ -35,9 +37,24 @@ public class ApplicationBuilder : ApplicationBuilderBase<ApplicationBuilder, App
 		return this;
 	}
 
+	/// <summary>Sets the density of every grid that does not choose its own, such as <see cref="BlazorGridDensity.Compact"/> for a power-user application.</summary>
+	public ApplicationBuilder WithGridDensity(BlazorGridDensity density) {
+		EnsureCanConfigure();
+		Guard.Argument(Enum.IsDefined(density), nameof(density), "Select a supported grid density.");
+		_gridDensity = density;
+		return this;
+	}
+
+	/// <summary>Shows every icon-bearing toolbar command's caption beside its icon (<see cref="ApplicationOptions.ToolBarText"/>).</summary>
+	public ApplicationBuilder WithToolBarText(bool show = true) {
+		EnsureCanConfigure();
+		_toolBarText = show;
+		return this;
+	}
+
 	/// <summary>Registers branding and delegates plugin and circuit setup to the existing Sphere10 registration APIs.</summary>
 	protected override IServiceCollection CreateApplication(IBlazorPlugin[] plugins, Action<Application> configureApplication) {
-		var options = new ApplicationOptions(Title, _faviconUrl, _faviconContentType);
+		var options = new ApplicationOptions(Title, _faviconUrl, _faviconContentType, _gridDensity, _toolBarText);
 		ConfigureProductServices?.Invoke(_services);
 		_services.AddSphere10Blazor();
 		foreach (var plugin in plugins)

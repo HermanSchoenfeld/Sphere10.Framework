@@ -15,6 +15,8 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 public class ApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<ApplicationMenuItemBuilder>, IApplicationUIBuilder<ApplicationMenuItemBase> {
 	private string _icon;
 	private bool _isVisible = true;
+	private bool _showToolBarText;
+	private string _toolBarCaption;
 	private Func<bool> _canExecute;
 	private IApplicationMenuItem[] _children;
 	private string _id;
@@ -39,6 +41,18 @@ public class ApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<Applica
 		return this;
 	}
 
+	/// <summary>Shows the caption beside the icon on toolbars; without this an icon-bearing toolbar command shows only its icon and uses the caption as its tooltip.</summary>
+	public ApplicationMenuItemBuilder WithToolBarText(bool showText = true) {
+		_showToolBarText = showText;
+		return this;
+	}
+
+	/// <summary>The caption a toolbar shows beside the icon, when it differs from the menu caption; the menu caption is then its tooltip.</summary>
+	public ApplicationMenuItemBuilder WithToolBarCaption(string caption) {
+		_toolBarCaption = caption;
+		return this;
+	}
+
 	public ApplicationMenuItemBuilder EnabledWhen(Func<bool> canExecute) {
 		Guard.ArgumentNotNull(canExecute, nameof(canExecute));
 		_canExecute = canExecute;
@@ -59,15 +73,17 @@ public class ApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<Applica
 			Guard.Ensure(ScreenType == null && Action == null && AsyncAction == null,
 				"An action group cannot also declare an action or screen behavior.");
 			return (ApplicationMenuGroup)ApplicationBlockSnapshot.CreateItem(new ApplicationMenuGroup {
-				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, Items = _children
+				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, ShowToolBarText = _showToolBarText, ToolBarCaption = _toolBarCaption, CanExecute = _canExecute, Items = _children
 			});
 		}
 		ValidateItem();
 		if (ScreenType != null)
 			return new BlazorScreenMenuItem {
-				Id = _id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, Registration = ScreenRegistration
+				Id = _id, Title = Text, Icon = _icon, IsVisible = _isVisible, ShowToolBarText = _showToolBarText, ToolBarCaption = _toolBarCaption, CanExecute = _canExecute, Registration = ScreenRegistration
 			};
-		return new BlazorActionMenuItem { Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, Action = Action, AsyncAction = AsyncAction };
+		return new BlazorActionMenuItem {
+			Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, ShowToolBarText = _showToolBarText, ToolBarCaption = _toolBarCaption, CanExecute = _canExecute, Action = Action, AsyncAction = AsyncAction
+		};
 	}
 
 	protected override void ValidateText(string text) => Guard.ArgumentNotNullOrEmpty(text, nameof(text));

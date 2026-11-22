@@ -7,7 +7,8 @@
 .sphere10-command-bar button { border: 0; background: transparent; color: inherit; padding: .3rem .55rem; font-size: .85rem; border-radius: var(--sphere10-control-radius, .25rem); }
 .sphere10-command-bar button:hover:not(:disabled), .sphere10-menu-button:hover { background: var(--sphere10-hover, #e9eef6); }
 .sphere10-command-bar button:focus-visible, .sphere10-menu-button:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: -2px; }
-.sphere10-command-bar button:disabled { opacity: .5; }
+.sphere10-command-bar button:disabled { opacity: .5; cursor: default; }
+.sphere10-tool-commands button:disabled > span[aria-hidden="true"] { filter: grayscale(1); }
 .sphere10-tool-commands > [role="separator"] { align-self: stretch; width: 1px; margin: .2rem .25rem; background: var(--sphere10-border-strong, #c7d1df); }
 .sphere10-menu-dismiss { position: fixed; inset: 0; z-index: 40; background: transparent !important; cursor: default; }
 .sphere10-top-menu { z-index: 41; }
@@ -16,6 +17,13 @@
 .sphere10-menu-button[aria-expanded="true"] { background: var(--sphere10-hover, #e9eef6); }
 .sphere10-command-bar button > span[aria-hidden="true"] { margin-inline-end: .4rem; }
 .sphere10-command-menu .sphere10-command-check { display: inline-block; width: 1.1em; margin-inline-end: .2rem; text-align: center; }
+/* Icon-only toolbar commands: a compact square button whose caption is its tooltip and accessible name. */
+.sphere10-command-bar button.sphere10-tool-icon { display: inline-flex; align-items: center; justify-content: center; gap: .15rem; min-width: 1.9rem; height: 1.9rem; padding: 0 .35rem; }
+.sphere10-command-bar button.sphere10-tool-icon > span[aria-hidden="true"] { margin-inline-end: 0; }
+.sphere10-command-bar button.sphere10-tool-icon > .sphere10-dropdown-arrow { font-size: .7rem; }
+/* Text toolbar commands: the icon followed by the caption, the same height as an icon button. */
+.sphere10-command-bar button.sphere10-tool-text { display: inline-flex; align-items: center; gap: .4rem; height: 1.9rem; padding: 0 .6rem; white-space: nowrap; }
+.sphere10-command-bar button.sphere10-tool-text > span[aria-hidden="true"] { margin-inline-end: 0; }
 
 .sphere10-menu-strip { min-height: 1.75rem; background: var(--sphere10-menu-background, var(--sphere10-surface, white)); }
 .sphere10-menu-strip .sphere10-menu-button { padding: .2rem .5rem; }
@@ -23,6 +31,22 @@
 .sphere10-tool-commands, .sphere10-tool-content { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; min-width: 0; }
 .sphere10-tool-commands { flex: 1 1 auto; }
 .sphere10-tool-content { flex: 0 1 auto; justify-content: flex-end; gap: .5rem; margin-inline-start: auto; max-width: 100%; }
+/* On a desktop width a long command list wraps within its own area, so the toolbar content (a theme picker, a sign-in link)
+   stays at the right of the first row instead of dropping below the commands. */
+@media (min-width: 761px) {
+	.sphere10-tool-strip { flex-wrap: nowrap; align-items: flex-start; }
+}
+/* Toolbar content uses the command bar's type size, not a page form's. */
+.sphere10-tool-content ::deep select, .sphere10-tool-content ::deep .form-select, .sphere10-tool-content ::deep .btn, .sphere10-tool-content ::deep label {
+	font-size: .85rem;
+}
+.sphere10-tool-content ::deep select, .sphere10-tool-content ::deep .form-select { height: auto; padding-top: .2rem; padding-bottom: .2rem; line-height: 1.4; }
+.sphere10-tool-content ::deep .btn, .sphere10-tool-content ::deep a { padding: .2rem .6rem; white-space: nowrap; }
+/* The content keeps its own width; the commands give way and wrap. */
+@media (min-width: 761px) {
+	.sphere10-tool-content { flex: 0 0 auto; }
+	.sphere10-tool-commands { min-width: 0; }
+}
 @media (max-width: 760px) {
 	.sphere10-tool-commands { flex-basis: 100%; }
 	.sphere10-tool-content { flex: 1 1 100%; }

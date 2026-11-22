@@ -39,6 +39,15 @@ public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase
 
 	public bool IsEnabled => CanExecute?.Invoke() ?? true;
 
+	/// <summary>Shows the caption beside the icon on a toolbar; icon-bearing toolbar commands are otherwise icon-only.</summary>
+	public bool ShowToolBarText { get; init; }
+
+	/// <summary>The caption a toolbar shows beside the icon; the title when none is set.</summary>
+	public string ToolBarCaption {
+		get => field ?? Title;
+		init => field = value;
+	}
+
 	public new string Title {
 		get => base.Title;
 		init => base.Title = value;

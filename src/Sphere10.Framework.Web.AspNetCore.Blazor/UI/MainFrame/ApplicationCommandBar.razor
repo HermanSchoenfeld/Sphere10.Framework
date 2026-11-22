@@ -7,6 +7,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
+@using Microsoft.Extensions.DependencyInjection
 @using Sphere10.Framework.Application.UI
 @using ApplicationMenuItemBase = Sphere10.Framework.Web.AspNetCore.Blazor.ApplicationMenuItemBase
 @using IApplicationMenu = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationMenu
@@ -40,21 +41,20 @@
 					} else if (item is ApplicationMenuGroup group) {
 						var key = ToolbarKey(group);
 						<div @key="key" class="sphere10-top-menu">
-							<button @ref="_menuButtons[key]" type="button" title="@item.Title" aria-haspopup="true"
+							<button @ref="_menuButtons[key]" type="button" class="@ToolbarButtonClass(item)" title="@item.Title" aria-label="@(IsIconOnly(item) ? item.Title : null)" aria-haspopup="true"
 								aria-expanded="@(_openMenu == key ? "true" : "false")" disabled="@(_executing || !item.IsEnabled)"
 								@onclick="() => ToggleMenu(key)" @onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
-								@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
-								@item.Title <span class="sphere10-dropdown-arrow" aria-hidden="true">▾</span>
+								@ToolbarContent(item) <span class="sphere10-dropdown-arrow" aria-hidden="true">▾</span>
 							</button>
 							@if (_openMenu == key) {
 								<div class="sphere10-command-menu" role="group" aria-label="@group.Title">@MenuItems(group.Items, key, group.IsEnabled)</div>
 							}
 						</div>
 					} else {
-						<button type="button" title="@item.Title" disabled="@(_executing || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
+						<button type="button" class="@ToolbarButtonClass(item)" title="@item.Title" aria-label="@(IsIconOnly(item) ? item.Title : null)"
+							disabled="@(_executing || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
 							@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
-							@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
-							@item.Title
+							@ToolbarContent(item)
 						</button>
 					}
 				}
@@ -75,6 +75,8 @@
 	private bool _executing;
 	private string _openMenu;
 	private string _focusMenu;
+
+	[Inject] private IServiceProvider Services { get; set; }
 
 	[Parameter] public IApplicationMenu[] Menus { get; set; } = Array.Empty<IApplicationMenu>();
 
@@ -159,6 +161,19 @@
 				</button>
 			}
 		}
+	</text>;
+
+	// An icon-bearing command shows only its icon, with the caption as its tooltip and accessible name, unless the command or the
+	// application (ApplicationOptions.ToolBarText) asks for text buttons.
+	private bool IsIconOnly(IApplicationMenuItem item) => !string.IsNullOrEmpty(item.Icon) && !item.ShowToolBarText && !(ApplicationOptions?.ToolBarText ?? false);
+
+	private ApplicationOptions ApplicationOptions => field ??= Services?.GetService<ApplicationOptions>();
+
+	private string ToolbarButtonClass(IApplicationMenuItem item) => IsIconOnly(item) ? "sphere10-tool-icon" : "sphere10-tool-text";
+
+	private RenderFragment ToolbarContent(IApplicationMenuItem item) => @<text>
+		@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
+		@if (!IsIconOnly(item)) { @item.ToolBarCaption }
 	</text>;
 
 	private string CommandKey(IApplicationMenuItem item) => CommandKeySelector?.Invoke(item) ?? item.Id;
