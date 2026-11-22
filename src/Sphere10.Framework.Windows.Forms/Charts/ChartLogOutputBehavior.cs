@@ -165,9 +165,8 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 			}
 			if (!changed)
 				continue;
-			// One line per device or group keeps a sample spanning many devices readable.
-			var lines = FormatSampleLines(title, sample.Key.CapturedAtUtc ?? publicationTime, sample.ToArray());
-			if (!lines.All(line => _outputSelector.EnqueueInfo(line, includesTimestamp: true))) {
+			// One log entry per captured moment, however many series the sample spans.
+			if (!_outputSelector.EnqueueInfo(FormatSample(title, sample.Key.CapturedAtUtc ?? publicationTime, sample.ToArray()), includesTimestamp: true)) {
 				if (_outputSelector.IsLogging)
 					Interlocked.Increment(ref _droppedSamples);
 				// Retry the entire related sample together while it remains in the retained snapshot.
