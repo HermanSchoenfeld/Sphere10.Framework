@@ -730,11 +730,12 @@ public class ApplicationSettingsTests {
 			Assert.That(html, Does.Contain("Nested preference"));
 			Assert.That(html, Does.Contain("Name column"));
 			Assert.That(html, Does.Contain("Manual width"));
+			Assert.That(html, Does.Contain(">Hidden<"), "Each declared column offers its visibility choice.");
 			Assert.That(html, Does.Contain("<output"));
 			Assert.That(html, Does.Not.Contain(">Column key<"));
 			Assert.That(html, Does.Not.Contain("private-storage-id"));
 			Assert.That(html, Does.Not.Contain(">Provider<"));
-			Assert.That(html, Does.Not.Contain("Add Column widths"));
+			Assert.That(html, Does.Not.Contain("Add Columns"));
 			Assert.That(html, Does.Contain("Add Words"));
 		});
 	}

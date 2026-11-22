@@ -16,17 +16,21 @@ guides for concrete configuration and examples.
 | Nonpageable source | Complete result; paging controls hidden. | Same behavior; a UI setting cannot grant `CanPage`. |
 | Natural widths | Measured once for a binding set; retained through paging, filter, sort and refresh. | Same policy, measured from the first nonempty rendered page. |
 | Preferred stretching | `VisualGridColumn<T>.ExpandsToFit`. | `BlazorGridColumn<T>.ExpandsToFit`. |
+| Hidden columns | `VisualGridColumn<T>.Hidden` omits the native column; the `Hidden` column preference overrides it. `VisibleGridBindings` lists the displayed columns. | `BlazorGridColumn<T>.Hidden` omits the rendered column; the same preference overrides it. |
 | Explicit resizing | Resized columns keep their chosen widths instead of stretching. | Same; other stretch columns continue sharing spare width. |
 | Sorting | Ascending, Descending, None; retains the current page and widths. | Same three-state cycle and source query. |
 | Header sizing | Reserves the native sort-indicator extent before sorting. | Reserves a sort-indicator slot before sorting. |
-| Title | `GridTitle`, `GridTitleAlignment` (`ContentAlignment`). | `Caption`, `CaptionAlignment` (`BlazorGridHorizontalAlignment`); Left is the default. |
-| Images | `CrudCellDisplayType.Image`; borrowed `Image`. | Column `ImageSource`/`ImageAlternativeText`; browser image URL. |
+| Title | `GridTitle`, `GridTitleAlignment` (`ContentAlignment`). | `Caption`, `CaptionAlignment` (`BlazorGridHorizontalAlignment`); Left is the default, and an empty caption renders none. |
+| Header and footer rows | Independent `HeaderVisible`, `ColumnHeadersVisible` and `FooterVisible` flags. | The toolbar row is omitted when empty; `ReloadPlacement` moves Reload to a header icon and `Footer` (`Always`, `Paged`, `Hidden`) controls the footer. |
+| Row commands and density | Borrowed toolbar commands through `SetRowCommands`. | `ActionStyle` icons in an untitled narrow column, built-in `RowCommands` (Open, Edit, Delete) and `Density` per grid or per application. |
+| Selection binding and opening | `SelectedEntity` and its events. | Two-way `SelectedItem` with `SelectedItemChanged`; `ItemOpened` for double-click and Enter. |
+| Images | `VisualGridCellDisplayType.Image`; borrowed `Image`. | Column `ImageSource`/`ImageAlternativeText`; browser image URL. |
 | Image layout | `ImageAlignment` and optional `ImageResizeMethod`. | Same `ResizeAlignment` and nullable `ResizeMethod` enums, applied through CSS fit/position. |
 | Loading | First binding and ordinary reloads use the full-grid loading surface. | First binding and ordinary reloads use the full-viewport loading surface. |
 | Live refresh | `SuppressLoadingIndicator`, keeping the committed page usable during collection. | Same option, or `RefreshAsync(showLoadingIndicator: false)` for one read. |
 | Targeted refresh | `RefreshEntityAsync`, `RefreshSelectedEntityAsync`. | Same methods plus typed `RefreshRowsAsync`; `RemoveRows` applies caller-known removals. |
 | Filtered export input | `ReadFilteredEntitiesAsync` returns a typed `Array`. | `ReadFilteredEntitiesAsync` returns `TItem[]`. Both read all matches across pages in current sort order. |
-| Reference selection | `CrudComboBox`, shared grid configuration and reference bindings. | `BlazorGridReferencePicker`, typed reference bindings/editor templates. |
+| Reference selection | `VisualGridDropDown`, shared grid configuration and reference bindings. | `BlazorGridReferencePicker`, typed reference bindings/editor templates. |
 | Preferences | Accepted `VisualGridSettings` in the owning screen object; runtime operations stay transient until explicit configuration Save. | `BlazorGridSettings` in the owning screen object, or standalone in browser storage with an explicit `SettingsKey`. |
 | Persistent manual widths | Stable column `PreferenceKey`, logical 96-DPI width, explicitly saved after a deliberate drag. | Stable column `PreferenceKey`, CSS-pixel width, applied before first markup/sizing. |
 

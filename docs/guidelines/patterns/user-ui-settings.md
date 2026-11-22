@@ -193,8 +193,10 @@ must not cause preference writes.
 Persisted manual widths use stable `IVisualGridColumn.PreferenceKey` identities
 and logical 96-DPI pixels. Screen Options exposes **Manual width** and **Stretch
 to fit** for each column. Manual width takes priority; clearing an override
-restores the binding's natural width or configured stretch behavior. Preserve
-accepted choices across refresh, paging and rebinding.
+restores the binding's natural width or configured stretch behavior. Each column
+also has a **Hidden** choice, which overrides the column definition's `Hidden`
+default in either direction. A hidden column keeps its position, width and
+stretch choices. Preserve accepted choices across refresh, paging and rebinding.
 
 Run any existing consumer migration in the owning settings lifecycle before
 applying values to the grid. A stored typed screen root is authoritative;

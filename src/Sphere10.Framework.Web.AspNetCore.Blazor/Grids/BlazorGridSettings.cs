@@ -47,11 +47,11 @@ public class BlazorGridSettings : SettingsObject, IValidatableObject {
 	[Browsable(false)]
 	public Dictionary<string, double> ColumnWidths { get; set; } = new();
 
-	/// <summary>The declared stable column identities and optional manual widths shown by Options.</summary>
-	[DisplayName("Column widths")]
+	/// <summary>The declared stable column identities with their optional manual widths and visibility, shown by Options.</summary>
+	[DisplayName("Columns")]
 	public ApplicationGridColumnPreferences[] Columns { get; set; } = Array.Empty<ApplicationGridColumnPreferences>();
 
-	/// <summary>Restores attributed query values and releases manual widths while retaining the declared columns.</summary>
+	/// <summary>Restores attributed query values and releases manual widths and visibility choices while retaining the declared columns.</summary>
 	public override void RestoreDefaultValues() {
 		base.RestoreDefaultValues();
 		ColumnWidths?.Clear();
@@ -59,6 +59,7 @@ public class BlazorGridSettings : SettingsObject, IValidatableObject {
 			if (column != null) {
 				column.Width = null;
 				column.ExpandsToFit = null;
+				column.Hidden = null;
 			}
 	}
 

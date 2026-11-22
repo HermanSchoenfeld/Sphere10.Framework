@@ -157,18 +157,18 @@ successful Applies. Opening and navigating Options does not save.
 Editor selection is an explicit registration editor, then `[Editor]` on the
 settings class (including inherited attributes), then `[UserEditable]`.
 For native class editors use
-`[Editor(typeof(MySettingsEditor), typeof(ICrudEntityEditor<object>))]`; the editor
+`[Editor(typeof(MySettingsEditor), typeof(IVisualEntityEditor<object>))]`; the editor
 can accept `ApplicationSettingsEditorContext` or have a parameterless
 constructor. `WithSettingsEditor` supplies a registration-specific override.
 
 Custom native editors that embed a property grid can use `ApplicationSettingsEditor`,
-which inherits `DefaultCrudEntityEditor` and filters transient, ignored and runtime
+which inherits `VisualEntityEditor` and filters transient, ignored and runtime
 settings members. It also hides the settings root's ID and provider. This is the
 same editor used by automatic native Options pages; clients do not call internal
 settings-validation or property-filter helpers.
 It expands the settings root's own expandable values, such as a grid's settings,
 when the page opens; deeper values such as its column list stay collapsed. Other
-`DefaultCrudEntityEditor` uses keep their collapsed default unless they set
+`VisualEntityEditor` uses keep their collapsed default unless they set
 `AutoExpandFirstLevel`.
 The editor context's `Settings` is the actual object; the dialog owns validation
 and persistence.
@@ -264,8 +264,10 @@ browser grid continues to suppress its separate standalone record.
 Declare every column in the screen's settings defaults, so the Options page is
 complete even before that screen opens. Merge older or empty column records with
 those declarations while preserving accepted overrides by key. Column settings
-expose **Manual width** and **Stretch to fit**. Null restores natural width or
-the column definition's stretch choice; a manual width takes precedence.
+expose **Manual width**, **Stretch to fit** and **Hidden**. Null restores natural
+width, the column definition's stretch choice or its visibility, and a manual
+width takes precedence over stretching. A hidden column is omitted from the grid
+and keeps its position and width for when it is shown again.
 For native grids, arrange the `Columns` collection in the desired displayed
 order; width and stretch choices remain attached to stable column keys. Use
 the standard WinForms array editor's **Up** and **Down** buttons to move columns.

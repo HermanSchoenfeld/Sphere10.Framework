@@ -20,6 +20,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 
 public partial class BlazorGrid<TItem> {
 	private readonly Dictionary<string, double> _manualWidths = new(StringComparer.Ordinal);
+	private readonly Dictionary<string, bool> _hiddenColumns = new(StringComparer.Ordinal);
 	private ApplicationGridColumnPreferences[] _preferenceColumns = Array.Empty<ApplicationGridColumnPreferences>();
 	private BlazorGridSettings _appliedPreferences;
 	private BlazorGridSettings _pendingPreferences;
@@ -35,6 +36,9 @@ public partial class BlazorGrid<TItem> {
 	/// <summary>Publishes a detached value after an accepted page, sort or completed width change.</summary>
 	[Parameter] public EventCallback<BlazorGridSettings> PreferencesChanged { get; set; }
 
+	/// <summary>Displays every declared column regardless of its schema or preference visibility. A nested detail grid sets it to mirror the columns its parent displays.</summary>
+	[Parameter] public bool ShowHiddenColumns { get; set; }
+
 	// The settings value owns the schema; the flag controls editing without hiding its presence.
 	private bool CanEditGridSettings {
 		get {
@@ -43,14 +47,20 @@ public partial class BlazorGrid<TItem> {
 		}
 	}
 
-	/// <summary>Captures query choices and deliberate widths without retaining controls or row edits.</summary>
+	/// <summary>Captures query choices, deliberate widths and column visibility without retaining controls or row edits.</summary>
 	public BlazorGridSettings CaptureGridPreferences() {
 		var settings = _pendingPreferences ?? CaptureSettings();
-		var values = ToPreferences(settings, _columns);
+		// Hidden columns stay in the captured schema so their width and visibility can be edited.
+		var values = ToPreferences(settings, _schemaColumns);
+		var declared = _schemaColumns.Where(column => !string.IsNullOrWhiteSpace(column.PreferenceKey))
+			.GroupBy(column => column.PreferenceKey, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+		foreach (var column in values.Columns)
+			if (declared.TryGetValue(column.Key, out var definition))
+				column.Hidden = _hiddenColumns.TryGetValue(column.Key, out var hidden) ? hidden : definition.Hidden;
 		var keys = values.Columns.Select(column => column.Key).ToHashSet(StringComparer.Ordinal);
 		values.Columns = values.Columns.Concat(_preferenceColumns
 			.Where(column => column != null && !string.IsNullOrWhiteSpace(column.Key) && keys.Add(column.Key))
-			.Select(column => new ApplicationGridColumnPreferences { Key = column.Key, Title = column.Title })).ToArray();
+			.Select(column => new ApplicationGridColumnPreferences { Key = column.Key, Title = column.Title, Hidden = column.Hidden })).ToArray();
 		foreach (var column in values.Columns)
 			column.Width = _manualWidths.TryGetValue(column.Key, out var width) ? width : null;
 		return values;
@@ -62,6 +72,10 @@ public partial class BlazorGrid<TItem> {
 		var settings = GetPreferenceSettings(preferences);
 		var queryChanged = !QuerySettingsEqual(_appliedPreferences, settings);
 		AcceptPreferenceValues(settings, preferences);
+		var displayed = _columns;
+		ApplyColumnVisibility();
+		if (!ReferenceEquals(displayed, _columns))
+			StateHasChanged();
 		if (_behavior != null)
 			await _behavior.InvokeVoidAsync("ApplyWidths", _manualWidths);
 
@@ -88,7 +102,7 @@ public partial class BlazorGrid<TItem> {
 	/// <summary>Accepts one completed pointer resize; pixel movement and layout never publish preferences.</summary>
 	[JSInvokable]
 	public async Task SetColumnWidthAsync(string key, double width) {
-		if (_disposed || string.IsNullOrWhiteSpace(key) || !_columns.Any(column => column.PreferenceKey == key) || !double.IsFinite(width))
+		if (_disposed || string.IsNullOrWhiteSpace(key) || !_schemaColumns.Any(column => column.PreferenceKey == key) || !double.IsFinite(width))
 			return;
 		_manualWidths[key] = Math.Clamp(width, 40, 100000);
 		await SaveSettingsAsync();
@@ -137,6 +151,7 @@ public partial class BlazorGrid<TItem> {
 		var settings = await ReadStandaloneSettingsAsync(_settingsKey)
 			?? new BlazorGridSettings { PageMode = _parameterPageMode, PageSize = PageSize };
 		AcceptPreferenceValues(GetPreferenceSettings(settings), settings);
+		ApplyColumnVisibility();
 	}
 
 	// Typed user records take precedence; the original raw browser key is a read-only migration fallback.
@@ -147,7 +162,7 @@ public partial class BlazorGrid<TItem> {
 				settings = await UserSettings.GetAsync<BlazorGridSettings>(key);
 			else {
 				var legacy = await _module.InvokeAsync<BlazorGridSettings>("ReadLegacySettings", key);
-				settings = legacy == null ? null : ToPreferences(legacy, _columns);
+				settings = legacy == null ? null : ToPreferences(legacy, _schemaColumns);
 			}
 		}, exception => exception is JSException or Newtonsoft.Json.JsonException);
 		if (error != null)
@@ -174,12 +189,19 @@ public partial class BlazorGrid<TItem> {
 		await NotifySelectionAsync();
 	}
 
-	// Stores plain widths independently of the rendered columns so Reset can release every manual override.
+	// Stores plain widths and visibility independently of the rendered columns so Reset can release every override.
 	private void AcceptPreferenceValues(BlazorGridSettings settings, BlazorGridSettings values = null) {
 		_appliedPreferences = settings;
 		_preferenceColumns = (values?.Columns ?? Array.Empty<ApplicationGridColumnPreferences>())
 			.Where(column => column != null && !string.IsNullOrWhiteSpace(column.Key))
-			.Select(column => new ApplicationGridColumnPreferences { Key = column.Key, Title = column.Title }).ToArray();
+			.Select(column => new ApplicationGridColumnPreferences { Key = column.Key, Title = column.Title, Hidden = column.Hidden }).ToArray();
+		// A normalized query value carries no column schema; only supplied preference values replace visibility.
+		if (values != null) {
+			_hiddenColumns.Clear();
+			foreach (var column in _preferenceColumns)
+				if (column.Hidden.HasValue)
+					_hiddenColumns[column.Key] = column.Hidden.Value;
+		}
 		_manualWidths.Clear();
 		foreach (var pair in settings?.ColumnWidths ?? new Dictionary<string, double>())
 			if (!string.IsNullOrWhiteSpace(pair.Key) && double.IsFinite(pair.Value) && pair.Value > 0)
@@ -190,10 +212,24 @@ public partial class BlazorGrid<TItem> {
 	private void ValidatePreferenceKeys() {
 		if (Preferences == null && (!PersistSettings || string.IsNullOrWhiteSpace(SettingsKey)))
 			return;
-		var keys = _columns.Select(column => column.PreferenceKey).ToArray();
+		var keys = _schemaColumns.Select(column => column.PreferenceKey).ToArray();
 		Guard.Argument(keys.All(key => !string.IsNullOrWhiteSpace(key)) && keys.Distinct(StringComparer.Ordinal).Count() == keys.Length,
 			nameof(Columns), "Persistent grid columns require distinct stable PreferenceKey values.");
 	}
+
+	// The displayed columns follow the declared schema and accepted visibility; an unchanged result keeps its array.
+	private void ApplyColumnVisibility() {
+		var visible = _schemaColumns.Where(column => !IsColumnHidden(column)).ToArray();
+		if (visible.Length == _schemaColumns.Length)
+			visible = _schemaColumns;
+		if (!visible.SequenceEqual(_columns))
+			_columns = visible;
+		Controller.Columns = _columns;
+	}
+
+	// An accepted preference overrides the schema unless every declared column is requested.
+	private bool IsColumnHidden(BlazorGridColumn<TItem> column)
+		=> !ShowHiddenColumns && (!string.IsNullOrWhiteSpace(column.PreferenceKey) && _hiddenColumns.TryGetValue(column.PreferenceKey, out var hidden) ? hidden : column.Hidden);
 
 	// Normalize query choices and prefer the declared width schema over an old standalone dictionary.
 	private BlazorGridSettings GetPreferenceSettings(BlazorGridSettings preferences) {
@@ -248,8 +284,8 @@ public partial class BlazorGrid<TItem> {
 
 	// Keep optional declared columns and their migration version even when they are not in this binding set.
 	private bool PreferenceSchemaEqual(BlazorGridSettings values) {
-		return _preferenceColumns.Select(column => (column.Key, column.Title))
+		return _preferenceColumns.Select(column => (column.Key, column.Title, column.Hidden))
 			.SequenceEqual((values.Columns ?? Array.Empty<ApplicationGridColumnPreferences>())
-				.Where(column => column != null && !string.IsNullOrWhiteSpace(column.Key)).Select(column => (column.Key, column.Title)));
+				.Where(column => column != null && !string.IsNullOrWhiteSpace(column.Key)).Select(column => (column.Key, column.Title, column.Hidden)));
 	}
 }

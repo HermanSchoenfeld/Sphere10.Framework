@@ -22,22 +22,16 @@ public class VisualGridSettings : SettingsObject {
 	/// <summary>Optional consumer-owned migration version, saved with the next accepted grid preference change.</summary>
 	[DefaultValue(0)]
 	[Browsable(false)]
-	public int ConsumerVersion {
-		get; set;
-	}
+	public int ConsumerVersion { get; set; }
 
 	/// <summary>The selected page mode. Null preserves compatibility with settings saved before the dropdown existed.</summary>
 	[DefaultValue(null)]
-	public VisualGridPageMode? PageMode {
-		get; set;
-	}
+	public VisualGridPageMode? PageMode { get; set; }
 
 	/// <summary>Legacy Auto/Paged preference, retained for migration and older consumers.</summary>
 	[DefaultValue(false)]
 	[Browsable(false)]
-	public bool AutoPageSize {
-		get; set;
-	}
+	public bool AutoPageSize { get; set; }
 
 	/// <summary>The positive number of rows requested in manual page mode.</summary>
 	[DefaultValue(100)]
@@ -45,12 +39,10 @@ public class VisualGridSettings : SettingsObject {
 
 	/// <summary>The zero-based Paged/Auto page; Single always uses zero. The source clamps it when its record count changes.</summary>
 	[DefaultValue(0)]
-	public int PageNumber {
-		get; set;
-	}
+	public int PageNumber { get; set; }
 
-	/// <summary>Displayed column order, widths and stretch choices, keyed by stable column identity; widths use 96-DPI logical pixels.</summary>
-	[Description("Column array order determines displayed column order. Widths use 96-DPI logical pixels.")]
+	/// <summary>Displayed column order, widths, stretch and visibility choices, keyed by stable column identity; widths use 96-DPI logical pixels.</summary>
+	[Description("Column array order determines displayed column order. Widths use 96-DPI logical pixels. Hidden columns keep their position.")]
 	[Editor(typeof(VisualGridColumnsEditor), typeof(UITypeEditor))]
 	public ApplicationGridColumnPreferences[] Columns { get; set; } = Array.Empty<ApplicationGridColumnPreferences>();
 
@@ -72,6 +64,7 @@ public class VisualGridSettings : SettingsObject {
 				continue;
 			column.Width = null;
 			column.ExpandsToFit = null;
+			column.Hidden = null;
 		}
 	}
 
@@ -104,8 +97,8 @@ public class VisualGridSettings : SettingsObject {
 	}
 
 	/// <summary>Copies presentation values without transferring their owner's provider or identity.</summary>
-	internal VisualGridSettings Copy() {
-		return new VisualGridSettings {
+	internal VisualGridSettings Copy()
+		=> new VisualGridSettings {
 			ConsumerVersion = ConsumerVersion,
 			PageMode = PageMode,
 			AutoPageSize = AutoPageSize,
@@ -115,7 +108,6 @@ public class VisualGridSettings : SettingsObject {
 			SortDirection = SortDirection,
 			Columns = CopyColumns(Columns)
 		};
-	}
 
 	// Compare accepted configuration values so unrelated screen saves preserve temporary grid choices.
 	internal bool HasSameConfiguration(VisualGridSettings other) {
@@ -129,18 +121,19 @@ public class VisualGridSettings : SettingsObject {
 			var column = columns[index];
 			var otherColumn = otherColumns[index];
 			return ReferenceEquals(column, otherColumn) || column != null && otherColumn != null
-				&& column.Key == otherColumn.Key && column.Title == otherColumn.Title && column.Width == otherColumn.Width && column.ExpandsToFit == otherColumn.ExpandsToFit;
+				&& column.Key == otherColumn.Key && column.Title == otherColumn.Title && column.Width == otherColumn.Width && column.ExpandsToFit == otherColumn.ExpandsToFit
+				&& column.Hidden == otherColumn.Hidden;
 		});
 	}
 
 	/// <summary>Retains column order while detaching editable widths and stretch choices.</summary>
-	internal static ApplicationGridColumnPreferences[] CopyColumns(ApplicationGridColumnPreferences[] columns) {
-		return (columns ?? Array.Empty<ApplicationGridColumnPreferences>()).Where(column => column != null)
+	internal static ApplicationGridColumnPreferences[] CopyColumns(ApplicationGridColumnPreferences[] columns)
+		=> (columns ?? Array.Empty<ApplicationGridColumnPreferences>()).Where(column => column != null)
 			.Select(column => new ApplicationGridColumnPreferences {
 				Key = column.Key,
 				Title = column.Title,
 				Width = column.Width,
-				ExpandsToFit = column.ExpandsToFit
+				ExpandsToFit = column.ExpandsToFit,
+				Hidden = column.Hidden
 			}).ToArray();
-	}
 }

@@ -78,6 +78,7 @@ internal sealed class ApplicationScreenSettings : IDisposable {
 						continue;
 					column.Width = previous.Width;
 					column.ExpandsToFit = previous.ExpandsToFit;
+					column.Hidden = previous.Hidden;
 				}
 				legacy.Columns = legacy.Columns.Concat(VisualGridSettings.CopyColumns(overrides.Values.ToArray())).ToArray();
 				binding.Set(_settings, legacy);
@@ -203,30 +204,15 @@ internal sealed class ApplicationScreenSettings : IDisposable {
 		_logs.Clear();
 	}
 
-	// Legacy grid records are read only by the screen owner, never by the visual control.
+	// Only standalone VisualGridSettings are imported; retired CrudGridSettings use screen defaults.
 	private async Task<VisualGridSettings> ReadLegacyGridPreferencesAsync(VisualGrid grid, CancellationToken cancellationToken) {
 		var key = GetLegacyGridSettingsKey(grid);
 		if (key == null)
 			return null;
 		var provider = _settings.Provider;
-		VisualGridSettings values;
-		if (await provider.ContainsSettingAsync(typeof(VisualGridSettings), key, cancellationToken)) {
-			values = ((VisualGridSettings)await provider.LoadSettingAsync(typeof(VisualGridSettings), key, cancellationToken)).Copy();
-		} else if (await provider.ContainsSettingAsync(typeof(CrudGridSettings), key, cancellationToken)) {
-			var legacy = (CrudGridSettings)await provider.LoadSettingAsync(typeof(CrudGridSettings), key, cancellationToken);
-			values = new VisualGridSettings {
-				ConsumerVersion = legacy.ConsumerVersion,
-				PageMode = legacy.PageMode.HasValue ? (VisualGridPageMode)legacy.PageMode.Value : null,
-				AutoPageSize = legacy.AutoPageSize,
-				PageSize = legacy.PageSize,
-				PageNumber = legacy.PageNumber,
-				SortColumnName = legacy.SortColumnName,
-				SortDirection = legacy.SortDirection,
-				Columns = VisualGridSettings.CopyColumns(legacy.Columns)
-			};
-		} else {
+		if (!await provider.ContainsSettingAsync(typeof(VisualGridSettings), key, cancellationToken))
 			return null;
-		}
+		var values = ((VisualGridSettings)await provider.LoadSettingAsync(typeof(VisualGridSettings), key, cancellationToken)).Copy();
 		if (grid.IsDisposed || grid.Disposing)
 			return null;
 

@@ -105,7 +105,7 @@ validation attributes and `IValidatableObject`.
 
 A registration-specific editor takes precedence over `[Editor]` on the settings
 class, followed by the `[UserEditable]` automatic editor. Declare a native class
-editor with `[Editor(typeof(MailSettingsEditor), typeof(ICrudEntityEditor<object>))]`;
+editor with `[Editor(typeof(MailSettingsEditor), typeof(IVisualEntityEditor<object>))]`;
 it can use a parameterless constructor or accept `ApplicationSettingsEditorContext`.
 The same class editor also serves block/plugin settings.
 
@@ -138,6 +138,9 @@ configuration; the screen owns its editor and persistence. Native grids have no
 settings button, local settings dialog or independent settings record. The screen's
 `Columns` collection determines displayed column order, with width and stretch
 overrides attached to stable keys. Manual width takes priority over `ExpandsToFit`.
+A column's `Hidden` choice follows the same keys. Declare `Hidden = true` in the
+defaults for a column whose binding is hidden, so that Options shows its state
+before the screen opens.
 The Auto/Single/Manual selector, manual page size, page navigation, search,
 sorting and column resizing remain transient operations. Binding does not copy
 them back into accepted `ScreenSettings` during capture, close or finalization.

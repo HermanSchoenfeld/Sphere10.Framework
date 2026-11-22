@@ -52,6 +52,9 @@ public class BlazorGridColumn<T> {
 
 	public bool ExpandsToFit { get; set; }
 
+	/// <summary>Omits this column from the grid by default; an accepted column preference can show it.</summary>
+	public bool Hidden { get; set; }
+
 	/// <summary>Optional browser image URL. Images are presented in CSS without desktop drawing dependencies.</summary>
 	public Func<T, string> ImageSource { get; set; }
 
