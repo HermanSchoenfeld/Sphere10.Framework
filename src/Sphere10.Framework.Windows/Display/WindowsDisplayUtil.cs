@@ -34,6 +34,9 @@ public static partial class Windows {
 			return new Rectangle(mode.X, mode.Y, checked((int)mode.Width), checked((int)mode.Height));
 		}
 
+		/// <summary>Creates a caller-owned capture of the frames of the display that shows the given physical desktop point; false when no display does or it cannot be captured.</summary>
+		public static bool TryCreateFrameCapture(Point location, out DisplayFrameCapture capture) => DisplayFrameCapture.TryCreate(location, out capture);
+
 		/// <summary>Creates a fresh lazy display snapshot; acquiring the utility or data source does not enumerate devices.</summary>
 		public static WindowsDisplayDataSource CreateDataSource() => new WindowsDisplayDataSource();
 
