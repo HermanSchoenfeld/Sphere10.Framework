@@ -40,6 +40,7 @@ These controls have no dedicated support classes, so they share one folder. The 
 | [`SidebarToggleButton`](SidebarToggleButton.cs) | class | Compact tool strip button drawn as a sidebar outline whose `Checked` state means the sidebar is visible |
 | [`SplitButton`](SplitButton.cs) | class | Button with a split arrow that opens `SplitMenuStrip` |
 | [`SquareButton`](SquareButton.cs) | class | Gradient button with configurable normal, hover and selected colors and a `ButtonStateChanged` event |
+| [`StartStopButton`](StartStopButton.cs) | class | One button for an operation that is stopped or running, showing a green start triangle with `StartText` or a red stop square with `StopText` and raising `StartRequested` or `StopRequested` |
 | [`TextBoxEx`](TextBoxEx.cs) | class | Text box with placeholder text and `IValidator`-based typed `Value` validation |
 | [`TextBoxUITypeEditor`](TextBoxUITypeEditor.cs) | class | Text box with a button that hosts the `UITypeEditor` of the configured value type as a dialog or drop-down |
 | [`ToggleSwitch`](ToggleSwitch.cs) | class | On/off check box drawn as a thumb in a rounded track with optional on and off text and animation |
