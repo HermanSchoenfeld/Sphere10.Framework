@@ -4,7 +4,16 @@ Hash functions, digital signature schemes, post-quantum one-time signatures, ran
 
 The registries are the entry points. `Hashers` maps each `CHF` value to a pooled `IHashFunction`, and `Signers` maps each `DSS` value to an `IDigitalSignatureScheme`. This core package registers SHA-2, SHA-1 and Blake2b hashers and the post-quantum `PQC_WAMS` and `PQC_WAMSSharp` signers. The `Sphere10.Framework.CryptoEx` package registers the ECDSA and Schnorr signers and further hash functions through its module configuration, so a `CHF` or `DSS` value without a registration fails at first use. `Hashers` reuses hasher instances through `EnterBorrowHasherScope`, which returns the hasher to its pool on disposal, so the static methods are safe to call from several threads.
 
-A signature scheme signs a message digest with a signer nonce. Stateless schemes (`StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey>`) ignore the nonce. The AMS family (`AMS`, `WAMS`, `WAMSSharp`) is stateful, because the nonce selects the one-time key batch and index used for the signature. `ItemSigner<TItem>` and `SignedItem<T>` sign serialized objects through [Serialization](../Serialization/README.md). `Tools.Crypto` collects the common one-call helpers for random bytes, fixed-time comparison, password hashing and the string and stream ciphers of `Encryptor`. `Encrypted<TObject>` stores a serialized object under a password-derived key with an authentication tag.
+A signature scheme signs a message digest with a signer nonce. Stateless schemes (`StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey>`) ignore the nonce. The AMS family (`AMS`, `WAMS`, `WAMSSharp`) is stateful, because the nonce selects the one-time key batch and index used for the signature. `ItemSigner<TItem>` and `SignedItem<T>` sign serialized objects through [Serialization](../Serialization/README.md). `Tools.Crypto` collects the common one-call helpers for random bytes, fixed-time comparison, password hashing and the string and stream ciphers of `Encryptor`. `Encrypted<TObject>` stores a serialized object under a password-derived key with an authentication tag. `PasswordHasher` hashes passwords with PBKDF2-SHA512 in the `SP10-PBKDF2-SHA512:<iterations>:<salt>:<hash>` format, still validates the legacy PBKDF2-SHA1 `<iterations>:<salt>:<hash>` format, and reports through `NeedsRehash` when a stored hash should be replaced after a successful sign-in. `PasswordPolicy` checks a chosen password and `PasswordGenerator` generates one that meets a policy.
+
+```csharp
+var hash = PasswordHasher.CreateHash(username, password);
+if (PasswordHasher.ValidatePassword(username, password, storedHash) && PasswordHasher.NeedsRehash(storedHash))
+	storedHash = PasswordHasher.CreateHash(username, password);
+
+var check = new PasswordPolicy { MinimumLength = 16 }.Validate(chosenPassword);
+var machinePassword = PasswordGenerator.Generate();
+```
 
 ```csharp
 byte[] digest = Hashers.Hash(CHF.SHA2_256, data);
@@ -77,8 +86,16 @@ Most types are in the `Sphere10.Framework` namespace. `HashRandom`, `Mersenne32`
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`PasswordHasher`](KDF/PasswordHasher.cs) | class | Creates and validates salted PBKDF2-SHA1 password hash strings. |
+| [`IPasswordHasher`](KDF/IPasswordHasher.cs) | interface | Password hashing as a service: create, validate and `NeedsRehash`, so a host registers one hasher and a test can observe it. |
+| [`PasswordHasher`](KDF/PasswordHasher.cs) | class | Creates salted PBKDF2-SHA512 password hashes, validates them and legacy PBKDF2-SHA1 hashes in constant time, reports `NeedsRehash` and offers a `PlaceholderHash` for timing-safe rejection of unknown accounts; an instance implements `IPasswordHasher`. |
 | [`PBKDF2`](KDF/PBKDF2.cs) | static class | PBKDF2 key derivation from a string secret with SHA-1, or from bytes with a chosen hash algorithm. |
+
+### Passwords
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`PasswordGenerator`](Passwords/PasswordGenerator.cs) | static class | Generates cryptographically random passwords that meet a `PasswordPolicy`, with every required character class and no whitespace. |
+| [`PasswordPolicy`](Passwords/PasswordPolicy.cs) | class | Configurable password rules (minimum length, required digit, lower case, upper case and symbol, whitespace) whose `Validate` returns a `Result` naming every broken rule. |
 
 ### PQC
 
