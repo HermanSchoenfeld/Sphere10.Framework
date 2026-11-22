@@ -26,7 +26,7 @@ namespace Tools;
 public static partial class Windows {
 
 	/// <summary>Owned managed representations of Windows IP Helper endpoint tables and interface counters.</summary>
-	public static class Network {
+	public static partial class Network {
 		/// <summary>Creates an independent lazy owner-table inventory, retaining protocol/family/PID filtering before paging.</summary>
 		public static WindowsNetworkEndpointDataSource CreateEndpointDataSource(bool isTcp, AddressFamily addressFamily, uint? processId = null)
 			=> new WindowsNetworkEndpointDataSource(isTcp, addressFamily, processId);

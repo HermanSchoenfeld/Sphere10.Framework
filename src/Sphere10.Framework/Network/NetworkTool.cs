@@ -74,17 +74,9 @@ public static class Network {
 			.Distinct();
 
 	public static string ToMacAddressString(byte[] bytes) {
-		var stringBuilder = new StringBuilder();
-		for (int i = 0; i < bytes.Length; i++) {
-			// Display the physical address in hexadecimal.
-			stringBuilder.AppendFormat("{0}", bytes[i].ToString("X2"));
-			// Insert a hyphen after each byte, unless we are at the end of the
-			// address.
-			if (i != bytes.Length - 1) {
-				stringBuilder.AppendFormat("-");
-			}
-		}
-		return stringBuilder.ToString();
+		// Display the physical address in hexadecimal, with a hyphen between bytes.
+		var hex = bytes.ToHexString(true).ToUpperInvariant();
+		return string.Join("-", Enumerable.Range(0, bytes.Length).Select(index => hex.Substring(index * 2, 2)));
 	}
 
 
@@ -100,6 +92,11 @@ public static class Network {
 
 	public static Task<NetworkProbeObservation> PingAsync(IPAddress address, TimeSpan timeout, int timeToLive = 128, CancellationToken cancellationToken = default)
 		=> Task.Run(() => ProbeAsync(address, timeout, timeToLive, "Ping", null, cancellationToken), cancellationToken);
+
+	/// <summary>Pings with an echo request of <paramref name="packetSize"/> data bytes (0 to 65,500). With <paramref name="dontFragment"/> a packet
+	/// too large for a link on the way is refused rather than split, which finds the largest packet the path carries.</summary>
+	public static Task<NetworkProbeObservation> PingAsync(IPAddress address, TimeSpan timeout, int timeToLive, int packetSize, bool dontFragment, CancellationToken cancellationToken = default)
+		=> Task.Run(() => ProbeAsync(address, timeout, timeToLive, "Ping", null, cancellationToken, packetSize, dontFragment), cancellationToken);
 
 	/// <summary>Bounded ICMP TTL/hop-limit probes. A missing hop is not evidence that routing stops there.</summary>
 	public static Task<NetworkProbeObservation[]> TraceRouteAsync(IPAddress address, int maximumHops, TimeSpan hopTimeout,
@@ -145,19 +142,87 @@ public static class Network {
 		return new NetworkWhoisResult(server, query, response.ToString(), limited);
 	}, cancellationToken);
 
+	/// <summary>Reads a WHOIS record the way a person looks one up: asks the first server, then each server the answer refers to, until
+	/// an answer refers nowhere new. The last answer is the most specific. Every answer is returned in the order it was read.</summary>
+	/// <param name="receive">Called with each answer as it arrives, on a worker thread.</param>
+	public static Task<NetworkWhoisResult[]> ReadWhoisChainAsync(string query, string firstServer, TimeSpan timeout, int maximumServers = 4,
+		Action<NetworkWhoisResult> receive = null, CancellationToken cancellationToken = default) => Task.Run(async () => {
+		Guard.ArgumentInRange(maximumServers, 1, 8, nameof(maximumServers));
+		var results = new List<NetworkWhoisResult>();
+		var asked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		for (var server = firstServer; !string.IsNullOrWhiteSpace(server) && results.Count < maximumServers && asked.Add(server); server = FindWhoisReferral(results[^1].Response)) {
+			var result = await ReadWhoisAsync(query, server, timeout, cancellationToken: cancellationToken).ConfigureAwait(false);
+			results.Add(result);
+			receive?.Invoke(result);
+		}
+		return results.ToArray();
+	}, cancellationToken);
+
+	/// <summary>The WHOIS server an answer refers to, or null when it names none. Registries and registrars name it in different words.</summary>
+	public static string FindWhoisReferral(string response) {
+		if (string.IsNullOrEmpty(response))
+			return null;
+		foreach (var line in response.Split('\n')) {
+			var separator = line.IndexOf(':');
+			if (separator <= 0)
+				continue;
+			var name = line[..separator].Trim();
+			if (!name.Equals("refer", StringComparison.OrdinalIgnoreCase) && !name.Equals("whois", StringComparison.OrdinalIgnoreCase)
+				&& !name.Equals("Registrar WHOIS Server", StringComparison.OrdinalIgnoreCase) && !name.Equals("ReferralServer", StringComparison.OrdinalIgnoreCase))
+				continue;
+			var value = line[(separator + 1)..].Trim();
+			// A referral can be written as an address, such as whois://whois.arin.net. Only plain WHOIS servers are followed.
+			if (value.StartsWith("whois://", StringComparison.OrdinalIgnoreCase))
+				value = value[8..];
+			else if (value.Contains("://", StringComparison.Ordinal))
+				continue;
+			value = value.TrimEnd('/');
+			var port = value.LastIndexOf(':');
+			if (port > 0)
+				value = value[..port];
+			if (value.Length > 0 && Uri.CheckHostName(value) != UriHostNameType.Unknown)
+				return value;
+		}
+		return null;
+	}
+
+	/// <summary>Tries one TCP connection to a port and reports whether it was accepted, refused or left unanswered. Nothing is sent
+	/// on a connection that opens; it is closed at once.</summary>
+	public static Task<NetworkPortProbeResult> ProbeTcpPortAsync(IPAddress address, int port, TimeSpan timeout, CancellationToken cancellationToken = default) => Task.Run(async () => {
+		Guard.ArgumentNotNull(address, nameof(address));
+		Guard.ArgumentInRange(port, 1, 65535, nameof(port));
+		Guard.Argument(timeout > TimeSpan.Zero, nameof(timeout), "Specify a positive connection timeout.");
+		var started = Stopwatch.GetTimestamp();
+		using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+		deadline.CancelAfter(timeout);
+		using var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+		try {
+			await socket.ConnectAsync(new IPEndPoint(address, port), deadline.Token).ConfigureAwait(false);
+			return new NetworkPortProbeResult(port, NetworkPortState.Open, Stopwatch.GetElapsedTime(started).TotalMilliseconds, string.Empty);
+		} catch (SocketException error) when (error.SocketErrorCode == SocketError.ConnectionRefused) {
+			return new NetworkPortProbeResult(port, NetworkPortState.Closed, Stopwatch.GetElapsedTime(started).TotalMilliseconds, string.Empty);
+		} catch (SocketException error) {
+			return new NetworkPortProbeResult(port, NetworkPortState.NoReply, Stopwatch.GetElapsedTime(started).TotalMilliseconds, error.SocketErrorCode.ToString());
+		} catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) {
+			return new NetworkPortProbeResult(port, NetworkPortState.NoReply, Stopwatch.GetElapsedTime(started).TotalMilliseconds, string.Empty);
+		}
+	}, cancellationToken);
+
 	/// <summary>Projects one complete bounded DNS message; malformed/unsupported input returns false without inferring fields.</summary>
 	public static bool TryDecodeDnsMessage(ReadOnlySpan<byte> data, out DnsMessage message) => NetworkProtocolDecoder.TryDns(data, out message);
 
 	/// <summary>Projects a complete ClientHello contained in one captured record. No TCP/record reassembly or payload decryption is implied.</summary>
 	public static bool TryDecodeTlsClientHello(ReadOnlySpan<byte> data, out TlsClientHello hello) => NetworkProtocolDecoder.TryClientHello(data, out hello);
-	private static async Task<NetworkProbeObservation> ProbeAsync(IPAddress address, TimeSpan timeout, int timeToLive, string operation, int? hop, CancellationToken cancellationToken) {
+	private static async Task<NetworkProbeObservation> ProbeAsync(IPAddress address, TimeSpan timeout, int timeToLive, string operation, int? hop, CancellationToken cancellationToken,
+		int packetSize = 32, bool dontFragment = true) {
 		Guard.ArgumentNotNull(address, nameof(address));
 		Guard.Argument(timeout > TimeSpan.Zero && timeout.TotalMilliseconds <= int.MaxValue, nameof(timeout), "Specify a supported positive probe timeout.");
 		Guard.ArgumentInRange(timeToLive, 1, 255, nameof(timeToLive));
+		Guard.ArgumentInRange(packetSize, 0, 65500, nameof(packetSize));
 		var capturedAt = DateTime.UtcNow;
 		var started = Stopwatch.GetTimestamp();
 		using var ping = new Ping();
-		var result = await ping.SendPingAsync(address, timeout, new byte[32], new PingOptions(timeToLive, true), cancellationToken).ConfigureAwait(false);
+		var result = await ping.SendPingAsync(address, timeout, new byte[packetSize], new PingOptions(timeToLive, dontFragment), cancellationToken).ConfigureAwait(false);
 		return new NetworkProbeObservation(capturedAt, operation, address.ToString(), result.Address?.ToString() ?? string.Empty,
 			hop, result.Status.ToString(), result.Status == IPStatus.Success ? result.RoundtripTime : null,
 			Stopwatch.GetElapsedTime(started).TotalMilliseconds, operation == "Traceroute" ? "ICMP Hop-Limit Probe; Filtered/Timed-Out Hops May Still Forward Traffic" : "ICMP Echo Probe");
