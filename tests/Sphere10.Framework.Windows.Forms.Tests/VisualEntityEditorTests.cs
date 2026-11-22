@@ -25,7 +25,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class DefaultCrudEntityEditorTests {
+public class VisualEntityEditorTests {
 	[Test]
 	public void NestedPropertyExpandsEditsAndRaisesFullPath() {
 		var Entity = new Employee { Address = new Address { Street = "Original", City = "Brisbane" } };
@@ -37,7 +37,7 @@ public class DefaultCrudEntityEditorTests {
 		Assert.That(AddressItem.GridItems.Cast<GridItem>().Select(Item => Item.PropertyDescriptor!.Name), Does.Contain("Street"));
 		Assert.That(AddressItem.PropertyDescriptor!.Converter.ConvertToString(Entity.Address), Is.EqualTo("Address"));
 		var StreetItem = AddressItem.GridItems.Cast<GridItem>().Single(Item => Item.PropertyDescriptor!.Name == "Street");
-		CrudEntityPropertyChangedEventArgs? Change = null;
+		VisualEntityPropertyChangedEventArgs? Change = null;
 		Editor.PropertyChanged += Args => Change = Args;
 		EditProperty(Grid, StreetItem, "Updated");
 		Assert.That(Entity.Address.Street, Is.EqualTo("Updated"));
@@ -186,7 +186,7 @@ public class DefaultCrudEntityEditorTests {
 	[TestCase(DataSourceCapabilities.CanCreate, true, true)]
 	[TestCase(DataSourceCapabilities.CanUpdate, true, false)]
 	public void EditingHonorsCrudCapabilities(DataSourceCapabilities Capabilities, bool IsNewEntity, bool Enabled) {
-		using var Editor = new DefaultCrudEntityEditor();
+		using var Editor = new VisualEntityEditor();
 		Editor.SetEntity(Capabilities, new Employee(), IsNewEntity);
 		var grid = GetGrid(Editor);
 		Assert.That(grid.Enabled, Is.True, "Readonly inspection must retain property selection, expansion and copy.");
@@ -196,7 +196,7 @@ public class DefaultCrudEntityEditorTests {
 	[Test]
 	public void ReadonlyInspectionKeepsNestedValuesSelectableAndSuppressesMutatingCollectionEditors() {
 		var entity = new Employee { Address = new Address { Street = "Original" } };
-		using var editor = new DefaultCrudEntityEditor();
+		using var editor = new VisualEntityEditor();
 		editor.SetEntity(DataSourceCapabilities.CanRead, entity, false);
 		editor.CreateControl();
 		var grid = GetGrid(editor);
@@ -214,7 +214,7 @@ public class DefaultCrudEntityEditorTests {
 		Assert.That(entity.Address.Street, Is.EqualTo("Original"));
 		Assert.That(editor.HasChanges, Is.False);
 		Assert.That(TypeDescriptor.GetProperties(entity)["Address"].IsReadOnly, Is.False, "Readonly policy belongs to this editing session, not global model metadata.");
-		using var custom = new DefaultCrudEntityEditor();
+		using var custom = new VisualEntityEditor();
 		custom.SetEntity(DataSourceCapabilities.CanRead, new SpecialProperties(), false);
 		custom.CreateControl();
 		GetGrid(custom).CreateControl();
@@ -225,8 +225,8 @@ public class DefaultCrudEntityEditorTests {
 	[TestCase(true)]
 	public async Task FailedPersistencePreservesNestedUndo(bool IsNewEntity) {
 		var Entity = new Employee { Address = new Address { Street = "Original" } };
-		using var Dialog = new CrudEntityEditorDialog();
-		using var Editor = new DefaultCrudEntityEditor();
+		using var Dialog = new VisualEntityEditorDialog();
+		using var Editor = new VisualEntityEditor();
 		Dialog.SetEntityEditor(new FailingDataSource(), Editor, DataSourceCapabilities.Default, Entity, IsNewEntity);
 		Editor.CreateControl();
 		var Grid = GetGrid(Editor);
@@ -251,7 +251,7 @@ public class DefaultCrudEntityEditorTests {
 		var Grid = GetGrid(Editor);
 		Grid.SelectedGridItem = FindItem(Grid, "Address");
 		var View = Grid.Controls.Cast<Control>().Single(Control => Control.GetType().Name == "PropertyGridView");
-		CrudEntityPropertyChangedEventArgs? Change = null;
+		VisualEntityPropertyChangedEventArgs? Change = null;
 		Editor.PropertyChanged += Args => Change = Args;
 		var Result = View.GetType().GetMethod("CommitText", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(View, new object[] { "(Create new)" });
 		Assert.That(Result, Is.True);
@@ -351,15 +351,59 @@ public class DefaultCrudEntityEditorTests {
 		Assert.That(Editor.HasChanges, Is.False);
 	}
 
-	private static DefaultCrudEntityEditor CreateEditor(object Entity) {
-		var Editor = new DefaultCrudEntityEditor();
+	[Test]
+	public void MarkedPathPropertiesAreChosenWithThePathSelectorAndTheirValuesRoundTrip() {
+		var entity = new PathProperties { OutputFolder = @"C:\Original", LibraryFolders = new[] { @"C:\One", @"C:\Two" } };
+		using var editor = CreateEditor(entity);
+		var grid = GetGrid(editor);
+
+		// The marked string and each entry of the marked collection get the selector's browse button; the collection keeps its own editor.
+		var folder = FindItem(grid, nameof(PathProperties.OutputFolder));
+		var folderEditor = folder.PropertyDescriptor.GetEditor(typeof(UITypeEditor));
+		Assert.That(folderEditor, Is.TypeOf<PathSelectorEditor>());
+		Assert.That(((PathSelectorEditor)folderEditor).GetEditStyle(), Is.EqualTo(UITypeEditorEditStyle.Modal));
+		Assert.That(((PathSelectorEditor)folderEditor).Selection.Mode, Is.EqualTo(PathSelectionMode.Folder));
+		var libraries = FindItem(grid, nameof(PathProperties.LibraryFolders));
+		Assert.That(libraries.PropertyDescriptor.GetEditor(typeof(UITypeEditor)), Is.Not.TypeOf<PathSelectorEditor>());
+		var entry = ExpandAndFind(grid, nameof(PathProperties.LibraryFolders), "[1]");
+		Assert.That(entry.PropertyDescriptor.GetEditor(typeof(UITypeEditor)), Is.TypeOf<PathSelectorEditor>());
+		Assert.That(FindItem(grid, nameof(PathProperties.Note)).PropertyDescriptor.GetEditor(typeof(UITypeEditor)), Is.Not.TypeOf<PathSelectorEditor>());
+
+		// A path typed into either row, or chosen in the dialog, is the property's value and is undone with the edit session.
+		EditProperty(grid, folder, @"D:\Typed");
+		EditProperty(grid, entry, @"D:\Chosen");
+		Assert.That((entity.OutputFolder, entity.LibraryFolders[1], editor.HasChanges), Is.EqualTo((@"D:\Typed", @"D:\Chosen", true)));
+		editor.UndoChanges();
+		Assert.That((entity.OutputFolder, entity.LibraryFolders[1], editor.HasChanges), Is.EqualTo((@"C:\Original", @"C:\Two", false)));
+
+		// A read-only session offers no browse button.
+		using var readOnly = new VisualEntityEditor();
+		readOnly.SetEntity(DataSourceCapabilities.CanRead, entity, false);
+		readOnly.CreateControl();
+		GetGrid(readOnly).CreateControl();
+		Assert.That(FindItem(GetGrid(readOnly), nameof(PathProperties.OutputFolder)).PropertyDescriptor.GetEditor(typeof(UITypeEditor)), Is.Null);
+	}
+
+	[Test]
+	public void ThePathSelectorEditorBrowsesWithASelectorConfiguredFromTheAttribute() {
+		var selection = new PathSelectorAttribute(PathSelectionMode.OpenFile) { ForcePathExists = true, Filter = "Logs|*.log", DialogTitle = "Open Log" };
+		var chosen = new ChoosingPathSelectorEditor(selection, @"D:\Logs\chosen.log");
+		Assert.That(chosen.EditValue(null, null, @"C:\current.log"), Is.EqualTo(@"D:\Logs\chosen.log"));
+		Assert.That((chosen.Mode, chosen.ForcePathExists, chosen.Filter, chosen.DialogTitle, chosen.PathShown),
+			Is.EqualTo((PathSelectionMode.OpenFile, true, "Logs|*.log", "Open Log", @"C:\current.log")));
+		var cancelled = new ChoosingPathSelectorEditor(selection, null);
+		Assert.That(cancelled.EditValue(null, null, @"C:\current.log"), Is.EqualTo(@"C:\current.log"), "A cancelled dialog keeps the value.");
+	}
+
+	private static VisualEntityEditor CreateEditor(object Entity) {
+		var Editor = new VisualEntityEditor();
 		Editor.SetEntity(DataSourceCapabilities.Default, Entity, false);
 		Editor.CreateControl();
 		GetGrid(Editor).CreateControl();
 		return Editor;
 	}
 
-	private static PropertyGrid GetGrid(DefaultCrudEntityEditor Editor) => Editor.Controls.OfType<PropertyGrid>().Single();
+	private static PropertyGrid GetGrid(VisualEntityEditor Editor) => Editor.Controls.OfType<PropertyGrid>().Single();
 
 	private static GridItem RootItem(PropertyGrid Grid) {
 		var Root = Grid.SelectedGridItem;
@@ -421,6 +465,31 @@ public class DefaultCrudEntityEditorTests {
 		public Address? CustomAddress { get; set; }
 		[Browsable(false)]
 		public string? Hidden { get; set; }
+	}
+
+	public class PathProperties {
+		[PathSelector(PathSelectionMode.Folder, DialogTitle = "Output Folder")]
+		public string OutputFolder { get; set; }
+		[PathSelector(PathSelectionMode.Folder)]
+		public string[] LibraryFolders { get; set; } = Array.Empty<string>();
+		public string Note { get; set; }
+	}
+
+	// Stands in for the dialog: records how the selector was configured and chooses the given path, or cancels for null.
+	private sealed class ChoosingPathSelectorEditor(PathSelectorAttribute selection, string choice) : PathSelectorEditor(selection) {
+		public PathSelectionMode Mode { get; private set; }
+		public bool ForcePathExists { get; private set; }
+		public string Filter { get; private set; }
+		public string DialogTitle { get; private set; }
+		public string PathShown { get; private set; }
+
+		protected override bool Browse(PathSelectorControl selector, IWin32Window owner) {
+			(Mode, ForcePathExists, Filter, DialogTitle, PathShown) = (selector.Mode, selector.ForcePathExists, selector.Filter, selector.DialogTitle, selector.Path);
+			if (choice == null)
+				return false;
+			selector.Path = choice;
+			return true;
+		}
 	}
 
 	public class AddressConverter : TypeConverter {

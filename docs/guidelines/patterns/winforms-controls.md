@@ -26,12 +26,13 @@ worker.
 | Requirement | Existing entry point |
 |---|---|
 | Choose a file, save destination or directory | `PathSelectorControl` |
+| Choose a settings or entity path in a property grid (Options, entity editor) | `[PathSelector(mode)]` on the property, which the editor shows through `PathSelectorEditor` |
 | Choose optional file/application/screen/stdout/stderr logging, options and rolling output | `LogOutputSelectorControl` |
 | Choose a database engine and edit its connection | `DatabaseConnectionPanel` or `DatabaseConnectionBar`, with provider modules registered |
 | Edit a specific SQL Server, SQLite or Firebird connection | The matching concrete provider panel/bar |
 | Display/search/page/edit entity records | `VisualGrid` with `IDataSource<T>` |
-| Choose an existing related record | `CrudReferenceBinding<T>` and its `CrudReferencePicker` |
-| Show a grid in a dropdown | `CrudComboBox` |
+| Choose an existing related record | `VisualGridReferenceBinding<T>` and its `VisualGridReferencePicker` |
+| Show a grid in a dropdown | `VisualGridDropDown` |
 | Select an enum or combined flags | `EnumComboBox` or `FlagsCheckedListBox` |
 | Choose a fixed toolbar value through a checked menu | `ToolStripChoiceSelector` |
 | Show progress or scoped busy state | `ProgressBarEx` or `LoadingCircle` |
@@ -39,7 +40,7 @@ worker.
 | Present a question, text, password or authentication dialog | Existing async dialog helpers |
 | Review generated CSV, JSON or text before selecting a save destination | `ReviewTextDialog` |
 | Browse, search and edit bytes (overwrite, insert, delete) in a seekable stream or file as hexadecimal and text | `HexEditorControl`, or `HexEditorForm` for a standalone window |
-| Display resource appointments | `AppointmentBook` and `IAppointmentBookDataSource` |
+| Display resource appointments | `VisualCalendar` and `IVisualCalendarDataSource` |
 | Plot captured metric history with gaps, units and hover readings | `TelemetryChart` |
 | Plot generic numeric series or category bars | `GraphChart`, `BarChart` |
 | Use specialized chart types and the absorbed charting API | `Sphere10.Framework.Windows.Forms.DataVisualization.Chart` |
@@ -168,18 +169,18 @@ requires.
 
 | Component | Use and API |
 |---|---|
-| [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGrid.cs) | `GridBindings` of `VisualGridColumn<T>`, `SetDataSource<T>(IDataSource<T>, capabilities)`, `RefreshGrid()`, record create/edit/delete operations, selected entity, search/sort/paging and optional inline edits. These task-returning methods retain their established names without `Async` suffixes. Source capabilities and supplied permission masks are intersected at binding. |
-| [VisualGridColumn<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridColumn.cs) | Actual typed value getter/setter, display type, header, sort name, property path, per-cell edit/availability, command actions and explicit `ExpandsToFit`. `CrudCellDisplayType.Image` uses a borrowed read-only image; the owning cache/consumer must keep it alive while displayed. |
-| [CrudComboBox](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/CrudComboBox.cs) | Namespace `Sphere10.Framework.Windows.Forms.Crud`. A `CustomComboBox` with a full VisualGrid dropdown; await `SetCrudParameters<T>(...)`, configure display delegate, `MaximumDropDownSize`, selected entity and auto-hide behavior. Supply an already constrained source capability mask. |
-| [CrudReferenceBinding<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudReferenceBinding.cs) | Describe an eligible related-record source, picker columns, shallow display text, null policy and fixed popup bounds. Share the binding with inline columns and the property-grid editor through property paths. |
-| [CrudReferencePicker](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/CrudReferencePicker.cs) and [CrudReferenceEditor](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudReferenceEditor.cs) | Read/search/page existing records while preserving selected object identity. Load asynchronously; accept/cancel/clear selection according to the binding. These are reference editors, not ownership-graph editors. |
-| [DefaultCrudEntityEditor](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/DefaultCrudEntityEditor.cs) | Property-grid editing, session-local descriptors, related-record bindings, owned-object expansion, changed values and undo/accept. Implements `ICrudEntityEditor<object>`. |
-| [CrudEntityEditorDialog](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Forms/CrudEntityEditorDialog.cs) | Owns editor presentation, save/delete/validation/cancel decisions for the supplied data source and entity. |
-| [CrudDialog](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Forms/CrudDialog.cs) | `ShowAsync<T>(...)` for a complete CRUD grid dialog, with optional custom entity editor. |
+| [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs) | `GridBindings` of `VisualGridColumn<T>`, `SetDataSource<T>(IDataSource<T>, capabilities)`, `RefreshGrid()`, record create/edit/delete operations, selected entity, search/sort/paging and optional inline edits. These task-returning methods retain their established names without `Async` suffixes. Source capabilities and supplied permission masks are intersected at binding. |
+| [VisualGridColumn<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridColumn.cs) | Actual typed value getter/setter, display type, header, sort name, property path, per-cell edit/availability, command actions and explicit `ExpandsToFit`. `VisualGridCellDisplayType.Image` uses a borrowed read-only image; the owning cache/consumer must keep it alive while displayed. |
+| [VisualGridDropDown](../../../src/Sphere10.Framework.Windows.Forms/VisualGridDropDown/VisualGridDropDown.cs) | Namespace `Sphere10.Framework.Windows.Forms`. A `CustomComboBox` with a full VisualGrid dropdown; await `SetParametersAsync<T>(...)`, configure display delegate, `MaximumDropDownSize`, selected entity and auto-hide behavior. Supply an already constrained source capability mask. |
+| [VisualGridReferenceBinding<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGridDropDown/VisualGridReferenceBinding.cs) | Describe an eligible related-record source, picker columns, shallow display text, null policy and fixed popup bounds. Share the binding with inline columns and the property-grid editor through property paths. |
+| [VisualGridReferencePicker](../../../src/Sphere10.Framework.Windows.Forms/VisualGridDropDown/VisualGridReferencePicker.cs) and [VisualGridReferenceEditor](../../../src/Sphere10.Framework.Windows.Forms/VisualGridDropDown/VisualGridReferenceEditor.cs) | Read/search/page existing records while preserving selected object identity. Load asynchronously; accept/cancel/clear selection according to the binding. These are reference editors, not ownership-graph editors. |
+| [VisualEntityEditor](../../../src/Sphere10.Framework.Windows.Forms/VisualEntityEditor/VisualEntityEditor.cs) | Property-grid editing, session-local descriptors, related-record bindings, owned-object expansion, changed values and undo/accept. Implements `IVisualEntityEditor<object>`. |
+| [VisualEntityEditorDialog](../../../src/Sphere10.Framework.Windows.Forms/VisualEntityEditor/VisualEntityEditorDialog.cs) | Owns editor presentation, save/delete/validation/cancel decisions for the supplied data source and entity. |
+| [VisualGridDialog](../../../src/Sphere10.Framework.Windows.Forms/VisualGridDialog/VisualGridDialog.cs) | `ShowAsync<T>(...)` for a complete CRUD grid dialog, with optional custom entity editor. |
 | [VisualGridArrayController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridArrayController.cs), [IVisualGridArrayController](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/IVisualGridArrayController.cs) | Typed nonvisual binding of a capture source into an `ArrayDataSource<T>` projection for a concrete designer surface. Caller-supplied capture source (or async collector), identity and projection; typed `Rows`, `Count`, `SetDefaultSort`, `RefreshAsync` and `CaptureRows`. Never triggers a loadable capture's first load, serializes refreshes and preserves selection across replacement instances; export policy stays with the caller. |
-| [VisualGridDataSourceController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridDataSourceController.cs) | Nonvisual binding for an existing ranged `IDataSource<T>`. Binds once, serializes source-change publication and accepts an optional replacement-entity resolver without an all-rows snapshot. Create/refresh on the owning dispatcher; source queries determine worker execution. The array controller composes this mechanism. |
-| [VisualGridConfigurationContextMenu](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGridConfigurationContextMenu.cs) | Designer-drop native context menu with Save configuration and Restore defaults for a bound screen grid. Attach through `VisualGrid.HeaderContextMenuStrip`; one menu can serve several grids through native `SourceControl`. The screen retains settings and persistence ownership. |
-| [VisualGridSettings](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSettings.cs) and [grid settings integration](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGrid.cs) | Keep one value in the owning screen settings, bind it before querying, and edit column order, widths and stretch choices through Screen Options. The grid applies accepted values; runtime paging, sorting and resizing remain transient. Optionally attach a designer-owned `VisualGridConfigurationContextMenu` through its generic `HeaderContextMenuStrip` for explicit Save configuration and temporary Restore defaults. The screen owns the actual settings root and persistence. See the settings practice for owner lifecycle. |
+| `VisualGrid.ConfigureDataSource` / `RefreshDataSourceAsync` | Grid-owned deferred binding for an existing ranged `IDataSource<T>`. Binds once, serializes source-change publication and accepts optional replacement-entity and visible-selection identity callbacks without an all-rows snapshot. Configure/refresh on the owning dispatcher; source queries determine worker execution. The array controller uses this same grid API. |
+| [VisualGridConfigurationContextMenu](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridConfigurationContextMenu.cs) | Designer-drop native context menu with Save configuration and Restore defaults for a bound screen grid. Attach through `VisualGrid.HeaderContextMenuStrip`; one menu can serve several grids through native `SourceControl`. The screen retains settings and persistence ownership. |
+| [VisualGridSettings](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSettings.cs) and [grid settings integration](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs) | Keep one value in the owning screen settings, bind it before querying, and edit column order, widths and stretch choices through Screen Options. The grid applies accepted values; runtime paging, sorting and resizing remain transient. Optionally attach a designer-owned `VisualGridConfigurationContextMenu` through its generic `HeaderContextMenuStrip` for explicit Save configuration and temporary Restore defaults. The screen owns the actual settings root and persistence. See the settings practice for owner lifecycle. |
 
 Use the [WinForms project guide](../../../src/Sphere10.Framework.Windows.Forms/README.md)
 for capability masks, complete-row automatic page sizing, refresh completion,
@@ -213,7 +214,7 @@ behind a concrete nongeneric designer surface.
 | [EnumComboBox](../../../src/Sphere10.Framework.Windows.Forms/ComboBoxes/Controls/EnumComboBox.cs) | `EnumType`, `SelectedEnum`, `Filter`, `IgnoreEnums`, `AllowEmptyOption` and `EmptyOptionText`. Displays framework enum descriptions rather than requiring a manually duplicated label list. |
 | [CheckedListBoxEx](../../../src/Sphere10.Framework.Windows.Forms/Controls/CheckedListBoxEx.cs) | Check-on-click, `CheckItems` helpers and `ItemChecked`, raised after the checked state changes through UI dispatch. |
 | [FlagsCheckedListBox](../../../src/Sphere10.Framework.Windows.Forms/Controls/FlagsCheckedListBox.cs) | `EnumType` must carry `[Flags]`; `SelectedEnum` combines selected values, with compound parent/child flag updates and `HasSelectedValue`. It converts numeric values to signed `Int64`; verify unsigned high-bit enum cases before adopting them. |
-| [CustomComboBox](../../../src/Sphere10.Framework.Windows.Forms/ComboBoxes/Controls/CustomComboBox.cs), [PopupControl and PopupDropDown](../../../src/Sphere10.Framework.Windows.Forms/DropDown/Controls/PopupControl.cs) | Host an existing dropdown `Control`, with resize/size policies and selected-value events. PopupDropDown supplies the ToolStripDropDown visual surface. Prefer the ready CrudComboBox/reference picker for record selection. Its `ItemHeight` setter does nothing; a subclass sets the native height through `((ComboBox)this).ItemHeight`. |
+| [CustomComboBox](../../../src/Sphere10.Framework.Windows.Forms/ComboBoxes/Controls/CustomComboBox.cs), [PopupControl and PopupDropDown](../../../src/Sphere10.Framework.Windows.Forms/DropDown/Controls/PopupControl.cs) | Host an existing dropdown `Control`, with resize/size policies and selected-value events. PopupDropDown supplies the ToolStripDropDown visual surface. Prefer the ready VisualGridDropDown/reference picker for record selection. Its `ItemHeight` setter does nothing; a subclass sets the native height through `((ComboBox)this).ItemHeight`. |
 | [ImageComboBox](../../../src/Sphere10.Framework.Windows.Forms/ComboBoxes/Controls/ImageComboBox.cs), [ImageComboBoxItem](../../../src/Sphere10.Framework.Windows.Forms/ComboBoxes/ImageComboBoxItem.cs) | A `CustomComboBox` of image choices: the owner-drawn closed box shows the selected choice's image (`ImageSize`) and text, and the drop-down is an owned tile picker (`TileImageSize`, `TileColumns`, `VisibleTileRows`, optional `Group` captions) where a click or Enter picks. `SetChoices` keeps the selection by value, `SelectedChoice` set in code raises nothing, and `SelectedChoiceCommitted` reports user picks. Choice images are borrowed; render them at `DeviceTileImageSize`. Lumina's effect pickers consume it. |
 | [ToggleSwitch](../../../src/Sphere10.Framework.Windows.Forms/Controls/ToggleSwitch.cs) | A `CheckBox` drawn as a sliding switch: `OnText`/`OffText` inside the track, `OnBackColor`, `OffBackColor`, `ThumbColor`, `TrackForeColor`, `AnimateToggle`; transparent over gradient parents; the track fills the height of an explicitly sized switch. Set `AutoCheck` false when the model decides the position. Lumina's banner consumes it. |
 | [ListMerger](../../../src/Sphere10.Framework.Windows.Forms/ListMerger/Controls/ListMerger.cs) | Two named list sides, `LeftItems`/`RightItems` arrays, display/value members and `MergeMode`; reports `ItemSelected`/`ItemsMoved`. Reuse for moving/copying membership between two lists. |
@@ -328,20 +329,20 @@ Drawing library's `ColorMatrices`; the same `ColorMatrix` previews an effect thr
 
 ## Appointment/resource scheduling
 
-[AppointmentBook](../../../src/Sphere10.Framework.Windows.Forms/AppointmentBook/Controls/AppointmentBook.cs)
-(namespace `Sphere10.Framework.Windows.Forms.AppointmentBook`) displays resource
+[VisualCalendar](../../../src/Sphere10.Framework.Windows.Forms/VisualCalendar/Controls/VisualCalendar.cs)
+(namespace `Sphere10.Framework.Windows.Forms.VisualCalendar`) displays resource
 columns and time-based appointments through
-[IAppointmentBookDataSource](../../../src/Sphere10.Framework.Windows.Forms/AppointmentBook/DataSources/IAppointmentBookDataSource.cs).
+[IVisualCalendarDataSource](../../../src/Sphere10.Framework.Windows.Forms/VisualCalendar/DataSources/IVisualCalendarDataSource.cs).
 It exposes the selected appointment, period selection with `SetTimePeriod(...)`,
 and selection, double-click, resize, drag/drop events. Its view-model converter is
 an existing nonvisual extension point.
-[BaseAppointmentBook](../../../src/Sphere10.Framework.Windows.Forms/AppointmentBook/Controls/BaseAppointmentBook.cs)
+[BaseVisualCalendar](../../../src/Sphere10.Framework.Windows.Forms/VisualCalendar/Controls/BaseVisualCalendar.cs)
 supplies the existing concrete inherited grid surface and view-model binding.
 
-[UnallocatedBook](../../../src/Sphere10.Framework.Windows.Forms/AppointmentBook/Controls/UnallocatedBook.cs)
+[UnallocatedCalendar](../../../src/Sphere10.Framework.Windows.Forms/VisualCalendar/Controls/UnallocatedCalendar.cs)
 shows unallocated appointments using its corresponding view-model converter and
 changes selection/drag/time availability behavior. Use the tester's
-[AppointmentBookScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/AppointmentBookScreen.cs)
+[VisualCalendarScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/VisualCalendarScreen.cs)
 for the paired resource/unallocated demonstration. This scheduling UI is distinct
 from the framework's background job scheduler.
 

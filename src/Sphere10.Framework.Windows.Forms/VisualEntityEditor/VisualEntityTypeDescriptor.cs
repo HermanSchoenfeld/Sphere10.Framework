@@ -10,8 +10,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Drawing.Design;
+using System.Globalization;
 using System.Linq;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
@@ -19,33 +19,34 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 // Descriptors belong to one editing session; model types and their global TypeDescriptor metadata remain untouched.
-internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
+internal sealed class VisualEntityTypeDescriptor : CustomTypeDescriptor {
 	private readonly object _entity;
-	private readonly IDictionary<string, CrudReferenceBinding> _referenceBindings;
+	private readonly IDictionary<string, VisualGridReferenceBindingBase> _referenceBindings;
 	private readonly bool _readOnly;
 	private readonly HashSet<string> _hiddenProperties;
 	private readonly Func<object, PropertyDescriptor, bool> _propertyFilter;
 	private readonly List<PropertyEdit> _edits = new();
 	private readonly List<CollectionEdit> _collectionEdits = new();
 
-	public CrudEntityTypeDescriptor(object Entity, IDictionary<string, CrudReferenceBinding> ReferenceBindings, bool readOnly = false, IEnumerable<string> hiddenProperties = null,
-		Func<object, PropertyDescriptor, bool> propertyFilter = null)
-		: base(TypeDescriptor.GetProvider(Entity).GetTypeDescriptor(Entity)) {
-		_entity = Entity;
-		_referenceBindings = ReferenceBindings;
+	public VisualEntityTypeDescriptor(object entity, IDictionary<string, VisualGridReferenceBindingBase> referenceBindings, bool readOnly = false, IEnumerable<string> hiddenProperties = null,
+		Func<object, PropertyDescriptor, bool> propertyFilter = null
+	)
+		: base(TypeDescriptor.GetProvider(entity).GetTypeDescriptor(entity)) {
+		_entity = entity;
+		_referenceBindings = referenceBindings;
 		_readOnly = readOnly;
 		_hiddenProperties = new HashSet<string>(hiddenProperties ?? Array.Empty<string>(), StringComparer.Ordinal);
 		_propertyFilter = propertyFilter;
 	}
 
-	public bool HasChanges => _edits.Any(Edit => Edit.Property.IsActive && !Equals(Edit.OriginalValue, Edit.Property.GetValue(null)))
-		|| _collectionEdits.Any(Edit => Edit.Property.IsActive && !Edit.Items.SequenceEqual(Edit.Collection.Cast<object?>()));
+	public bool HasChanges => _edits.Any(edit => edit.Property.IsActive && !Equals(edit.OriginalValue, edit.Property.GetValue(null)))
+		|| _collectionEdits.Any(edit => edit.Property.IsActive && !edit.Items.SequenceEqual(edit.Collection.Cast<object>()));
 
 	public override PropertyDescriptorCollection GetProperties() => GetProperties(null);
 
-	public override PropertyDescriptorCollection GetProperties(Attribute[]? Attributes) => WrapProperties(_entity, base.GetProperties(Attributes), null);
+	public override PropertyDescriptorCollection GetProperties(Attribute[] attributes) => WrapProperties(_entity, base.GetProperties(attributes), null);
 
-	public override object GetPropertyOwner(PropertyDescriptor? Property) => _entity;
+	public override object GetPropertyOwner(PropertyDescriptor property) => _entity;
 
 	public void AcceptChanges() {
 		_edits.Clear();
@@ -54,73 +55,79 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 
 	public void UndoChanges() {
 		// Restore actual owners in reverse edit order, preserving shared references and cycles.
-		foreach (var Edit in _edits.AsEnumerable().Reverse())
-			if (!Equals(Edit.Property.GetValue(null), Edit.OriginalValue))
-				Edit.Property.RestoreValue(Edit.OriginalValue);
-		foreach (var Edit in _collectionEdits) {
-			if (Edit.Items.SequenceEqual(Edit.Collection.Cast<object?>()))
+		foreach (var edit in _edits.AsEnumerable().Reverse())
+			if (!Equals(edit.Property.GetValue(null), edit.OriginalValue))
+				edit.Property.RestoreValue(edit.OriginalValue);
+		foreach (var edit in _collectionEdits) {
+			if (edit.Items.SequenceEqual(edit.Collection.Cast<object>()))
 				continue;
-			if (Edit.Collection.IsFixedSize) {
-				for (var Index = 0; Index < Edit.Items.Length; Index++)
-					Edit.Collection[Index] = Edit.Items[Index];
+			if (edit.Collection.IsFixedSize) {
+				for (var index = 0; index < edit.Items.Length; index++)
+					edit.Collection[index] = edit.Items[index];
 			} else {
-				Edit.Collection.Clear();
-				foreach (var Item in Edit.Items)
-					Edit.Collection.Add(Item);
+				edit.Collection.Clear();
+				foreach (var item in edit.Items)
+					edit.Collection.Add(item);
 			}
 		}
 		AcceptChanges();
 	}
 
-	private PropertyDescriptorCollection WrapProperties(object Owner, PropertyDescriptorCollection Properties, EditablePropertyDescriptor? Parent) {
-		var visible = Properties.Cast<PropertyDescriptor>().Where(property => (!ReferenceEquals(Owner, _entity) || !_hiddenProperties.Contains(property.Name))
-			&& (_propertyFilter == null || _propertyFilter(Owner, property)));
-		return new PropertyDescriptorCollection(visible.Select(property => new EditablePropertyDescriptor(this, Owner, property, Parent)).ToArray(), true);
+	private PropertyDescriptorCollection WrapProperties(object owner, PropertyDescriptorCollection properties, EditablePropertyDescriptor parent) {
+		var visible = properties.Cast<PropertyDescriptor>().Where(property => (!ReferenceEquals(owner, _entity) || !_hiddenProperties.Contains(property.Name))
+			&& (_propertyFilter == null || _propertyFilter(owner, property)));
+		return new PropertyDescriptorCollection(visible.Select(property => new EditablePropertyDescriptor(this, owner, property, parent)).ToArray(), true);
 	}
 
-	private void RecordEdit(EditablePropertyDescriptor Property) {
-		if (!_edits.Any(Edit => ReferenceEquals(Edit.Property.Owner, Property.Owner) && Edit.Property.Name == Property.Name))
-			_edits.Add(new PropertyEdit(Property, Property.GetValue(null)));
+	private void RecordEdit(EditablePropertyDescriptor property) {
+		if (!_edits.Any(edit => ReferenceEquals(edit.Property.Owner, property.Owner) && edit.Property.Name == property.Name))
+			_edits.Add(new PropertyEdit(property, property.GetValue(null)));
 	}
 
-	private void CaptureEditorValues(EditablePropertyDescriptor Property, HashSet<object> Visited) {
-		if (Property.CanRestore)
-			RecordEdit(Property);
-		var Value = Property.GetValue(null);
-		if (Value == null || Value is string || Value.GetType().IsValueType || !Visited.Add(Value))
+	private void CaptureEditorValues(EditablePropertyDescriptor property, ReferenceHashSet<object> visited) {
+		if (property.CanRestore)
+			RecordEdit(property);
+		var value = property.GetValue(null);
+		if (value == null || value is string || value.GetType().IsValueType || !visited.Add(value))
 			return;
-		if (Value is IList Collection && !Collection.IsReadOnly) {
-			if (!_collectionEdits.Any(Edit => ReferenceEquals(Edit.Collection, Collection)))
-				_collectionEdits.Add(new CollectionEdit(Property, Collection, Collection.Cast<object?>().ToArray()));
+		if (value is IList collection && !collection.IsReadOnly) {
+			if (!_collectionEdits.Any(edit => ReferenceEquals(edit.Collection, collection)))
+				_collectionEdits.Add(new CollectionEdit(property, collection, collection.Cast<object>().ToArray()));
 			return;
 		}
-		if (Value is IEnumerable)
+		if (value is IEnumerable)
 			return;
-		foreach (EditablePropertyDescriptor Child in WrapProperties(Value, TypeDescriptor.GetProperties(Value), Property))
-			CaptureEditorValues(Child, Visited);
+		foreach (var child in WrapProperties(value, TypeDescriptor.GetProperties(value), property).Cast<EditablePropertyDescriptor>())
+			CaptureEditorValues(child, visited);
 	}
 
-	private sealed record PropertyEdit(EditablePropertyDescriptor Property, object? OriginalValue);
+	#region Inner Types
 
-	private sealed record CollectionEdit(EditablePropertyDescriptor Property, IList Collection, object?[] Items);
+	private sealed record PropertyEdit(EditablePropertyDescriptor Property, object OriginalValue);
+
+	private sealed record CollectionEdit(EditablePropertyDescriptor Property, IList Collection, object[] Items);
 
 	private sealed class EditablePropertyDescriptor : PropertyDescriptor {
-		private readonly CrudEntityTypeDescriptor _session;
+		private readonly VisualEntityTypeDescriptor _session;
 		private readonly PropertyDescriptor _property;
-		private readonly EditablePropertyDescriptor? _parent;
+		private readonly EditablePropertyDescriptor _parent;
 		private readonly TypeConverter _converter;
-		private readonly CrudReferenceBinding? _referenceBinding;
+		private readonly VisualGridReferenceBindingBase _referenceBinding;
+		private readonly PathSelectorAttribute _pathSelector;
 
-		public EditablePropertyDescriptor(CrudEntityTypeDescriptor Session, object Owner, PropertyDescriptor Property, EditablePropertyDescriptor? Parent)
-			: base(Property) {
-			_session = Session;
-			this.Owner = Owner;
-			_property = Property;
-			_parent = Parent;
-			Session._referenceBindings.TryGetValue(Path, out _referenceBinding);
-			_converter = _referenceBinding != null ? new CrudReferenceConverter(_referenceBinding) : CanExpandAutomatically || Property.Converter.GetPropertiesSupported()
-				? new NestedPropertyConverter(this, Property.Converter)
-				: Property.Converter;
+		public EditablePropertyDescriptor(VisualEntityTypeDescriptor session, object owner, PropertyDescriptor property, EditablePropertyDescriptor parent)
+			: base(property) {
+			_session = session;
+			Owner = owner;
+			_property = property;
+			_parent = parent;
+			session._referenceBindings.TryGetValue(Path, out _referenceBinding);
+			// A marked string is chosen with the path selector; so is each entry of a marked string collection, which keeps its own editor.
+			_pathSelector = property.PropertyType != typeof(string) ? null
+				: (property is ListValueProperty ? parent?._property : property)?.Attributes.OfType<PathSelectorAttribute>().FirstOrDefault();
+			_converter = _referenceBinding != null ? new VisualGridReferenceConverter(_referenceBinding) : CanExpandAutomatically || property.Converter.GetPropertiesSupported()
+				? new NestedPropertyConverter(this, property.Converter)
+				: property.Converter;
 		}
 
 		public object Owner { get; }
@@ -131,9 +138,9 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 
 		public bool IsCircular {
 			get {
-				var Value = GetValue(null);
-				for (var Ancestor = this; Ancestor != null; Ancestor = Ancestor._parent)
-					if (ReferenceEquals(Value, Ancestor.Owner))
+				var value = GetValue(null);
+				for (var ancestor = this; ancestor != null; ancestor = ancestor._parent)
+					if (ReferenceEquals(value, ancestor.Owner))
 						return true;
 				return false;
 			}
@@ -159,53 +166,55 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 
 		public override bool SupportsChangeEvents => _property.SupportsChangeEvents;
 
-		public override object? GetValue(object? Component) => _property.GetValue(Owner);
+		public override object GetValue(object component) => _property.GetValue(Owner);
 
-		public override void SetValue(object? Component, object? Value) {
+		public override void SetValue(object component, object value) {
 			Guard.Ensure(!IsReadOnly, $"The property '{Name}' is read-only.");
-			if (CanCreate && Value is string)
-				Value = Converter.ConvertFrom(Value);
+			if (CanCreate && value is string)
+				value = Converter.ConvertFrom(value);
 			_session.RecordEdit(this);
-			_property.SetValue(Owner, Value);
+			_property.SetValue(Owner, value);
 		}
 
-		public override void ResetValue(object Component) {
+		public override void ResetValue(object component) {
 			Guard.Ensure(!IsReadOnly, $"The property '{Name}' is read-only.");
 			_session.RecordEdit(this);
 			_property.ResetValue(Owner);
 		}
 
-		public override bool CanResetValue(object Component) => !IsReadOnly && _property.CanResetValue(Owner);
+		public override bool CanResetValue(object component) => !IsReadOnly && _property.CanResetValue(Owner);
 
-		public override bool ShouldSerializeValue(object Component) => _property.ShouldSerializeValue(Owner);
+		public override bool ShouldSerializeValue(object component) => _property.ShouldSerializeValue(Owner);
 
-		public override object? GetEditor(Type EditorBaseType) {
+		public override object GetEditor(Type editorBaseType) {
 			if (_session._readOnly)
 				return null;
-			if (_referenceBinding != null && EditorBaseType == typeof(UITypeEditor))
-				return IsReadOnly ? null : new CrudReferenceEditor(_referenceBinding);
-			var Editor = _property.GetEditor(EditorBaseType);
-			return Editor is UITypeEditor ValueEditor ? new RecordingValueEditor(this, ValueEditor) : Editor;
+			if (_referenceBinding != null && editorBaseType == typeof(UITypeEditor))
+				return IsReadOnly ? null : new VisualGridReferenceEditor(_referenceBinding);
+			if (_pathSelector != null && editorBaseType == typeof(UITypeEditor))
+				return IsReadOnly ? null : new PathSelectorEditor(_pathSelector);
+			var editor = _property.GetEditor(editorBaseType);
+			return editor is UITypeEditor valueEditor ? new RecordingValueEditor(this, valueEditor) : editor;
 		}
 
-		public void CaptureEditorValues() => _session.CaptureEditorValues(this, new HashSet<object>(ReferenceEqualityComparer.Instance));
+		public void CaptureEditorValues() => _session.CaptureEditorValues(this, new ReferenceHashSet<object>());
 
-		public override void AddValueChanged(object Component, EventHandler Handler) => _property.AddValueChanged(Owner, Handler);
+		public override void AddValueChanged(object component, EventHandler handler) => _property.AddValueChanged(Owner, handler);
 
-		public override void RemoveValueChanged(object Component, EventHandler Handler) => _property.RemoveValueChanged(Owner, Handler);
+		public override void RemoveValueChanged(object component, EventHandler handler) => _property.RemoveValueChanged(Owner, handler);
 
-		public void RestoreValue(object? Value) => _property.SetValue(Owner, Value);
+		public void RestoreValue(object value) => _property.SetValue(Owner, value);
 
-		public PropertyDescriptorCollection GetChildren(object Value, Attribute[]? Attributes, ITypeDescriptorContext? Context) {
+		public PropertyDescriptorCollection GetChildren(object value, Attribute[] attributes, ITypeDescriptorContext context) {
 			// Declared dictionary roles are fixed navigation keys, with editable nested values instead of an opaque collection dialog.
-			var Properties = Value is IDictionary dictionary
+			var properties = value is IDictionary dictionary
 				? new PropertyDescriptorCollection(dictionary.Keys.Cast<object>().Select(key => new DictionaryValueProperty(dictionary, key)).ToArray(), true)
-				: Value is IList list
+				: value is IList list
 					? new PropertyDescriptorCollection(Enumerable.Range(0, list.Count).Select(index => new ListValueProperty(list, index)).ToArray(), true)
-					: CanExpandAutomatically ? TypeDescriptor.GetProperties(Value, Attributes) : _property.Converter.GetProperties(Context, Value, Attributes);
+					: CanExpandAutomatically ? TypeDescriptor.GetProperties(value, attributes) : _property.Converter.GetProperties(context, value, attributes);
 			// Let WinForms manage boxed values and immutable converters through their owning property setter.
-			return Value.GetType().IsValueType && !_session._readOnly ? Properties ?? new PropertyDescriptorCollection(null)
-				: _session.WrapProperties(Value, Properties ?? new PropertyDescriptorCollection(null), this);
+			return value.GetType().IsValueType && !_session._readOnly ? properties ?? new PropertyDescriptorCollection(null)
+				: _session.WrapProperties(value, properties ?? new PropertyDescriptorCollection(null), this);
 		}
 	}
 
@@ -262,23 +271,23 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		private readonly EditablePropertyDescriptor _property;
 		private readonly UITypeEditor _editor;
 
-		public RecordingValueEditor(EditablePropertyDescriptor Property, UITypeEditor Editor) {
-			_property = Property;
-			_editor = Editor;
+		public RecordingValueEditor(EditablePropertyDescriptor property, UITypeEditor editor) {
+			_property = property;
+			_editor = editor;
 		}
 
 		public override bool IsDropDownResizable => _editor.IsDropDownResizable;
 
-		public override object? EditValue(ITypeDescriptorContext? Context, IServiceProvider Provider, object? Value) {
+		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			_property.CaptureEditorValues();
-			return _editor.EditValue(Context, Provider, Value);
+			return _editor.EditValue(context, provider, value);
 		}
 
-		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? Context) => _editor.GetEditStyle(Context);
+		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) => _editor.GetEditStyle(context);
 
-		public override bool GetPaintValueSupported(ITypeDescriptorContext? Context) => _editor.GetPaintValueSupported(Context);
+		public override bool GetPaintValueSupported(ITypeDescriptorContext context) => _editor.GetPaintValueSupported(context);
 
-		public override void PaintValue(PaintValueEventArgs Args) => _editor.PaintValue(Args);
+		public override void PaintValue(PaintValueEventArgs args) => _editor.PaintValue(args);
 	}
 
 	private sealed class NestedPropertyConverter : TypeConverter {
@@ -287,70 +296,72 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		private readonly EditablePropertyDescriptor _property;
 		private readonly TypeConverter _converter;
 
-		public NestedPropertyConverter(EditablePropertyDescriptor Property, TypeConverter Converter) {
-			_property = Property;
-			_converter = Converter;
+		public NestedPropertyConverter(EditablePropertyDescriptor property, TypeConverter converter) {
+			_property = property;
+			_converter = converter;
 		}
 
-		public override bool CanConvertFrom(ITypeDescriptorContext? Context, Type SourceType) =>
-			_property.CanCreate && SourceType == typeof(string) || _converter.CanConvertFrom(Context, SourceType);
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) =>
+			_property.CanCreate && sourceType == typeof(string) || _converter.CanConvertFrom(context, sourceType);
 
-		public override bool CanConvertTo(ITypeDescriptorContext? Context, Type? DestinationType) => _converter.CanConvertTo(Context, DestinationType);
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => _converter.CanConvertTo(context, destinationType);
 
-		public override object? ConvertFrom(ITypeDescriptorContext? Context, CultureInfo? Culture, object Value) {
-			if (_property.CanCreate && Value is string Text) {
-				if (Text == CreateValue)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
+			if (_property.CanCreate && value is string text) {
+				if (text == CreateValue)
 					return Tools.Object.Create(_property.PropertyType);
-				if (Text == EmptyValue)
+				if (text == EmptyValue)
 					return null;
 
 				// PropertyGrid paints standard choices by round-tripping their displayed captions.
-				if (_property.GetValue(null) is { } Current && Text == ConvertToString(Context, Culture, Current))
-					return Current;
+				if (_property.GetValue(null) is { } current && text == ConvertToString(context, culture, current))
+					return current;
 			}
-			return _converter.ConvertFrom(Context, Culture, Value);
+			return _converter.ConvertFrom(context, culture, value);
 		}
 
-		public override object? ConvertTo(ITypeDescriptorContext? Context, CultureInfo? Culture, object? Value, Type DestinationType) {
-			if (DestinationType == typeof(string)) {
-				if (Value is IDictionary dictionary)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
+			if (destinationType == typeof(string)) {
+				if (value is IDictionary dictionary)
 					return dictionary.Count == 1 ? "1 entry" : $"{dictionary.Count} entries";
-				if (Value is ICollection collection)
+				if (value is ICollection collection)
 					return collection.Count == 1 ? "1 item" : $"{collection.Count} items";
 			}
-			if (_property.CanExpandAutomatically && DestinationType == typeof(string)) {
-				if (Value == null)
+			if (_property.CanExpandAutomatically && destinationType == typeof(string)) {
+				if (value == null)
 					return EmptyValue;
-				if (Value is string)
-					return Value;
-				var Summary = Value.ToString();
-				var valueType = Value.GetType();
+				if (value is string)
+					return value;
+				var summary = value.ToString();
+				var valueType = value.GetType();
 				// Preserve entity captions and meaningful ToString overrides; marked options use an expansion prompt.
-				if (Summary == valueType.FullName || string.IsNullOrWhiteSpace(Summary))
-					Summary = valueType.IsDefined(typeof(UserEditableAttribute), true) ? "Expand to edit" : valueType.Name;
-				return _property.IsCircular ? $"{Summary} (already shown)" : Summary;
+				if (summary == valueType.FullName || string.IsNullOrWhiteSpace(summary))
+					summary = valueType.IsDefined(typeof(UserEditableAttribute), true) ? "Expand to edit" : valueType.Name;
+				return _property.IsCircular ? $"{summary} (already shown)" : summary;
 			}
-			return _converter.ConvertTo(Context, Culture, Value, DestinationType);
+			return _converter.ConvertTo(context, culture, value, destinationType);
 		}
 
-		public override bool GetPropertiesSupported(ITypeDescriptorContext? Context) => !_property.IsCircular
-			&& (_property.CanExpandAutomatically || _converter.GetPropertiesSupported(Context));
+		public override bool GetPropertiesSupported(ITypeDescriptorContext context) => !_property.IsCircular
+			&& (_property.CanExpandAutomatically || _converter.GetPropertiesSupported(context));
 
-		public override PropertyDescriptorCollection? GetProperties(ITypeDescriptorContext? Context, object Value, Attribute[]? Attributes) =>
-			_property.IsCircular ? new PropertyDescriptorCollection(null) : _property.GetChildren(Value, Attributes, Context);
+		public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) =>
+			_property.IsCircular ? new PropertyDescriptorCollection(null) : _property.GetChildren(value, attributes, context);
 
-		public override bool GetStandardValuesSupported(ITypeDescriptorContext? Context) => _property.CanCreate || _converter.GetStandardValuesSupported(Context);
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => _property.CanCreate || _converter.GetStandardValuesSupported(context);
 
-		public override bool GetStandardValuesExclusive(ITypeDescriptorContext? Context) => _property.CanCreate || _converter.GetStandardValuesExclusive(Context);
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => _property.CanCreate || _converter.GetStandardValuesExclusive(context);
 
-		public override StandardValuesCollection? GetStandardValues(ITypeDescriptorContext? Context) =>
-			_property.CanCreate ? new StandardValuesCollection(_property.GetValue(null) is { } Current
-				? new object?[] { Current, null, CreateValue } : new object?[] { null, CreateValue }) : _converter.GetStandardValues(Context);
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) =>
+			_property.CanCreate ? new StandardValuesCollection(_property.GetValue(null) is { } current
+				? new object[] { current, null, CreateValue } : new object[] { null, CreateValue }) : _converter.GetStandardValues(context);
 
-		public override bool GetCreateInstanceSupported(ITypeDescriptorContext? Context) => _converter.GetCreateInstanceSupported(Context);
+		public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) => _converter.GetCreateInstanceSupported(context);
 
-		public override object? CreateInstance(ITypeDescriptorContext? Context, IDictionary PropertyValues) => _converter.CreateInstance(Context, PropertyValues);
+		public override object CreateInstance(ITypeDescriptorContext context, IDictionary propertyValues) => _converter.CreateInstance(context, propertyValues);
 
-		public override bool IsValid(ITypeDescriptorContext? Context, object? Value) => _converter.IsValid(Context, Value);
+		public override bool IsValid(ITypeDescriptorContext context, object value) => _converter.IsValid(context, value);
 	}
+
+	#endregion
 }

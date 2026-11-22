@@ -50,6 +50,8 @@ public partial class PathSelectorTestScreen : ApplicationScreen {
 	// Options updates do not become new local preference edits.
 	private void ApplySettings() {
 		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
+			foreach (var selector in new[] { _pathSelectorControl1, _pathSelectorControl2, _pathSelectorControl3, _pathSelectorControl4 })
+				selector.InitialDirectory = string.IsNullOrWhiteSpace(ScreenSettings.InitialFolder) ? null : ScreenSettings.InitialFolder;
 			_checkBox1.Checked = ScreenSettings.RequireExistingPaths;
 			CheckBox1_CheckedChanged(this, EventArgs.Empty);
 		}
@@ -76,6 +78,12 @@ public partial class PathSelectorTestScreen : ApplicationScreen {
 		public bool RequireExistingPaths {
 			get; set;
 		}
+
+		/// <summary>The folder the selectors' dialogs start in while their box is empty; Options browses for it with the selector's own folder dialog.</summary>
+		[DefaultValue("")]
+		[DisplayName("Initial folder")]
+		[PathSelector(PathSelectionMode.Folder, DialogTitle = "Initial Folder")]
+		public string InitialFolder { get; set; } = string.Empty;
 	}
 	#endregion
 }
