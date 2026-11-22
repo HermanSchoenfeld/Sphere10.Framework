@@ -32,6 +32,7 @@ Every folder of `Sphere10.Framework.Application` is a domain with its own README
 | [Settings](Settings/README.md) | Typed per-user and machine-wide settings objects with their storage providers, caching and encryption, plus helpers that read .NET configuration files. | [source](Settings/) |
 | [Support](Support/README.md) | The optional transport contract for feature requests, comments, bug reports and crash reports, and the feature-request record. | [source](Support/) |
 | [UI](UI/README.md) | UI-independent contracts, bases, fluent builders, decorators and the screen-host engine for applications made of plugins, blocks, menus, screens and wizards, which the WinForms and Blazor adapters implement. | [source](UI/) |
+| [Updates](Updates/README.md) | The `ProductUpdaterBase` template that checks and installs a product's updates through one channel, the release server's contract and portable updater, and the opt-in background checker that asks the updater after start-up and at a regular interval. | [source](Updates/) |
 
 ### Project root
 
@@ -39,7 +40,7 @@ Types declared in the project folder itself:
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Application module with priority `int.MinValue` that registers default settings, product, help, website and duplicate-process services, token resolvers and the usage initializer, then installs the settings providers and the settings secret |
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Application module with priority `int.MinValue` that registers default settings, product, help, website, product-update and duplicate-process services, token resolvers and the usage initializer, then installs the settings providers and the settings secret |
 | [`Sphere10Framework`](Sphere10Framework.cs) | class | Process framework singleton `Instance` that starts and ends the modules and process tasks, owns its `Disposables`, raises lifecycle events and creates rolling-file application loggers |
 | [`Sphere10FrameworkBuilder`](Sphere10FrameworkBuilder.cs) | class | Fluent framework startup: `AddModule`, `AddServices`, `UseAssemblyInfo`, `WithProductInformation`, `WithOptions`, `RegisterModules` and `Start` with an owned or external service provider |
 | [`Sphere10FrameworkOptions`](Sphere10FrameworkOptions.cs) | enum | Framework option flags: `Default` or `EnsureSystemDataDirGloballyAccessible` |
@@ -80,6 +81,8 @@ block.DefaultScreenDefinition = users;
 // await host.OpenScreenAsync(block, users);
 
 public sealed class WorkspaceBlock : ApplicationBlockBase {
+	// Offered to every host; return a decision from the host's services to restrict it.
+	protected override bool DetermineAvailability(IServiceProvider services) => true;
 }
 
 public sealed class UsersScreen : IApplicationScreen {
@@ -299,6 +302,8 @@ The generic screen-host interfaces provide neutral property and method projectio
 
 `SelectBlockAsync(block)` browses its navigation without leaving the current screen. `ActivateBlockAsync(block)` opens its configured default; `ActivateScreenAsync(block, type)` and the screen-menu overload resolve type policy before creating or selecting a screen. `OpenScreenAsync(block, definition)` accepts a canonical definition owned by that block. `AvailableBlocks` retains startup definitions while `Blocks` reflects registration. Removing a block preflights its owned screens, including permanent screens, before updating membership. Registering a known block restores its definitions and permanent screens after the current placeholder's leave guard permits the transition.
 
+A block can decline a host. The host asks `IApplicationBlock.CheckAvailability(IServiceProvider)`, which returns true by default. `ApplicationBlockBase` implements it as a template: `CheckAvailability` rejects a null provider and calls the protected abstract `DetermineAvailability(IServiceProvider)`, which every concrete block implements (an always-available block returns true). Delegates belong only to the platform `ActionApplicationBlock` types, which take the decision in their constructor, and the block builders' `AvailableWhen(services => ...)` builds such a block (or the platform's own subclass) rather than assigning a predicate into a base. `ApplicationScreenHost<TBlock, TScreen>` asks each block once, with the provider of the host being built, before it copies, validates or registers the block, and it remembers the answer for its lifetime. A block that declined never enters `AvailableBlocks` or `Blocks`. It therefore has no screens, opens no permanent screens and takes no part in the startup choice, and `RegisterBlockAsync` rejects it. A predicate that throws fails host construction. Blazor decides for each circuit from that circuit's scoped services, and WinForms decides once with the application's provider. Availability is presentation only. It hides navigation and authorizes nothing, so the application's services must still check every operation behind the block. See the [Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md#offering-a-block-to-some-users-only) and [WinForms](../Sphere10.Framework.Windows.Forms/README.md#leaving-a-block-out-of-an-application) guides for examples, and the [availability tests](../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationBlockAvailabilityTests.cs) for the host contract.
+
 On `IMultiApplicationScreenHost`, `Screens` includes hidden singletons and `OpenScreens` contains normal screens in presentation order. An empty placeholder has no tab. `SelectedBlock` identifies the browsed navigation block; `ActiveBlock` identifies the active screen's owner, falling back to that selected block when no screen is active. Explicit screen selection restores its owner's navigation. Dirty-state notifications preserve a separately browsed block.
 
 Command owners activate `Menus` / `ToolBarItems` once through protected template hooks and return membership snapshots. Configure command membership before activation. Native shells rebuild views from the host form and active plugin/block/screen, using their existing merge controls; mutable captions and checked/enabled state remain on the original commands. Detached native windows have a local active-screen adapter that delegates navigation and lifetime to the root host.
@@ -351,7 +356,7 @@ The fluent methods live in this library. WinForms and Blazor inherit the same co
 |---|---|
 | `ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>` | Application title, existing plugins, `AddPlugin(builder => ...)`, deferred application callbacks and a terminal `Build`. The platform registers or creates its host without the base resolving services. |
 | `ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>` | Plugin name, service callbacks, `AddInitializer<T>()`, `AddFinalizer<T>()`, existing blocks and `AddBlock(builder => ...)`. |
-| `ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>` | Block metadata, default screen policy, existing menus and `AddMenu(builder => ...)`. |
+| `ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>` | Block metadata, availability through `AvailableWhen`, default screen policy, existing menus and `AddMenu(builder => ...)`. |
 | `ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu>` | Menu metadata, existing items and `AddItem(builder => ...)`. |
 | `ApplicationMenuItemBuilderBase<TSelf>` | Command presentation, actions and references to independently registered screens. Platform factories reject unsupported item kinds. |
 | `WizardBuilderBase<TSelf, TModel, TStep, TWizard>` | Fluent wizard setup, reset, ordered steps, cancellation, callbacks and build validation. |

@@ -50,6 +50,15 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		if (!serviceCollection.HasImplementationFor<IWebsiteLauncher>())
 			serviceCollection.AddTransient<IWebsiteLauncher, StandardWebsiteLauncher>();
 
+		// An application without a release server never finds an update; its own adapter takes precedence.
+		if (!serviceCollection.HasImplementationFor<IProductUpdateService>())
+			serviceCollection.AddTransient<IProductUpdateService, NoOpProductUpdateService>();
+
+		// The release server's updater checks through that service. A platform registers the updater that can install, and a
+		// distribution's module (the Windows Store's) replaces it, before this module runs.
+		if (!serviceCollection.HasImplementationFor<ProductUpdaterBase>())
+			serviceCollection.AddSingleton<ProductUpdaterBase>(provider => new ReleaseServerProductUpdater(provider.GetRequiredService<IProductUpdateService>(), provider.GetService<ILogger>() ?? SystemLog.Logger));
+
 		serviceCollection.AddTransient<ITokenResolver, ApplicationTokenResolver>();
 		serviceCollection.AddTransient<ITokenResolver, ProductInformationTokenResolver>();
 		serviceCollection.AddTransient<ITokenResolver, ProductUsageInformationTokenResolver>();
