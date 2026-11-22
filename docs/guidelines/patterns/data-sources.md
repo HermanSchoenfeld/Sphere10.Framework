@@ -241,6 +241,126 @@ contract is implemented. Keep user preferences in their typed settings owner and
 accepted values to sources; Framework data sources do not load application settings
 or own UI controls.
 
+## Hierarchical data sources
+
+[`IHierarchicalDataSource<TNode, TEntity>`](../../../src/Sphere10.Framework/DataSource/IHierarchicalDataSource.cs)
+extends the sibling-page source with relationships and payload resolution. Rows,
+selection and CRUD still use `TNode`. `GetEntity` synchronously returns its
+`TEntity` payload. The one-parameter interface exposes an object payload bridge so
+controls can detect hierarchy without reflective generic dispatch. Node and payload
+types can be the same when existing domain objects already represent the rows.
+
+`HasChildren` describes topology without fetching a payload. `GetChildren` and
+`GetChildrenAsync` return another hierarchical source of sibling nodes, including
+an empty source when no children exist. `GetChildrenAsync` accepts a cancellation
+token for child acquisition. Each child view belongs to the caller, which releases
+it through `IAsyncDisposable` or `IDisposable` when implemented. A view borrows any
+shared acquisition source and does not create a poller for each expanded row.
+
+`GetNodeKey` supplies a non-null stable identity that survives replacement of the
+row object. `GetChildQueryKey` separately identifies which child query results remain
+compatible with the accepted parent. Change it when an earlier pending result must
+no longer be accepted, even when the node key remains the same. Each child query
+still uses its initiating parent row's captured data rather than mixing it with a
+later publication. A live source can retain the key for compatible counter updates,
+allowing pending work to finish before a queued refresh catches up. Changing the key
+on every read can starve those pending queries. Consumers use node keys
+along the current ancestry path to stop cycles while allowing a shared child under
+several parents. Resolving a lazy payload must never be needed to determine these keys.
+
+[`HierarchicalDataSourceBase<TNode, TEntity>`](../../../src/Sphere10.Framework/DataSource/HierarchicalDataSourceBase.cs)
+is the feature decorator for a borrowed source. Override the relationship, identity
+and synchronous entity access, plus both forms of child query, while the existing
+source retains query, CRUD and notification behavior. Its default child-query key is the node key.
+Override it when changed data or query parameters make older results incompatible.
+
+### Graph storage and lazy payloads
+
+[`GraphDataSourceBase<TNode, TEntity>`](../../../src/Sphere10.Framework/DataSource/GraphDataSourceBase.cs)
+composes hierarchy with read-only array storage. It captures the complete reachable
+graph topology through `BuildGraph` without resolving payloads. Cycles, shared nodes
+and repeated edges remain present. Subsequent changes to a node's `Connections` do
+not alter the captured child views. Payload objects retain their existing ownership
+and mutability. Publish a fresh source to replace graph data.
+
+Use `ActionGraphDataSource<TEntity>` over `GraphNode<TEntity>` for eager payloads,
+or `ActionFutureGraphDataSource<TEntity>` over `GraphNode<IFuture<TEntity>>` for
+lazy payloads. Both require an explicit stable key selector. Derive the base for
+other node types or payload acquisition. Graph sources advertise read-only query
+capabilities and do not implement mutations or own payload resources.
+
+### Keyed hierarchy over a flat source
+
+[`KeyedHierarchyDataSource<T>`](../../../src/Sphere10.Framework/DataSource/KeyedHierarchyDataSource.cs)
+shows an existing flat inventory as a drill-down by each row's key and parent key,
+with a `Flatten` switch that reads the same rows as a flat list. It decorates the
+borrowed source, so CRUD, counts and change notifications reach it unchanged. A
+row whose parent key is null or names no row is a root, and a loop of parents is
+broken at its first row. A tree read pages the roots only, captures the whole
+matching result once and serves child views from that capture, so its child-query
+keys change with every read. A search keeps each match and the rows above it. The
+optional `createParent` factory makes rows for parents that are not in the source
+(a folder for tasks, a device for sensors). A made row's key must equal the parent
+key it was made for. It never appears in the flat list, and `IsCreatedParent`
+identifies it.
+
+```csharp
+var windows = new KeyedHierarchyDataSource<WindowRow>(inventory, row => row.Handle, row => row.OwnerHandle);
+var roots = await windows.ReadRangeAsync(null, 100, 0, null, SortDirection.None);
+windows.Flatten = true; // the same rows, flat
+```
+
+```csharp
+var node = new GraphNode<IFuture<string>>(
+	new LazyLoad<string>(() => "Deferred folder caption"));
+var keys = new Dictionary<GraphNode<IFuture<string>>, string> { [node] = "folder-a" };
+var folders = new ActionFutureGraphDataSource<string>(new[] { node }, item => keys[item]);
+
+// Topology and keys do not resolve the future. The page read resolves its returned payload.
+var key = folders.GetNodeKey(node);
+var page = await folders.ReadRangeAsync(null, 50, 0, null, SortDirection.None);
+var caption = folders.GetEntity(node);
+```
+
+Natural graph reads resolve only the returned page's payloads before returning its
+nodes. Search and sort operate on payload properties and can resolve other siblings.
+Property-based search and sort use public payload-property metadata. Trimmed and
+Native AOT callers must preserve those properties on their concrete payload types,
+just as for `Tools.DataSources.Query` over ordinary rows.
+`IFuture` retains its own caching, concurrency and failure behavior. A graph page read
+does not add a persistent payload cache. Use a cached or explicitly assigned future
+when a UI column reads `Value`. `AlwaysLoad` and projections over uncached futures
+can fetch again on that UI access. `LazyLoad` is not synchronized, so callers must
+choose a suitable future when resolutions can overlap. The asynchronous graph
+page reads run synchronous resolution on a worker. Direct `GetEntity` calls run
+on the caller's thread, like accessing the node's value. Truly asynchronous remote
+child acquisition belongs in `GetChildrenAsync`.
+Graph child-query keys include the captured graph identity so equal node keys in a
+replacement graph invalidate earlier expanded views.
+
+### Composition and presentation
+
+Existing `DataSourceDecorator`, polling, refreshable and `ProjectedDataSource`
+types do not automatically forward the hierarchy interface. Expose hierarchy on
+the outer composition explicitly, retaining the parent row's accepted data when
+creating a child view. A flat source must not advertise hierarchy merely because
+it passes through a general decorator.
+
+`Tools.DataSources.AsObjects(source)` preserves hierarchy while boxing node rows.
+For a hierarchical source it returns `HierarchicalDataSourceAdapter<TNode>`, whose
+`Source` property provides borrowed access to source-specific metadata. Its root
+adapter borrows the supplied source, and returned child adapters own their child
+views. Flat sources receive an ordinary projection.
+
+The `Tools.DataSources.Query(source, getEntity, ...)` overload searches and sorts
+payload properties while returning the original nodes, including separate nodes
+whose payloads compare equal. Natural paging does not call its payload selector.
+Presentation factories and templates are documented with
+[VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/README.md) and
+[Blazor grids](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Grids/README.md).
+Keep child acquisition in the source and use presentation callbacks to choose the
+detail control or fragment.
+
 ## Debugging foreground-thread data work
 
 Set `Debug.MainThread = Thread.CurrentThread` once in the application's entry

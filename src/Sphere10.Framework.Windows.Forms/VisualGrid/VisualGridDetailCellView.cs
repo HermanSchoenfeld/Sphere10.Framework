@@ -11,7 +11,11 @@ using Sphere10.Framework.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Borrowed single-line cell geometry with a small expansion gutter; no font or image handles are cloned.</summary>
+/// <summary>Draws the expansion indicator and hierarchy indentation beside a cell's existing content.</summary>
+/// <remarks>
+/// The detail controller caches views by the original cell view, expansion state and gutter geometry.
+/// Formatting is copied from the original view, whose font and drawing resources remain borrowed.
+/// </remarks>
 internal sealed class VisualGridDetailCellView : SourceGrid.Cells.Views.Cell {
 	private readonly bool _expandable;
 	private readonly bool _expanded;

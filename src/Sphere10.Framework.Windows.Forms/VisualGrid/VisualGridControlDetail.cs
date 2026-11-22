@@ -13,11 +13,15 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Adapts an arbitrary control and optional owned resources to the shared row-detail lifetime.</summary>
-public sealed class VisualGridControlDetail : VisualGridDetail {
+/// <summary>Displays a custom row-detail control and updates it from each prepared context.</summary>
+/// <remarks>
+/// Return this adapter from <see cref="VisualGrid.CreateDetail"/> for an image, editor or other custom panel.
+/// Its optional apply callback runs on the UI thread with the control and prepared context. The control and any supplied
+/// resources are disposed when the detail closes, while the base adapter manages the applied context's lifetime.
+/// </remarks>
+public sealed class VisualGridControlDetail : VisualGridDetailBase {
 	private readonly Action<Control, object> _apply;
 	private readonly IDisposable[] _resources;
-	private bool _resourcesReleased;
 
 	public VisualGridControlDetail(Control content, Action<Control, object> apply = null, params IDisposable[] resources)
 		: base(content) {
@@ -25,11 +29,8 @@ public sealed class VisualGridControlDetail : VisualGridDetail {
 		_resources = resources ?? Array.Empty<IDisposable>();
 	}
 
-	public override void Dispose() {
-		base.Dispose();
-		if (_resourcesReleased)
-			return;
-		_resourcesReleased = true;
+	protected override void DisposeInternal() {
+		base.DisposeInternal();
 		foreach (var resource in _resources)
 			resource?.Dispose();
 	}

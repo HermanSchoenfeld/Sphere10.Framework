@@ -123,6 +123,51 @@ public class BlazorGridControllerTests {
 		await Assert.ThatAsync(async () => await controller.RefreshAsync(), Throws.TypeOf<ObjectDisposedException>());
 	}
 
+	[TestCase("success")]
+	[TestCase("error")]
+	[TestCase("cancel")]
+	public async Task AsyncDisposalDrainsOutstandingReadWithoutOwningTheSource(string outcome) {
+		var delayed = new TaskCompletionSource<DataSourceItems<Row>>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var source = new ProbeSource { Read = _ => delayed.Task };
+		var controller = CreateController();
+		var binding = controller.BindAsync(source, DataSourceCapabilities.Default, 10);
+		var disposal = controller.DisposeAsync().AsTask();
+		Assert.That(disposal.IsCompleted, Is.False);
+		if (outcome == "error")
+			delayed.SetException(new InvalidOperationException("Read failed after disposal began"));
+		else if (outcome == "cancel")
+			delayed.SetCanceled();
+		else
+			delayed.SetResult(new DataSourceItems<Row> { Items = new[] { new Row { Name = "Late" } }, TotalCount = 1 });
+		await Task.WhenAll(binding, disposal).WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.That(source.ActiveReads, Is.Zero);
+		Assert.That(source.Disposed, Is.False);
+		Assert.That(controller.Items, Is.Empty);
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task AsyncDisposalDrainsAnAdmittedWrite(bool fail) {
+		var row = new Row { Id = 1, Name = "Before" };
+		var delayed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var source = new ProbeSource(row) { UpdateHandler = _ => delayed.Task };
+		var controller = CreateController();
+		await controller.BindAsync(source, DataSourceCapabilities.Default, 10);
+		controller.BeginEdit(row);
+		controller.SetEditValue(controller.Columns[0], "After");
+		var saving = controller.SaveAsync();
+		Assert.That(source.Updated, Is.EqualTo(1));
+		var disposal = controller.DisposeAsync().AsTask();
+		Assert.That(disposal.IsCompleted, Is.False);
+		if (fail)
+			delayed.SetException(new InvalidOperationException("Write failed after disposal began"));
+		else
+			delayed.SetResult();
+		await Task.WhenAll(saving, disposal).WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.That(source.Disposed, Is.False);
+		Assert.That(controller.Items, Is.Empty);
+	}
+
 	[Test]
 	public async Task FailedValidationRestoresTheEntityAndKeepsTheDraftForRetry() {
 		var originalReference = new object();

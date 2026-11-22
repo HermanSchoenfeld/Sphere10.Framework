@@ -19,6 +19,16 @@ namespace Tools;
 
 /// <summary>Shared data-source algorithms and one-shot acquisition helpers.</summary>
 public static class DataSources {
+	/// <summary>Boxes source items while preserving hierarchical relationships when the source supplies them. The returned root view borrows the source.</summary>
+	public static IDataSource<object> AsObjects<T>(IDataSource<T> source) {
+		Guard.ArgumentNotNull(source, nameof(source));
+		if (source is IDataSource<object> objects)
+			return objects;
+		return source is IHierarchicalDataSource<T> hierarchy
+			? new HierarchicalDataSourceAdapter<T>(hierarchy)
+			: new ProjectedDataSource<T, object>(source, item => item, item => (T)item);
+	}
+
 	/// <summary>Reads every row of a source, loading it first when it requires a load.</summary>
 	public static async Task<T[]> ReadAllAsync<T>(IDataSource<T> source, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(source, nameof(source));
@@ -52,8 +62,15 @@ public static class DataSources {
 
 	/// <summary>Queries rows, applying filtering/sorting before clamped paging. Natural extended-list reads copy only the requested range.</summary>
 	public static DataSourceItems<T> Query<T>(IEnumerable<T> source, string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection,
+		Func<object, string> formatValue = null, string defaultSortProperty = null, SortDirection defaultSortDirection = SortDirection.Ascending)
+		=> Query(source, item => item, searchTerm, pageLength, page, sortProperty, sortDirection, formatValue, defaultSortProperty, defaultSortDirection);
+
+	/// <summary>Queries node rows by their payload properties while preserving node identity and duplicate payload occurrences.</summary>
+	/// <remarks>Natural paging does not resolve payloads. Searching or sorting may resolve payloads outside the returned page.</remarks>
+	public static DataSourceItems<T> Query<T, TEntity>(IEnumerable<T> source, Func<T, TEntity> getEntity, string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection,
 		Func<object, string> formatValue = null, string defaultSortProperty = null, SortDirection defaultSortDirection = SortDirection.Ascending) {
 		Guard.ArgumentNotNull(source, nameof(source));
+		Guard.ArgumentNotNull(getEntity, nameof(getEntity));
 		Guard.ArgumentGT(pageLength, 0, nameof(pageLength));
 		Guard.ArgumentGTE(page, 0, nameof(page));
 		if (sortDirection != SortDirection.None && string.IsNullOrEmpty(sortProperty)) {
@@ -69,12 +86,12 @@ public static class DataSources {
 		var format = formatValue ?? (value => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty);
 		IEnumerable<T> query = source;
 		if (!string.IsNullOrWhiteSpace(searchTerm))
-			query = query.Where(row => QueryProperties<T>.Properties.Any(property => (format(ReadProperty(row, property)) ?? string.Empty).Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+			query = query.Where(row => QueryProperties<TEntity>.Properties.Any(property => (format(ReadProperty(getEntity(row), property)) ?? string.Empty).Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
 		if (sortDirection != SortDirection.None && !string.IsNullOrEmpty(sortProperty)) {
 			// A column may sort by a name that is not a data property (a scalar row or a computed column): scalar rows then sort by their own value and other rows keep the source order.
-			var property = QueryProperties<T>.Properties.FirstOrDefault(candidate => string.Equals(candidate.Name, sortProperty, StringComparison.OrdinalIgnoreCase));
+			var property = QueryProperties<TEntity>.Properties.FirstOrDefault(candidate => string.Equals(candidate.Name, sortProperty, StringComparison.OrdinalIgnoreCase));
 			var comparer = Comparer<object>.Create((left, right) => CompareValues(left, right, format));
-			Func<T, object> key = property != null ? row => ReadProperty(row, property) : typeof(IComparable).IsAssignableFrom(typeof(T)) ? row => row : null;
+			Func<T, object> key = property != null ? row => ReadProperty(getEntity(row), property) : typeof(IComparable).IsAssignableFrom(typeof(TEntity)) ? row => getEntity(row) : null;
 			if (key != null)
 				query = sortDirection == SortDirection.Descending ? query.OrderByDescending(key, comparer) : query.OrderBy(key, comparer);
 		}

@@ -15,13 +15,16 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-/// <summary>Exercises the same general owned detail-panel API with recursive tables, an image and an ordinary editor panel.</summary>
+/// <summary>Demonstrates source-owned row hierarchies with nested grids and custom image and editor panels.</summary>
+/// <remarks>
+/// Refresh publishes new sample rows with stable keys. An optional child-query delay demonstrates loading and cancellation,
+/// while retained controls keep their state and nested selections are reported through the root grid.
+/// </remarks>
 public partial class VisualGridDetailsDemo : UserControl {
 	private readonly CancellationTokenSource _lifetime = new();
 	private readonly VisualGridArrayController<Sample> _controller;
-	private readonly VisualGridRowDetails _details;
+	private readonly HierarchySettings _hierarchySettings = new();
 	private int _generation;
-	private int _delay;
 	private bool _started;
 	private Task _work = Task.CompletedTask;
 
@@ -29,28 +32,14 @@ public partial class VisualGridDetailsDemo : UserControl {
 		InitializeComponent();
 		if (Tools.Runtime.IsDesignMode)
 			return;
-		_details = new VisualGridRowDetails {
-			Identity = row => ((Sample)row).Id,
-			HasDetails = row => ((Sample)row).Depth < 3,
-			PrepareAsync = async (row, token) => {
-				await Task.Delay(Volatile.Read(ref _delay), token).ConfigureAwait(false);
-				var sample = (Sample)row;
-				if (sample.Kind != 0)
-					return sample;
-				return Enumerable.Range(1, 4).Select(index => new Sample(sample.Id * 10 + index,
-					$"Child {sample.Id}.{index}", 0, sample.Depth + 1, sample.Generation)).ToArray();
-			},
-			Create = CreateDetails,
-			ShareParentColumns = true,
-			IndentColumnKey = "Item",
-			Height = 240, FitHeightToChildRows = true, MaximumDepth = 6, MaximumExpandedDetails = 12, MaximumRememberedDetails = 32
-		};
-		_grid.RowDetails = _details;
+		ConfigureGrid(_grid);
 		_grid.GridBindings = Columns();
-		_controller = new VisualGridArrayController<Sample>(_grid, row => row.Id, token => Task.Run(() => {
+		var store = new ArrayDataSource<Sample>();
+		var hierarchy = new SampleHierarchySource(store, _hierarchySettings);
+		_controller = new VisualGridArrayController<Sample>(_grid, store, row => row.Id, token => Task.Run(() => {
 			var generation = Interlocked.Increment(ref _generation);
 			return new[] { new Sample(1, "Recursive child tables", 0, 0, generation), new Sample(2, "Image and descriptive panel", 1, 0, generation), new Sample(3, "Editable custom panel", 2, 0, generation) };
-		}, token));
+		}, token), viewSource: hierarchy);
 		_controller.VisibleSelectionIdentity = row => row.Id;
 		_grid.EntitySelected += (_, row) => _status.Text = $"Selected {row} — child selections flow to the root.";
 		_grid.RowDetailExpansionRejected += (_, _, reason) => _status.Text = reason;
@@ -66,17 +55,32 @@ public partial class VisualGridDetailsDemo : UserControl {
 		await RefreshAsync();
 	}
 
-	private VisualGridDetail CreateDetails(object entity, object prepared) {
-		var sample = (Sample)entity;
+	private void ConfigureGrid(VisualGrid grid) {
+		grid.CreateDetail = CreateDetails;
+		grid.HasDetail = row => ((Sample)row).Kind != 0;
+		grid.ShareDetailColumns = true;
+		grid.DetailIndentColumnKey = "Item";
+		grid.DetailHeight = 240;
+		grid.FitDetailHeightToRows = true;
+		grid.MaximumDetailDepth = 6;
+		grid.MaximumExpandedDetails = 12;
+		grid.MaximumRememberedDetails = 32;
+	}
+
+	private VisualGridDetailBase CreateDetails(VisualGridDetailContext context) {
+		var sample = (Sample)context.Entity;
 		if (sample.Kind != 0)
-			return new VisualGridControlDetail(new VisualGridDetailSamplePanel(sample.Kind == 1),
-				(control, value) => ((VisualGridDetailSamplePanel)control).SetContent(((Sample)value).Name, ((Sample)value).Generation));
+			return new VisualGridControlDetail(new VisualGridDetailSamplePanel(sample.Kind == 1), (control, value) => {
+				var entity = (Sample)((VisualGridDetailContext)value).Entity;
+				((VisualGridDetailSamplePanel)control).SetContent(entity.Name, entity.Generation);
+			});
 		var child = new VisualGrid {
-			RowDetails = _details, HeaderVisible = false, ColumnHeadersVisible = false,
+			HeaderVisible = false, ColumnHeadersVisible = false,
 			FooterVisible = false, PageMode = VisualGridPageMode.Single, SuppressLoadingIndicator = true,
 			PrepareReadOnlyCellsInBackground = true, AutoSizeRowsOnRefresh = false
 		};
-		return new VisualGridArrayDetail<Sample>(child, row => row.Id);
+		ConfigureGrid(child);
+		return new VisualGridDataSourceDetail(child);
 	}
 
 	private static IVisualGridColumn[] Columns() {
@@ -99,7 +103,7 @@ public partial class VisualGridDetailsDemo : UserControl {
 	private async void RefreshClick(object sender, EventArgs args) => await RefreshAsync();
 
 	private void OptionsChanged(object sender, EventArgs args) {
-		Volatile.Write(ref _delay, _delayCheck.Checked ? 800 : 0);
+		Volatile.Write(ref _hierarchySettings.Delay, _delayCheck.Checked ? 800 : 0);
 		_grid.HeaderVisible = _headerCheck.Checked;
 		_grid.ColumnHeadersVisible = _columnsCheck.Checked;
 		_grid.FooterVisible = _footerCheck.Checked;
@@ -107,7 +111,41 @@ public partial class VisualGridDetailsDemo : UserControl {
 
 	#region Inner Types
 
+	/// <summary>Carries a demo row's stable identity, panel kind, depth and refresh generation.</summary>
 	private sealed record Sample(int Id, string Name, int Kind, int Depth, int Generation);
+
+	/// <summary>Shares the simulated child-query delay across the demo's root and child sources.</summary>
+	private sealed class HierarchySettings {
+		public int Delay;
+	}
+
+	/// <summary>Generates the demo's child rows and identifies each child query by row and refresh generation.</summary>
+	/// <remarks>Decorates the accepted row store and shares the delay settings with each returned child view.</remarks>
+	private sealed class SampleHierarchySource : HierarchicalDataSourceBase<Sample, Sample> {
+		private readonly HierarchySettings _settings;
+
+		public SampleHierarchySource(IDataSource<Sample> source, HierarchySettings settings)
+			: base(source) => _settings = settings;
+
+		public override object GetNodeKey(Sample node) => node.Id;
+
+		public override object GetChildQueryKey(Sample node) => (node.Id, node.Generation);
+
+		public override bool HasChildren(Sample node) => node.Kind == 0 && node.Depth < 3;
+
+		public override Sample GetEntity(Sample node) => node;
+
+		public override IHierarchicalDataSource<Sample> GetChildren(Sample node)
+			=> Task.ExecuteSyncOverAsync(() => GetChildrenAsync(node));
+
+		public override async Task<IHierarchicalDataSource<Sample>> GetChildrenAsync(Sample node, CancellationToken cancellationToken = default) {
+			await Task.Delay(Volatile.Read(ref _settings.Delay), cancellationToken).ConfigureAwait(false);
+			var rows = Enumerable.Range(1, 4).Select(index => new Sample(node.Id * 10 + index,
+				$"Child {node.Id}.{index}", 0, node.Depth + 1, node.Generation)).ToArray();
+			return new SampleHierarchySource(new ArrayDataSource<Sample>(rows), _settings);
+		}
+	}
+
 
 	#endregion
 }

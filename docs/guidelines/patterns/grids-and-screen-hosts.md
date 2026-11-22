@@ -115,115 +115,150 @@ Actual bitmap resizing continues to use Drawing's existing API.
   cover controller/renderer contracts and opt-in real-browser layout, resize,
   persistence and interaction checks.
 
-### General native row-detail panels and recursive tables
+### Hierarchical sources and detail controls
 
-WinForms `VisualGrid.RowDetails` opts into an owned control **below** an entity
-row. A detail may be an ordinary designer-authored `UserControl` with images,
-labels and editors, or a nested `VisualGrid`. `VisualGridControlDetail` adapts
-the former; `VisualGridArrayDetail<T>` publishes prepared rows directly to a
-passive source and uses the ordinary `VisualGridDataSourceController<T>` query
-path for the latter. A screen must not access
-SourceGrid directly or construct another polling service just to show children.
+Both grids detect `IHierarchicalDataSource<TNode>` on the bound source. Nodes
+remain the rows used for columns, selection and CRUD; the optional `TEntity`
+parameter exposes a separately resolved payload. The source supplies stable node
+keys, child-query keys, availability, entity resolution and child sources. The
+grid owns expansion and calls the client's presentation callback after resolving
+the entity and child source. A missing callback uses an ordinary nested grid.
 
-`Identity`, `QueryIdentity`, `HasDetails` and `PrepareAsync` read detached model
-values on a worker. `Create` and detail publication run on the owning UI
-dispatcher. The factory returns a fresh unparented control whose ownership it
-transfers to the detail; a disposable prepared model is likewise owned and
-released when replaced, rejected, collapsed or evicted. Do not return controls
-from worker preparation. Keep source collection and model sorting out of the
-native factory. `QueryIdentity` identifies relation/filter parameters rather
-than a constantly changing counter timestamp, so a slow detail read is not
-starved by repeated live samples.
+| Behavior | WinForms | Blazor |
+|---|---|---|
+| Client presentation | `CreateDetail(VisualGridDetailContext)` returns a fresh owned detail control. | `DetailTemplate` renders `BlazorGridDetailContext<TNode>`. |
+| Resolved context | `Node`, `Entity`, `ChildDataSource` | Same values with a typed node and child source. |
+| Enable or suppress details | `DetailsEnabled` | `DetailsEnabled` |
+| Ordinary custom panels | `HasDetail`, `DetailIdentity` and `CreateDetail` | `HasDetail`, `DetailIdentity` and `DetailTemplate` |
+| Expansion API | `SetRowExpandedAsync`, `IsRowExpanded` | `ExpandDetailAsync`, `CollapseDetailAsync`, `IsDetailExpanded` |
+| Bounds | `DetailHeight`, `MaximumDetailDepth`, `MaximumExpandedDetails`, `MaximumRememberedDetails` | `DetailHeight`, `MaximumDetailDepth`, `MaximumExpandedDetails` |
+| Selection | Selected descendants bubble through the native parent's `SelectedEntity` and events. | Each nested grid retains its own selection and CRUD target. Configure child selection callbacks in a custom template. |
 
-The same descriptor can be assigned recursively. Each root shares a bounded
-expanded-control budget and a bounded value-only preference/selection cache.
-Ancestor identity checks stop cycles; `MaximumDepth` stops deeper expansion.
-Collapsed or paged/filtered-away children cancel work and dispose native
-descendants. Await `DetailsDisposalCompletion` during the owning screen's
-finalization when pending preparation must drain. Surviving keys keep their
-native controls, expansion, selection and widths during refresh and reorder;
-the selected descendant is exposed by the parent's `SelectedEntity` and normal
-selection events. Use verified process identity or another stable schema key,
-never a physical row number or a recycled PID alone.
+`RowDetails`, `VisualGridRowDetails` and the prepared-array detail adapter have
+been replaced. Move their `Identity`, `QueryIdentity`, `HasDetails` and
+`PrepareAsync` relationship logic into a hierarchy source. Move `Create` to the
+grid's presentation callback. A factory chooses the control and its columns; it
+does not fetch children, sort model data or create another acquisition poller.
+For ordinary image or editor panels there is no child query: the callback receives
+the row as its entity and a null child source. On a hierarchical source only a
+custom detail on a leaf has a null child source. A row that was admitted through
+its children and has since lost them receives the source's empty child view.
 
-For example, prepare a typed child array from an already published model and
-create the control only in the UI factory:
+A graph-backed source can use eager entities or `GraphNode<IFuture<TEntity>>`.
+The graph source captures topology at construction, while future payloads resolve
+during reads. Use cached or explicitly supplied futures for UI value getters;
+`IFuture.Value` itself is synchronous and an always-loading future can still do
+work on every access. Truly asynchronous or paged child membership belongs in a
+custom hierarchy source. See the [data-source contract](data-sources.md) for
+query and lifetime rules and the graph helper variants.
+
+To show an existing flat inventory as a drill-down, wrap it in
+[`KeyedHierarchyDataSource<T>`](../../../src/Sphere10.Framework/DataSource/KeyedHierarchyDataSource.cs)
+with each row's key and parent key, and give the screen a switch bound to its
+`Flatten` property. While `Flatten` is set the source reads the rows as a flat
+list, so turn the grid's `DetailsEnabled` off with it. Its optional `createParent`
+factory makes rows for parents that are not in the inventory, such as a folder
+for scheduled tasks or a device for sensors.
+
+For example, this native grid discovers the hierarchy from its source:
 
 ```csharp
-VisualGridRowDetails details = null;
-details = new VisualGridRowDetails {
-	Identity = row => ((Node)row).Key,
-	HasDetails = row => ((Node)row).Children.Length > 0,
-	PrepareAsync = (row, token) => Task.FromResult<object>(((Node)row).Children),
-	Create = (_, _) => {
-		var child = new VisualGrid {
-			GridBindings = columns, RowDetails = details,
-			HeaderVisible = false, ColumnHeadersVisible = false, FooterVisible = false,
-			PageMode = VisualGridPageMode.Single,
-			PrepareReadOnlyCellsInBackground = true, SuppressLoadingIndicator = true
-		};
-		return new VisualGridArrayDetail<Node>(child, row => row.Key);
-	},
-	Height = 240, FitHeightToChildRows = true, MaximumDepth = 8,
-	MaximumExpandedDetails = 16, MaximumRememberedDetails = 64
+var parent = new GraphNode<string>("Parent") {
+	Connections = new[] { new GraphNode<string>("Child") }
 };
-grid.RowDetails = details;
+var source = new ActionGraphDataSource<string>(new[] { parent }, node => node.Entity);
+grid.GridBindings = new IVisualGridColumn[] {
+	new VisualGridColumn<GraphNode<string>> {
+		ColumnName = "Name", PreferenceKey = "Name", DataType = typeof(string),
+		PropertyValue = node => node.Entity, ExpandsToFit = true
+	}
+};
+grid.DetailHeight = 240;
+grid.FitDetailHeightToRows = true;
+grid.ShareDetailColumns = true;
+await grid.SetDataSource(source);
+await grid.RefreshGrid();
 ```
 
-Give child column schemas stable `PreferenceKey` values to retain widths. For
-arbitrary panels, return `VisualGridControlDetail` with the designer-authored
-control and a cheap UI publication callback instead. `VisualGridArrayDetail`
-also accepts an optional `beforePublish` callback for cheap UI configuration
-over the prepared array; it must not perform collection or model sorting.
-If preparation returns a DTO containing rows and capture metadata, use its
-optional `readPreparedRows` adapter. That adapter runs on the UI dispatcher and
-returns the typed array; it can also publish cheap metadata such as a partial
-capture warning. Keep that metadata with the prepared result rather than
-looking it up in an independently evictable cache during publication.
+To customize the child control, set the callback before binding:
 
-For a hierarchy whose child rows have the same schema as their parent, set
-`ShareParentColumns = true` on the descriptor and omit a separate child column
-configuration. The adapter assigns the child's `ColumnLayoutSource` to its
-parent. Definitions, displayed order, visibility and resolved widths follow
-that source, including manual widths and stretch resizing. Child query,
-sorting, paging and selection remain independently controlled by the caller.
-Column preferences belong to the parent; do not create another child settings
-section for the same layout. Source subscriptions detach when either control
-is disposed, and source cycles are rejected.
+```csharp
+grid.CreateDetail = context => {
+	var child = new VisualGrid {
+		GridBindings = grid.GridBindings,
+		CreateDetail = grid.CreateDetail,
+		ShareDetailColumns = grid.ShareDetailColumns,
+		FitDetailHeightToRows = grid.FitDetailHeightToRows,
+		DetailHeight = grid.DetailHeight,
+		HeaderVisible = false, ColumnHeadersVisible = false, FooterVisible = false,
+		PageMode = VisualGridPageMode.Single
+	};
+	return new VisualGridDataSourceDetail(child);
+};
+```
 
-Shared recursive tables start at the same native column origin as the parent.
-Their hierarchy gutter and indentation are drawn inside a column, so values
-stay aligned with the parent headers even when a user fixes the first column's
-width. Set `IndentColumnKey` to that column's stable `PreferenceKey` when a
-narrow leading icon column should remain untouched. If the selected column is
-hidden, the gutter uses the first displayed column. Ordinary image/editor
-panels retain their separate indented host. Other ordinary controls can opt
-into the same column mechanism directly with `ColumnLayoutSource`.
+`VisualGridDataSourceDetail` binds the supplied child source through the grid's
+ordinary query pipeline. Its optional `beforePublish` callback configures cheap
+UI state from `VisualGridDetailContext`, including capture provenance retained by
+the child source. It does not convert worker-prepared arrays into a second store.
+`VisualGridControlDetail` hosts an arbitrary designer-authored control instead.
+Native factories and publication run on the UI thread. Preparation resolves
+the payload synchronously through `GetEntity` on a worker and awaits
+`GetChildrenAsync` for the child query. Identity and availability callbacks must
+also be safe on that worker.
 
-Three flags are independent: `HeaderVisible` controls title/search/CRUD chrome,
-`ColumnHeadersVisible` controls the native column-heading row, and
-`FooterVisible` controls totals and page controls. A compact child table can
-hide all three. Explicitly use `VisualGridPageMode.Single` for headerless,
-footerless children so every child remains reachable by vertical scrolling;
-hiding a footer does not implicitly change source paging. The fixed detail
-height scales with DPI and the child owns its scrolling. `FitHeightToChildRows`
-optionally shrinks table details to already measured committed rows, up to that
-height cap. Descendant expansion/collapse propagates native geometry without
-another source query; arbitrary panels retain their explicit height. Parent Auto Paged
-estimates count entity rows, excluding detail height, so expanding a row cannot
-immediately page that same entity away.
+The bound root source is borrowed. Each returned child view is owned by the
+expansion and released on collapse, eviction, replacement or grid disposal,
+including a late completion that ignored cancellation. A view is released only
+after the nested grid's page read and child queries against it have drained. An
+update that fails or is cancelled leaves the detail on the view it applied last
+and releases only the rejected one. Child views borrow their
+underlying acquisition owner. Stable node keys retain expansion through refresh;
+a changed child-query key invalidates a pending result. Keys must be non-null
+and unique within a sibling page. Shared nodes may appear on separate ancestry
+paths; cycles are stopped on the current path. Repeated edges within one sibling
+page need distinct occurrence nodes and keys. A globally de-duplicated graph
+traversal is not the visual expansion algorithm.
 
-`SetRowCommands` mirrors borrowed toolbar commands into the row context menu,
-including enabled/checked state and nested commands. Native hit testing and
-keyboard menus use the entity-to-physical-row map, so detail spans never become
-fake records. Applications should use this public method rather than infer a
-native row from its index in `VisibleEntities`.
+The native root shares a bounded expansion budget and value-only remembered
+state. Await `DetailsDisposalCompletion` when the owner must join pending native
+cleanup. Surviving controls retain handles and layout during accepted refreshes.
+`ShareDetailColumns` follows the parent's `ColumnLayoutSource`, including resolved
+widths and horizontal scrolling. `DetailIndentColumnKey` chooses the gutter's
+stable column key.
 
-The WinForms Tester **Visual Grid > Expandable Panels And Hierarchy** tab shows
-recursive tables, an image panel, a normal TextBox editor, independent chrome
-flags and delayed preparation. See [SourceGrid composition](../../usage/sourcegrid.md)
-for the native span/link mechanism and its limits. These HWND-specific mechanics
-are not a Blazor API.
+`HeaderVisible`, `ColumnHeadersVisible` and `FooterVisible` are independent native
+flags. Headerless, footerless child tables should explicitly use
+`VisualGridPageMode.Single` so every child remains reachable. `DetailHeight` is
+in 96-DPI logical pixels on WinForms and CSS pixels on Blazor. Native
+`FitDetailHeightToRows`, on by default, sizes an expanded child table to all of
+its rows: the detail pushes the following rows down, expanding or collapsing a
+nested row resizes every ancestor detail, and only the outermost grid scrolls
+vertically. The mouse wheel over a fitted child scrolls that outer grid. A tall
+detail spans row-high physical rows, so the outer grid scrolls through it one
+ordinary row at a time. `DetailHeight` then sizes custom panels, the loading
+surface, and the page that an Auto Paged child fits; a fitted child stops
+growing at 32,000 device pixels, the safe Win32 window height, and scrolls its
+own rows beyond that. Set `FitDetailHeightToRows = false` for a fixed-height
+child table with its own vertical scrollbar. Expansion rows do not increase the
+source's item count or cause Auto Paged to page away the parent. Both platforms
+measure page capacity from source rows only.
+
+A detail grid inherits `PrepareReadOnlyCellsInBackground` from its parent when
+it displays only the parent's own column bindings and no other row style
+provider, because those delegates are already worker-safe.
+
+A Blazor nested grid keeps its row draft when its parent publishes. It adopts the
+replacement child view once the edit is saved or cancelled, and the view under
+edit stays alive until then. After a publication the parent presents its accepted
+rows first; expanded details then reload together rather than one after another.
+
+`SetRowCommands` gives native children the existing borrowed toolbar commands.
+Applications never maintain SourceGrid's physical-row mapping themselves. See
+[SourceGrid composition](../../usage/sourcegrid.md) for the native host mechanism.
+The WinForms Tester **Visual Grid > Expandable Panels And Hierarchy** tab and
+Blazor Tester's Grid demo show source-owned hierarchies and ordinary custom
+panels through their platform callbacks.
 
 ## Application screen hosts
 

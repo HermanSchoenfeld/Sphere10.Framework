@@ -14,10 +14,17 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-/// <summary>Serializes source I/O and keeps editing values separate until an explicit save.</summary>
+/// <summary>Maintains one grid's query, selection and edit buffer and serializes calls to its data source.</summary>
+/// <typeparam name="TItem">The row type queried, selected and edited by this controller.</typeparam>
+/// <remarks>
+/// Each nested grid uses a separate controller. Compatible child-source replacements retain the current rows until a new page succeeds,
+/// keeping those rows paired with the source that returned them. Edits remain buffered until an explicit save.
+/// Asynchronous disposal waits for admitted source calls to finish. The data source remains owned by the caller.
+/// </remarks>
 public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	private readonly SemaphoreSlim _operations = new(1, 1);
 	private IDataSource<TItem> _source;
+	private IDataSource<TItem> _itemsSource;
 	private DataSourceCapabilities _allowedCapabilities;
 	private DataSourceCapabilities _capabilities;
 	private TItem[] _items = Array.Empty<TItem>();
@@ -68,7 +75,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	// A targeted removal retains the current page until the next complete query can load its replacement.
 	public override int TotalPages => UsesPages ? Math.Max(_currentPage + 1, Math.Max(1, (int)(((long)_totalCount + PageSize - 1) / PageSize))) : 1;
 
-	public override DataSourceCapabilities Capabilities => _capabilities;
+	public override DataSourceCapabilities Capabilities => ReferenceEquals(_itemsSource, _source) ? _capabilities
+		: _capabilities & (DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify);
 
 	public override string SearchTerm => _searchTerm;
 
@@ -151,6 +159,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		_sortProperty = null;
 		_sortDirection = SortDirection.None;
 		_items = Array.Empty<TItem>();
+		_itemsSource = source;
 		ClearSelectionCore();
 		InvalidateEdit();
 		if (initialSettings != null)
@@ -488,6 +497,20 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		return deleted;
 	}
 
+	internal IDataSource<TItem> ItemsSource => _itemsSource;
+
+	internal long ViewVersion => _viewVersion;
+
+	// Replaces a compatible hierarchy view while retaining its query, rows and selection until the new read completes.
+	internal Task ReplaceSourceAsync(IDataSource<TItem> source) {
+		EnsureUsable();
+		Guard.ArgumentNotNull(source, nameof(source));
+		ReleaseSourceNotifications();
+		_source = source;
+		InvalidateEdit();
+		return QueueReadAsync(false);
+	}
+
 	protected override void DisposeInternal() {
 		if (_disposed)
 			return;
@@ -497,6 +520,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		Interlocked.Increment(ref _queryVersion);
 		InvalidateEdit();
 		_source = null;
+		_itemsSource = null;
 		_items = Array.Empty<TItem>();
 		_isLoading = false;
 		_isRefreshing = false;
@@ -504,9 +528,11 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		// Outstanding source calls cannot be cancelled; their completions release the gate and are ignored.
 	}
 
-	protected override ValueTask DisposeInternalAsync() {
+	protected override async ValueTask DisposeInternalAsync() {
 		DisposeInternal();
-		return ValueTask.CompletedTask;
+		await _pendingRead;
+		await _operations.WaitAsync();
+		_operations.Release();
 	}
 
 	// Query capabilities are checked again by ReadAsync before the source is called, including the first restored query.
@@ -606,13 +632,26 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
 					return;
 			}
+			var previousHierarchy = _itemsSource as IHierarchicalDataSource<TItem>;
+			var hierarchy = source as IHierarchicalDataSource<TItem>;
+			var transferSelection = _hasSelection && previousHierarchy != null && hierarchy != null && !ReferenceEquals(previousHierarchy, hierarchy);
+			var selectedKey = transferSelection ? previousHierarchy.GetNodeKey(_selectedItem) : null;
 			_items = (result.Items ?? Array.Empty<TItem>()).ToArray();
+			_itemsSource = source;
 			_totalCount = Math.Max(0, result.TotalCount);
 			var actualPages = canPage ? Math.Max(1, (int)(((long)_totalCount + pageSize - 1) / pageSize)) : 1;
 			_currentPage = canPage ? Math.Clamp(result.Page, 0, actualPages - 1) : 0;
 			_hasLoaded = true;
 			_viewVersion++;
-			ReconcileSelection();
+			if (transferSelection) {
+				var selectedIndex = System.Array.FindIndex(_items, item => Equals(hierarchy.GetNodeKey(item), selectedKey));
+				if (selectedIndex >= 0)
+					_selectedItem = _items[selectedIndex];
+				else
+					ClearSelectionCore();
+			} else {
+				ReconcileSelection();
+			}
 		});
 		if (error != null) {
 			if (IsCurrentQuery(version))
@@ -625,7 +664,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	private async Task<bool> RefreshRowsCoreAsync(IEnumerable<TItem> entities) {
 		EnsureNoDraft();
 		Guard.ArgumentNotNull(entities, nameof(entities));
-		if (!HasCapability(DataSourceCapabilities.CanRead) || _source == null)
+		if (!HasCapability(DataSourceCapabilities.CanRead) || _source == null || !ReferenceEquals(_itemsSource, _source))
 			return false;
 		var requested = entities.ToArray();
 		Guard.Argument(requested.All(entity => entity is not null), nameof(entities), "Entities cannot contain null.");
@@ -816,7 +855,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 
 	private bool IsCurrentQuery(long version) => !_disposed && version == _queryVersion;
 
-	private bool HasCapability(DataSourceCapabilities capability) => (_capabilities & capability) == capability;
+	private bool HasCapability(DataSourceCapabilities capability) => (Capabilities & capability) == capability;
 
 	private bool RequireCapability(DataSourceCapabilities capability) {
 		if (_source != null && HasCapability(capability))
@@ -850,6 +889,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 
 	private void ClearVisibleItems() {
 		_items = Array.Empty<TItem>();
+		_itemsSource = _source;
 		ClearSelectionCore();
 	}
 

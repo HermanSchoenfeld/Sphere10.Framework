@@ -10,7 +10,11 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-/// <summary>An ordinary designer-editable control, with no dependency on child tables.</summary>
+/// <summary>Displays a detail title and publication number alongside optional artwork and editable notes.</summary>
+/// <remarks>
+/// The demo hosts this panel through VisualGridControlDetail. Refresh updates the labels while preserving edited notes,
+/// and disposing the panel releases its image.
+/// </remarks>
 public partial class VisualGridDetailSamplePanel : UserControl {
 	public VisualGridDetailSamplePanel() : this(true) {
 	}
