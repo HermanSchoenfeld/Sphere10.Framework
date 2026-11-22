@@ -21,7 +21,7 @@ public class SerializerFactorySerializerTests {
 	/// <summary>Verifies exact registration codes and the next generated code after factory reconstruction.</summary>
 	[Test]
 	public void RegistrationsRoundTripWithExactCodesAndTheNextCode([Values] Endianness endianness) {
-		var original = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(10000);
+		var original = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 10000);
 		var serializer = new SerializerFactorySerializer();
 		var bytes = serializer.SerializeToBytes(original, endianness);
 		Assert.That(bytes.Length, Is.GreaterThan(4096));
@@ -30,14 +30,14 @@ public class SerializerFactorySerializerTests {
 		Assert.That(restored.RegisteredTypes, Is.EquivalentTo(original.RegisteredTypes));
 		foreach (var type in original.RegisteredTypes)
 			Assert.That(restored.FindRegistration(type).TypeCode, Is.EqualTo(original.FindRegistration(type).TypeCode));
-		Assert.That(restored.GenerateTypeCode(), Is.EqualTo(10000));
+		Assert.That(restored.GenerateTypeCode(), Is.EqualTo(SerializerFactory.UserTypeCodeStart + 10000));
 		Assert.That(serializer.SerializeToBytes(restored, endianness), Is.EqualTo(bytes));
 	}
 
 	/// <summary>Verifies factory reconstruction without requiring input length or cursor access.</summary>
 	[Test]
 	public void FactoryCanBeReadFromANonSeekableStream([Values] Endianness endianness) {
-		var original = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(10000);
+		var original = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 10000);
 		var serializer = new SerializerFactorySerializer();
 		var bytes = serializer.SerializeToBytes(original, endianness);
 		using var raw = new MemoryStream(bytes, writable: false);
@@ -97,14 +97,14 @@ public class SerializerFactorySerializerTests {
 	[Test]
 	public void DefaultFactorySerializerRegistrationRoundTripsAUsableFactory([Values] Endianness endianness) {
 		// Exercise the registered value serializer, including its ordinary reference wrapper.
-		var original = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(2100).RegisterAutoBuild<WireItem>();
+		var original = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 2100).RegisterAutoBuild<WireItem>();
 		var serializer = SerializerFactory.Default.GetSerializer<SerializerFactory>();
 		var restored = serializer.DeserializeBytes(serializer.SerializeToBytes(original, endianness), endianness);
 		var payload = original.GetSerializer<WireItem>().SerializeToBytes(new WireItem { First = "default registration", Second = 42 }, endianness);
 		var copy = restored.GetSerializer<WireItem>().DeserializeBytes(payload, endianness);
 		Assert.That(copy.First, Is.EqualTo("default registration"));
 		Assert.That(copy.Second, Is.EqualTo(42));
-		Assert.That(restored.FindRegistration(typeof(WireItem)).TypeCode, Is.EqualTo(2100));
+		Assert.That(restored.FindRegistration(typeof(WireItem)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart + 2100));
 	}
 
 	/// <summary>Verifies dependency-first composite reconstruction preserves constant sizing in either row order.</summary>

@@ -308,6 +308,44 @@ public class BinarySerializerTests {
 	}
 
 	[Test]
+	public void TypeCodeBands_AreAWordForTheFrameworkAWordForUsersAndTheRestOfThirtyTwoBitsForEphemeralTypes() {
+		Assert.That(SerializerFactory.UserTypeCodeStart, Is.EqualTo(65_536));
+		Assert.That(SerializerFactory.EphemeralTypeCodeStart, Is.EqualTo(131_072));
+		Assert.That(SerializerFactory.EphemeralTypeCodeEnd, Is.EqualTo(uint.MaxValue));
+	}
+
+	[Test]
+	public void EphemeralTypes_TakeCodesInTheirOwnBand() {
+		var factory = new SerializerFactory(SerializerFactory.Default).RegisterAutoBuild<Link>();
+		var ephemeral = SerializerFactory.CreateEphemeral(factory);
+		SerializerBuilder.FactoryAssemble(ephemeral, typeof(Trailer), true);
+		Assert.That(ephemeral.FindRegistration(typeof(Trailer)).TypeCode, Is.EqualTo(SerializerFactory.EphemeralTypeCodeStart));
+		Assert.That(factory.FindRegistration(typeof(Link)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart), "The factory itself keeps registering user codes.");
+	}
+
+	[Test]
+	public void APayloadStillReadsAfterItsFactoryRegistersMoreUserTypes() {
+		// A payload's unregistered types took codes right after its factory's own, so the next registered type took a code the payload used and
+		// the payload could no longer be read (22 November 2026).
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		var serializer = new BinarySerializer(factory);
+		var bytes = serializer.SerializeBytesLE(new Holder<Trailer> { Value = new Trailer { Value = 7 }, Tail = 3 });
+		factory.RegisterAutoBuild<Link>();
+		var copy = (Holder<Trailer>)serializer.DeserializeBytesLE(bytes);
+		Assert.That((copy.Value.Value, copy.Tail), Is.EqualTo((7, 3)));
+	}
+
+	[Test]
+	public void RegistrationsCannotReachTheEphemeralBand() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		Assert.That(() => factory.SetMinTypeCode(SerializerFactory.EphemeralTypeCodeStart), Throws.TypeOf<ArgumentOutOfRangeException>());
+		Assert.That(() => factory.SetMinTypeCode(SerializerFactory.UserTypeCodeStart - 1), Throws.TypeOf<ArgumentOutOfRangeException>(), "Below the user band is the Framework's.");
+		Assert.That(() => factory.Register(typeof(Trailer), typeof(TrailerSerializer), SerializerFactory.EphemeralTypeCodeStart), Throws.TypeOf<ArgumentOutOfRangeException>());
+		factory.SetMinTypeCode(SerializerFactory.EphemeralTypeCodeStart - 1).Register(typeof(Trailer), typeof(TrailerSerializer));
+		Assert.That(() => factory.RegisterAutoBuild<Link>(), Throws.InvalidOperationException, "The user band is exhausted before the ephemeral band.");
+	}
+
+	[Test]
 	public void CollectionSerializer_IsResolvedFromTheDefaultFactory() {
 		var serializer = SerializerFactory.Default.GetSerializer<Queue<string>>();
 		var queue = new Queue<string>(new[] { "first", "last" });
@@ -442,6 +480,15 @@ public class BinarySerializerTests {
 
 	public class Trailer {
 		public int Value { get; set; }
+	}
+
+	public sealed class TrailerSerializer : ConstantSizeItemSerializerBase<Trailer> {
+		public TrailerSerializer() : base(sizeof(int), false) {
+		}
+
+		public override void Serialize(Trailer item, EndianBinaryWriter writer, SerializationContext context) => writer.Write(item.Value);
+
+		public override Trailer Deserialize(EndianBinaryReader reader, SerializationContext context) => new() { Value = reader.ReadInt32() };
 	}
 
 	public class QueueOwner {

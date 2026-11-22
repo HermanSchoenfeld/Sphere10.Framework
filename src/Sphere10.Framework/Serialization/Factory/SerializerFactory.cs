@@ -17,14 +17,24 @@ using Sphere10.Framework.ObjectSpaces;
 namespace Sphere10.Framework;
 
 public class SerializerFactory {
-	internal const int PermanentTypeCodeStartDefault = 10; 
+	// Codes 0 - 9 are reserved for special types (0 marks a cyclic reference).
+	internal const int PermanentTypeCodeStartDefault = 10;
 
 	/// <summary>
-	/// The first type code given to a type registered after the defaults. Codes below it are reserved for the Framework's own registrations, so a
-	/// default serializer added later never moves the code of a user type in stored data.
+	/// The first type code given to a type registered after the defaults: user types take the second 16-bit band, 65,536 to 131,071. The first
+	/// band is the Framework's, so a default serializer added later never moves the code of a user type in stored data.
 	/// </summary>
-	public const long UserTypeCodeStart = 100_000;
-	internal const int EphemeralTypeCodeStartDefault = 65536; // Type codes for ephemerally registered types start here. This allows you to update your core serializer registrations over time without affecting previous serialized objects.
+	public const long UserTypeCodeStart = 1L << 16;
+
+	/// <summary>
+	/// The first ephemeral type code. A <see cref="BinarySerializer"/> payload registers the types its factory does not know from here, up to
+	/// <see cref="EphemeralTypeCodeEnd"/>, and stores them with the payload; no permanent registration reaches this band, so registering more user
+	/// types later never takes a code an earlier payload used.
+	/// </summary>
+	public const long EphemeralTypeCodeStart = 1L << 17;
+
+	/// <summary>The last ephemeral type code. Codes stay within 32 bits, so a CVarInt type prefix never exceeds five bytes.</summary>
+	public const long EphemeralTypeCodeEnd = uint.MaxValue;
 
 	private readonly IDictionary<long, Registration> _registrations;
 	private readonly BijectiveDictionary<Type, long> _registrationsByType;
@@ -59,6 +69,11 @@ public class SerializerFactory {
 	internal long MinGeneratedTypeCode { get; set; } = PermanentTypeCodeStartDefault;
 
 	internal long MaxGeneratedTypeCode { get; private set; } = 0;
+
+	// An ephemeral factory registers only in the ephemeral band; any other factory registers below it.
+	private bool IsEphemeral => MinGeneratedTypeCode >= EphemeralTypeCodeStart;
+
+	private long MaximumTypeCode => IsEphemeral ? EphemeralTypeCodeEnd : EphemeralTypeCodeStart - 1;
 
 	#region Registration
 
@@ -188,10 +203,15 @@ public class SerializerFactory {
 		MinGeneratedTypeCode = Math.Max(MinGeneratedTypeCode, factory.MinGeneratedTypeCode);
 	}
 
+	/// <summary>Starts this factory's generated codes at <paramref name="min"/>, which must lie in the user band.</summary>
 	public SerializerFactory SetMinTypeCode(long min) {
+		Guard.ArgumentInRange(min, UserTypeCodeStart, EphemeralTypeCodeStart - 1, nameof(min));
 		MinGeneratedTypeCode = min;
 		return this;
 	}
+
+	/// <summary>A copy of <paramref name="factory"/> that registers the types it meets from <see cref="EphemeralTypeCodeStart"/>.</summary>
+	internal static SerializerFactory CreateEphemeral(SerializerFactory factory) => new(factory) { MinGeneratedTypeCode = EphemeralTypeCodeStart };
 
 	/// <summary>Registers an enum and its nullable form with reconstructible enum-serializer construction.</summary>
 	public SerializerFactory RegisterEnum<TEnum>(long? typeCode = null) where TEnum : struct, Enum 
@@ -268,6 +288,7 @@ public class SerializerFactory {
 
 		//Guard.Against(dataType == typeof(object), $"Cannot register serializer for {nameof(Object)} type");
 		Guard.Ensure(!_readOnly, "Factory is read-only and cannot be changed");
+		Guard.ArgumentInRange(typeCode, 0, MaximumTypeCode, nameof(typeCode));
 
 		if (dataType == typeof(Array)) {
 			// Special registration for array serialization
@@ -334,7 +355,11 @@ public class SerializerFactory {
 		_fromSerializerHierarchyCache.Purge();
 	}
 
-	internal long GenerateTypeCode() => _registrations.Count == 0 ? MinGeneratedTypeCode : Math.Max(MaxGeneratedTypeCode + 1, MinGeneratedTypeCode);
+	internal long GenerateTypeCode() {
+		var code = _registrations.Count == 0 ? MinGeneratedTypeCode : Math.Max(MaxGeneratedTypeCode + 1, MinGeneratedTypeCode);
+		Guard.Ensure(code <= MaximumTypeCode, IsEphemeral ? "The ephemeral type-code band is exhausted" : "Registrations have reached the ephemeral type-code band");
+		return code;
+	}
 
 	private static IItemSerializer CreateSerializerInstance(Registration registration, Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");

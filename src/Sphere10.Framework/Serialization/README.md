@@ -39,7 +39,15 @@ These .NET types round-trip on their own, as members and inside each other.
 
 Collections are rebuilt from their items. A queue keeps its dequeue order and a stack keeps its pop order, while a `ConcurrentBag<T>` has no order to keep. A custom comparer is not saved, so a dictionary, set or sorted collection comes back with the default comparer for its key type. A `ReadOnlyCollection<T>` comes back as a view over its own copy of the items. A class that derives from one of these collections is assembled from its members like any other class, which does not save its items. Multi-dimensional arrays such as `int[,]`, `char` values, delegates, streams and immutable types without public read-write members, such as `DateOnly`, `Uri` and `Version`, are not supported. A `DateTimeOffset` within a day of `DateTimeOffset.MinValue` or `MaxValue` may not come back exactly.
 
-Every type in the table is a registration of `SerializerFactory.Default`, so `SerializerFactory.Default.GetSerializer<Queue<int>>()` resolves directly. Type codes 0 to 99,999 are reserved for these built-in registrations, and the first type you register in a factory copied from `Default` takes `SerializerFactory.UserTypeCodeStart` (100,000). A serializer added to the defaults later therefore never moves the code of one of your types in stored data. Data written before this reservation holds user type codes from 80 and cannot be read by later builds.
+Every type in the table is a registration of `SerializerFactory.Default`, so `SerializerFactory.Default.GetSerializer<Queue<int>>()` resolves directly. Type codes fall into three bands, all within 32 bits, so a CVarInt type prefix never exceeds five bytes:
+
+| Band | Codes | Used by |
+|---|---|---|
+| Framework | 0 to 65,535 | The built-in registrations of `Default`; 0 to 9 are reserved for special markers such as cyclic references. |
+| User | `SerializerFactory.UserTypeCodeStart` (65,536) to 131,071 | Types you register in a factory copied from `Default`, starting at the band's first code. `SetMinTypeCode` accepts only a start inside this band. |
+| Ephemeral | `SerializerFactory.EphemeralTypeCodeStart` (131,072) to `EphemeralTypeCodeEnd` (`uint.MaxValue`) | Types a `BinarySerializer` payload meets that its factory does not know. They are registered per payload and stored with it. |
+
+A serializer added to the defaults later never moves the code of one of your types, and a type you register later never takes a code an earlier payload used for an ephemeral type: registrations cannot generate or be given a code in the ephemeral band. A payload whose ephemeral type is later registered in its factory resolves that type to the new registration, so its stored ephemeral code no longer maps; keep such a type registered from the start if its payloads are stored. Data written before 22 November 2026 used other bands and cannot be read by later builds.
 
 ## Contents
 

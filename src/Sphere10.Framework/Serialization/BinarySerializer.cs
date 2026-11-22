@@ -24,7 +24,7 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 	}
 
 	public override long CalculateSize(SerializationContext context, object item) {
-		context.SetEphemeralFactory(new SerializerFactory(_staticFactory));
+		context.SetEphemeralFactory(SerializerFactory.CreateEphemeral(_staticFactory));
 		try {
 			// calculate item size
 			var itemSize = base.CalculateSize(context, item);
@@ -48,7 +48,7 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 	}
 
 	public override void Serialize(object item, EndianBinaryWriter writer, SerializationContext context) {
-		context.SetEphemeralFactory(new SerializerFactory(_staticFactory));
+		context.SetEphemeralFactory(SerializerFactory.CreateEphemeral(_staticFactory));
 		try {
 			// serialize item into temp buffer
 			using var memoryStream = new MemoryStream();
@@ -81,7 +81,7 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 		var registrations = _registrationsSerializer.Deserialize(reader); // don't use context
 
 		// Rebuild ephemeral factory used for serialization
-		context.SetEphemeralFactory(new SerializerFactory(_staticFactory));
+		context.SetEphemeralFactory(SerializerFactory.CreateEphemeral(_staticFactory));
 
 		foreach(var registration in registrations.OrderBy(x => x.TypeCode)) {
 			if (!context.EphemeralFactory.TryGetRegistration(registration.TypeCode, out var factoryRegistration)) {

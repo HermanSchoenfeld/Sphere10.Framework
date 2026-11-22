@@ -29,7 +29,7 @@ public class AppProtocol {
 			.OnCommand<NotifyNewBlock>(HandleNewBlock)
 			.AddCommand<NotifyLayer2Message>(cb => cb.HandleWith(HandleNewLayer2Message))
 			.AddSerializers( sf => sf
-				.SetMinTypeCode(1000)
+				.SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 1000)
 				.RegisterAutoBuild<Ping>()
 				.RegisterAutoBuild<Pong>()
 			)

@@ -60,7 +60,7 @@ public class FlatStorageMetaDataSerializerTests {
 	/// <summary>Verifies ObjectSpace metadata fields, saved factory and calculated record size through a round trip.</summary>
 	[Test]
 	public void ObjectSpaceRoundTripMatchesItsSize([Values] Endianness endianness) {
-		var factory = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(9000).RegisterAutoBuild<WireItem>();
+		var factory = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 9000).RegisterAutoBuild<WireItem>();
 		var item = new ObjectSpaceMetaData {
 			HashFunction = CHF.SHA2_256,
 			SerializerFactory = factory
@@ -73,7 +73,7 @@ public class FlatStorageMetaDataSerializerTests {
 		Assert.That(EndianBitConverter.For(endianness).ToUInt16(bytes, sizeof(int)), Is.EqualTo((ushort)item.HashFunction));
 		var restored = serializer.DeserializeBytes(bytes, endianness);
 		Assert.That(restored.HashFunction, Is.EqualTo(item.HashFunction));
-		Assert.That(restored.SerializerFactory.FindRegistration(typeof(WireItem)).TypeCode, Is.EqualTo(9000));
+		Assert.That(restored.SerializerFactory.FindRegistration(typeof(WireItem)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart + 9000));
 		var payload = factory.GetSerializer<WireItem>().SerializeToBytes(new WireItem { First = "factory", Second = 42 }, endianness);
 		var restoredItem = restored.SerializerFactory.GetSerializer<WireItem>().DeserializeBytes(payload, endianness);
 		Assert.That(restoredItem.First, Is.EqualTo("factory"));
@@ -174,8 +174,8 @@ public class FlatStorageMetaDataSerializerTests {
 	[Test]
 	public void StandaloneStreamIncludesItsFactoryOnce([Values] Endianness endianness) {
 		// A dimension omits this factory; a standalone ObjectStream must carry the same reconstruction data itself.
-		var factory = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(9000).RegisterAutoBuild<WireItem>();
-		var item = new ObjectStreamMetaData { ItemType = typeof(WireItem), ItemTypeCode = 9000 };
+		var factory = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 9000).RegisterAutoBuild<WireItem>();
+		var item = new ObjectStreamMetaData { ItemType = typeof(WireItem), ItemTypeCode = SerializerFactory.UserTypeCodeStart + 9000 };
 		var serializer = new ObjectStreamMetaDataSerializer();
 		var dimensionBytes = serializer.SerializeToBytes(item, endianness);
 		item.SerializerFactory = factory;

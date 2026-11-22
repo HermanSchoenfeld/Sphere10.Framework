@@ -398,12 +398,12 @@ public class FlatStorageObjectSpaceTests {
 			.BuildDefinition();
 		if (storeMetaData)
 			definition.Traits |= ObjectSpaceTraits.MetaData;
-		var serializers = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(9000).RegisterAutoBuild<OnlyId>();
-		Assert.That(serializers.FindRegistration(typeof(OnlyId)).TypeCode, Is.EqualTo(9000));
+		var serializers = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 9000).RegisterAutoBuild<OnlyId>();
+		Assert.That(serializers.FindRegistration(typeof(OnlyId)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart + 9000));
 		using (var created = new MemoryObjectSpace(raw, definition, serializers, new ComparerFactory(ComparerFactory.Default), endianness: endianness))
 			created.Save(new OnlyId { Id = 17 });
 		Assert.That(raw.CanRead && raw.CanWrite, Is.True);
-		Assert.That(serializers.FindRegistration(typeof(OnlyId)).TypeCode, Is.EqualTo(9000));
+		Assert.That(serializers.FindRegistration(typeof(OnlyId)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart + 9000));
 
 		raw.Position = 0;
 		ObjectSpace loaded;
@@ -412,7 +412,7 @@ public class FlatStorageObjectSpaceTests {
 		else
 			loaded = new MemoryObjectSpace(raw, definition, serializers, new ComparerFactory(ComparerFactory.Default), endianness: endianness);
 		using var loadedScope = loaded;
-		Assert.That(loaded.Serializers.FindRegistration(typeof(OnlyId)).TypeCode, Is.EqualTo(9000));
+		Assert.That(loaded.Serializers.FindRegistration(typeof(OnlyId)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart + 9000));
 		Assert.That(loaded.Get((OnlyId item) => item.Id, 17L).Id, Is.EqualTo(17));
 	}
 
@@ -544,7 +544,7 @@ public class FlatStorageObjectSpaceTests {
 	public void SavedFactoryPreservesConfiguredCompositeLayout([Values] Endianness endianness) {
 		// Reverse the composite's actual member order before storage captures the factory.
 		using var raw = new MemoryStream();
-		var factory = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(9000).RegisterAutoBuild<Audit>();
+		var factory = new SerializerFactory(SerializerFactory.Default).SetMinTypeCode(SerializerFactory.UserTypeCodeStart + 9000).RegisterAutoBuild<Audit>();
 		var serializer = (CompositeSerializer<Audit>)factory.GetPureSerializer<Audit>();
 		Array.Reverse(serializer.MemberBindings);
 		var originalMembers = serializer.MemberBindings.Select(binding => binding.Member.Name).ToArray();
@@ -565,7 +565,7 @@ public class FlatStorageObjectSpaceTests {
 		using (loaded) {
 			var restoredSerializer = (CompositeSerializer<Audit>)loaded.Serializers.GetPureSerializer<Audit>();
 			Assert.That(restoredSerializer.MemberBindings.Select(binding => binding.Member.Name), Is.EqualTo(originalMembers));
-			Assert.That(loaded.Serializers.FindRegistration(typeof(Audit)).TypeCode, Is.EqualTo(9000));
+			Assert.That(loaded.Serializers.FindRegistration(typeof(Audit)).TypeCode, Is.EqualTo(SerializerFactory.UserTypeCodeStart + 9000));
 			Assert.That(loaded.Get((Audit item) => item.Id, 17L).Message, Is.EqualTo("configured layout"));
 			loaded.Save(new Audit { Id = 18, Message = "further write" });
 		}

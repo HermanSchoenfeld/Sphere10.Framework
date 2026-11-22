@@ -116,7 +116,8 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 	// Recreates exact registrations before configuring composite dependencies and finishing the reconstructed factory.
 	private static SerializerFactory Build(long minGeneratedTypeCode, Registration[] registrations) {
 		// Register every type first so references between composite serializers can be resolved later.
-		var factory = new SerializerFactory().SetMinTypeCode(minGeneratedTypeCode);
+		// A stored table keeps its own generated-code start, which a factory without the defaults may have below the user band.
+		var factory = new SerializerFactory { MinGeneratedTypeCode = minGeneratedTypeCode };
 		var composites = new Dictionary<Type, IItemSerializer>();
 		foreach (var row in registrations) {
 			switch (row.Construction) {
