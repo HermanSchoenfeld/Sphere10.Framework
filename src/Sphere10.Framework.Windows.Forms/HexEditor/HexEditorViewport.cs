@@ -164,8 +164,8 @@ public class HexEditorViewport {
 	/// <summary>The largest selection that clipboard copies accept.</summary>
 	public long MaxCopyBytes { get; set; }
 
-	/// <summary>Whether the caret byte exists and the document accepts edits.</summary>
-	public bool CanEditAtCaret => !_document.IsReadOnly && _caretOffset < _document.Length;
+	/// <summary>Whether typing at the caret changes the document: it accepts edits and the caret is on a byte, or at the end of a document that can grow.</summary>
+	public bool CanEditAtCaret => !_document.IsReadOnly && (_caretOffset < _document.Length || _document.CanResize);
 
 	/// <summary>Reads one row's bytes, returning how many exist (less than <see cref="BytesPerRow"/> on the last row).</summary>
 	public int ReadRow(long row, Span<byte> buffer) {
@@ -332,8 +332,9 @@ public class HexEditorViewport {
 
 	/// <summary>Whether typing and pasting insert new bytes at the caret instead of overwriting existing ones. Insert mode also types at the end position.</summary>
 	public bool InsertMode {
-		get => _insertMode;
+		get => _insertMode && _document.CanResize;
 		set {
+			value &= _document.CanResize;
 			if (_insertMode == value)
 				return;
 			_insertMode = value;
@@ -342,12 +343,12 @@ public class HexEditorViewport {
 		}
 	}
 
-	/// <summary>Types a hex digit at the caret: the high nibble inserts a new byte in insert mode or overwrites otherwise; the low nibble completes the byte and advances. Returns false when not editable.</summary>
+	/// <summary>Types a hex digit at the caret: the high nibble inserts a new byte in insert mode or overwrites otherwise, and appends one at the end of a resizable document in either mode; the low nibble completes the byte and advances. Returns false when not editable.</summary>
 	public bool TypeHexDigit(char character) {
 		if (!TryParseHexDigit(character, out var digit) || _document.IsReadOnly)
 			return false;
 		if (_caretNibble == 0) {
-			if (_insertMode)
+			if (InsertMode || AppendsAtEnd)
 				_document.Insert(_caretOffset, stackalloc byte[] { (byte)(digit << 4) });
 			else if (_caretOffset < _document.Length) {
 				_document.TryReadByte(_caretOffset, out var current);
@@ -369,9 +370,9 @@ public class HexEditorViewport {
 
 	/// <summary>Types a character code (0x00 to 0xFF) at the caret, inserting or overwriting by mode, and advances. Returns false when not editable.</summary>
 	public bool TypeCharacter(char character) {
-		if (character > 0xFF || _document.IsReadOnly || !_insertMode && _caretOffset >= _document.Length)
+		if (character > 0xFF || _document.IsReadOnly || !InsertMode && !AppendsAtEnd && _caretOffset >= _document.Length)
 			return false;
-		if (_insertMode)
+		if (InsertMode || AppendsAtEnd)
 			_document.Insert(_caretOffset, stackalloc byte[] { (byte)character });
 		else
 			_document.WriteByte(_caretOffset, (byte)character);
@@ -383,19 +384,27 @@ public class HexEditorViewport {
 		return true;
 	}
 
-	/// <summary>Puts bytes at the caret: inserted in insert mode, otherwise overwriting (appending beyond the end). A selection is replaced first. Returns false when not editable.</summary>
+	/// <summary>Puts bytes at the caret: inserted in insert mode, otherwise overwriting (appending beyond the end). A selection is replaced first. Fixed-length documents require an equally sized selection replacement or an overwrite that fits. Returns false when the edit is not allowed.</summary>
 	public bool InsertBytes(ReadOnlySpan<byte> bytes) {
 		if (_document.IsReadOnly)
 			return false;
-		if (HasSelection) {
-			var start = SelectionStart;
-			_document.Delete(start, SelectionLength);
-			_caretOffset = start;
-		}
-		if (_insertMode || HasSelection)
-			_document.Insert(_caretOffset, bytes);
-		else
+		if (!_document.CanResize) {
+			if (HasSelection ? bytes.Length != SelectionLength : bytes.Length > _document.Length - _caretOffset)
+				return false;
+			if (HasSelection)
+				_caretOffset = SelectionStart;
 			_document.Overwrite(_caretOffset, bytes);
+		} else {
+			if (HasSelection) {
+				var start = SelectionStart;
+				_document.Delete(start, SelectionLength);
+				_caretOffset = start;
+			}
+			if (InsertMode || HasSelection)
+				_document.Insert(_caretOffset, bytes);
+			else
+				_document.Overwrite(_caretOffset, bytes);
+		}
 		_caretOffset += bytes.Length;
 		_caretNibble = 0;
 		_selectionAnchor = -1;
@@ -406,7 +415,7 @@ public class HexEditorViewport {
 
 	/// <summary>Deletes the selection, or the caret byte, shrinking the document. Returns false when nothing was deleted.</summary>
 	public bool DeleteForward() {
-		if (_document.IsReadOnly)
+		if (_document.IsReadOnly || !_document.CanResize)
 			return false;
 		if (HasSelection)
 			return DeleteSelection();
@@ -421,7 +430,7 @@ public class HexEditorViewport {
 
 	/// <summary>Deletes the selection, or the byte before the caret, shrinking the document. Returns false when nothing was deleted.</summary>
 	public bool DeleteBackward() {
-		if (_document.IsReadOnly)
+		if (_document.IsReadOnly || !_document.CanResize)
 			return false;
 		if (HasSelection)
 			return DeleteSelection();
@@ -447,11 +456,12 @@ public class HexEditorViewport {
 	/// <summary>The selection as space-separated uppercase hexadecimal pairs.</summary>
 	public string GetSelectionHex() {
 		var bytes = GetSelectionBytes();
+		var hex = bytes.ToHexString(true).ToUpperInvariant();
 		var text = new StringBuilder(bytes.Length * 3);
 		for (var index = 0; index < bytes.Length; index++) {
 			if (index > 0)
 				text.Append(' ');
-			text.Append(bytes[index].ToString("X2", CultureInfo.InvariantCulture));
+			text.Append(hex, index * 2, 2);
 		}
 		return text.ToString();
 	}
@@ -467,6 +477,9 @@ public class HexEditorViewport {
 
 	/// <summary>The character shown for a byte in the text pane.</summary>
 	public static char ToDisplayCharacter(byte value) => value >= 0x20 && value <= 0x7E ? (char)value : '.';
+
+	// At the end there is no byte to overwrite, so overwrite mode appends to a resizable document, as typing past the end of a file does.
+	private bool AppendsAtEnd => _caretOffset >= _document.Length && _document.CanResize;
 
 	private bool DeleteSelection() {
 		var start = SelectionStart;

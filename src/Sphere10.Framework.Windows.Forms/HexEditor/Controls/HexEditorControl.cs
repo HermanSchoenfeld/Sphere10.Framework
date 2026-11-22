@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -30,12 +30,12 @@ public partial class HexEditorControl : ApplicationControl {
 	/// <summary>Raised after any caret, selection, scroll or content change of the bound document.</summary>
 	public event EventHandlerEx ViewChanged;
 
-	private static readonly int[] _bytesPerRowChoices = { 8, 16, 32 };
 	private readonly int _ownerThreadId;
 	private readonly HexEditorDataInspector _inspector;
 	private HexEditorDocument _document;
 	private HexEditorViewport _viewport;
 	private bool _ownsDocument;
+	private static readonly int[] _bytesPerRowChoices = { 8, 16, 24, 32, 48, 64 };
 	private int _bytesPerRow;
 	private long _baseAddress;
 	private bool _insertMode;
@@ -43,6 +43,7 @@ public partial class HexEditorControl : ApplicationControl {
 	private bool _showDataInspector;
 	private HexEditorSearch _lastSearch;
 	private CancellationTokenSource _searchCancellation;
+	private Task _saveCompletion;
 	private bool _syncingBytesPerRow;
 
 	public HexEditorControl() {
@@ -80,11 +81,16 @@ public partial class HexEditorControl : ApplicationControl {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool IsSearching => _searchCancellation != null;
 
+	/// <summary>Whether <see cref="SaveAsync"/> is writing the pending edits. Editing is refused until it ends; viewing, scrolling and searching go on.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public bool IsSaving => _saveCompletion != null;
+
 	/// <summary>The most recent search, reused by Find Next and Find Previous.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public HexEditorSearch LastSearch => _lastSearch;
 
-	/// <summary>The number of bytes per row (1 to 256). The toolbar offers 8, 16 and 32.</summary>
+	/// <summary>The number of bytes per row (1 to 256). The toolbar's list offers the usual numbers, and dragging the line between the hex
+	/// and text panes chooses any number; a number that is not in the list is added to it while it is in use.</summary>
 	[Category("Appearance"), DefaultValue(HexEditorViewport.DefaultBytesPerRow), Description("The number of bytes shown per row.")]
 	public int BytesPerRow {
 		get => _bytesPerRow;
@@ -174,6 +180,7 @@ public partial class HexEditorControl : ApplicationControl {
 		EnsureOwnerThread();
 		if (ReferenceEquals(document, _document))
 			return;
+		Guard.Ensure(!IsSaving, "Wait for the save to finish before replacing the document.");
 		CancelSearch();
 		ReleaseDocument();
 		_document = document;
@@ -195,11 +202,27 @@ public partial class HexEditorControl : ApplicationControl {
 	/// <summary>Closes the current document, disposing it when owned.</summary>
 	public void CloseDocument() => SetDocument(null, false);
 
-	/// <summary>Writes pending edits to the stream.</summary>
+	/// <summary>Writes pending edits to the stream on the UI thread. Saving a length change rewrites the file from the first inserted or deleted
+	/// byte, so the toolbar, Ctrl+S and hosts use <see cref="SaveAsync"/>; this is for small in-memory streams.</summary>
 	public void Save() {
 		EnsureDocument();
+		Guard.Ensure(!IsSaving, "A save is already in progress.");
 		_document.Save();
 		_messageStatusLabel.Text = "Saved";
+	}
+
+	/// <summary>Writes pending edits to the stream on a worker thread and returns once they are flushed. The status bar says "Saving..." and the
+	/// document refuses edits until then, while viewing, scrolling and searching go on. A call during a save joins it; its token then ends only its
+	/// own wait. The token of the call that starts the save is observed until the stream is first written.</summary>
+	public Task SaveAsync(CancellationToken cancellationToken = default) {
+		EnsureDocument();
+		if (_saveCompletion == null) {
+			var saving = SaveDocumentAsync(_document, cancellationToken);
+			if (saving.IsCompleted)
+				return saving;
+			_saveCompletion = saving;
+		}
+		return _saveCompletion.WaitAsync(cancellationToken);
 	}
 
 	/// <summary>Discards pending edits.</summary>
@@ -223,12 +246,12 @@ public partial class HexEditorControl : ApplicationControl {
 	/// <summary>Whether typing and pasting insert bytes at the caret instead of overwriting. Retained across documents.</summary>
 	[Category("Behavior"), DefaultValue(false), Description("Whether typing and pasting insert new bytes instead of overwriting.")]
 	public bool InsertMode {
-		get => _insertMode;
+		get => _viewport?.InsertMode ?? _insertMode;
 		set {
-			_insertMode = value;
 			if (_viewport != null)
 				_viewport.InsertMode = value;
-			_insertModeButton.Checked = value;
+			_insertMode = _viewport?.InsertMode ?? value;
+			_insertModeButton.Checked = _insertMode;
 			UpdatePresentation();
 		}
 	}
@@ -240,7 +263,7 @@ public partial class HexEditorControl : ApplicationControl {
 		var text = Clipboard.ContainsText() ? Clipboard.GetText() : string.Empty;
 		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "The clipboard holds no text to paste.");
 		var bytes = _viewport.ActivePane == HexEditorPane.Hex ? HexEditorSearch.ForHex(text).Pattern : Encoding.UTF8.GetBytes(text);
-		_viewport.InsertBytes(bytes);
+		Guard.Ensure(_viewport.InsertBytes(bytes), "The pasted bytes must fit the fixed-length buffer and match the length of any selected bytes.");
 		_view.Focus();
 	}
 
@@ -347,7 +370,7 @@ public partial class HexEditorControl : ApplicationControl {
 					RunCommand(FindPreviousAsync);
 					return true;
 				case Keys.Control | Keys.S when !_document.IsReadOnly:
-					RunCommand(Save);
+					RunCommand(() => SaveAsync());
 					return true;
 				case Keys.Control | Keys.V when _view.Focused && !_document.IsReadOnly:
 					RunCommand(Paste);
@@ -371,7 +394,7 @@ public partial class HexEditorControl : ApplicationControl {
 		UpdatePresentation();
 	}
 
-	private void SaveButtonClicked(object sender, EventArgs e) => RunCommand(Save);
+	private void SaveButtonClicked(object sender, EventArgs e) => RunCommand(() => SaveAsync());
 
 	private void RevertButtonClicked(object sender, EventArgs e) => RunCommand(Revert);
 
@@ -394,10 +417,12 @@ public partial class HexEditorControl : ApplicationControl {
 	private void SelectAllButtonClicked(object sender, EventArgs e) => RunCommand(SelectAll);
 
 	private void BytesPerRowComboBoxSelectionChanged(object sender, EventArgs e) {
-		if (_syncingBytesPerRow || _bytesPerRowComboBox.SelectedIndex < 0)
-			return;
-		BytesPerRow = _bytesPerRowChoices[_bytesPerRowComboBox.SelectedIndex];
+		if (!_syncingBytesPerRow && _bytesPerRowComboBox.SelectedItem is string choice)
+			BytesPerRow = int.Parse(choice, CultureInfo.InvariantCulture);
 	}
+
+	// The user dragged the line between the panes to this many bytes per row.
+	private void ViewBytesPerRowRequested(int bytesPerRow) => BytesPerRow = bytesPerRow;
 
 	private void InspectorButtonClicked(object sender, EventArgs e) => ShowDataInspector = _inspectorButton.Checked;
 
@@ -422,6 +447,24 @@ public partial class HexEditorControl : ApplicationControl {
 		if (IsDisposed || Disposing)
 			return;
 		NotifyStateChanged();
+	}
+
+	// The document refuses edits while it saves, so the commands and the mode say so until the save ends.
+	private async Task SaveDocumentAsync(HexEditorDocument document, CancellationToken cancellationToken) {
+		_messageStatusLabel.Text = "Saving...";
+		var saving = document.SaveAsync(cancellationToken);
+		UpdatePresentation();
+		var saved = false;
+		try {
+			await saving;
+			saved = true;
+		} finally {
+			_saveCompletion = null;
+			if (!IsDisposed && !Disposing && ReferenceEquals(document, _document)) {
+				_messageStatusLabel.Text = saved ? "Saved" : string.Empty;
+				UpdatePresentation();
+			}
+		}
 	}
 
 	private void RunCommand(Action action) {
@@ -459,7 +502,7 @@ public partial class HexEditorControl : ApplicationControl {
 			: "No selection";
 		_lengthStatusLabel.Text = $"Length: {_document.Length.ToString("N0", CultureInfo.CurrentCulture)} bytes";
 		_changesStatusLabel.Text = _document.HasChanges ? $"Modified: {_document.ModifiedByteCount.ToString("N0", CultureInfo.CurrentCulture)} bytes" : string.Empty;
-		_modeStatusLabel.Text = _document.IsReadOnly ? "Read-only" : _viewport.InsertMode ? "Insert" : "Overwrite";
+		_modeStatusLabel.Text = _document.IsSaving ? "Saving" : _document.IsReadOnly ? "Read-only" : _viewport.InsertMode ? "Insert" : "Overwrite";
 	}
 
 	// Inspector rows are reused once created; only changed values are written back to the list.
@@ -499,14 +542,27 @@ public partial class HexEditorControl : ApplicationControl {
 		_copyTextButton.Enabled = open && _viewport.HasSelection;
 		_selectAllButton.Enabled = open && _document.Length > 0;
 		_pasteButton.Enabled = editable;
-		_insertModeButton.Enabled = editable;
-		_bytesPerRowComboBox.Enabled = true;
+		_insertModeButton.Enabled = editable && _document.CanResize;
 	}
 
+	// The list holds the usual numbers and, while it is in use, one other number reached by dragging or set in code.
 	private void SyncBytesPerRowComboBox() {
 		_syncingBytesPerRow = true;
 		try {
-			_bytesPerRowComboBox.SelectedIndex = Array.IndexOf(_bytesPerRowChoices, _bytesPerRow);
+			var items = _bytesPerRowComboBox.Items;
+			for (var index = items.Count - 1; index >= 0; index--) {
+				var number = int.Parse((string)items[index], CultureInfo.InvariantCulture);
+				if (number != _bytesPerRow && Array.IndexOf(_bytesPerRowChoices, number) < 0)
+					items.RemoveAt(index);
+			}
+			var current = _bytesPerRow.ToString(CultureInfo.InvariantCulture);
+			if (!items.Contains(current)) {
+				var position = 0;
+				while (position < items.Count && int.Parse((string)items[position], CultureInfo.InvariantCulture) < _bytesPerRow)
+					position++;
+				items.Insert(position, current);
+			}
+			_bytesPerRowComboBox.SelectedItem = current;
 		} finally {
 			_syncingBytesPerRow = false;
 		}

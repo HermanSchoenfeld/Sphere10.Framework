@@ -183,14 +183,19 @@ public class HexEditorViewportTests {
 		Assert.That(viewport.TypeCharacter('Ā'), Is.False, "Characters above 0xFF have no single-byte code.");
 		Assert.That(viewport.TypeCharacter('x'), Is.True);
 		Assert.That(viewport.CaretOffset, Is.EqualTo(3));
-		Assert.That(viewport.CanEditAtCaret, Is.False, "The end position holds no byte to overwrite.");
-		Assert.That(viewport.TypeCharacter('y'), Is.False);
+		Assert.That(viewport.CanEditAtCaret, Is.True, "At the end, overwrite mode appends to a document that can grow.");
+		Assert.That(viewport.TypeCharacter('y'), Is.True);
+		Assert.That((document.Length, viewport.CaretOffset), Is.EqualTo((4L, 4L)));
+		document.CanResize = false;
+		Assert.That(viewport.CanEditAtCaret, Is.False, "A fixed-length document has no byte to overwrite at the end.");
+		Assert.That(viewport.TypeCharacter('z'), Is.False);
 		Assert.That(viewport.TypeHexDigit('1'), Is.False);
+		document.CanResize = true;
 		viewport.Select(0, 2);
 		viewport.ActivePane = HexEditorPane.Hex;
 		viewport.TypeHexDigit('0');
 		Assert.That(viewport.HasSelection, Is.False, "Typing clears the selection.");
-		Assert.That(document.ModifiedByteCount, Is.EqualTo(3));
+		Assert.That(document.ModifiedByteCount, Is.EqualTo(4), "Three overwritten bytes and one appended.");
 		using var readOnly = new HexEditorDocument(new MemoryStream(new byte[] { 1 }, false));
 		var readOnlyViewport = new HexEditorViewport(readOnly);
 		Assert.That(readOnlyViewport.CanEditAtCaret, Is.False);
@@ -220,7 +225,9 @@ public class HexEditorViewportTests {
 	public void InsertModeTypesNewBytesAndDeleteKeysShrinkTheDocument() {
 		using var document = new HexEditorDocument(new MemoryStream());
 		var viewport = new HexEditorViewport(document);
-		Assert.That(viewport.TypeHexDigit('A'), Is.False, "Overwrite mode has nothing to type over in an empty document.");
+		Assert.That(viewport.TypeHexDigit('A') && viewport.TypeHexDigit('0'), Is.True, "Overwrite mode appends to an empty document that can grow.");
+		Assert.That(viewport.DeleteBackward(), Is.True);
+		Assert.That(document.Length, Is.Zero);
 		viewport.InsertMode = true;
 		Assert.That(viewport.TypeHexDigit('A') && viewport.TypeHexDigit('B'), Is.True);
 		Assert.That(viewport.TypeHexDigit('1') && viewport.TypeHexDigit('2'), Is.True);
@@ -247,7 +254,9 @@ public class HexEditorViewportTests {
 
 		viewport.InsertMode = false;
 		viewport.MoveToDocumentEnd(false);
-		Assert.That(viewport.TypeCharacter('Q'), Is.False, "Overwrite mode does not append.");
+		Assert.That(viewport.TypeCharacter('Q'), Is.True, "Overwrite mode appends at the end of a document that can grow.");
+		Assert.That(document.Length, Is.EqualTo(3));
+		Assert.That(viewport.DeleteBackward(), Is.True);
 		viewport.MoveCaretTo(0, false);
 		viewport.InsertBytes(new byte[] { 1, 2, 3 });
 		content = new byte[document.Length];

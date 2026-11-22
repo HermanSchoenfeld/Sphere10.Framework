@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.WinFormsTester;
 
@@ -139,6 +141,69 @@ public class HexEditorDocumentTests {
 	}
 
 	[Test]
+	public async Task SaveAsyncWritesOnAWorkerRefusesEditsMeanwhileAndReadsSeeThePendingContentThroughout() {
+		// A 300 KB tail is rewritten in several bounded steps; the stream reads the document back between them, as a repaint would.
+		var original = new byte[300_000];
+		for (var offset = 0; offset < original.Length; offset++)
+			original[offset] = SyntheticByteStream.GenerateByte(offset);
+		var stream = new RecordingStream(original);
+		using var document = new HexEditorDocument(stream, true, 4096, 8);
+		document.WriteByte(3, 0x55);
+		document.Insert(100, new byte[] { 1, 2, 3 });
+		var expected = new List<byte>(original);
+		expected[3] = 0x55;
+		expected.InsertRange(100, new byte[] { 1, 2, 3 });
+		var mismatches = 0;
+		using var writing = new ManualResetEventSlim();
+		using var proceed = new ManualResetEventSlim();
+		stream.BeforeWrite = () => {
+			// The first write holds the save until the test has looked at the document.
+			if (!writing.IsSet) {
+				writing.Set();
+				proceed.Wait(TimeSpan.FromSeconds(30));
+			}
+			var content = new byte[document.Length];
+			if (document.Read(0, content) != content.Length || !content.SequenceEqual(expected))
+				mismatches++;
+		};
+		var saves = 0;
+		document.Saved += () => saves++;
+		var caller = Environment.CurrentManagedThreadId;
+
+		var saving = document.SaveAsync();
+		Assert.That(document.IsSaving && document.IsReadOnly, Is.True, "A save is under way as soon as it is asked for.");
+		Assert.That(writing.Wait(TimeSpan.FromSeconds(30)), Is.True);
+		// The save holds the lock inside that write, so only members that do not take it are asked here.
+		Assert.That(document.IsSaving && document.IsReadOnly, Is.True);
+		Assert.That(() => document.WriteByte(0, 9), Throws.InvalidOperationException, "Edits wait for the save.");
+		Assert.That(() => document.Revert(), Throws.InvalidOperationException);
+		proceed.Set();
+		await saving;
+
+		Assert.That(document.IsSaving || document.IsReadOnly || document.HasChanges, Is.False);
+		Assert.That(saves, Is.EqualTo(1));
+		Assert.That(stream.Writes.Count, Is.GreaterThan(3), "The rewrite is written in bounded steps.");
+		Assert.That(stream.WriteThreads, Has.None.EqualTo(caller), "The stream is written on a worker.");
+		Assert.That(mismatches, Is.Zero, "Every read made during the save returned the pending content.");
+		Assert.That(stream.ToArray(), Is.EqualTo(expected.ToArray()));
+	}
+
+	[Test]
+	public async Task ACancelledSaveAsyncWritesNothingAndKeepsTheEdits() {
+		var bytes = new byte[] { 1, 2, 3, 4 };
+		var stream = new RecordingStream(bytes);
+		using var document = new HexEditorDocument(stream);
+		document.Insert(2, new byte[] { 9 });
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		await Assert.ThatAsync(() => document.SaveAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(document.IsSaving, Is.False);
+		Assert.That(document.HasChanges, Is.True);
+		Assert.That(stream.Writes, Is.Empty);
+		Assert.That(stream.ToArray(), Is.EqualTo(bytes));
+	}
+
+	[Test]
 	public void OverwriteReplacesARangeAndAppendsBeyondTheEnd() {
 		var bytes = new byte[] { 1, 2, 3, 4 };
 		using var document = new HexEditorDocument(new MemoryStream());
@@ -219,26 +284,45 @@ public class HexEditorDocumentTests {
 
 	#region Inner Types
 
-	/// <summary>A resizable memory stream that records where writes land and the length it was set to.</summary>
+	/// <summary>A resizable memory stream that records where writes land, on which threads, and the length it was set to. <see cref="BeforeWrite"/> runs
+	/// before each write on the writing thread, with the stream's position restored afterwards.</summary>
 	private sealed class RecordingStream : MemoryStream {
 		public RecordingStream(byte[] content) {
 			Write(content, 0, content.Length);
 			Writes.Clear();
+			WriteThreads.Clear();
 			Position = 0;
 		}
 
 		public List<(long Offset, int Count)> Writes { get; } = new();
 
+		public List<int> WriteThreads { get; } = new();
+
 		public long? ResizedTo { get; private set; }
 
+		public Action BeforeWrite { get; set; }
+
 		public override void Write(byte[] buffer, int offset, int count) {
-			Writes.Add((Position, count));
+			Record(count);
 			base.Write(buffer, offset, count);
 		}
 
 		public override void Write(ReadOnlySpan<byte> buffer) {
-			Writes.Add((Position, buffer.Length));
+			Record(buffer.Length);
 			base.Write(buffer);
+		}
+
+		private void Record(int count) {
+			if (BeforeWrite != null) {
+				var position = Position;
+				var probe = BeforeWrite;
+				BeforeWrite = null;
+				probe();
+				BeforeWrite = probe;
+				Position = position;
+			}
+			Writes.Add((Position, count));
+			WriteThreads.Add(Environment.CurrentManagedThreadId);
 		}
 
 		public override void SetLength(long value) {

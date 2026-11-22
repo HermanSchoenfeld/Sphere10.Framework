@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -21,8 +21,13 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <see cref="Viewport"/>. Rendering is double-buffered, DPI-aware and uses ordinary WinForms colors.
 /// </summary>
 public class HexEditorView : Control {
+	/// <summary>Raised while the user drags the line between the hex and text panes, with the bytes per row that puts the line under
+	/// the mouse. The view changes nothing itself; whoever owns the viewport applies the number.</summary>
+	public event EventHandlerEx<int> BytesPerRowRequested;
+
 	private const TextFormatFlags TextFlags = TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.PreserveGraphicsClipping;
 	private const int GroupSize = 8;
+	private static readonly string _hexColumnOffsets = Enumerable.Range(0, HexEditorViewport.MaxBytesPerRow).Select(offset => (byte)offset).ToArray().ToHexString(true).ToUpperInvariant();
 	private readonly VScrollBar _scrollBar;
 	private readonly Timer _blinkTimer;
 	private readonly Font _ownedFont;
@@ -33,6 +38,8 @@ public class HexEditorView : Control {
 	private int _rowHeight;
 	private bool _syncingScrollBar;
 	private bool _dragging;
+	private bool _dividerDragging;
+	private bool _dividerHot;
 	private bool _caretVisible;
 	private bool _showHeader;
 	private Color _offsetForeColor;
@@ -173,6 +180,34 @@ public class HexEditorView : Control {
 
 	protected override Size DefaultSize => new Size(640, 320);
 
+	/// <summary>The line between the hex and text panes, widened to the strip that takes the mouse. Dragging it left or right asks for
+	/// fewer or more bytes per row through <see cref="BytesPerRowRequested"/>.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public Rectangle DividerBounds {
+		get {
+			var layout = ComputeLayout();
+			var reach = LogicalToDeviceUnits(4);
+			return new Rectangle(layout.TextLeft - _charWidth - reach, 0, 2 * reach + 1, ClientSize.Height);
+		}
+	}
+
+	/// <summary>How many bytes per row put the line between the panes nearest to a horizontal client position.</summary>
+	public int GetBytesPerRowAt(int x) {
+		var layout = ComputeLayout();
+		var best = HexEditorViewport.MinBytesPerRow;
+		var bestDistance = int.MaxValue;
+		for (var bytesPerRow = HexEditorViewport.MinBytesPerRow; bytesPerRow <= HexEditorViewport.MaxBytesPerRow; bytesPerRow++) {
+			// The same arithmetic as the layout: three characters a byte, one more between groups, one before the line.
+			var divider = layout.HexLeft + bytesPerRow * 3 * _charWidth - _charWidth + (bytesPerRow - 1) / GroupSize * _charWidth + _charWidth;
+			var distance = Math.Abs(divider - x);
+			if (distance >= bestDistance)
+				break;
+			best = bytesPerRow;
+			bestDistance = distance;
+		}
+		return best;
+	}
+
 	/// <summary>Resolves the byte, pane and nibble under a client point, clamping rows and columns to the document. Returns null above the header.</summary>
 	public HexEditorHitTestResult HitTest(Point location) {
 		if (_viewport == null)
@@ -241,6 +276,7 @@ public class HexEditorView : Control {
 				break;
 			var rowStart = row * bytesPerRow;
 			var count = _viewport.ReadRow(row, _rowBuffer);
+			var hex = _rowBuffer.AsSpan(0, count).ToArray().ToHexString(true).ToUpperInvariant();
 			TextRenderer.DrawText(graphics, _viewport.FormatOffset(rowStart), Font, new Point(layout.OffsetLeft, top + layout.TextTop), _offsetForeColor, TextFlags);
 			var plain = !RowNeedsCellPainting(rowStart, count);
 			if (plain) {
@@ -248,19 +284,24 @@ public class HexEditorView : Control {
 				for (var column = 0; column < count; column++) {
 					if (column > 0)
 						hexLine.Append(column % GroupSize == 0 ? "  " : " ");
-					hexLine.Append(_rowBuffer[column].ToString("X2", CultureInfo.InvariantCulture));
+					hexLine.Append(hex, column * 2, 2);
 					textLine[column] = HexEditorViewport.ToDisplayCharacter(_rowBuffer[column]);
 				}
 				TextRenderer.DrawText(graphics, hexLine.ToString(), Font, new Point(layout.HexLeft, top + layout.TextTop), ForeColor, TextFlags);
 				TextRenderer.DrawText(graphics, new string(textLine, 0, count), Font, new Point(layout.TextLeft, top + layout.TextTop), ForeColor, TextFlags);
 			} else {
 				for (var column = 0; column < count; column++)
-					PaintCell(graphics, layout, rowStart + column, column, _rowBuffer[column], top);
+					PaintCell(graphics, layout, rowStart + column, column, _rowBuffer[column], hex.Substring(column * 2, 2), top);
 			}
 		}
 		// Column separators span the whole client height so the layout reads as a table.
 		graphics.DrawLine(separatorPen, layout.HexLeft - _charWidth, layout.HeaderHeight, layout.HexLeft - _charWidth, ClientSize.Height);
 		graphics.DrawLine(separatorPen, layout.TextLeft - _charWidth, layout.HeaderHeight, layout.TextLeft - _charWidth, ClientSize.Height);
+		// The line between the panes can be dragged; it thickens under the mouse to say so.
+		if (_dividerHot || _dividerDragging) {
+			using var dividerPen = new Pen(_selectionBackColor, LogicalToDeviceUnits(3));
+			graphics.DrawLine(dividerPen, layout.TextLeft - _charWidth, 0, layout.TextLeft - _charWidth, ClientSize.Height);
+		}
 		PaintCaret(graphics, layout);
 	}
 
@@ -364,6 +405,12 @@ public class HexEditorView : Control {
 		Focus();
 		if (_viewport == null || e.Button != MouseButtons.Left)
 			return;
+		if (DividerBounds.Contains(e.Location)) {
+			_dividerDragging = true;
+			Capture = true;
+			Invalidate();
+			return;
+		}
 		var hit = HitTest(e.Location);
 		if (hit == null)
 			return;
@@ -374,8 +421,23 @@ public class HexEditorView : Control {
 
 	protected override void OnMouseMove(MouseEventArgs e) {
 		base.OnMouseMove(e);
-		if (!_dragging || _viewport == null)
+		if (_viewport == null)
 			return;
+		if (_dividerDragging) {
+			var requested = GetBytesPerRowAt(e.X);
+			if (requested != _viewport.BytesPerRow)
+				NotifyBytesPerRowRequested(requested);
+			return;
+		}
+		if (!_dragging) {
+			var hot = DividerBounds.Contains(e.Location);
+			if (hot != _dividerHot) {
+				_dividerHot = hot;
+				Cursor = hot ? Cursors.VSplit : Cursors.IBeam;
+				Invalidate();
+			}
+			return;
+		}
 		// Dragging past the top or bottom edge scrolls one row per move so selections can grow beyond the window.
 		var layout = ComputeLayout();
 		var location = e.Location;
@@ -393,6 +455,12 @@ public class HexEditorView : Control {
 
 	protected override void OnMouseUp(MouseEventArgs e) {
 		base.OnMouseUp(e);
+		if (_dividerDragging) {
+			_dividerDragging = false;
+			Capture = false;
+			Invalidate();
+			return;
+		}
 		if (!_dragging)
 			return;
 		_dragging = false;
@@ -433,6 +501,18 @@ public class HexEditorView : Control {
 		base.OnFontChanged(e);
 		_fontMetricsValid = false;
 		UpdateVisibleRows();
+		Invalidate();
+	}
+
+	protected virtual void OnBytesPerRowRequested(int bytesPerRow) {
+	}
+
+	protected override void OnMouseLeave(EventArgs e) {
+		base.OnMouseLeave(e);
+		if (!_dividerHot)
+			return;
+		_dividerHot = false;
+		Cursor = Cursors.IBeam;
 		Invalidate();
 	}
 
@@ -486,12 +566,17 @@ public class HexEditorView : Control {
 
 	private void ResetHeaderBackColor() => HeaderBackColor = SystemColors.Control;
 
+	private void NotifyBytesPerRowRequested(int bytesPerRow) {
+		OnBytesPerRowRequested(bytesPerRow);
+		BytesPerRowRequested?.Invoke(bytesPerRow);
+	}
+
 	private void PaintHeader(Graphics graphics, ColumnLayout layout, Pen separatorPen) {
 		using var headerBrush = new SolidBrush(_headerBackColor);
 		graphics.FillRectangle(headerBrush, 0, 0, ClientSize.Width, layout.HeaderHeight);
 		TextRenderer.DrawText(graphics, "Offset(h)", Font, new Point(layout.OffsetLeft, layout.TextTop), _offsetForeColor, TextFlags);
 		for (var column = 0; column < _viewport.BytesPerRow; column++)
-			TextRenderer.DrawText(graphics, column.ToString("X2", CultureInfo.InvariantCulture), Font, new Point(layout.HexCellLeft(column), layout.TextTop), _offsetForeColor, TextFlags);
+			TextRenderer.DrawText(graphics, _hexColumnOffsets.Substring(column * 2, 2), Font, new Point(layout.HexCellLeft(column), layout.TextTop), _offsetForeColor, TextFlags);
 		TextRenderer.DrawText(graphics, "Decoded text", Font, new Point(layout.TextLeft, layout.TextTop), _offsetForeColor, TextFlags);
 		graphics.DrawLine(separatorPen, 0, layout.HeaderHeight - 1, ClientSize.Width, layout.HeaderHeight - 1);
 	}
@@ -510,7 +595,7 @@ public class HexEditorView : Control {
 		return false;
 	}
 
-	private void PaintCell(Graphics graphics, ColumnLayout layout, long offset, int column, byte value, int top) {
+	private void PaintCell(Graphics graphics, ColumnLayout layout, long offset, int column, byte value, string hex, int top) {
 		var selected = _viewport.IsSelected(offset);
 		var modified = _viewport.Document.IsModified(offset);
 		var hexLeft = layout.HexCellLeft(column);
@@ -529,7 +614,7 @@ public class HexEditorView : Control {
 		var character = HexEditorViewport.ToDisplayCharacter(value);
 		var printable = character != '.' || value == (byte)'.';
 		var textColor = selected && _viewport.ActivePane == HexEditorPane.Text ? _selectionForeColor : modified ? _modifiedForeColor : printable ? ForeColor : _nonPrintableForeColor;
-		TextRenderer.DrawText(graphics, value.ToString("X2", CultureInfo.InvariantCulture), Font, new Point(hexLeft, top + layout.TextTop), hexColor, TextFlags);
+		TextRenderer.DrawText(graphics, hex, Font, new Point(hexLeft, top + layout.TextTop), hexColor, TextFlags);
 		TextRenderer.DrawText(graphics, character.ToString(), Font, new Point(textLeft, top + layout.TextTop), textColor, TextFlags);
 	}
 

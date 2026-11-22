@@ -38,7 +38,17 @@ public class HexEditorControlTests {
 		Assert.That(editor.View.Viewport, Is.SameAs(editor.Viewport));
 		editor.BytesPerRow = 32;
 		Assert.That(editor.Viewport.BytesPerRow, Is.EqualTo(32));
-		Assert.That(FindItem<ToolStripComboBox>(editor, "_bytesPerRowComboBox").SelectedIndex, Is.EqualTo(2));
+		var choices = FindItem<ToolStripComboBox>(editor, "_bytesPerRowComboBox");
+		Assert.That((choices.Items.Cast<string>(), choices.SelectedItem), Is.EqualTo((new[] { "8", "16", "24", "32", "48", "64" }, (object)"32")));
+		choices.SelectedItem = "24";
+		Assert.That((editor.BytesPerRow, editor.Viewport.BytesPerRow), Is.EqualTo((24, 24)));
+		// A number that is not one of the usual ones, as dragging the pane divider gives, joins the list while it is in use.
+		editor.BytesPerRow = 21;
+		Assert.That((choices.Items.Cast<string>(), choices.SelectedItem, editor.Viewport.BytesPerRow), Is.EqualTo((new[] { "8", "16", "21", "24", "32", "48", "64" }, (object)"21", 21)));
+		editor.BytesPerRow = 128;
+		Assert.That((choices.Items.Cast<string>(), choices.SelectedItem), Is.EqualTo((new[] { "8", "16", "24", "32", "48", "64", "128" }, (object)"128")));
+		editor.BytesPerRow = 32;
+		Assert.That(choices.Items.Cast<string>(), Is.EqualTo(new[] { "8", "16", "24", "32", "48", "64" }));
 		editor.ReadOnly = true;
 		Assert.That(editor.Document.IsReadOnly, Is.True);
 		Assert.That(FindItem<ToolStripStatusLabel>(editor, "_modeStatusLabel").Text, Is.EqualTo("Read-only"));
@@ -94,6 +104,40 @@ public class HexEditorControlTests {
 		Assert.That(documents, Is.EqualTo(1));
 		Assert.That(editor.Viewport, Is.Null);
 		Assert.That(stream.CanRead, Is.True, "A borrowed stream survives closing.");
+	});
+
+	[Test]
+	public void SaveAsyncWritesOffTheUiThreadAndRefusesEditsUntilItEnds() => RunWithMessageLoop(async owner => {
+		var stream = new ThreadRecordingStream(new byte[200_000]);
+		using var editor = new HexEditorControl { Dock = DockStyle.Fill };
+		owner.Controls.Add(editor);
+		editor.OpenStream(stream, false);
+		await Task.Yield();
+		editor.InsertMode = true;
+		editor.Viewport.MoveCaretTo(0, false);
+		editor.Viewport.TypeHexDigit('A');
+		editor.Viewport.TypeHexDigit('B');
+		Assert.That(editor.Document.Length, Is.EqualTo(200_001), "The insertion makes the save rewrite the whole stream.");
+		var saveButton = FindItem<ToolStripButton>(editor, "_saveButton");
+		Assert.That(saveButton.Enabled, Is.True);
+
+		var saving = editor.SaveAsync();
+		var joined = editor.SaveAsync();
+		Assert.That(editor.IsSaving, Is.True);
+		Assert.That(editor.Document.IsReadOnly, Is.True, "The document refuses edits while it saves.");
+		Assert.That(editor.Viewport.TypeHexDigit('C'), Is.False, "Typing is ignored meanwhile.");
+		Assert.That(saveButton.Enabled, Is.False);
+		Assert.That(FindItem<ToolStripStatusLabel>(editor, "_messageStatusLabel").Text, Is.EqualTo("Saving..."));
+		Assert.That(FindItem<ToolStripStatusLabel>(editor, "_modeStatusLabel").Text, Is.EqualTo("Saving"));
+		Assert.That(() => editor.OpenStream(new MemoryStream(new byte[1])), Throws.InvalidOperationException, "The document stays until its save ends.");
+		await Task.WhenAll(saving, joined);
+
+		Assert.That(editor.IsSaving || editor.HasChanges || editor.Document.IsReadOnly, Is.False);
+		Assert.That(stream.ToArray()[0], Is.EqualTo(0xAB));
+		Assert.That(stream.Length, Is.EqualTo(200_001));
+		Assert.That(stream.WriteThreads, Is.Not.Empty.And.None.EqualTo(Environment.CurrentManagedThreadId), "Nothing is written on the UI thread.");
+		Assert.That(FindItem<ToolStripStatusLabel>(editor, "_messageStatusLabel").Text, Is.EqualTo("Saved"));
+		Assert.That(FindItem<ToolStripStatusLabel>(editor, "_modeStatusLabel").Text, Is.EqualTo("Insert"));
 	});
 
 	[Test]
@@ -160,6 +204,56 @@ public class HexEditorControlTests {
 	});
 
 	[Test]
+	public void DraggingTheLineBetweenThePanesChangesTheBytesPerRow() => RunWithMessageLoop(async owner => {
+		owner.ClientSize = new Size(1500, 500);
+		using var editor = new HexEditorControl { Dock = DockStyle.Fill, ShowDataInspector = false };
+		owner.Controls.Add(editor);
+		editor.OpenStream(new MemoryStream(new byte[400]));
+		await Task.Yield();
+		var view = editor.View;
+		var requests = new List<int>();
+		view.BytesPerRowRequested += requests.Add;
+		var divider = view.DividerBounds;
+		var middle = divider.Top + divider.Height / 2;
+		var character = (view.GetCellBounds(1, HexEditorPane.Hex).Left - view.GetCellBounds(0, HexEditorPane.Hex).Left) / 3;
+		Assert.That(view.GetBytesPerRowAt(divider.Left + divider.Width / 2), Is.EqualTo(16), "The line stands where sixteen bytes end.");
+		Assert.That(view.GetCellBounds(15, HexEditorPane.Hex).Right, Is.LessThan(divider.Left + divider.Width / 2).And.GreaterThan(divider.Left - 3 * character));
+
+		// Pressing on the line and moving right by eight bytes' width asks for twenty-four bytes; the editor applies it.
+		var eightBytes = view.GetCellBounds(8, HexEditorPane.Hex).Left - view.GetCellBounds(0, HexEditorPane.Hex).Left;
+		SendMouse(view, 0x0201, divider.Left + divider.Width / 2, middle);
+		SendMouse(view, 0x0200, divider.Left + divider.Width / 2 + eightBytes, middle);
+		Assert.That((editor.BytesPerRow, editor.Viewport.BytesPerRow), Is.EqualTo((24, 24)));
+		Assert.That(FindItem<ToolStripComboBox>(editor, "_bytesPerRowComboBox").SelectedItem, Is.EqualTo("24"));
+		Assert.That(editor.Viewport.HasSelection, Is.False, "Dragging the line selects no bytes.");
+		// The line has moved with the bytes, so pulling left from where it now stands gives fewer.
+		var moved = view.DividerBounds;
+		Assert.That(moved.Left, Is.GreaterThan(divider.Left));
+		SendMouse(view, 0x0200, view.GetCellBounds(4, HexEditorPane.Hex).Right + character, middle);
+		Assert.That(editor.BytesPerRow, Is.EqualTo(5));
+		Assert.That(FindItem<ToolStripComboBox>(editor, "_bytesPerRowComboBox").Items.Cast<string>(), Does.Contain("5"));
+		SendMouse(view, 0x0200, -500, middle);
+		Assert.That(editor.BytesPerRow, Is.EqualTo(1), "A row never has fewer than one byte.");
+		SendMouse(view, 0x0202, -500, middle);
+		Assert.That(requests, Is.EqualTo(new[] { 24, 5, 1 }), "A request is raised only when the number changes.");
+
+		// After the button is released the mouse selects bytes again.
+		var cell = view.GetCellBounds(0, HexEditorPane.Hex);
+		SendMouse(view, 0x0201, cell.Left + 1, cell.Top + 1);
+		SendMouse(view, 0x0200, cell.Left + 1, cell.Top + 1 + 3 * view.RowHeight);
+		SendMouse(view, 0x0202, cell.Left + 1, cell.Top + 1 + 3 * view.RowHeight);
+		Assert.That((editor.BytesPerRow, editor.Viewport.HasSelection), Is.EqualTo((1, true)));
+	});
+
+	// Delivers a mouse message to the view's own window, as Windows does; nothing is injected into the desktop's input.
+	private static void SendMouse(Control control, int message, int x, int y) {
+		var position = (IntPtr)((y << 16) | (x & 0xFFFF));
+		var pressed = message == 0x0202 ? IntPtr.Zero : (IntPtr)1;
+		var m = Message.Create(control.Handle, message, pressed, position);
+		typeof(Control).GetMethod("WndProc", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(control, new object[] { m });
+	}
+
+	[Test]
 	public void TheFormTracksTheDocumentTitleAndModificationState() => RunWithMessageLoop(async owner => {
 		var stream = new MemoryStream(new byte[] { 1, 2, 3 });
 		var pending = HexEditorForm.ShowAsync(owner, stream, "Sample", false);
@@ -176,6 +270,20 @@ public class HexEditorControlTests {
 		await pending;
 		Assert.That(form.IsDisposed, Is.True);
 		Assert.That(stream.CanRead, Is.True, "The caller keeps a borrowed stream.");
+	});
+
+	[Test]
+	public void EditingBytesCanGrowThemAndReturnsTheSavedContent() => RunWithMessageLoop(async owner => {
+		var input = new byte[] { 1, 2 };
+		var pending = HexEditorForm.EditBytesAsync(owner, "Stream", input);
+		var form = await WaitForForm(owner);
+		Assert.That(form.Editor.InsertMode, Is.False);
+		form.Editor.Viewport.MoveToDocumentEnd(false);
+		Assert.That(form.Editor.Viewport.TypeHexDigit('C') && form.Editor.Viewport.TypeHexDigit('D'), Is.True, "Overwrite mode appends at the end.");
+		form.Editor.Save();
+		form.Close();
+		Assert.That(await pending, Is.EqualTo(new byte[] { 1, 2, 0xCD }));
+		Assert.That(input, Is.EqualTo(new byte[] { 1, 2 }), "The input array is never changed.");
 	});
 
 	[TestCase(false)]
@@ -275,4 +383,35 @@ public class HexEditorControlTests {
 		Assert.That(failure, Is.Null, failure?.ToString());
 		Assert.That(completed, Is.True);
 	}
+
+	#region Inner Types
+
+	/// <summary>A resizable memory stream that records the threads its writes run on and makes each write take a while, as a slow disk does.</summary>
+	private sealed class ThreadRecordingStream : MemoryStream {
+		private const int WriteMilliseconds = 100;
+
+		public ThreadRecordingStream(byte[] content) {
+			base.Write(content, 0, content.Length);
+			Position = 0;
+		}
+
+		public List<int> WriteThreads { get; } = new();
+
+		public override void Write(byte[] buffer, int offset, int count) {
+			Record();
+			base.Write(buffer, offset, count);
+		}
+
+		public override void Write(ReadOnlySpan<byte> buffer) {
+			Record();
+			base.Write(buffer);
+		}
+
+		private void Record() {
+			WriteThreads.Add(Environment.CurrentManagedThreadId);
+			Thread.Sleep(WriteMilliseconds);
+		}
+	}
+
+	#endregion
 }

@@ -49,13 +49,33 @@ public partial class HexEditorForm : Form {
 		await ShowModalAsync(owner, form, cancellationToken);
 	}
 
-	/// <summary>Shows a modal editor over a copy of the bytes. Returns the saved copy, or null when the window closes without saving; the input is never changed. Token cancellation closes it and throws.</summary>
-	public static async Task<byte[]> ShowBytesAsync(IWin32Window owner, string title, byte[] bytes, bool readOnly = false, CancellationToken cancellationToken = default) {
+	/// <summary>Edits a fixed-length byte buffer and copies only saved changes into that same array after the modal window closes. Returns whether changes were saved. Read-only review and token cancellation leave the input unchanged; token cancellation closes the window and throws.</summary>
+	public static async Task<bool> ShowBytesAsync(IWin32Window owner, string title, byte[] bytes, bool readOnly = false, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(bytes, nameof(bytes));
 		cancellationToken.ThrowIfCancellationRequested();
-		using var copy = new MemoryStream((byte[])bytes.Clone(), 0, bytes.Length, !readOnly, true);
+		using (var copy = new MemoryStream((byte[])bytes.Clone(), 0, bytes.Length, !readOnly, true))
+		using (var form = new HexEditorForm()) {
+			form.Editor.ReadOnly = readOnly;
+			form.OpenStream(copy, title, false);
+			form.Editor.Document.CanResize = false;
+			form.Editor.InsertMode = false;
+			form.UpdateMenuState();
+			var saved = false;
+			form.Editor.Document.Saved += () => saved = true;
+			await ShowModalAsync(owner, form, cancellationToken);
+			if (saved)
+				copy.GetBuffer().AsSpan(0, bytes.Length).CopyTo(bytes);
+			return saved;
+		}
+	}
+
+	/// <summary>Edits a copy of the bytes that can grow and shrink, as a stream of any length can, and returns the saved content after the modal window closes, or null when nothing was saved. The input array is never changed; token cancellation closes the window and throws.</summary>
+	public static async Task<byte[]> EditBytesAsync(IWin32Window owner, string title, byte[] bytes, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(bytes, nameof(bytes));
+		cancellationToken.ThrowIfCancellationRequested();
+		using var copy = new MemoryStream();
+		copy.Write(bytes);
 		using var form = new HexEditorForm();
-		form.Editor.ReadOnly = readOnly;
 		form.OpenStream(copy, title, false);
 		var saved = false;
 		form.Editor.Document.Saved += () => saved = true;
@@ -101,8 +121,8 @@ public partial class HexEditorForm : Form {
 			return false;
 		switch (answer) {
 			case DialogExResult.Button1:
-				_editor.Save();
-				return true;
+				await _editor.SaveAsync();
+				return !IsDisposed;
 			case DialogExResult.Button2:
 				return true;
 			default:
@@ -147,7 +167,7 @@ public partial class HexEditorForm : Form {
 
 	private void OpenReadOnlyMenuItemClicked(object sender, EventArgs e) => RunCommand(() => OpenWithDialogAsync(true));
 
-	private void SaveMenuItemClicked(object sender, EventArgs e) => RunCommand(_editor.Save);
+	private void SaveMenuItemClicked(object sender, EventArgs e) => RunCommand(() => _editor.SaveAsync());
 
 	private void CloseDocumentMenuItemClicked(object sender, EventArgs e) {
 		RunCommand(async () => {
@@ -245,8 +265,8 @@ public partial class HexEditorForm : Form {
 		_copyTextMenuItem.Enabled = _copyHexMenuItem.Enabled;
 		_selectAllMenuItem.Enabled = open && _editor.Document.Length > 0;
 		_pasteMenuItem.Enabled = editable;
-		_deleteMenuItem.Enabled = editable && (_editor.Viewport.HasSelection || _editor.Viewport.CaretOffset < _editor.Document.Length);
-		_insertModeMenuItem.Enabled = editable;
+		_deleteMenuItem.Enabled = editable && _editor.Document.CanResize && (_editor.Viewport.HasSelection || _editor.Viewport.CaretOffset < _editor.Document.Length);
+		_insertModeMenuItem.Enabled = editable && _editor.Document.CanResize;
 		_insertModeMenuItem.Checked = _editor.InsertMode;
 		_bytesPerRow8MenuItem.Checked = _editor.BytesPerRow == 8;
 		_bytesPerRow16MenuItem.Checked = _editor.BytesPerRow == 16;

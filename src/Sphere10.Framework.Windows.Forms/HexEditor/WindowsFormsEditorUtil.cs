@@ -23,15 +23,17 @@ public static partial class WinForms {
 		/// <summary>Creates a caller-owned stream-backed hex editor with no document bound.</summary>
 		public static HexEditorControl CreateHexEditor() => new HexEditorControl();
 
-		/// <summary>Shows the existing owned hex editor window over a copy of the bytes. Returns the saved copy or null when the window closes without saving; token cancellation throws after ending the owned window.</summary>
-		public static Task<byte[]> ShowBytesAsync(IWin32Window owner, string title, byte[] bytes, bool readOnly = false, CancellationToken cancellationToken = default)
+		/// <summary>Copies only saved edits into the supplied fixed-length byte buffer after the window closes. Returns whether changes were saved; read-only review and token cancellation leave the input unchanged.</summary>
+		public static Task<bool> ShowBytesAsync(IWin32Window owner, string title, byte[] bytes, bool readOnly = false, CancellationToken cancellationToken = default)
 			=> HexEditorForm.ShowBytesAsync(owner, title, bytes, readOnly, cancellationToken);
+
+		/// <summary>Edits a copy of the bytes that can grow and shrink, and returns the saved content after the window closes, or null when nothing was saved.</summary>
+		public static Task<byte[]> EditBytesAsync(IWin32Window owner, string title, byte[] bytes, CancellationToken cancellationToken = default)
+			=> HexEditorForm.EditBytesAsync(owner, title, bytes, cancellationToken);
 
 		/// <summary>Shows the existing complete-text review and optional save workflow. Returns its saved path or null on closure; token cancellation retains the dialog's normal cancellation contract.</summary>
 		public static Task<string> ShowTextAsync(IWin32Window owner, string title, string instructions, string text, string defaultFileName = "export.txt",
 			string filter = ReviewTextDialog.DefaultFilter, Encoding encoding = null, CancellationToken cancellationToken = default, ILogger logger = null
-		) {
-			return ReviewTextDialog.ShowAsync(owner, title, instructions, text, defaultFileName, filter, encoding, cancellationToken, logger);
-		}
+		) => ReviewTextDialog.ShowAsync(owner, title, instructions, text, defaultFileName, filter, encoding, cancellationToken, logger);
 	}
 }

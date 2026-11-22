@@ -40,7 +40,7 @@ public class HexEditorSearch {
 		var compact = string.Concat(text.Where(character => !char.IsWhiteSpace(character)));
 		Guard.Argument(compact.Length > 0, nameof(text), "Enter at least one hexadecimal byte pair.");
 		Guard.Argument(HexEncoding.IsValid(compact), nameof(text), "Enter hexadecimal byte pairs only (00-FF).");
-		return new HexEditorSearch(HexEncoding.Decode(compact));
+		return new HexEditorSearch(compact.ToHexByteArray());
 	}
 
 	/// <summary>Creates a search for text encoded with the supplied encoding.</summary>

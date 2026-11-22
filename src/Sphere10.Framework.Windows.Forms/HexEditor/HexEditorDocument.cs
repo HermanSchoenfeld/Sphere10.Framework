@@ -9,17 +9,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// The editable content behind a hex editor: a seekable stream read through a bounded <see cref="StreamByteCache"/>
 /// plus a piece table of pending edits. Overwrites, insertions and deletions never touch the stream until
-/// <see cref="Save"/>: pure overwrites are written in place as coalesced runs, and a length change rewrites the stream
-/// from the first structural change (bounded in memory, spilling to a temporary file beyond
-/// <see cref="MaxInMemoryRewriteBytes"/>). Members are synchronized so a background search can read while the UI edits.
+/// <see cref="Save"/> or <see cref="SaveAsync"/>: pure overwrites are written in place as coalesced runs, and a length change
+/// rewrites the stream from the first structural change (bounded in memory, spilling to a temporary file beyond
+/// <see cref="MaxInMemoryRewriteBytes"/>). Members are synchronized so a background search can read while the UI edits, and a
+/// save holds the lock one bounded step at a time, so reads made while it runs wait for one step at most and see the pending content.
 /// </summary>
-public class HexEditorDocument : IDisposable {
+public class HexEditorDocument : SyncDisposable {
 	/// <summary>Raised when content or its modified state changes through an edit, save or revert.</summary>
 	public event EventHandlerEx Changed;
 
@@ -35,7 +38,9 @@ public class HexEditorDocument : IDisposable {
 	private readonly MemoryStream _added;
 	private long _originalLength;
 	private bool _readOnly;
-	private bool _disposed;
+	private volatile bool _saving;
+	private Stream _commitStaging;
+	private long _commitStart;
 
 	public HexEditorDocument(Stream stream)
 		: this(stream, true) {
@@ -77,14 +82,20 @@ public class HexEditorDocument : IDisposable {
 	/// <summary>Whether the underlying stream accepts writes at all.</summary>
 	public bool CanWrite => _stream.CanWrite;
 
-	/// <summary>Whether edits are rejected. A document over a non-writable stream is always read-only.</summary>
+	/// <summary>Whether edits may change the document length. Disable for a fixed-size caller-owned byte buffer.</summary>
+	public bool CanResize { get; set; } = true;
+
+	/// <summary>Whether edits are rejected. A document over a non-writable stream is always read-only, and every document is while it saves.</summary>
 	public bool IsReadOnly {
-		get => _readOnly;
+		get => _readOnly || _saving;
 		set {
 			Guard.Ensure(value || _stream.CanWrite, "The underlying stream does not support writing.");
 			_readOnly = value;
 		}
 	}
+
+	/// <summary>Whether a save is writing the pending edits to the stream. Edits are refused meanwhile; reads go on and see the pending content.</summary>
+	public bool IsSaving => _saving;
 
 	/// <summary>Whether there are pending edits not yet written to the stream.</summary>
 	public bool HasChanges {
@@ -178,6 +189,7 @@ public class HexEditorDocument : IDisposable {
 	public void Overwrite(long offset, ReadOnlySpan<byte> bytes) {
 		EnsureEditable();
 		Guard.ArgumentInRange(offset, 0, Length, nameof(offset));
+		Guard.Ensure(CanResize || bytes.Length <= Length - offset, "The byte buffer has a fixed length.");
 		if (bytes.IsEmpty)
 			return;
 		lock (_lock) {
@@ -202,6 +214,7 @@ public class HexEditorDocument : IDisposable {
 		Guard.ArgumentInRange(offset, 0, Length, nameof(offset));
 		if (bytes.IsEmpty)
 			return;
+		Guard.Ensure(CanResize, "The byte buffer has a fixed length.");
 		lock (_lock) {
 			Replace(offset, 0, Piece.Added(Append(bytes), bytes.Length, -1));
 			Length += bytes.Length;
@@ -216,6 +229,7 @@ public class HexEditorDocument : IDisposable {
 		Guard.ArgumentInRange(count, 0, Length - offset, nameof(count));
 		if (count == 0)
 			return;
+		Guard.Ensure(CanResize, "The byte buffer has a fixed length.");
 		lock (_lock) {
 			Replace(offset, count, null);
 			Length -= count;
@@ -223,27 +237,30 @@ public class HexEditorDocument : IDisposable {
 		NotifyChanged();
 	}
 
-	/// <summary>Writes pending edits to the stream and flushes. Pure overwrites patch in place as coalesced runs; a changed length rewrites from the first structural change.</summary>
+	/// <summary>Writes pending edits to the stream and flushes on the calling thread. Pure overwrites patch in place as coalesced runs; a changed length
+	/// rewrites from the first structural change, which for a large file can take long: a UI calls <see cref="SaveAsync"/> instead.</summary>
 	public void Save() {
-		EnsureNotDisposed();
-		Guard.Ensure(!_readOnly, "The document is read-only.");
-		lock (_lock) {
-			if (IsPristine)
-				return;
-			if (Length == _originalLength && IsIdentityMapping(out _))
-				SaveInPlace();
-			else
-				SaveRewriting();
-			_originalLength = Length;
-			ResetPieces();
-		}
-		NotifyChanged();
-		NotifySaved();
+		if (!BeginSave())
+			return;
+		WriteChanges(CancellationToken.None);
+		NotifySaveCompleted();
+	}
+
+	/// <summary>Writes pending edits to the stream on a worker thread, as <see cref="Save"/> does, and raises <see cref="Changed"/> and <see cref="Saved"/>
+	/// in the caller's synchronization context once the stream is flushed. <see cref="IsSaving"/> is true from the call until then. The token is
+	/// observed until the stream is first written; a save that has begun writing completes, so the stream never holds part of the edits.</summary>
+	public async Task SaveAsync(CancellationToken cancellationToken = default) {
+		if (!BeginSave())
+			return;
+		// Not given the token: the worker must run to clear IsSaving even when the token is already cancelled.
+		await Task.Run(() => WriteChanges(cancellationToken));
+		NotifySaveCompleted();
 	}
 
 	/// <summary>Discards every pending edit.</summary>
 	public void Revert() {
 		EnsureNotDisposed();
+		Guard.Ensure(!_saving, "The document is being saved.");
 		bool reverted;
 		lock (_lock) {
 			reverted = !IsPristine;
@@ -254,11 +271,11 @@ public class HexEditorDocument : IDisposable {
 			NotifyChanged();
 	}
 
-	public void Dispose() {
-		if (_disposed)
-			return;
-		_disposed = true;
+	// A save that is writing is waited for, because closing its stream midway would leave part of the edits in the file.
+	protected override void DisposeInternal() {
 		lock (_lock) {
+			while (_saving)
+				Monitor.Wait(_lock);
 			Cache.Clear();
 			_added.Dispose();
 			if (_ownsStream)
@@ -283,6 +300,7 @@ public class HexEditorDocument : IDisposable {
 	}
 
 	// Both read paths walk the pieces covering the range: stream pieces come from the cache (or the stream), added pieces from the edit buffer.
+	// While a rewrite is copying its staged tail into the stream, that tail is read from the staged copy instead.
 	private int ReadCore(long offset, Span<byte> buffer, bool useCache) {
 		EnsureNotDisposed();
 		Guard.ArgumentNotNegative(offset, nameof(offset));
@@ -291,27 +309,40 @@ public class HexEditorDocument : IDisposable {
 				return 0;
 			if (buffer.Length > Length - offset)
 				buffer = buffer.Slice(0, (int)(Length - offset));
-			var index = Locate(offset, out var pieceStart);
-			var total = 0;
-			while (total < buffer.Length && index < _pieces.Count) {
-				var piece = _pieces[index];
-				var relative = offset + total - pieceStart;
-				var count = (int)Math.Min(piece.Length - relative, buffer.Length - total);
-				var slice = buffer.Slice(total, count);
-				int read;
-				if (piece.IsAdded) {
-					_added.GetBuffer().AsSpan((int)(piece.Start + relative), count).CopyTo(slice);
-					read = count;
-				} else
-					read = useCache ? Cache.Read(piece.Start + relative, slice) : ReadDirect(piece.Start + relative, slice);
-				total += read;
-				if (read < count)
-					break;
-				pieceStart += piece.Length;
-				index++;
-			}
-			return total;
+			if (_commitStaging == null || offset + buffer.Length <= _commitStart)
+				return ReadPieces(offset, buffer, useCache);
+			var head = (int)Math.Max(0, _commitStart - offset);
+			var headRead = head > 0 ? ReadPieces(offset, buffer.Slice(0, head), useCache) : 0;
+			if (headRead < head)
+				return headRead;
+			_commitStaging.Position = offset + head - _commitStart;
+			_commitStaging.ReadExactly(buffer.Slice(head));
+			return buffer.Length;
 		}
+	}
+
+	// Runs under the lock.
+	private int ReadPieces(long offset, Span<byte> buffer, bool useCache) {
+		var index = Locate(offset, out var pieceStart);
+		var total = 0;
+		while (total < buffer.Length && index < _pieces.Count) {
+			var piece = _pieces[index];
+			var relative = offset + total - pieceStart;
+			var count = (int)Math.Min(piece.Length - relative, buffer.Length - total);
+			var slice = buffer.Slice(total, count);
+			int read;
+			if (piece.IsAdded) {
+				_added.GetBuffer().AsSpan((int)(piece.Start + relative), count).CopyTo(slice);
+				read = count;
+			} else
+				read = useCache ? Cache.Read(piece.Start + relative, slice) : ReadDirect(piece.Start + relative, slice);
+			total += read;
+			if (read < count)
+				break;
+			pieceStart += piece.Length;
+			index++;
+		}
+		return total;
 	}
 
 	private int ReadDirect(long offset, Span<byte> buffer) {
@@ -408,7 +439,46 @@ public class HexEditorDocument : IDisposable {
 		return true;
 	}
 
-	// Runs under the lock. Consecutive added pieces are written as one run to minimize seeks.
+	// Admits one save: from here edits are refused, so the pieces stay as they are until the save ends.
+	private bool BeginSave() {
+		EnsureNotDisposed();
+		lock (_lock) {
+			Guard.Ensure(!_readOnly, "The document is read-only.");
+			Guard.Ensure(!_saving, "The document is already being saved.");
+			if (IsPristine)
+				return false;
+			_saving = true;
+			return true;
+		}
+	}
+
+	// Runs after BeginSave, on any thread. Each step takes the lock, so the stream is never used by two threads at once.
+	private void WriteChanges(CancellationToken cancellationToken) {
+		try {
+			cancellationToken.ThrowIfCancellationRequested();
+			bool inPlace;
+			lock (_lock)
+				inPlace = Length == _originalLength && IsIdentityMapping(out _);
+			if (inPlace)
+				SaveInPlace();
+			else
+				SaveRewriting(cancellationToken);
+		} finally {
+			lock (_lock) {
+				_saving = false;
+				_commitStaging = null;
+				Monitor.PulseAll(_lock);
+			}
+		}
+	}
+
+	private void NotifySaveCompleted() {
+		NotifyChanged();
+		NotifySaved();
+	}
+
+	// Consecutive added pieces are written as one run to minimize seeks, a bounded step at a time. Until the save completes the pieces still
+	// serve the written bytes from the edit buffer, so a read between steps sees the same content.
 	private void SaveInPlace() {
 		var position = 0L;
 		var index = 0;
@@ -425,16 +495,22 @@ public class HexEditorDocument : IDisposable {
 				position += _pieces[index].Length;
 				index++;
 			}
-			_stream.Position = runStart;
-			_stream.Write(run.GetBuffer(), 0, (int)run.Length);
-			Cache.Invalidate(runStart, run.Length);
+			for (var written = 0L; written < run.Length; written += RewriteChunkSize) {
+				var count = (int)Math.Min(RewriteChunkSize, run.Length - written);
+				lock (_lock) {
+					_stream.Position = runStart + written;
+					_stream.Write(run.GetBuffer(), (int)written, count);
+					Cache.Invalidate(runStart + written, count);
+				}
+			}
 		}
-		_stream.Flush();
+		lock (_lock)
+			CompleteSave();
 	}
 
-	// Runs under the lock. The tail from the first structural change is staged completely before the stream is resized and rewritten,
-	// because the rewrite overwrites the stream bytes that tail still references.
-	private void SaveRewriting() {
+	// The tail from the first structural change is staged completely before the stream is resized and rewritten, because the rewrite
+	// overwrites the stream bytes that tail still references. Cancellation is observed only while staging, before the stream changes.
+	private void SaveRewriting(CancellationToken cancellationToken) {
 		var first = 0L;
 		var position = 0L;
 		foreach (var piece in _pieces) {
@@ -450,18 +526,46 @@ public class HexEditorDocument : IDisposable {
 		var chunk = new byte[(int)Math.Min(RewriteChunkSize, Math.Max(1, tailLength))];
 		var staged = 0L;
 		while (staged < tailLength) {
+			cancellationToken.ThrowIfCancellationRequested();
 			var read = ReadCore(first + staged, chunk.AsSpan(0, (int)Math.Min(chunk.Length, tailLength - staged)), false);
 			Guard.Ensure(read > 0, "The stream ended before the staged content was read.");
 			staging.Write(chunk, 0, read);
 			staged += read;
 		}
-		if (Length != _originalLength)
-			_stream.SetLength(Length);
-		staging.Position = 0;
-		_stream.Position = first;
-		staging.CopyTo(_stream, RewriteChunkSize);
+		cancellationToken.ThrowIfCancellationRequested();
+		try {
+			// From here reads of the tail come from the staged copy until the stream holds it.
+			lock (_lock) {
+				if (Length != _originalLength)
+					_stream.SetLength(Length);
+				_commitStart = first;
+				_commitStaging = staging;
+			}
+			for (var copied = 0L; copied < tailLength; copied += chunk.Length) {
+				var count = (int)Math.Min(chunk.Length, tailLength - copied);
+				lock (_lock) {
+					staging.Position = copied;
+					staging.ReadExactly(chunk, 0, count);
+					_stream.Position = first + copied;
+					_stream.Write(chunk, 0, count);
+				}
+			}
+			lock (_lock) {
+				Cache.Clear();
+				CompleteSave();
+			}
+		} finally {
+			lock (_lock)
+				_commitStaging = null;
+		}
+	}
+
+	// Runs under the lock. The stream now holds the pending content, which becomes the document's original content.
+	private void CompleteSave() {
 		_stream.Flush();
-		Cache.Clear();
+		_originalLength = Length;
+		ResetPieces();
+		_commitStaging = null;
 	}
 
 	// Runs under the lock. One stream piece covering the saved content, or nothing for an empty stream.
@@ -475,9 +579,10 @@ public class HexEditorDocument : IDisposable {
 	private void EnsureEditable() {
 		EnsureNotDisposed();
 		Guard.Ensure(!_readOnly, "The document is read-only.");
+		Guard.Ensure(!_saving, "The document is being saved.");
 	}
 
-	private void EnsureNotDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
+	private void EnsureNotDisposed() => ObjectDisposedException.ThrowIf(!_added.CanRead, this);
 
 	#region Inner Types
 
