@@ -25,9 +25,11 @@ in Processes/ProcessSignaler.cs, Tools.Windows.Network, Tools.Windows.Drives and
 their peers. Keep the source in the owning domain folder; read the
 [facade/folder rules](framework-utilities.md#windows-utility-facade-and-source-folders).
 ServiceControlManagerSentry wraps sc.exe rather than native SCM operations; read
-[Process Sentries](process-sentries.md). Do not add partial extension files.
-Established WinAPI DLL partitions and designer-generated partials retain their
-existing structure.
+[Process Sentries](process-sentries.md). Follow the
+[partial-type conventions](../code-styling.md#partial-types) when a domain owner
+needs responsibility-based source partitions; do not introduce a second facade
+or move methods out of their owning domain. Established WinAPI DLL partitions
+and designer-generated partials retain their existing structure.
 
 Typed resource APIs own native handles/buffers and return detached OS data or raw
 errors. Their contracts have no display labels, converters/editors, navigation

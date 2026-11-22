@@ -4,6 +4,11 @@ Use the existing framework scheduler rather than ad-hoc timers.
 
 ## Job Scheduler
 
+For an application-owned lifetime, use the appropriate generic scheduler, such as
+`Scheduler<BaseJob>`. First use of the non-generic `Scheduler` also constructs and
+starts its two process-global singleton schedulers through its static constructor,
+even when calling `new Scheduler()`. The generic owner avoids those extra objects.
+
 The framework includes a built-in `Scheduler<TJob, TJobSchedule>` for recurring or one-shot background jobs:
 
 - **`IJob`** — interface with `Execute()`, `Name`, `Status`, `Policy`, `Schedules`.

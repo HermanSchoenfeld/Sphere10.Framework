@@ -2,7 +2,7 @@
 
 # Sphere10.Framework.Web.VisualRenderer
 
-Build a visual document in C# and render it to HTML or plain text. This [MIT-licensed](../../LICENSE) library is part of Sphere10 Framework. It targets Framework's supported .NET versions and runs independently of Notion, LocalNotion repositories and AngleSharp.
+Build a visual document in C# and render it to HTML or plain text. This [MIT-licensed](../../LICENSE) library is part of Sphere10 Framework. It targets Framework's supported .NET versions and runs independently of the core Framework assembly, Notion, LocalNotion repositories and AngleSharp. Theme asset hashes use BCL hex conversion to preserve that dependency boundary.
 
 Templates and their defaults are packaged into one embedded ZIP at build time. In online mode, the built-in themes use absolute CDN URLs for stylesheets, scripts, and supporting assets. You can display the resulting HTML string in an embedded browser without deploying a themes folder or hosting asset files.
 

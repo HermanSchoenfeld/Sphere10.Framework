@@ -2,7 +2,9 @@
 
 Sender-free event delegates, call-argument payloads and before and after event arguments for intercepted operations.
 
-`EventHandlerEx` and its generic forms with up to five arguments are the delegate types that Framework events use instead of `EventHandler<TEventArgs>`, so handlers receive the payload without a sender or an `EventArgs` subclass. `EventHandlerExExtensions.InvokeAsync` raises a handler on a thread-pool task. `WaitNext` adds its completion handler to the delegate value it receives rather than to the event field, so raising the original event does not complete the returned task.
+`EventHandlerEx` and its generic forms with up to five arguments are the delegate types that owned Framework events use instead of `EventHandler` or `EventHandler<TEventArgs>`. They have no implicit sender or `EventArgs` requirement; meaningful typed source and payload arguments are explicit. Follow the [event notification pattern](../../../docs/guidelines/patterns/type-hierarchies.md#event-notifications-and-template-hooks) for dispatch and subscription ownership.
+
+`EventHandlerExExtensions.InvokeAsync` schedules through `Task.Factory.StartNew` and returns no completion task; it does not guarantee UI dispatch or shutdown drain. `WaitNext` adds its completion handler to the delegate value it receives rather than to the event field, so raising the original event does not complete the returned task.
 
 The observable collections in [Collections](../Collections/README.md) describe each intercepted call with a `CallArgs` subclass, raise it in a `PreEventArgs<TArgs>` before the operation and in a `PostEventArgs<TArgs>` or `PostEventArgs<TArgs, TResult>` afterwards, and choose which operations notify through `EventTraits`. `ISuppressableEvents` lets a caller switch notifications off during bulk work.
 
@@ -17,7 +19,7 @@ The observable collections in [Collections](../Collections/README.md) describe e
 | [`EventHandlerEx<T1, T2, T3>`](EventHandlerEx.cs) | delegate | Event handler with three arguments and no sender. |
 | [`EventHandlerEx<T1, T2, T3, T4>`](EventHandlerEx.cs) | delegate | Event handler with four arguments and no sender. |
 | [`EventHandlerEx<T1, T2, T3, T4, T5>`](EventHandlerEx.cs) | delegate | Event handler with five arguments and no sender. |
-| [`EventHandlerExExtensions`](EventHandlerExExtensions.cs) | static class | Adds `InvokeAsync` (raise on a thread-pool task) and `WaitNext` to the `EventHandlerEx` delegates. |
+| [`EventHandlerExExtensions`](EventHandlerExExtensions.cs) | static class | Adds task-scheduled `InvokeAsync` and delegate-copy `WaitNext`; see the execution limitations above. |
 | [`EventTraits`](EventTraits.cs) | enum | Flags for the operation kinds that raise events, such as read, write, count, search, fetch, add, update, insert and remove. |
 | [`IndexCountCallArgs`](IndexCountCallArgs.cs) | class | Call arguments with an index and a count. |
 | [`IndexItemsCallArgs<T>`](IndexItemsCallArgs.cs) | class | Call arguments with an index and the items at it. |

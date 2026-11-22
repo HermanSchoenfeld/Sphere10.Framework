@@ -1,83 +1,74 @@
 # Framework Reuse and Adoption
 
-This applies to all development in this repository. Sphere10 provides reusable
-code, patterns and architecture, and its own development must use those foundations.
+Sphere10 provides reusable components, widgets, patterns and architecture; its
+own libraries and products use those foundations. Before implementing a change,
+read the actual owner and its real consumer path. A similarly named type or an
+API listing is not enough to establish equivalent behavior.
 
-Use existing Sphere10 abstractions and utilities before introducing another
-implementation. Trace the real consumers and registration path, then extend
-the layer that owns the behavior. Apply the [coding guide](../code-styling.md)
-and the relevant [engineering practices](../patterns-and-practices.md).
-
-- Before implementing anything, find and understand the existing code,
-  abstractions, utilities, patterns and architecture that address the problem.
-  Reuse them rather than creating parallel implementations or local substitutes.
-- Extend or compose the existing framework where it falls short. Add a new
-  abstraction only when the existing architecture cannot reasonably support the
-  requirement; explain that gap and keep the addition consistent with the framework.
-- Keep fixes and updates narrow. Reuse or adoption does not authorize adjacent
-  redesigns, new policies or unrelated cleanup. When an existing helper needs a
-  compatibility fix, change only the demonstrated gap required by its actual
-  consumer and preserve the surrounding behavior.
-- When consolidating imported code, adapt the import to the existing Framework
-  contracts first. Merge useful behavior where appropriate and remove superseded
-  implementations; narrow scope is not a reason to retain parallel versions.
-- Extend the existing class in its owning source file. Do not introduce partial
-  extension files merely to separate a new feature's methods. Retain the existing
-  native DLL declaration partition and designer-generated visual partials.
-- When adding or improving a capability, adopt it in the relevant repository
-  consumers in the same change. Supporting code alone is not a completed
-  implementation.
-- Trace the real startup, registration and user-facing execution paths. Update
-  existing applications, demos and examples to consume the new APIs.
-- Replace the superseded manual configuration or duplicated logic in those
-  consumers. Do not leave the old path active alongside an unused replacement.
-- Keep compatibility code only where it has an identified consumer or purpose,
-  and clearly distinguish it from the recommended, actively demonstrated path.
-- Verify the integration through the actual consumer's configuration and
-  behavior, in addition to testing the supporting API in isolation.
-- Update documentation to match the code that runs. Before claiming completion,
-  audit the whole change for new capabilities that were added but never adopted.
-
-For concrete utility choices, read [Framework Utilities](framework-utilities.md).
-For design responsibilities, select the applicable topics from the
-[Patterns and Practices index](../patterns-and-practices.md).
+Inspect existing controls, screens, utilities, base classes and concrete
+components before proposing another implementation. Trace configuration,
+execution, publication, failure and cleanup. Extend the existing owner for a
+demonstrated gap, adopting the capability throughout its relevant consumers in
+the same change. Follow the [coding guide](../code-styling.md) and select the
+applicable [engineering practices](../patterns-and-practices.md).
 
 ## Dogfooding and componentization
 
-Prefer the simplest correct composition of existing owners. Each added wrapper,
-coordinator, stored flag or abstraction must solve a concrete requirement that
-the current mechanism cannot already express. Derive state from its actual
-owner when possible, and remove superseded paths when adopting shared behavior.
-Judge simplicity over the complete execution path, including callers and cleanup.
-Moving the same machinery behind another facade or shortening source text does
-not reduce complexity. Preserve required behavior and failure/lifetime contracts
-when simplifying.
+Prefer the simplest correct composition of existing owners. Identify the public
+operation and trace down to the objects that own its mechanism, state and
+lifetime. Each wrapper, coordinator, flag or abstraction must have a concrete
+requirement that those owners cannot already express. Derive state from its
+actual owner where possible. Judge simplicity over the complete execution path,
+including callers, cleanup and error handling; shorter source text alone does
+not show simpler behavior.
 
-Dogfooding means using Sphere10's existing mechanisms in its own libraries,
-demonstrations and products. Componentization means giving each shared behavior
-one encapsulated owner, then composing that owner wherever the behavior is
-needed. The goal is a normalized implementation, not several similarly named
-helpers which solve the same problem differently.
+Keep the user's operation on its natural public owner. For example, source
+configuration and refresh belong on `VisualGrid`, while its binding controller
+is internal. Introducing a public interface solely to conceal that controller
+would retain the same extra concept. Do not hide independently useful components
+with real consumers just to reduce the visible type count.
 
-Before adding a capability, identify the existing implementation, its contracts
-and its real consumers. If another feature already performs all or part of the
-operation, extract the reusable mechanism from that owner when necessary,
-preserve its behavior, and migrate both the existing and new consumers to it.
-Extend the existing Framework component when it nearly meets the requirement.
-Do not copy its implementation into a screen or retain a second active path
-after the shared component replaces it.
+Dogfooding includes the Framework implementation itself. Use the existing
+disposal bases and scopes, event notification family, conversion helpers,
+controls and execution primitives. When the owner lacks a required capability,
+extend it there and migrate both the old and new paths. `Throttle.ExecuteAsync`
+owns asynchronous coalescing; existing grid and screen owners retain UI dispatch,
+activity, pending presentation and source lifetime. A debounce that waits for a
+quiet stream is not a substitute for immediate continuous updates.
 
-Keep the extracted mechanism at its actual reusable boundary. Native resource
-operations, query engines, parsers and general controls can belong in Framework;
-product sampling, projections, confirmations and policy remain in the product.
-Several screens using the same code is a reason to encapsulate it, not proof
-that it belongs in Framework. Apply the boundaries below before moving it.
+Preserve behavioral contracts while adopting a component: cancellation,
+completion, reentrancy, event ordering, thread affinity, ownership and failure
+policy are part of reuse. Do not add a second lifecycle guard or publication
+version when the existing owner already enforces the same invariant. Separate
+state is justified only by a distinct lifetime or boundary, such as configured
+selection identity versus the identity active after binding.
 
-Verify the original and new consumer paths together, including ownership,
-failure and cancellation behavior. Record the reused owner and the remaining
-extension in implementation documentation. New dependencies and changes to
-unrelated behavior still require their existing approvals; dogfooding does not
-authorize an adjacent rewrite.
+Keep the change focused on the requirement, but complete it across every
+relevant owner and consumer. Remove superseded factories, aliases, hand-written
+mechanisms and duplicate registrations. Update real startup paths, applications,
+demos, test doubles and documentation. Supporting code that no consumer uses is
+not a completed adoption. Keep compatibility code for an identified contract;
+do not preserve competing paths for hypothetical consumers.
+
+Componentization gives independently reusable behavior one owner. Before
+extracting, determine whether another existing component already owns it. A
+substantial class can remain one owner organized into
+[aspect-oriented partials](partial-classes.md); moving methods between files does
+not require a service, interface or wrapper. When importing code, adapt it to
+existing contracts and merge useful behavior, rather than keeping parallel
+implementations because a full migration touches more files.
+
+Keep the mechanism at its actual reusable boundary. Native resource operations,
+query engines, parsers and general controls can belong in Framework; product
+sampling, projections, confirmations and policy stay in the product. Several
+screens using a capability is not by itself evidence of Framework ownership.
+Apply the boundaries below before moving it.
+
+Review the original and new consumer paths together, including resource and
+failure behavior, and verify the actual integration under the active verification
+plan. Update the documentation to describe the path that runs. New dependencies,
+unrelated redesigns and changes to established policy require their existing
+authorization; reuse does not grant it.
 
 ## Application and Framework boundaries
 

@@ -118,9 +118,9 @@ family may share one basename file, such as `Foo`, `Foo<T>` and `Foo<T1, T2>` in
 `Foo.cs`; differing type names do not qualify.
 
 Nested implementation helpers remain encapsulated in their owning class and
-follow the member-order rules below. A concrete WinForms type and its existing
-designer partial each declare that same type, in `Type.cs` and
-`Type.Designer.cs`; do not split ordinary feature methods into new partial files.
+follow the member-order rules below. A type may use coherent
+[responsibility-based partial files](#partial-types). A concrete WinForms type and
+its designer partial declare that same type in `Type.cs` and `Type.Designer.cs`.
 The established WinAPI DLL declaration partition remains intact. Preserve the
 explicit central `WindowsTool.cs` facade file rather than create a second facade
 to satisfy a filename convention. These established structures do not authorize
@@ -149,13 +149,15 @@ When a control or form has dedicated support classes, give that family its own
 domain folder. For example, `ListMerger` owns its merge/side definitions at the
 domain root and its visual control under `ListMerger/Controls`.
 
-A native domain's root contains its contracts, state, builders and helpers;
-`Controls` contains visual controls, and `Forms` contains forms, dialogs and hosted
-screens. General `Controls` and `Forms` hold standalone reusable widgets without
-a dedicated supporting family. Reserve `Misc` for helpers genuinely shared across
-domains. Put extension classes in `Extensions`, or the owning domain's `Extensions`
-when their behavior belongs specifically to that domain. Preserve namespaces and
-public APIs when consolidating physical source locations.
+Choose subfolders for meaningful boundaries within the domain. A family may
+use `Controls` and `Forms` when those groups aid navigation, or remain flat as
+VisualGrid does when its controls, dialogs and supporting types form one cohesive
+component. Do not add folders mechanically from base-type names. General
+`Controls` and `Forms` hold standalone reusable widgets without a dedicated
+supporting family; reserve `Misc` for helpers genuinely shared across domains.
+Put extension classes in `Extensions`, or the owning domain's `Extensions` when
+their behavior belongs specifically to that domain. Preserve namespaces, public
+APIs and resource identities when consolidating physical source locations.
 
 ### Callable bodies
 
@@ -171,6 +173,12 @@ public Task LoadAsync(CancellationToken cancellationToken = default) => Task.Run
 
 ### Custom events
 
+Owned events use `EventHandlerEx` with meaningful typed arguments; never declare
+them with `EventHandler` or `EventHandler<TEventArgs>`. Required external event,
+interface and override signatures remain intact. Follow the complete
+[event notification pattern](patterns/type-hierarchies.md#event-notifications-and-template-hooks)
+for `Notify*`/`On*` dispatch, forwarding and subscription ownership.
+
 Custom events are an exception to the general multiline callable-body rule.
 Their declarations and `add`/`remove` block bodies may stay compact on one line;
 expression-bodied accessors are also accepted. Prefer a compact declaration for
@@ -179,7 +187,7 @@ simple forwarding events when it fits within about 170 characters.
 ```csharp
 public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
 
-public event EventHandler Changed { add { EnsureReady(); _changed += value; } remove { EnsureReady(); _changed -= value; } }
+public event EventHandlerEx Changed { add { EnsureReady(); _changed += value; } remove { EnsureReady(); _changed -= value; } }
 ```
 
 Preserve existing compact event declarations and accessor blocks, including
@@ -616,6 +624,14 @@ capture/ignore/report-only `try/catch`.
 
 Preserve existing code comments when changing an implementation. Remove a comment only when it is no longer relevant to the replacement; update referenced names or details when needed while retaining its explanation. Optimization, shortening code or changing formatting does not justify removing relevant comments. Review removed comment lines as part of every code change.
 
+#### Type documentation
+
+Write a concise XML summary for each new or materially changed class and interface. Explain what it represents or does and how a caller uses it. A reader should understand its role without opening the implementation. Do not merely restate its name, inheritance pattern or an architectural label such as "general native detail surface".
+
+Use one or two direct sentences in `<summary>`. Put essential contracts in `<remarks>` when needed, such as ownership and disposal, required thread, retained state or acquisition timing. Explain type parameters when their roles differ, particularly a node versus its entity value. Describe actual behavior rather than hypothetical future capabilities. Simple private helper types usually need only one specific sentence.
+
+Keep the main type's XML documentation on its primary declaration. Use ordinary comments to identify responsibility partials, without duplicating the type summary. Review all related types when changing a family of classes, including adapters, contexts and meaningful nested helpers.
+
 #### Member documentation spacing
 
 Leave one clean empty line between a member declaration and the documentation or descriptive comment for the next member. Apply this to constants, fields, properties, constructors, methods, nested types and enum values, including internal and private members. A separator line must contain no spaces or tabs.
@@ -630,7 +646,7 @@ public const int BufferSize = 4096;
 public const int MaxBatchItems = 256;
 ```
 
-Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. XMLDOC code comments need not be done during development but can be retrofitted later using tooling. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. A fluent builder invocation and its nested child builders form one continuous logical segment, with no blank separator lines.
+Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. Write type documentation as part of the implementation and document member contracts where their names alone are insufficient. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. A fluent builder invocation and its nested child builders form one continuous logical segment, with no blank separator lines.
 
 **Example:**
 

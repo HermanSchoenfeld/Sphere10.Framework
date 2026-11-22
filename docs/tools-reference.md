@@ -35,7 +35,7 @@ These facades are declared in `Sphere10.Framework`, including
 | `Tools.Collection` | `GenerateArray`, `Repeat`, `Partition`, `BinarySearch`, `RangeL`, `ResizeArray` | [CollectionTool.cs](../src/Sphere10.Framework/Collections/CollectionTool.cs) |
 | `Tools.Streams` | `ReadByteArray`, `RouteStream`, `WriteStreamToFile`, GZip compression and encryption helpers | [StreamTool.cs](../src/Sphere10.Framework/Streams/StreamTool.cs) |
 | `Tools.Spans` | `Empty<T>()` | [SpanTool.cs](../src/Sphere10.Framework/Spans/SpanTool.cs) |
-| `Tools.DataSources` | `ReadAllAsync` loads a loadable source when required and returns every row; `CaptureAsync` owns, reads and drains a temporary source; `Query` searches, sorts and pages rows | [DataSourceTool.cs](../src/Sphere10.Framework/DataSource/DataSourceTool.cs) |
+| `Tools.DataSources` | `ReadAllAsync` loads and reads all rows, `CaptureAsync` owns and drains a temporary source, `AsObjects` preserves hierarchy when boxing rows, and `Query` searches/sorts/pages rows or node payloads | [DataSourceTool.cs](../src/Sphere10.Framework/DataSource/DataSourceTool.cs) |
 
 `Tools.Array.Gen(size, value)` repeats one value; indexed generation belongs to
 `Tools.Collection.GenerateArray(count, generator)`. Array resizing belongs to
@@ -235,8 +235,8 @@ the returned control belongs to the caller or its containing native control.
 | `Tools.WinForms.Windowing` | `CreatePicker(Control dispatcher)`; its dispatcher must already have a native handle. The picker owns its input hooks. Existing highlights remain `Tools.Scope.EnterHighlightScope`. |
 | `Tools.WinForms.Charts` | `CreateGraphChart`, `CreateBarChart`, `CreateTelemetryChart`, `CreateChart`; `CreateLogOutputBehavior` attaches caller-owned behavior to a bare DataVisualization chart. `FormatLogSample` delegates the existing captured-sample formatter. |
 | `Tools.WinForms.Logging` | `CreateOutputSelector`, `RegisterOutputLifetime`; configuration, files and host-owned log screens retain their existing lifecycle. |
-| `Tools.WinForms.Grids` | `CreateVisualGrid`, `CreateDataSourceController`, `CreateArrayController`, `CreateArrayDetail`, `CreateControlDetail`. Controllers borrow existing sources/grids; detail adapters retain their documented control/resource ownership. |
-| `Tools.WinForms.Review` | `CreateHexEditor`, `ShowBytesAsync`, `ShowTextAsync`; existing accepted-value, optional-save and cancellation contracts. |
+| `Tools.WinForms.Grids` | `CreateVisualGrid`, `CreateArrayController`, `CreateDataSourceDetail`, `CreateControlDetail`. Configure ranged sources directly on `VisualGrid`. Array controllers borrow existing sources/grids; detail adapters retain their documented control/resource ownership. |
+| `Tools.WinForms.Review` | `CreateHexEditor`, `ShowBytesAsync`, `ShowTextAsync`; byte editing saves in place into the supplied fixed-length array and returns a saved flag; text review retains its optional-save contract. |
 | `Tools.WinForms.Controls` | `CreateChoiceSelector`, `CreateSearchBox`. |
 
 GraphChart, BarChart and TelemetryChart already own a lazy logging behavior;

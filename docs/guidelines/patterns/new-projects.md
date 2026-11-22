@@ -42,6 +42,22 @@ the application test project while keeping shared infrastructure coverage with
 Framework. Preserve tracked file history and update callers, project/solution
 references, resource paths and documentation together.
 
+When separating a reusable client from platform integration, keep DTOs,
+serialization, transport contracts and platform-independent logic in the client.
+The platform project references that client and owns its UI and native adapters.
+Inspect the existing boundary first: rename or move an already-correct owner
+instead of creating a second core, copying DTOs or introducing forwarding wrappers.
+Check the portable project's resolved dependency closure as well as its source
+imports; a portable target alone does not establish independence from native UI.
+
+An assembly rename also affects namespace imports in Razor/templates, generated
+consumer code, friend assemblies, resources, trim roots, test fixtures and CI
+package lists. Trace persisted type names and settings filenames before changing
+identity. Preserve wire formats and established stored data contracts. Keep
+source/package switch names tied to the repository when its identity is unchanged;
+new package IDs need a separately produced matching version before package-mode
+compilation can be claimed.
+
 ## Interchangeable source and NuGet references
 
 Use these three properties in the application's `Directory.Build.props`:
@@ -51,6 +67,11 @@ Use these three properties in the application's `Directory.Build.props`:
 | `UseSphere10FrameworkSource` | `true` uses the selected Framework checkout; `false` uses packages. |
 | `Sphere10FrameworkRoot` | The checkout root, with a default relative to `MSBuildThisFileDirectory`. |
 | `Sphere10FrameworkVersion` | Exact package version matching the implementation the application requires. |
+
+Keep switch, root and version defaults in the product's `Directory.Build.props`.
+Imported reference targets resolve, normalize and validate those values; they
+must not supply a second set of fallback defaults or pins. Preserve explicit
+command-line overrides and independent switches needed by producer pack flows.
 
 Keep an application's assemblies in one item list so the two modes cannot
 silently drift:

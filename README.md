@@ -74,6 +74,47 @@ Application code uses the same abstractions on every engine, and each provider R
 
 [Data access](src/Sphere10.Framework.Data/README.md) · [NHibernate](src/Sphere10.Framework.Data.NHibernate/README.md)
 
+### Visual document rendering
+
+[**VisualRenderer**](src/Sphere10.Framework.Web.VisualRenderer/README.md) turns **structured C# documents into themed HTML or plain text**. Use it to generate articles, documentation, reports and CMS pages, or display rich content in an embedded browser. Build the content once as a `DocumentBlock`, then choose how to render it.
+
+- **Compose rich documents.** Combine styled text, headings, lists, tables, images, bookmarks, callouts, columns, code, equations and Mermaid diagrams. Render a whole document or an individual block with `RenderSnippet`.
+- **Control presentation.** Use the embedded `default` and `cms` themes, or customize their HTML templates, styles and assets through theme overlays.
+- **Choose asset delivery.** Online rendering can reference a theme's CDN assets. Offline rendering returns the bundled theme assets with the HTML so your application can publish them locally. Media URLs and embedded content remain the caller's responsibility.
+
+Install `Sphere10.Framework.Web.VisualRenderer` using the [NuGet instructions](#nuget-packages), then render the same document to two files:
+
+```csharp
+using System.IO;
+using Sphere10.Framework.Web.VisualRenderer;
+
+var document = new DocumentBlock {
+	Title = "Release notes",
+	Children = [
+		new HeadingBlock {
+			Level = 2,
+			Text = [new TextInline { Text = "What's new" }]
+		},
+		new ParagraphBlock {
+			Text = [new TextInline { Text = "One document, rendered as HTML and plain text." }]
+		}
+	]
+};
+var options = new RenderOptions {
+	Themes = ["default"],
+	Environment = RenderEnvironment.Online
+};
+
+var html = new HtmlRenderer().Render(document, options);
+var text = new TextRenderer().Render(document, options);
+File.WriteAllText("release-notes.html", html.Html);
+File.WriteAllText("release-notes.txt", text);
+```
+
+Open `release-notes.html` in a browser with internet access to load the default theme's styles and scripts. `HtmlRenderer` returns the HTML and any required assets in memory, while `TextRenderer` returns a string. Your application supplies the content and decides where to display, serve or save the output. Rendering needs no Notion connection or ASP.NET host. Ordinary text is HTML-encoded, but raw HTML blocks and custom template content must be trusted.
+
+[Object model](docs/visual-renderer/object-model.md) · [Rendering and integration](docs/visual-renderer/renderer.md) · [Themes and offline assets](docs/visual-renderer/renderer-themes.md) · [Mermaid diagrams](docs/visual-renderer/mermaid.md) · [All renderer documentation](docs/visual-renderer/README.md)
+
 ### Connected services and reusable application infrastructure
 
 Define typed protocols and request/response flows, expose JSON-RPC services, and connect processes through TCP, UDP, anonymous-pipe and WebSocket channels. ASP.NET Core and MVC libraries supply web hosting, middleware, controller and form integrations.
@@ -360,7 +401,3 @@ commands remain available.
 - **Preview and staging.** `-WhatIf` shows the version and package list without packing. `-PackOnly` leaves the packages in `-OutputDirectory`, which defaults to `publish/.staging/private-<version>`, for a caller that adds its own packages built against them before publishing the set. The script returns an object with the `Version`, `OutputDirectory` and `Packages` paths.
 
 A consumer adds the folder to its `NuGet.Config` and references an exact version, such as `Version="[3.1.3-private.20261108.1]"`.
-
-## Visual document rendering
-
-[Sphere10.Framework.Web.VisualRenderer](src/Sphere10.Framework.Web.VisualRenderer/README.md) provides the visual object model, HTML/text renderers and default/CMS templates. See the [renderer documentation](docs/visual-renderer/README.md). It is built and packed with the Framework solutions.

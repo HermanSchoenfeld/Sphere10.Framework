@@ -69,6 +69,40 @@ active beside an unused replacement.
 
 ## Event notifications and template hooks
 
+### Event contracts and payloads
+
+Declare owned Framework and application events with `EventHandlerEx` or its
+generic forms. Never declare an owned event with `EventHandler` or
+`EventHandler<TEventArgs>`. Apply this convention across the relevant interfaces,
+implementations, forwarding accessors, subscribers, demos and fixtures.
+
+The existing [delegate family](../../../src/Sphere10.Framework/Events/EventHandlerEx.cs)
+returns `void` and accepts zero through five meaningful arguments. It has no
+implicit sender or `EventArgs` requirement:
+
+| Contract | Invocation | Handler shape |
+|---|---|---|
+| `EventHandlerEx` | `Changed?.Invoke()` | `() => Refresh()` |
+| `EventHandlerEx<T>` | `Changed?.Invoke(value)` | `value => Apply(value)` |
+| `EventHandlerEx<T1, T2>` | `Changed?.Invoke(first, second)` | `(first, second) => Apply(first, second)` |
+
+The three-, four- and five-argument forms follow the same call shape. Use a typed
+source argument when it is part of the contract, such as
+`EventHandlerEx<VisualGrid>` for a grid notification. Do not mechanically retain
+`object sender, EventArgs.Empty` or invent another delegate type. Reuse meaningful
+existing payload types, including mutable cancellation payloads whose identity
+is part of the operation. Do not introduce an empty `EventArgs` subclass merely
+to carry the old signature convention.
+
+External .NET events, interface implementations and overrides retain signatures
+required by their contracts. Subscribing to a WinForms event still uses its native
+handler shape; overriding a platform `On*` method still uses the platform's
+arguments. This boundary does not apply to a separate event owned by the product
+or Framework. Platform callback types such as Blazor `EventCallback` also retain
+their framework contract.
+
+### Notification ownership
+
 An inheritable event-owning class exposes each notification through three matching
 members: a public event, a protected nonvirtual `Notify*` method, and a protected
 virtual `On*` template method. Operations call `Notify*`; that method calls the
@@ -88,13 +122,21 @@ For example, these members belong inside an event-owning base class:
 ```csharp
 public event EventHandlerEx<long> ItemRemoving;
 
-protected virtual void OnItemRemoving(long key) {
-}
-
 protected void NotifyItemRemoving(long key) {
 	OnItemRemoving(key);
 	ItemRemoving?.Invoke(key);
 }
+
+protected virtual void OnItemRemoving(long key) {
+}
+```
+
+Sealed and static owners keep a single notifier without inventing unusable
+virtual hooks or a wrapper class. A forwarding decorator uses matching direct
+`add`/`remove` accessors instead of owning a second notification stream:
+
+```csharp
+public event EventHandlerEx Changed { add => InternalDataSource.Changed += value; remove => InternalDataSource.Changed -= value; }
 ```
 
 Preserve the notification's lifecycle boundary, argument identity, exception
@@ -109,3 +151,45 @@ own behavioral justification and tests.
 uses the pattern for `ItemFetching`, `ItemFetched`, `ItemRemoving` and `ItemRemoved`.
 Verify each family member, hook/event ordering, failure and retry behavior, and
 forwarding through its public contract rather than testing only the newly added event.
+
+Ordinary synchronous multicast invocation propagates a subscriber exception and
+does not continue through later subscribers. Some owners deliberately differ:
+[DataSourceBase<T>](../../../src/Sphere10.Framework/DataSource/DataSourceBase.cs)
+isolates and logs hook and subscriber failures after committed source changes.
+Preserve the actual owner's policy; a delegate migration does not justify adding
+catch-and-continue handling, changing lock boundaries or dispatching callbacks
+on a different thread.
+
+### Subscription lifetime and asynchronous consumers
+
+The subscribing component owns registration and removal. Retain the same delegate
+instance for both; `+= value => Handle(value)` and a newly constructed lambda in
+`-=` do not remove each other. Use existing [disposable owners and scopes](resource-scopes.md)
+for temporary subscriptions and detach persistent subscriptions at the actual
+owner's replacement or teardown boundary. Direct forwarding accessors do not need
+a new adapter or subscription wrapper.
+
+Removing a handler does not cancel a callback already in progress. Preserve
+callback admission, UI affinity and any existing drain contract through shutdown.
+Read [application and screen lifetimes](application-ownership.md#application-and-screen-lifetimes)
+when a subscription presents worker data in a view. Do not hold a resource lock
+across borrowed callbacks that can synchronously dispatch back to its owner.
+
+`EventHandlerEx` is synchronous. An `async` lambda assigned to it is `async void`;
+the publisher cannot await completion or observe failures after suspension through
+the invocation. Use an existing task-returning owner operation when work must be
+awaited. A required native `async void` event boundary must observe its asynchronous
+work and handle failures through the owner's established policy.
+
+The current [InvokeAsync extensions](../../../src/Sphere10.Framework/Events/EventHandlerExExtensions.cs)
+return `void` and delegate to `Task.Factory.StartNew` through
+[Tools.Threads](../../../src/Sphere10.Framework/Threading/ThreadTool.cs). They provide
+neither a completion task nor a UI-dispatch or shutdown-drain guarantee. Do not
+substitute them for synchronous notifications or awaited operations.
+
+The current `WaitNext` extensions modify a local delegate copy rather than
+subscribing to the publisher's event. They are not a working event-wait boundary.
+When completion really comes from an event, subscribe to the actual publisher
+and own both handler removal and cancellation registration, including every
+success, cancellation and failure path. Do not invent a parallel event framework
+to avoid the existing operation or lifetime owner.

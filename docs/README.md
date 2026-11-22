@@ -132,7 +132,7 @@ Each topic records one implementation practice. The [task index](guidelines/patt
 | [Repositories, persistence and transactions](guidelines/patterns/persistence-and-transactions.md) | CRUD, load/save lifecycle, transaction ownership and backend guarantees. |
 | [Collections and storage](guidelines/patterns/collections-and-storage.md) | Caches, graph identity, clustered streams and storage comparers. |
 | [Object spaces](guidelines/patterns/object-spaces.md) | Typed identity, indexed CRUD, durability and configuration profiling. |
-| [Data sources](guidelines/patterns/data-sources.md) | Storage, decorators and compositions, the sync/async hierarchy, change notifications and refresh policy. |
+| [Data sources](guidelines/patterns/data-sources.md) | Storage, decorators, sync/async operations, hierarchical node/entity queries, graph views, notifications and refresh policy. |
 | [Per-user UI settings](guidelines/patterns/user-ui-settings.md) | Typed preferences, stable control identities and accepted save boundaries. |
 | [Independent projects](guidelines/patterns/new-projects.md) | Internal/client placement and source/package references. |
 | [Logging](guidelines/patterns/logging.md) | Logger selection, composition and sink lifetime. |
