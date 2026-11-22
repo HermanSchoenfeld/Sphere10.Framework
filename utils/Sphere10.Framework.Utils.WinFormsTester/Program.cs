@@ -77,6 +77,11 @@ static class Program {
 			.AddModule<Sphere10.Framework.Windows.Forms.PostgreSQL.ModuleConfiguration>()
 			.AddModule<Sphere10.Framework.Windows.Forms.MySQL.ModuleConfiguration>()
 			.AddModule<ModuleConfiguration>()
+#if WINDOWS_STORE
+			// A Store build (-p:Distribution=WindowsStore) asks the Microsoft Store for updates instead of the release server.
+			.AddModule<Sphere10.Framework.Windows.Store.ModuleConfiguration>()
+#endif
+			.UseProductUpdates()
 			.UseSplashScreen()
 			.StartWinFormsApplication();
 	}

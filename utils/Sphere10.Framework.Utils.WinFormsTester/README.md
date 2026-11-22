@@ -52,6 +52,12 @@ Run from the repository root:
 dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
 ```
 
+## Product updates and the Windows Store distribution
+
+`Program.cs` calls `UseProductUpdates()`, so the tester checks for updates 30 seconds after start and then hourly, and would show the "New Version Available" notice. The tester has no release server, so the Application module's `NoOpProductUpdateService` never finds an update.
+
+The project demonstrates how a product selects its update channel at build time. An ordinary build uses the release server's `WindowsReleaseServerProductUpdater`. A Windows Store build, `dotnet build utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0 -p:Distribution=WindowsStore`, targets the Windows SDK frameworks (`$(FrameworkWindowsStoreTargetFrameworks)`), references `Sphere10.Framework.Windows.Store` and defines `WINDOWS_STORE`, under which `Program.cs` adds the [Windows Store library's](../../src/Sphere10.Framework.Windows.Store/README.md) module and so uses `WindowsStoreProductUpdater`. An unpackaged run of that build has no package identity, so its checks answer no update.
+
 ## Demo organization
 
 | Block | Demonstrations |
@@ -324,8 +330,28 @@ starts with a readable `BLK 0000000000` header: search for the text `BLK 0000000
 or the bytes `42 4C 4B 20` forward and backward to watch the streaming search cross
 block boundaries. Type hex digits in the hex pane or characters in the text pane to
 overwrite bytes; they stay highlighted until **Save** writes them back to the stream
-or **Revert** discards them. The control catalog also lists `HexEditorControl`,
+or **Revert** discards them. Choose a number from the toolbar's **Bytes per row** list, or drag the line between the
+hex pane and the text pane left or right for any other number. The control catalog also lists `HexEditorControl`,
 `HexEditorView`, `HexEditorForm`, `HexEditorFindDialog` and `HexEditorGoToDialog`.
+
+## Visual Calendar walkthrough
+
+Open **Controls > Layout > Visual Calendar**. The screen hosts the real
+`VisualCalendar` beside an `UnallocatedCalendar` tray and logs every selection,
+drag, drop and resize event. The selectors above the calendar choose the view (Day,
+Week or Month), the row size (hour, half hour or quarter hour, or the monthly size,
+which is the Month view), the column filter, the data and the style (Pastel, Solid,
+Outline or Minimal, applied to both calendars). **Resource Schedule** shows
+generated appointments for ten resources over the current month with unallocated
+work in the tray, and **Generate sample schedule** replaces them. **Recurring
+Calendars** shows two in-memory calendars of repeating events, a personal one and a
+system one, through `CalendarViewDataSource`, with a column for each calendar.
+Dragging or resizing an occurrence there moves its whole event, and the log shows
+the changed rule in words. The column filter and the tray are disabled while the
+recurring calendars are shown. The control catalog has samples for
+`CalendarRecurrenceEditor` under Appointments and for `ToolStripTrackBar`,
+`ToolStripCheckBox`, `ToolStripCommandMenu` and `ToolStripStartStopButton` under
+Tool strip items.
 
 ## Loading Indicator gallery
 

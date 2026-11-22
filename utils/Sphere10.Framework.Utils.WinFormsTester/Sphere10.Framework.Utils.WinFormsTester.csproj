@@ -11,6 +11,16 @@
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
+	<!-- A Windows Store distribution (dotnet build -p:Distribution=WindowsStore) updates through the Store; every other build uses the release server. -->
+	<PropertyGroup Condition="'$(Distribution)' == 'WindowsStore'">
+		<TargetFrameworks>$(FrameworkWindowsStoreTargetFrameworks)</TargetFrameworks>
+		<DefineConstants>$(DefineConstants);WINDOWS_STORE</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(Distribution)' == 'WindowsStore'">
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Windows.Store\Sphere10.Framework.Windows.Store.csproj" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="SauceControl.Blake2Fast" />
 		<PackageReference Include="SharpDX" />

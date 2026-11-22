@@ -41,6 +41,9 @@
     <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == ''">net10.0</FrameworkTargetFrameworks>
     <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows;net11.0-windows</FrameworkWindowsTargetFrameworks>
     <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == ''">net10.0-windows</FrameworkWindowsTargetFrameworks>
+    <!-- Libraries that call Windows Runtime APIs, such as the Windows Store updater, name a Windows SDK version; the SDK supplies their projection. -->
+    <FrameworkWindowsStoreTargetFrameworks Condition="'$(FrameworkWindowsStoreTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0</FrameworkWindowsStoreTargetFrameworks>
+    <FrameworkWindowsStoreTargetFrameworks Condition="'$(FrameworkWindowsStoreTargetFrameworks)' == ''">net10.0-windows10.0.19041.0</FrameworkWindowsStoreTargetFrameworks>
 
     <!-- NuGet Packaging -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

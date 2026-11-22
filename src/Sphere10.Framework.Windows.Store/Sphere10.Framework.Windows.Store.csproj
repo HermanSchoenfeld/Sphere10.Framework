@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>$(FrameworkWindowsStoreTargetFrameworks)</TargetFrameworks>
+		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Description>Windows Store distribution support for Sphere10 Framework applications. Provides the product updater that checks the Microsoft Store for package updates and hands their installation to the Store, selected at build time for Store distributions.</Description>
+		<PackageTags>sphere10 framework windows store msix updates</PackageTags>
+		<AssemblyName>Sphere10.Framework.Windows.Store</AssemblyName>
+		<RootNamespace>Sphere10.Framework.Windows.Store</RootNamespace>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+	</ItemGroup>
+
+</Project>
