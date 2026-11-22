@@ -58,6 +58,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			_aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			_statusStrip = new System.Windows.Forms.StatusStrip();
 			_statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+			_loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircleToolStripMenuItem();
+			_loadingLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			_toolStrip = new System.Windows.Forms.ToolStrip();
 			_menuStrip.SuspendLayout();
 			_statusStrip.SuspendLayout();
@@ -187,18 +189,34 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			// _statusStrip
 			// 
-			_statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { _statusLabel });
+			_statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { _statusLabel, _loadingCircle, _loadingLabel });
 			_statusStrip.Location = new System.Drawing.Point(0, 393);
 			_statusStrip.Name = "_statusStrip";
 			_statusStrip.Size = new System.Drawing.Size(664, 22);
 			_statusStrip.TabIndex = 4;
 			_statusStrip.Text = "statusStrip";
-			// 
+			//
 			// _statusLabel
-			// 
+			//
 			_statusLabel.Name = "_statusLabel";
 			_statusLabel.Size = new System.Drawing.Size(81, 17);
+			_statusLabel.Spring = true;
 			_statusLabel.Text = "Design Time...";
+			_statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			//
+			// _loadingCircle
+			//
+			_loadingCircle.AccessibleName = "Working";
+			_loadingCircle.LoadingCircleControl.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
+			_loadingCircle.Name = "_loadingCircle";
+			_loadingCircle.Size = new System.Drawing.Size(16, 17);
+			_loadingCircle.Visible = false;
+			//
+			// _loadingLabel
+			//
+			_loadingLabel.Name = "_loadingLabel";
+			_loadingLabel.Size = new System.Drawing.Size(0, 17);
+			_loadingLabel.Visible = false;
 			// 
 			// _toolStrip
 			// 
@@ -253,6 +271,8 @@ namespace Sphere10.Framework.Windows.Forms {
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.ToolStripMenuItem _aboutToolStripMenuItem;
 		private System.Windows.Forms.ToolStripStatusLabel _statusLabel;
+		private Sphere10.Framework.Windows.Forms.LoadingCircleToolStripMenuItem _loadingCircle;
+		private System.Windows.Forms.ToolStripStatusLabel _loadingLabel;
 		protected System.Windows.Forms.MenuStrip _menuStrip;
 		protected System.Windows.Forms.StatusStrip _statusStrip;
 		protected System.Windows.Forms.ToolStrip _toolStrip;

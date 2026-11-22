@@ -39,6 +39,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	private SynchronizationContext _approvedCloseContext;
 	private FormCloseAction? _closeActionBeforeExit;
 	private CancellationToken _exitConfirmationCancellationToken;
+	private bool _displayingNotice;
 
 	public LiteMainForm() {
 		System.Windows.Forms.Application.ThreadException += ApplicationOnThreadException;
@@ -136,6 +137,23 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	protected virtual void OnFirstActivated() {
+	}
+
+	protected override async void OnDpiChanged(DpiChangedEventArgs e) {
+		base.OnDpiChanged(e);
+		if (_displayingNotice || e.DeviceDpiOld == e.DeviceDpiNew || ApplicationExiting
+			|| Disposing || IsDisposed || DesignMode || Tools.Runtime.IsDesignMode
+			|| !Screen.FromHandle(Handle).Primary
+			|| !WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetWindowDpiAwarenessContext(Handle), new IntPtr((int)DpiAwarenessContext.SystemAware)))
+			return;
+		_displayingNotice = true;
+		try {
+			await ReportInfoAsync("Display scaling changed",
+				"Your main display's scaling has changed. This application may now look blurry or differently sized. "
+				+ "To restore sharp text and controls, save your work, sign out of Windows, sign back in, and reopen the application.");
+		} finally {
+			_displayingNotice = false;
+		}
 	}
 
 	// Shown every time window becomes active window
@@ -377,6 +395,10 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	public virtual string Status { get; set; }
 
+	/// <summary>The window's loading indicator. <see cref="MainForm"/> shows it in its status bar.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual ILoadingIndicator LoadingIndicator { get; } = new LoadingIndicator();
+
 	private async Task ObserveApplicationExit(Task<bool> exit) {
 		try {
 			await exit;
@@ -432,6 +454,9 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default)
 		=> this.InvokeAsyncEx(_ => DialogEx.ShowAsync(this, SystemIconType.Information, title, message, cancellationToken, "OK"));
+
+	public virtual Task ReportWarningAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> this.InvokeAsyncEx(_ => DialogEx.ShowAsync(this, SystemIconType.Warning, title, message, cancellationToken, "OK"));
 
 	public bool AskYN(string question) {
 		// The synchronous interface must pump a modal message loop instead of blocking an async task.

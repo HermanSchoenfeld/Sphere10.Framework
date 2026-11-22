@@ -175,6 +175,13 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 
+	/// <summary>The screen toolbar's own native items, wherever they are: in <see cref="ScreenToolBar"/>, or in the window's toolbar while the
+	/// screen is active and its commands are merged there. Reading it does not activate the screen's commands.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	protected ToolStripItem[] ScreenToolBarItems => _toolBarItems != null
+		? _toolBarItems.OfType<NativeToolStripCommand>().Select(command => command.Item).ToArray()
+		: ScreenToolBar?.Items.Cast<ToolStripItem>().ToArray() ?? Array.Empty<ToolStripItem>();
+
 	public HelpType Type { get; }
 
 	public string FileName { get; }

@@ -44,6 +44,8 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 		}
 	}
 
+	public virtual ILoadingIndicator LoadingIndicator { get; } = new LoadingIndicator();
+
 	public virtual object PrimaryUIController => null;
 
 	protected IServiceProvider Services { get; }
@@ -86,6 +88,8 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 	public virtual Task ReportFatalErrorAsync(string title, string message, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
 	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+	public virtual Task ReportWarningAsync(string title, string message, CancellationToken cancellationToken = default) => ReportInfoAsync(title, message, cancellationToken);
 
 	public virtual bool AskYN(string question) => throw new NotSupportedException();
 	public virtual void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false) => throw new NotSupportedException();

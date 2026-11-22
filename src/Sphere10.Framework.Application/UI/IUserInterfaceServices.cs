@@ -28,6 +28,9 @@ public interface IUserInterfaceServices {
 
 	string Status { get; set; }
 
+	/// <summary>The application's loading indicator, which shows that the application is working and what it is doing.</summary>
+	ILoadingIndicator LoadingIndicator { get; }
+
 	object PrimaryUIController { get; }
 
 	Task ShowSendCommentDialog();
@@ -49,6 +52,10 @@ public interface IUserInterfaceServices {
 
 	/// <summary>Reports information, completing when the user dismisses the notification.</summary>
 	Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default);
+
+	/// <summary>Warns the user, completing when the user dismisses the notification. A UI without its own warning presentation reports it as
+	/// information.</summary>
+	Task ReportWarningAsync(string title, string message, CancellationToken cancellationToken = default) => ReportInfoAsync(title, message, cancellationToken);
 
 	bool AskYN(string question);
 

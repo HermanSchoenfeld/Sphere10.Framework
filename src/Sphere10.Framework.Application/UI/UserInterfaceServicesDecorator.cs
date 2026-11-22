@@ -42,6 +42,8 @@ public abstract class UserInterfaceServicesDecorator<TConcrete> : IUserInterface
 		set => InternalServices.Status = value;
 	}
 
+	public virtual ILoadingIndicator LoadingIndicator => InternalServices.LoadingIndicator;
+
 	public virtual Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default) => InternalServices.ExecuteMenuItemAsync(item, cancellationToken);
 
 
@@ -67,6 +69,8 @@ public abstract class UserInterfaceServicesDecorator<TConcrete> : IUserInterface
 		=> InternalServices.ReportFatalErrorAsync(title, message, cancellationToken);
 
 	public virtual Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default) => InternalServices.ReportInfoAsync(title, message, cancellationToken);
+
+	public virtual Task ReportWarningAsync(string title, string message, CancellationToken cancellationToken = default) => InternalServices.ReportWarningAsync(title, message, cancellationToken);
 
 	public virtual bool AskYN(string question) => InternalServices.AskYN(question);
 

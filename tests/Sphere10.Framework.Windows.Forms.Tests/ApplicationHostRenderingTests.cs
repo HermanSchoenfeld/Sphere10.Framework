@@ -442,9 +442,12 @@ public class ApplicationHostRenderingTests {
 		Assert.That(file, Is.SameAs(legacyFile));
 		Assert.That(help, Is.SameAs(legacyHelp));
 		Assert.That(form.MenuEntries.Last(), Is.SameAs(legacyHelp));
-		Assert.That(file.DropDownItems.OfType<ToolStripMenuItem>().Select(item => item.Text), Is.EqualTo(new[] { "E&xit", "Save", "Save", "Save" }));
-		file.DropDownItems[1].PerformClick();
-		file.DropDownItems[2].PerformClick();
+		// Exit stays last when screens merge their entries into the File menu.
+		Assert.That(file.DropDownItems.OfType<ToolStripMenuItem>().Select(item => item.Text), Is.EqualTo(new[] { "Save", "Save", "Save", "E&xit" }));
+		// The global and block commands come first, then the screen's own command.
+		ToolStripMenuItem[] Saves() => file.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Save").ToArray();
+		Saves()[0].PerformClick();
+		Saves()[1].PerformClick();
 		screen.Command.PerformClick();
 		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[0].PerformClick();
 		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[1].PerformClick();
@@ -464,12 +467,12 @@ public class ApplicationHostRenderingTests {
 		Assert.That(global.Parent, Is.SameAs(globalMenu));
 		Assert.That(file.DropDownItems.Contains(screen.Command), Is.True, "The host uses the screen's actual native menu item.");
 		Assert.That(screen.ScreenToolBar.Items, Is.Empty, "The main frame transfers the actual native toolbar item while the screen is active.");
-		var previousGenerated = file.DropDownItems[2];
+		var previousGenerated = Saves()[1];
 		form.ScreenHost.ActivateScreen(block, typeof(CountingScreen));
 		file = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "File");
 		help = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "Help");
-		file.DropDownItems[1].PerformClick();
-		file.DropDownItems[2].PerformClick();
+		Saves()[0].PerformClick();
+		Saves()[1].PerformClick();
 		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[0].PerformClick();
 		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[1].PerformClick();
 		legacyExit.PerformClick();

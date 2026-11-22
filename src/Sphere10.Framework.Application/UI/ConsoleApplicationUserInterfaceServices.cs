@@ -22,7 +22,7 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 
 	public string Status { get; set; } = string.Empty;
 
-
+	public ILoadingIndicator LoadingIndicator { get; } = new LoadingIndicator();
 
 	public object PrimaryUIController { get; } = new object();
 
@@ -49,6 +49,9 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 	}
 
 	public Task ReportInfoAsync(string title, string message, CancellationToken cancellationToken = default)
+		=> Console.Out.WriteLineAsync(message.AsMemory(), cancellationToken);
+
+	public Task ReportWarningAsync(string title, string message, CancellationToken cancellationToken = default)
 		=> Console.Out.WriteLineAsync(message.AsMemory(), cancellationToken);
 
 	public bool AskYN(string question) => throw new NotSupportedException();

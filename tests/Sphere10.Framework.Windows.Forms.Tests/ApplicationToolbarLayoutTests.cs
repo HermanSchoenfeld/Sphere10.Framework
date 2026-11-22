@@ -66,6 +66,19 @@ public class ApplicationToolbarLayoutTests {
 		}
 	}
 
+	[Test]
+	public void AScreenListsItsOwnToolbarItemsWhileTheyAreMergedIntoTheWindow() {
+		using var form = new ToolbarMainForm { ScreenMode = ScreenMode.MultiView, Size = new Size(1000, 600) };
+		using var screen = new ToolbarScreen();
+		var expected = new ToolStripItem[] { screen.Command, screen.Every, screen.Interval, screen.RefreshCommand };
+		Assert.That(screen.OwnItems, Is.EqualTo(expected), "Before activation the items are the screen toolbar's own.");
+		form.ShowScreen(screen);
+		form.Show();
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(screen.Command.Owner, Is.SameAs(form.ApplicationToolbar), "The fixture expects the commands merged into the window.");
+		Assert.That(screen.OwnItems, Is.EqualTo(expected));
+	}
+
 	[TestCase(9F)]
 	[TestCase(16F)]
 	public void DetachedScreenToolbarKeepsContentPositionWhenCommandsAreHidden(float fontSize) {
@@ -273,5 +286,6 @@ public class ApplicationToolbarLayoutTests {
 		public ToolStripButton RefreshCommand { get; }
 		public Panel Content { get; }
 		public int ClickCount { get; private set; }
+		public ToolStripItem[] OwnItems => ScreenToolBarItems;
 	}
 }
