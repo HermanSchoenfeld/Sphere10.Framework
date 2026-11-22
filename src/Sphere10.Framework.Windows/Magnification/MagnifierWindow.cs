@@ -31,6 +31,9 @@ public sealed class MagnifierWindow : SyncDisposable {
 	private Rectangle? _sourceBounds;
 	private ColorMatrix _colorEffect = new ColorMatrix();
 	private IntPtr[] _excludedWindows = Array.Empty<IntPtr>();
+	private bool _hiddenFromCapture;
+	// Native geometry updates need the owned array without invoking the copying public getter.
+	private Rectangle[] _excludedAreas = Array.Empty<Rectangle>();
 	private float _sourceScale = 1.0f;
 	private Point _sourceOffset;
 	private bool _disposed;
@@ -91,6 +94,24 @@ public sealed class MagnifierWindow : SyncDisposable {
 		}
 	}
 
+	/// <summary>Whether screen captures leave this window out and show the desktop beneath it. The display itself shows the window either way.</summary>
+	/// <remarks>
+	/// Set it when something reads the desktop's own frames while this window draws over them, such as a tracker that follows
+	/// content from the screen. Screenshots and recordings then show the untransformed desktop too. Windows versions that
+	/// cannot exclude a window keep capturing it.
+	/// </remarks>
+	public bool IsHiddenFromCapture {
+		get => _hiddenFromCapture;
+		set {
+			EnsureUsable();
+			if (_hiddenFromCapture == value)
+				return;
+			_hiddenFromCapture = value;
+			if (IsShown)
+				ApplyCaptureVisibility();
+		}
+	}
+
 	/// <summary>Windows left out of the captured source; the host itself is always excluded.</summary>
 	/// <remarks>Assigning the same handles again is free, so callers can re-assign the list on every frame.</remarks>
 	public IntPtr[] ExcludedWindows {
@@ -103,6 +124,21 @@ public sealed class MagnifierWindow : SyncDisposable {
 			_excludedWindows = (IntPtr[])excluded.Clone();
 			if (IsShown)
 				ApplyExclusions();
+		}
+	}
+
+	/// <summary>Physical desktop areas left uncovered by the host so their original pixels remain visible.</summary>
+	/// <remarks>These are visible areas after occlusion, not captured-source window exclusions. Values are copied on assignment and retrieval.</remarks>
+	public Rectangle[] ExcludedAreas {
+		get => (Rectangle[])_excludedAreas.Clone();
+		set {
+			EnsureUsable();
+			var areas = value ?? Array.Empty<Rectangle>();
+			if (areas.AsSpan().SequenceEqual(_excludedAreas))
+				return;
+			_excludedAreas = (Rectangle[])areas.Clone();
+			if (IsShown)
+				ApplyExcludedAreas();
 		}
 	}
 
@@ -148,6 +184,7 @@ public sealed class MagnifierWindow : SyncDisposable {
 			if (_host == IntPtr.Zero)
 				throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows could not create the magnifier host window.");
 			RequireSuccess(WinAPI.USER32.SetLayeredWindowAttributes(_host, 0, 255, WinAPI.USER32.LWA_ALPHA), "SetLayeredWindowAttributes");
+			ApplyCaptureVisibility();
 			_magnifier = WinAPI.USER32.CreateWindowExW(0, WinAPI.MAGNIFICATION.WC_MAGNIFIER, _title, ChildStyle, 0, 0, rendered.Width, rendered.Height, _host, IntPtr.Zero, instance, IntPtr.Zero);
 			if (_magnifier == IntPtr.Zero)
 				throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows could not create the magnifier control. The Magnification API may be unavailable.");
@@ -215,8 +252,12 @@ public sealed class MagnifierWindow : SyncDisposable {
 		RequireSuccess(WinAPI.USER32.SetWindowPos(_magnifier, IntPtr.Zero, 0, 0, rendered.Width, rendered.Height, WinAPI.USER32.SetWindowPosFlags.SWP_NOACTIVATE | WinAPI.USER32.SetWindowPosFlags.SWP_NOZORDER), "SetWindowPos");
 		var transform = WinAPI.MAGNIFICATION.MAGTRANSFORM.CreateScale(_sourceScale);
 		RequireSuccess(WinAPI.MAGNIFICATION.MagSetWindowTransform(_magnifier, ref transform), "MagSetWindowTransform");
+		if (_excludedAreas.Length > 0)
+			ApplyExcludedAreas();
 		SetSource(rendered);
 	}
+
+	private void ApplyExcludedAreas() => WindowsDesktopRegionMask.ApplyToWindow(_host, RenderedBounds, _excludedAreas);
 
 	private void SetSource(Rectangle rendered) {
 		var source = rendered;
@@ -228,6 +269,10 @@ public sealed class MagnifierWindow : SyncDisposable {
 		var rectangle = new WinAPI.RECT { Left = source.Left, Top = source.Top, Right = source.Right, Bottom = source.Bottom };
 		RequireSuccess(WinAPI.MAGNIFICATION.MagSetWindowSource(_magnifier, rectangle), "MagSetWindowSource");
 	}
+
+	// A refusal leaves the window captured as before, which costs a reader of the frames its clean view and nothing else.
+	private void ApplyCaptureVisibility()
+		=> WinAPI.USER32.SetWindowDisplayAffinity(_host, _hiddenFromCapture ? WinAPI.USER32.WDA_EXCLUDEFROMCAPTURE : WinAPI.USER32.WDA_NONE);
 
 	private void ApplyColorEffect() {
 		var effect = MagnificationColorEffects.ToNative(_colorEffect);

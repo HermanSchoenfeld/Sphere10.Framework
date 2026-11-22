@@ -128,6 +128,9 @@ public static partial class WinAPI {
 		[DllImport("gdi32.dll")]
 		public static extern uint SetTextColor(IntPtr hdc, int crColor);
 
+		[DllImport("gdi32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern IntPtr CreateRectRgn(int left, int top, int right, int bottom);
+
 	}
 
 }

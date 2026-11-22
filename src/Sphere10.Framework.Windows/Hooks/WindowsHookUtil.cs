@@ -40,5 +40,8 @@ public static partial class Windows {
 
 		/// <summary>Creates a fresh, uninstalled hook borrowing the supplied monitor. Disposing the hook does not dispose the monitor.</summary>
 		public static WindowsKeyboardHook CreateKeyboardHook(IActiveApplicationMonitor activeApplicationMonitor) => new WindowsKeyboardHook(activeApplicationMonitor);
+
+		/// <summary>Creates a fresh, uninstalled hook over one range of accessible window events (the EVENT_ constants of WinAPI.USER32). The caller installs it on a thread with a message loop and disposes it.</summary>
+		public static WindowsWindowEventHook CreateWindowEventHook(uint firstEvent, uint lastEvent) => new WindowsWindowEventHook(firstEvent, lastEvent);
 	}
 }
