@@ -60,6 +60,10 @@ public class SchedulerJob : BaseJob {
 				var schedule = new OnDayOfMonthScheduler<SchedulerJob>();
 				schedule.FromSerializableSurrogate(surrogateSchedule);
 				AddSchedule(schedule);
+			} else if (surrogateSchedule is RecurrenceScheduleSerializableSurrogate) {
+				var schedule = new OnRecurrenceSchedule<SchedulerJob>();
+				schedule.FromSerializableSurrogate(surrogateSchedule);
+				AddSchedule(schedule);
 			} else {
 				throw new ArgumentOutOfRangeException($"Unknown schedule type {surrogateSchedule.GetType().Name}");
 			}

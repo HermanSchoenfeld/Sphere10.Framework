@@ -15,6 +15,18 @@ var job = JobBuilder
 Scheduler.Asynchronous.AddJob(job);
 ```
 
+`OnRecurrenceSchedule<T>` runs a job whenever a [`CalendarRecurrence`](../Calendar/README.md) fires. The rule can fire once, every N days, on chosen weekdays of every N weeks, on chosen days of chosen months (including each month's last day), or on chosen weekdays of chosen weeks of chosen months, and each occurrence can repeat for a while after it starts (`RepeatEvery` and `RepeatFor`). `Repeat.OnRecurrence` takes a rule you built, and `OnDays`, `OnWeekdays`, `OnDaysOfMonth` and `OnWeekdaysOfMonth` build the common rules for you. The rule's times are local times, whereas `OnDayOfWeek` and `OnDayOfMonth` take a UTC time of day. The schedule reschedules when a run starts and ends at the rule's `End`. A run that came due while the scheduler was off happens once when the scheduler starts, and the schedule continues from that moment. The constructor rejects a rule that fails `CalendarRecurrence.Validate()`.
+
+```csharp
+// 03:00 local time on Monday and Wednesday of every second week
+var report = JobBuilder
+	.For(() => Console.WriteLine("report"))
+	.Called("Report")
+	.Repeat.OnWeekdays(new DateTime(2026, 1, 5, 3, 0, 0), CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Wednesday, interval: 2)
+	.Build();
+Scheduler.Asynchronous.AddJob(report);
+```
+
 ## Contents
 
 | Type | Kind | Purpose |
@@ -33,13 +45,14 @@ Scheduler.Asynchronous.AddJob(job);
 | [`OnDayOfMonthScheduler<T>`](OnDayOfMonthScheduler.cs) | class | Schedule that runs on a day of the month at a time of day, once or repeatedly. |
 | [`OnDayOfWeekScheduler<T>`](OnDayOfWeekScheduler.cs) | class | Schedule that runs on a day of the week at a time of day, once or repeatedly. |
 | [`OnIntervalSchedule<T>`](OnIntervalSchedule.cs) | class | Schedule that starts at a given time and repeats after an interval measured from the last start or finish. |
+| [`OnRecurrenceSchedule<T>`](OnRecurrenceSchedule.cs) | class | Schedule that runs whenever a `CalendarRecurrence` fires, in local time, rescheduling when a run starts. |
 | [`ReschedulePolicy`](ReschedulePolicy.cs) | enum | Whether the next run is computed from the start (`OnStart`) or the end (`OnFinish`) of the previous run. |
 | [`ScheduleBuilder`](ScheduleBuilder.cs) | class | `ScheduleBuilder<BaseJob>` used by the builders that `JobBuilder.For` returns. |
-| [`ScheduleBuilder<T>`](ScheduleBuilder.cs) | class | Adds an interval, day-of-week or day-of-month schedule to the job of a `JobBuilder<T>` and returns that builder. |
+| [`ScheduleBuilder<T>`](ScheduleBuilder.cs) | class | Adds an interval, day-of-week, day-of-month or calendar-recurrence schedule (`OnRecurrence`, `OnDays`, `OnWeekdays`, `OnDaysOfMonth`, `OnWeekdaysOfMonth`) to the job of a `JobBuilder<T>` and returns that builder. |
 | [`Scheduler`](Scheduler.cs) | class | Scheduler of `IJob` jobs with the started shared `Asynchronous` and `Synchronous` instances. |
 | [`Scheduler<TJob>`](Scheduler.cs) | class | Scheduler of `TJob` jobs over `IJobSchedule` schedules. |
 | [`Scheduler<TJob, TJobSchedule>`](Scheduler.cs) | class | Disposable timer-driven scheduler that orders schedules by next start time, runs due jobs, and raises job and scheduler status events. |
-| [`SchedulerJob`](SchedulerJob.cs) | class | `BaseJob` that creates a new instance of an `ISchedulerJob` type for every run and can be restored from a surrogate. |
+| [`SchedulerJob`](SchedulerJob.cs) | class | `BaseJob` that creates a new instance of an `ISchedulerJob` type for every run and can be restored from a surrogate, with its interval, day-of-week, day-of-month and recurrence schedules. |
 | [`SchedulerPolicy`](SchedulerPolicy.cs) | enum | Scheduler flags `ForceSyncronous`, `DontThrow`, `RemoveJobOnError` and `DisposeWhenFinished`. |
 | [`SchedulerStatus`](SchedulerStatus.cs) | enum | Scheduler states `Off`, `On` (running jobs) and `Idle` (waiting for the next job). |
 
@@ -53,4 +66,5 @@ Scheduler.Asynchronous.AddJob(job);
 | [`ISchedulerSerializer`](Serializable/ISchedulerSerializer.cs) | interface | Contract for storing and loading a `SchedulerSerializableSurrogate`. |
 | [`JobScheduleSerializableSurrogate`](Serializable/JobScheduleSerializableSurrogate.cs) | abstract class | XML attributes shared by all schedule surrogates, such as last start and end times, end date and iteration counts. |
 | [`JobSerializableSurrogate`](Serializable/JobSerializableSurrogate.cs) | class | XML surrogate of a job with its type name, name, status, policy and schedules. |
+| [`RecurrenceScheduleSerializableSurrogate`](Serializable/RecurrenceScheduleSerializableSurrogate.cs) | class | XML surrogate of an `OnRecurrenceSchedule<T>` with its rule, whose day, month and week sets are stored as numeric masks. |
 | [`SchedulerSerializableSurrogate`](Serializable/SchedulerSerializableSurrogate.cs) | class | XML root (`Scheduler`) that holds the surrogates of all scheduled jobs. |

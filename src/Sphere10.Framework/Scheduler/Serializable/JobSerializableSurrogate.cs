@@ -19,6 +19,7 @@ public class JobSerializableSurrogate {
 	[XmlElement("Interval", typeof(IntervalScheduleSerializableSurrogate))]
 	[XmlElement("DayOfWeek", typeof(DayOfWeekScheduleSerializableSurrogate))]
 	[XmlElement("DayOfMonth", typeof(DayOfMonthScheduleSerializableSurrogate))]
+	[XmlElement("Recurrence", typeof(RecurrenceScheduleSerializableSurrogate))]
 	public JobScheduleSerializableSurrogate[] Schedules { get; set; }
 
 }
