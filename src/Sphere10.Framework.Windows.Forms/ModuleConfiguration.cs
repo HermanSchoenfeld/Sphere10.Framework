@@ -31,6 +31,10 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		if (!serviceCollection.HasImplementationFor<IProductSendCommentsDialog>())
 			serviceCollection.AddTransient<IProductSendCommentsDialog, ProductProductSendCommentsDialog>();
 
+		// Framework.Windows has no module of its own (it must not depend on Application), so Windows services register here.
+		if (!serviceCollection.HasImplementationFor<IMachineIdentifierGenerator>())
+			serviceCollection.AddSingleton<IMachineIdentifierGenerator, WindowsMachineIdentifierGenerator>();
+
 
 		// Built-in observers remain transient, and explicit application registrations keep precedence.
 		ControlStateEventProviderManager.RegisterDefaultProviders(serviceCollection);
