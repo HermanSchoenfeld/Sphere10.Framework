@@ -1,0 +1,38 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+
+/* FieldRow renders each field as one element; the layout classes decide how its label and value sit (FieldRow.razor.css). */
+.sphere10-field-grid {
+	display: grid;
+	min-width: 0;
+}
+/* Stacked: the fields flow across the requested number of equal columns, each label above its control. */
+.sphere10-field-grid-stacked {
+	grid-template-columns: repeat(var(--sphere10-field-columns, 2), minmax(0, 1fr));
+	gap: .8rem 1rem;
+	align-items: start;
+}
+.sphere10-field-grid-stacked.sphere10-field-grid-compact { gap: .5rem .85rem; }
+/* A grid that follows another continues its rows: the same gap separates them as separates rows within a grid. */
+.sphere10-field-grid-stacked + .sphere10-field-grid-stacked { margin-top: .8rem; }
+.sphere10-field-grid-stacked.sphere10-field-grid-compact + .sphere10-field-grid-stacked.sphere10-field-grid-compact { margin-top: .5rem; }
+/* Inline: labels sized to the longest label, values taking the rest. */
+.sphere10-field-grid-inline {
+	grid-template-columns: max-content minmax(0, 1fr);
+	gap: .2rem .75rem;
+	align-items: center;
+}
+.sphere10-field-grid-inline.sphere10-field-grid-compact {
+	gap: .05rem .5rem;
+	line-height: 1.25;
+}
+@media (max-width: 850px) {
+	.sphere10-field-grid-stacked { grid-template-columns: minmax(0, 1fr); }
+}

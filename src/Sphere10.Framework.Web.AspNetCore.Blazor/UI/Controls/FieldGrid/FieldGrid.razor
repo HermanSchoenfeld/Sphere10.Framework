@@ -1,0 +1,44 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+
+@* Lays out FieldRow children: by default each label above its control, the fields flowing across Columns columns; Inline puts
+   the labels in an aligned left column with the controls beside them. *@
+<div class="@CssClass" style="@Style" role="@Role" aria-label="@Label">@ChildContent</div>
+
+@code {
+	/// <summary>The FieldRow components to lay out.</summary>
+	[Parameter] public RenderFragment ChildContent { get; set; }
+
+	/// <summary>An accessible name for the group, such as the record type whose fields a form shows. Null renders no group role.</summary>
+	[Parameter] public string Label { get; set; }
+
+	/// <summary>Additional classes for the grid element.</summary>
+	[Parameter] public string Class { get; set; }
+
+	/// <summary>Where each label goes relative to its control. Defaults to <see cref="FieldLayout.Stacked"/>, the label above its control.</summary>
+	[Parameter] public FieldLayout Layout { get; set; } = FieldLayout.Stacked;
+
+	/// <summary>The number of field columns a <see cref="FieldLayout.Stacked"/> grid flows its fields across; narrow screens use one. Defaults to 2.</summary>
+	[Parameter] public int Columns { get; set; } = 2;
+
+	/// <summary>Tight gaps between fields. Defaults to true; false uses the theme's control spacing.</summary>
+	[Parameter] public bool Compact { get; set; } = true;
+
+	private string CssClass => "sphere10-field-grid"
+		+ (Layout == FieldLayout.Inline ? " sphere10-field-grid-inline" : " sphere10-field-grid-stacked")
+		+ (Compact ? " sphere10-field-grid-compact" : null)
+		+ (string.IsNullOrWhiteSpace(Class) ? null : " " + Class);
+
+	private string Style => Layout == FieldLayout.Stacked ? $"--sphere10-field-columns: {Math.Max(1, Columns)}" : null;
+
+	private string Role => Label == null ? null : "group";
+}

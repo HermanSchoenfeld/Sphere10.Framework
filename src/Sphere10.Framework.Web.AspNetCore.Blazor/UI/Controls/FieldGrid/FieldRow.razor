@@ -1,0 +1,50 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+
+@* One field of a FieldGrid: its label and the control, or a read-only value. The grid's layout places the label above the
+   control or beside it. *@
+<div class="@FieldClass">
+	<label class="sphere10-field-label" for="@InputId">@Label</label>
+	<div class="sphere10-field-value">
+		@if (ChildContent != null) {
+			@ChildContent
+		} else {
+			<output id="@InputId" class="sphere10-field-readonly">@Value</output>
+		}
+	</div>
+</div>
+
+@code {
+	private readonly string _outputId = "sphere10-field-" + Guid.NewGuid().ToString("N");
+
+	/// <summary>The field's label, normally the model member's name.</summary>
+	[Parameter] public string Label { get; set; }
+
+	/// <summary>The ID of the control in <see cref="ChildContent"/> that the label names. Read-only values are labelled automatically.</summary>
+	[Parameter] public string For { get; set; }
+
+	/// <summary>The editing control. Without it the row shows <see cref="Value"/> as a read-only value.</summary>
+	[Parameter] public RenderFragment ChildContent { get; set; }
+
+	/// <summary>The read-only value shown when no control is supplied.</summary>
+	[Parameter] public string Value { get; set; }
+
+	/// <summary>
+	/// For long text: in a stacked grid the field spans every column, in an inline grid the control stretches across the value
+	/// column. Otherwise an inline control keeps the size of its value.
+	/// </summary>
+	[Parameter] public bool Wide { get; set; }
+
+	private string InputId => ChildContent == null ? _outputId : For;
+
+	private string FieldClass => Wide ? "sphere10-field sphere10-field-wide" : "sphere10-field";
+}

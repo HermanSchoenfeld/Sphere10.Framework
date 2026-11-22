@@ -44,16 +44,18 @@ public class ApplicationCommandScopeTests {
 			// The shell appends its own Screens menu before Help once a screen is open; block scopes never own it.
 			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "tools", "inspect", "sphere10-screens-menu", "help" }));
 			Assert.That(bar.Menus.Count(menu => menu.Id == "file"), Is.EqualTo(1));
-			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item.Id),
-				Is.EqualTo(new[] { "common-open", "save", "export", "pipe-file", "export", "save" }));
+
+			// Since 18 November 2026 a separator divides the application's File items from the active block's and screen's.
+			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item is IApplicationMenuSeparator ? "-" : item.Id).ToArray(),
+				Is.EqualTo(new[] { "common-open", "save", "export", "-", "pipe-file", "export", "save" }));
 			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Common save", "Pipe calculator", "Pipe save" }));
 			Assert.That(Header(rendered.ToHtmlString()), Does.Not.Contain("Internal commands").And.Not.Contain("Hidden pipe registration"));
 
 			var admin = await host.ActivateScreenAsync("administration", "admin-screen");
 			Assert.That(host.SelectedBlock.Id, Is.EqualTo("administration"));
 			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "reports", "sphere10-screens-menu", "help" }));
-			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item.Id),
-				Is.EqualTo(new[] { "common-open", "save", "export", "admin-file" }));
+			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item is IApplicationMenuSeparator ? "-" : item.Id).ToArray(),
+				Is.EqualTo(new[] { "common-open", "save", "export", "-", "admin-file" }));
 			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Common save", "Administration tool" }));
 			Assert.That(Header(rendered.ToHtmlString()), Does.Contain("Reports").And.Contain("Common save").And.Not.Contain("Pipe calculator").And.Not.Contain("Pipe save").And.Not.Contain("Tools"));
 
@@ -330,13 +332,14 @@ public class ApplicationCommandScopeTests {
 
 		public int GuardCalls { get; private set; }
 
+		// The fixture's Command helper is qualified because ApplicationScreen.Command (screen commands) hides it inside a screen.
 		public override BlazorUI.IApplicationMenu[] Menus => new[] {
-			Menu("file", "File", Command("save", "Pipe save"),
-				Group("export", "Pipe export", Group("formats", "Formats", Command("route", "Route CSV"), Command("internal-export", "Internal export", false)))),
-			Menu("inspect", "Inspect", Command("inspect-pipe", "Inspect pipe"))
+			Menu("file", "File", ApplicationCommandScopeTests.Command("save", "Pipe save"),
+				Group("export", "Pipe export", Group("formats", "Formats", ApplicationCommandScopeTests.Command("route", "Route CSV"), ApplicationCommandScopeTests.Command("internal-export", "Internal export", false)))),
+			Menu("inspect", "Inspect", ApplicationCommandScopeTests.Command("inspect-pipe", "Inspect pipe"))
 		};
 
-		public override BlazorUI.IApplicationMenuItem[] ToolBarItems => new[] { Command("save", "Pipe save") };
+		public override BlazorUI.IApplicationMenuItem[] ToolBarItems => new[] { ApplicationCommandScopeTests.Command("save", "Pipe save") };
 
 		protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
 			GuardCalls++;
