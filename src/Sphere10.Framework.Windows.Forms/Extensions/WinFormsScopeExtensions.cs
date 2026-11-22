@@ -19,6 +19,8 @@ public static class WinFormsScopeExtensions {
 	extension(Scope) {
 		public static ControlRenderingScope EnterRenderingScope(Control control, bool repaintImmediately = true) => control.EnterRenderingScope(repaintImmediately);
 
+		public static ControlLayoutScope EnterLayoutScope(Control control) => control.EnterLayoutScope();
+
 		public static WindowHighlightScope EnterHighlightScope(Rectangle bounds, Color color, int thickness = 3) => new(bounds, color, thickness);
 
 		public static UpdateScope EnterUpdateScope(IUpdatable updateable, FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) => new(updateable, behaviour);
