@@ -191,6 +191,19 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 		}
 	}
 
+	/// <summary>The display height when the rows need no vertical scrollbar, with a horizontal scrollbar only if the columns overflow the full width.</summary>
+	/// <remarks>
+	/// It does not depend on the current vertical scrollbar, whose width can bring in a horizontal scrollbar of its own. A caller that fits rows
+	/// to the viewport, such as automatic paging, therefore gets the same height whether or not other content currently makes the control scroll.
+	/// </remarks>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public int UnscrolledDisplayHeight {
+		get {
+			var baseDisplay = base.DisplayRectangle;
+			return HorizontalScrollingEnabled && GetScrollColumns(baseDisplay.Width) > 0 ? baseDisplay.Height - SystemInformation.HorizontalScrollBarHeight : baseDisplay.Height;
+		}
+	}
+
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	protected int HorizontalPage => _horizontalPage;
 

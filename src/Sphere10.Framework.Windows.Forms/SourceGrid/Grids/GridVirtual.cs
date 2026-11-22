@@ -926,6 +926,34 @@ ref Message msg, Keys keyData) {
 
 	#region Paint
 
+	private const int PaintMessage = 0x000F;
+	private const int EraseBackgroundMessage = 0x0014;
+	private int _paintingSuspended;
+
+	/// <summary>Stops painting the grid until the returned scope (and any other held at the time) ends, then repaints it once. The window keeps
+	/// its native visibility, unlike WM_SETREDRAW, so it still receives clicks; the screen shows its previous frame meanwhile. Use it over
+	/// a multi-step update that yields to the message loop, such as binding a page and then sizing its columns. Enter and end it on the UI thread.</summary>
+	public IDisposable SuspendPainting() {
+		_paintingSuspended++;
+		return Tools.Scope.ExecuteOnDispose(() => {
+			if (--_paintingSuspended == 0 && !IsDisposed && !Disposing)
+				Invalidate(true);
+		});
+	}
+
+	protected override void WndProc(ref Message message) {
+		if (_paintingSuspended > 0 && message.Msg == PaintMessage && IsHandleCreated) {
+			WinAPI.USER32.ValidateRect(new System.Runtime.InteropServices.HandleRef(this, Handle), IntPtr.Zero);
+			message.Result = IntPtr.Zero;
+			return;
+		}
+		if (_paintingSuspended > 0 && message.Msg == EraseBackgroundMessage) {
+			message.Result = (IntPtr)1;
+			return;
+		}
+		base.WndProc(ref message);
+	}
+
 	protected override void OnPaint(PaintEventArgs e) {
 		base.OnPaint(e);
 
@@ -1072,6 +1100,10 @@ ref Message msg, Keys keyData) {
 		base.OnMouseWheel(e);
 
 		CustomScrollWheel(e.Delta);
+		// A grid that scrolls vertically consumes the wheel. One that cannot, such as a nested detail sized to its rows,
+		// leaves it unhandled so Windows forwards it to the parent window and the enclosing grid scrolls instead.
+		if (VScrollBarVisible && e is HandledMouseEventArgs handled)
+			handled.Handled = true;
 	}
 
 	#endregion
