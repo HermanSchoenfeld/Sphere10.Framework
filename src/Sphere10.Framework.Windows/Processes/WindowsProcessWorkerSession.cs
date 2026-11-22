@@ -38,6 +38,7 @@ public sealed class WindowsProcessWorkerSession : IAsyncDisposable {
 		startInfo.CreateNoWindow = true;
 		startInfo.RedirectStandardOutput = true;
 		startInfo.RedirectStandardError = true;
+		startInfo.RedirectStandardInput = options.RedirectStandardInput;
 		startInfo.StandardOutputEncoding = Encoding.UTF8;
 		startInfo.StandardErrorEncoding = Encoding.UTF8;
 		_process = new Process { StartInfo = startInfo };
@@ -91,6 +92,16 @@ public sealed class WindowsProcessWorkerSession : IAsyncDisposable {
 				text.Length--;
 			return text.ToString();
 		}
+	}
+
+	/// <summary>Writes and flushes one bounded request line. The caller serializes writers and owns the operation timeout.</summary>
+	public async Task WriteLineAsync(string line, int maximumCharacters = 128 * 1024, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(line, nameof(line));
+		Guard.ArgumentInRange(maximumCharacters, 1, 1024 * 1024, nameof(maximumCharacters));
+		Guard.Argument(line.Length <= maximumCharacters && !line.Contains('\r') && !line.Contains('\n'), nameof(line), "Supply one bounded protocol line.");
+		Guard.Ensure(_options.RedirectStandardInput, "This worker was not configured to accept requests.");
+		await _process.StandardInput.WriteLineAsync(line.AsMemory(), cancellationToken).ConfigureAwait(false);
+		await _process.StandardInput.FlushAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <summary>Runs cleanup once, with independent bounded budgets even when the operation was canceled.</summary>

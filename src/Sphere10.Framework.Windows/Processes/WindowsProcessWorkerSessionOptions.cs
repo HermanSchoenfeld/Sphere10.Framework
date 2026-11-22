@@ -16,6 +16,8 @@ public sealed class WindowsProcessWorkerSessionOptions {
 	public TimeSpan ErrorDrainTimeout { get; init; } = TimeSpan.FromSeconds(1);
 	public int MaximumErrorCharacters { get; init; } = 64 * 1024;
 	public bool KillDescendants { get; init; }
+	/// <summary>Creates a request pipe for a persistent helper. Existing output-only workers leave this disabled.</summary>
+	public bool RedirectStandardInput { get; init; }
 
 	internal void Validate() {
 		Guard.Argument(TerminationTimeout > TimeSpan.Zero && TerminationTimeout <= TimeSpan.FromMinutes(1), nameof(TerminationTimeout), "Choose a positive bounded cleanup timeout.");
