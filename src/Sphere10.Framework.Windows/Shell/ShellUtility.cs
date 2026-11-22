@@ -77,11 +77,11 @@ public static partial class Windows {
 		/// <summary>Returns the selected native item's currently offered, localized command names.</summary>
 		public static string[] GetShellItemVerbs(WindowsShellItemInfo expected)
 			=> WithShellItem(expected, item => {
-				using var verbs = new ShellComObjectScope(((dynamic)item).Verbs());
+				using var verbs = item.GetVerbs();
 				var names = new List<string>();
-				for (var index = 0; index < (int)((dynamic)verbs.Item).Count; index++) {
-					using var verb = new ShellComObjectScope(((dynamic)verbs.Item).Item(index));
-					var name = (string)((dynamic)verb.Item).Name;
+				for (var index = 0; index < verbs.Count; index++) {
+					using var verb = verbs.GetItem(index);
+					var name = verb.Name;
 					if (!string.IsNullOrWhiteSpace(name))
 						names.Add(name);
 				}
@@ -102,12 +102,12 @@ public static partial class Windows {
 		public static void InvokeShellItemVerb(WindowsShellItemInfo expected, string verbName) {
 			Guard.ArgumentNotNullOrWhitespace(verbName, nameof(verbName));
 			WithShellItem(expected, item => {
-				using var verbs = new ShellComObjectScope(((dynamic)item).Verbs());
-				for (var index = 0; index < (int)((dynamic)verbs.Item).Count; index++) {
-					using var verb = new ShellComObjectScope(((dynamic)verbs.Item).Item(index));
-					if (!string.Equals((string)((dynamic)verb.Item).Name, verbName, StringComparison.Ordinal))
+				using var verbs = item.GetVerbs();
+				for (var index = 0; index < verbs.Count; index++) {
+					using var verb = verbs.GetItem(index);
+					if (!string.Equals(verb.Name, verbName, StringComparison.Ordinal))
 						continue;
-					((dynamic)verb.Item).DoIt();
+					verb.Invoke();
 					return true;
 				}
 				throw new InvalidOperationException("The selected Shell command is no longer offered by this item. Refresh its commands.");
@@ -330,7 +330,7 @@ public static partial class Windows {
 				|| string.Equals(expected.Namespace, "::{645FF040-5081-101B-9F08-00AA002F954E}", StringComparison.OrdinalIgnoreCase), nameof(expected), "Select an item from the Recycle Bin namespace.");
 			WithShellItem(expected, item => {
 				checkpoint?.Invoke();
-				Marshal.ThrowExceptionForHR(WinAPI.SHELL32.SHGetIDListFromObject(item, out var identifier));
+				Marshal.ThrowExceptionForHR(WinAPI.SHELL32.SHGetIDListFromObject(item.Interface, out var identifier));
 				using var identifierScope = Tools.Scope.ExecuteOnDispose(() => Marshal.FreeCoTaskMem(identifier));
 				Guard.Ensure(identifier != IntPtr.Zero, "The selected Shell item has no native identity.");
 				var request = new WinAPI.SHELL32.SHELLEXECUTEINFO {
@@ -348,50 +348,49 @@ public static partial class Windows {
 			Guard.ArgumentNotNullOrWhitespace(namespaceName, nameof(namespaceName));
 			Guard.Argument(maximumItems is > 0 and <= 100000, nameof(maximumItems), "Choose a bound from 1 to 100,000 Shell items.");
 			Guard.Ensure(Thread.CurrentThread.GetApartmentState() == ApartmentState.STA, "Shell namespace operations require an STA thread.");
-			using var shell = CreateShell();
-			using var folder = new ShellComObjectScope(((dynamic)shell.Item).NameSpace(namespaceName));
-			Guard.Ensure(folder.Item != null, "Windows could not open the selected Shell namespace.");
-			using var items = new ShellComObjectScope(((dynamic)folder.Item).Items());
-			var count = (int)((dynamic)items.Item).Count;
+			using var shell = Tools.Windows.COM.CreateShellApplication();
+			using var folder = shell.OpenNamespace(namespaceName);
+			Guard.Ensure(folder != null, "Windows could not open the selected Shell namespace.");
+			using var items = folder.GetItems();
+			var count = items.Count;
 			Guard.Ensure(count >= 0, "Windows returned an invalid Shell item count.");
 			var rows = new List<WindowsShellItemInfo>();
 			for (var index = 0; index < Math.Min(count, maximumItems); index++) {
 				checkpoint?.Invoke();
-				using var item = new ShellComObjectScope(((dynamic)items.Item).Item(index));
-				if (item.Item != null)
-					rows.Add(ReadShellItem(item.Item, namespaceName));
+				using var item = items.GetItem(index);
+				if (item != null)
+					rows.Add(ReadShellItem(item, namespaceName));
 			}
 			return new WindowsShellItemEnumeration(rows.ToArray(), count, count > maximumItems);
 		}
 
-		private static T WithShellItem<T>(WindowsShellItemInfo expected, Func<object, T> action) {
+		private static T WithShellItem<T>(WindowsShellItemInfo expected, Func<ShellFolderItemComObject, T> action) {
 			Guard.ArgumentNotNull(expected, nameof(expected));
 			Guard.ArgumentNotNullOrWhitespace(expected.Namespace, nameof(expected.Namespace));
 			Guard.ArgumentNotNullOrWhitespace(expected.ParsingName, nameof(expected.ParsingName));
 			Guard.Ensure(Thread.CurrentThread.GetApartmentState() == ApartmentState.STA, "Shell commands require an STA thread.");
-			using var shell = CreateShell();
-			using var folder = new ShellComObjectScope(((dynamic)shell.Item).NameSpace(expected.Namespace));
-			Guard.Ensure(folder.Item != null, "The selected Shell namespace is no longer available.");
-			using var items = new ShellComObjectScope(((dynamic)folder.Item).Items());
-			for (var index = 0; index < (int)((dynamic)items.Item).Count; index++) {
-				using var item = new ShellComObjectScope(((dynamic)items.Item).Item(index));
-				if (item.Item == null || !string.Equals((string)((dynamic)item.Item).Path, expected.ParsingName, StringComparison.OrdinalIgnoreCase))
+			using var shell = Tools.Windows.COM.CreateShellApplication();
+			using var folder = shell.OpenNamespace(expected.Namespace);
+			Guard.Ensure(folder != null, "The selected Shell namespace is no longer available.");
+			using var items = folder.GetItems();
+			for (var index = 0; index < items.Count; index++) {
+				using var item = items.GetItem(index);
+				if (item == null || !string.Equals(item.Path, expected.ParsingName, StringComparison.OrdinalIgnoreCase))
 					continue;
-				var current = ReadShellItem(item.Item, expected.Namespace);
+				var current = ReadShellItem(item, expected.Namespace);
 				Guard.Ensure(current.Name == expected.Name && current.IsFolder == expected.IsFolder && current.SizeBytes == expected.SizeBytes
 					&& current.DateDeleted == expected.DateDeleted && current.OriginalDirectory == expected.OriginalDirectory,
 					"The selected Shell item changed. Refresh before requesting a command.");
-				return action(item.Item);
+				return action(item);
 			}
 			throw new InvalidOperationException("The selected Shell item is no longer present. Refresh the inventory.");
 		}
 
-		private static WindowsShellItemInfo ReadShellItem(object native, string namespaceName) {
-			dynamic item = native;
+		private static WindowsShellItemInfo ReadShellItem(ShellFolderItemComObject item, string namespaceName) {
 			var errors = new List<string>();
 			object Property(string name) {
 				object value = null;
-				Tools.Exceptions.ExecuteCapturingException(() => value = item.ExtendedProperty(name), out var error);
+				Tools.Exceptions.ExecuteCapturingException(() => value = item.GetExtendedProperty(name), out var error);
 				if (error != null)
 					errors.Add(name + ": " + error.Message);
 				return value;
@@ -399,14 +398,12 @@ public static partial class Windows {
 			var size = Property("System.Size");
 			var deleted = Property("System.Recycle.DateDeleted");
 			return new WindowsShellItemInfo {
-				Namespace = namespaceName, ParsingName = (string)item.Path, Name = (string)item.Name, Type = (string)item.Type, IsFolder = (bool)item.IsFolder,
+				Namespace = namespaceName, ParsingName = item.Path, Name = item.Name, Type = item.Type, IsFolder = item.IsFolder,
 				SizeBytes = size is ulong unsigned && unsigned <= long.MaxValue ? (long)unsigned : size is long signed && signed >= 0 ? signed : null,
 				OriginalDirectory = Property("System.Recycle.DeletedFrom") as string, DateDeleted = deleted is DateTime date ? date : null,
 				Availability = string.Join("; ", errors)
 			};
 		}
-
-		private static ShellComObjectScope CreateShell() => new(Activator.CreateInstance(Type.GetTypeFromCLSID(WinAPI.SHELL32.CLSID_Shell, true)));
 
 		/// <summary>Runs a Shell operation on a dedicated COM-initialized STA worker and completes with its result or failure. A sheet the operation shows keeps that worker pumping until it closes.</summary>
 		public static Task<T> RunShellQueryAsync<T>(Func<T> query, CancellationToken cancellationToken, bool checkCompletionCancellation = true) {

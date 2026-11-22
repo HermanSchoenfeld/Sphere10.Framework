@@ -13,7 +13,6 @@ namespace Sphere10.Framework.Windows;
 
 public static partial class WinAPI {
 	public static class SHELL32 {
-		public static readonly Guid CLSID_Shell = new("13709620-C279-11CE-A49E-444553540000");
 		public const uint SEE_MASK_INVOKEIDLIST = 0x0000000C;
 		public const uint SEE_MASK_NOASYNC = 0x00000100;
 		public const uint SHERB_NOCONFIRMATION = 1;
@@ -47,7 +46,7 @@ public static partial class WinAPI {
 		public static extern int SHSetKnownFolderPath(ref Guid folderId, uint flags, IntPtr token, string path);
 
 		[DllImport("shell32.dll", ExactSpelling = true)]
-		public static extern int SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object item, out IntPtr itemIdList);
+		public static extern int SHGetIDListFromObject(IntPtr item, out IntPtr itemIdList);
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 		public struct SHELLEXECUTEINFO {

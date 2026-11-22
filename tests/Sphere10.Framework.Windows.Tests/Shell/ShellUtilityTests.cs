@@ -66,6 +66,22 @@ public class ShellUtilityTests {
 	}
 
 	[Test]
+	public async Task ShellNamespaceItemsExposeTheirValuesAndCommandsThroughExplicitWrappers() {
+		// A real folder exercises activation, namespace and item calls, scalar conversion and command enumeration without requesting any command.
+		var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+		var result = await Tools.Windows.Shell.GetShellFolderItemsAsync(windows, maximumItems: 8);
+		Assert.That(result.Items, Is.Not.Empty);
+		Assert.That(result.TotalCount, Is.GreaterThanOrEqualTo(result.Items.Length));
+		var folder = Array.Find(result.Items, item => item.IsFolder);
+		Assert.That(folder, Is.Not.Null, "The first Windows directory entries include a folder.");
+		Assert.That(folder.Name, Is.Not.Null.And.Not.Empty);
+		Assert.That(folder.Type, Is.Not.Null.And.Not.Empty);
+		Assert.That(Directory.Exists(folder.ParsingName), Is.True);
+		Assert.That(folder.ParsingName, Does.StartWith(windows).IgnoreCase);
+		Assert.That(await Tools.Windows.Shell.GetShellItemVerbsAsync(folder), Is.Not.Empty);
+	}
+
+	[Test]
 	public async Task ShellNamespaceReadsRejectInvalidBoundsAndCancelledWorkBeforeNativeEnumeration() {
 		foreach (var bound in new[] { 0, -1, 100001 })
 			await Assert.ThatAsync(async () => await Tools.Windows.Shell.GetShellFolderItemsAsync("shell:RecycleBinFolder", bound), Throws.ArgumentException);

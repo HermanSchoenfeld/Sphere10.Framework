@@ -8,6 +8,8 @@ Wraps Windows Shell operations: launching and opening items, file associations, 
 
 `ShellLink` uses source-generated Unicode COM bindings on both CoreCLR and Native AOT. Its unique wrapper owns the native reference and releases it on disposal. Shortcut creation and stored-field reads retain their existing public API.
 
+Shell namespace items and their verbs come from the `Shell.Application` automation object. The internal wrappers in [ShellAutomationComObject.cs](ShellAutomationComObject.cs) own each automation interface on the calling STA and call its members by name through explicit `IDispatch` calls, which work on CoreCLR and under Native AOT. `Tools.Windows.COM` activates the root object, following the [COM wrapper procedure](../Objects/README.md#wrapping-a-com-object).
+
 ## Contents
 
 | Type | Kind | Purpose |
@@ -21,4 +23,4 @@ Wraps Windows Shell operations: launching and opening items, file associations, 
 | [`WindowsRecycleBinInfo`](WindowsRecycleBinInfo.cs) | record | Recycle Bin size and item count for one drive root or all drives |
 | [`WindowsShellItemEnumeration`](WindowsShellItemEnumeration.cs) | record | Bounded list of Shell items with the native total count and a limited flag |
 | [`WindowsShellItemInfo`](WindowsShellItemInfo.cs) | record | One Shell folder item with namespace, parsing name, display name, type, folder flag, size, original directory and deletion date |
-| [`WindowsShortcutInfo`](SpecialTypes.cs) | record | Stored shortcut path, target, arguments, working directory and description, read without resolving the target |
+| [`WindowsShortcutInfo`](WindowsShortcutInfo.cs) | record | Stored shortcut path, target, arguments, working directory and description, read without resolving the target |
