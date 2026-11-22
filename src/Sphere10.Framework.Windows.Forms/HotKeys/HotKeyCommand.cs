@@ -19,4 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 public sealed record HotKeyCommand(string Name, string Caption, Keys DefaultShortcut, Action Execute) {
 	/// <summary>The heading the editor lists the command under, for example "General" or "Effects".</summary>
 	public string Group { get; init; } = string.Empty;
+
+	/// <summary>Optional action when the held shortcut ends; omitted commands require no release tracking.</summary>
+	public Action Release { get; init; }
 }

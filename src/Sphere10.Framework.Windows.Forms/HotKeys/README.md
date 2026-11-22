@@ -8,12 +8,21 @@ System-wide keyboard shortcuts registered through `RegisterHotKey`, with user-as
 
 ```csharp
 using var hotKey = new GlobalHotKey();
-hotKey.Pressed += (_, _) => ToggleOverlay();
+hotKey.Pressed += () => ToggleOverlay();
 if (!hotKey.TryRegister(GlobalHotKey.WindowsKey | Keys.Alt | Keys.L, out var error))
 	MessageBox.Show(error);
 ```
 
 ## Contents
+
+Held actions can subscribe to the `EventHandlerEx` `Released` event, or set
+`HotKeyCommand.Release` / `GlobalHotKeyBinding.Release`. A lazy caller-owned
+Framework scheduler checks key state every 16 ms only during a held shortcut with
+a release subscriber. Releasing the regular key or any required modifier ends
+the hold. Rebinding, unregistering and disposal balance an active hold as well;
+a failed rebind leaves it intact. The release callback runs on the owner UI thread.
+Ordinary shortcuts create no scheduler or input hook. A set retains the release
+action associated with the press so replacing or removing a binding can finish it.
 
 | Type | Kind | Purpose |
 |---|---|---|

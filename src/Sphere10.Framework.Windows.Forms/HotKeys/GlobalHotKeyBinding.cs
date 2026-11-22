@@ -16,4 +16,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <param name="Caption">Names the shortcut in registration errors.</param>
 /// <param name="Shortcut">The key combination; <see cref="Keys.None"/> releases the binding's registration.</param>
 /// <param name="Action">Runs on the UI thread when the shortcut is pressed; its exceptions are ignored.</param>
-public sealed record GlobalHotKeyBinding(string Key, string Caption, Keys Shortcut, Action Action);
+public sealed record GlobalHotKeyBinding(string Key, string Caption, Keys Shortcut, Action Action) {
+	/// <summary>Optional action when the held shortcut ends; also runs when an active binding is removed.</summary>
+	public Action Release { get; init; }
+}

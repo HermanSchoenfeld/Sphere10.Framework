@@ -117,6 +117,38 @@ public class GlobalHotKeySetTests {
 		Assert.That(calls, Is.EqualTo(new[] { "toggle" }));
 	}
 
+	[Test]
+	public void HoldCommandsReleaseOnceWhenKeysLiftOrTheBindingIsRemoved() {
+		var created = new List<FakeHotKey>();
+		using var set = new RecordingHotKeySet(created, Keys.None);
+		var calls = new List<string>();
+		set.Apply(new[] {
+			new HotKeyCommand("compare", "Compare", Toggle, () => calls.Add("press")) { Release = () => calls.Add("release") }
+		}, Array.Empty<HotKeyAssignment>());
+		created[0].Press();
+		created[0].Release();
+		created[0].Release();
+		created[0].Press();
+		set.Apply(Array.Empty<GlobalHotKeyBinding>());
+		Assert.That(calls, Is.EqualTo(new[] { "press", "release", "press", "release" }));
+	}
+
+	[Test]
+	public void OrdinaryCommandsHaveNoReleaseSubscriberAndReplacingAHoldBalancesItsAction() {
+		var created = new List<FakeHotKey>();
+		using var set = new RecordingHotKeySet(created, Keys.None);
+		var releases = 0;
+		set.Apply(new[] { new GlobalHotKeyBinding("command", null, Toggle, () => { }) });
+		Assert.That(created[0].ReleaseSubscribers, Is.Zero);
+		set.Apply(new[] { new GlobalHotKeyBinding("command", null, Toggle, () => { }) { Release = () => releases++ } });
+		Assert.That(created[0].ReleaseSubscribers, Is.EqualTo(1));
+		created[0].Press();
+		set.Apply(new[] { new GlobalHotKeyBinding("command", null, Toggle, () => { }) });
+		Assert.That(releases, Is.EqualTo(1));
+		Assert.That(created[0].ReleaseSubscribers, Is.Zero);
+	}
+
+	#region Inner Types
 	private sealed class RecordingHotKeySet : GlobalHotKeySet {
 		private readonly List<FakeHotKey> _created;
 		private readonly Keys _failFor;
@@ -134,7 +166,9 @@ public class GlobalHotKeySetTests {
 	}
 
 	private sealed class FakeHotKey : IGlobalHotKey {
-		public event EventHandler Pressed;
+		public event EventHandlerEx Pressed;
+
+		public event EventHandlerEx Released;
 
 		public Keys FailFor { get; init; } = Keys.None;
 
@@ -143,6 +177,8 @@ public class GlobalHotKeySetTests {
 		public int Registrations { get; private set; }
 
 		public bool Disposed { get; private set; }
+
+		public int ReleaseSubscribers => Released?.GetInvocationList().Length ?? 0;
 
 		public bool TryRegister(Keys shortcut, out string error) {
 			if (shortcut == FailFor) {
@@ -157,8 +193,15 @@ public class GlobalHotKeySetTests {
 
 		public void Unregister() => Registered = Keys.None;
 
-		public void Press() => Pressed?.Invoke(this, EventArgs.Empty);
+		public void Press() => NotifyPressed();
+
+		public void Release() => NotifyReleased();
 
 		public void Dispose() => Disposed = true;
+
+		private void NotifyPressed() => Pressed?.Invoke();
+
+		private void NotifyReleased() => Released?.Invoke();
 	}
+	#endregion
 }

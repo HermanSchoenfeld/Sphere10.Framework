@@ -9,6 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows;
 
@@ -20,12 +21,21 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 	/// <remarks>The value occupies the unused modifier bit above <see cref="Keys.Alt"/>, so it stays inside <see cref="Keys.Modifiers"/> and outside <see cref="Keys.KeyCode"/>.</remarks>
 	public const Keys WindowsKey = (Keys)0x00080000;
 
-	public event EventHandler Pressed;
+	public event EventHandlerEx Pressed;
+
+	/// <summary>Raised after a held shortcut loses its key or a required modifier, or its registration is released.</summary>
+	/// <remarks>Release checks run only while a shortcut with a release subscriber is held; ordinary shortcuts do not poll.</remarks>
+	public event EventHandlerEx Released;
 
 	private readonly int _ownerThreadId;
 	private HotKeyWindow _window;
 	private int _registeredId;
 	private Keys _registeredShortcut;
+	private SynchronizationContext _context;
+	private Scheduler<BaseJob> _releaseScheduler;
+	private BaseJob _releaseJob;
+	private int _pressVersion;
+	private bool _held;
 	private bool _disposed;
 
 	public GlobalHotKey() => _ownerThreadId = Environment.CurrentManagedThreadId;
@@ -73,6 +83,7 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 		}
 		_registeredId = nextId;
 		_registeredShortcut = shortcut;
+		EndPress();
 		return true;
 	}
 
@@ -84,6 +95,7 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 			throw new Win32Exception(Marshal.GetLastWin32Error(), "The global shortcut could not be released.");
 		_registeredId = 0;
 		_registeredShortcut = Keys.None;
+		EndPress();
 	}
 
 	protected override void DisposeInternal() {
@@ -91,10 +103,14 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 			return;
 		EnsureUsable();
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
+			EndPress();
+			_releaseScheduler?.Dispose();
+			_releaseScheduler = null;
 			_window?.DestroyHandle();
 			_window = null;
 			_disposed = true;
 			Pressed = null;
+			Released = null;
 		});
 		Unregister();
 	}
@@ -105,17 +121,66 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 	}
 
 	private void OnPressed(int id) {
-		if (_disposed || id != _registeredId)
+		if (_disposed || id != _registeredId || _held)
 			return;
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			Pressed?.Invoke(this, EventArgs.Empty);
-		}, out var error);
+		_held = Released != null;
+		NotifyPressed();
+		if (_held && !_disposed)
+			StartReleaseCheck();
+	}
+
+	private void StartReleaseCheck() {
+		_context ??= SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
+		_releaseScheduler ??= new Scheduler<BaseJob>();
+		var version = ++_pressVersion;
+		var shortcut = _registeredShortcut;
+		var posted = 0;
+		_releaseJob = JobBuilder.For(() => {
+			if (IsShortcutDown(shortcut) || Interlocked.Exchange(ref posted, 1) != 0)
+				return;
+			_context.Post(_ => {
+				if (!_disposed && _held && version == _pressVersion)
+					EndPress();
+			}, null);
+		}).Called("Wait for shortcut release").Repeat.OnInterval(TimeSpan.FromMilliseconds(16)).Build();
+		_releaseScheduler.AddJob(_releaseJob);
+		_releaseScheduler.Start();
+	}
+
+	private void EndPress() {
+		++_pressVersion;
+		if (_releaseJob != null) {
+			_releaseScheduler.RemoveJob(_releaseJob);
+			_releaseJob = null;
+		}
+		if (!_held)
+			return;
+		_held = false;
+		NotifyReleased();
+	}
+
+	private static bool IsShortcutDown(Keys shortcut)
+		=> IsKeyDown(shortcut & Keys.KeyCode)
+			&& ((shortcut & Keys.Control) == 0 || IsKeyDown(Keys.ControlKey))
+			&& ((shortcut & Keys.Alt) == 0 || IsKeyDown(Keys.Menu))
+			&& ((shortcut & Keys.Shift) == 0 || IsKeyDown(Keys.ShiftKey))
+			&& ((shortcut & WindowsKey) == 0 || IsKeyDown(Keys.LWin) || IsKeyDown(Keys.RWin));
+
+	private static bool IsKeyDown(Keys key) => (WinAPI.USER32.GetAsyncKeyState((int)key) & 0x8000) != 0;
+
+	private void NotifyPressed() => Notify(Pressed);
+
+	private void NotifyReleased() => Notify(Released);
+
+	private static void Notify(EventHandlerEx notification) {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => notification?.Invoke(), out var error);
 		if (error != null) {
 			// Subscriber failures must not cross the native window-procedure boundary.
 			Tools.Exceptions.ExecuteIgnoringException(() => SystemLog.Exception(error));
 		}
 	}
 
+	#region Inner Types
 	private sealed class HotKeyWindow : NativeWindow {
 		private readonly GlobalHotKey _owner;
 
@@ -132,4 +197,5 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 			base.WndProc(ref message);
 		}
 	}
+	#endregion
 }

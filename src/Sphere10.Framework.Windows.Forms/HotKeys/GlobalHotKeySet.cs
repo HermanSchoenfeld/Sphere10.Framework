@@ -36,7 +36,11 @@ public class GlobalHotKeySet : IDisposable {
 	/// <summary>Registers each command at its resolved shortcut (the user's assignment or the command's default).</summary>
 	public void Apply(IEnumerable<HotKeyCommand> commands, IEnumerable<HotKeyAssignment> assignments) {
 		Guard.ArgumentNotNull(commands, nameof(commands));
-		Apply(commands.Select(command => new GlobalHotKeyBinding(command?.Name, command?.Caption, command == null ? Keys.None : HotKeyAssignment.Resolve(assignments, command), command?.Execute)));
+		Apply(commands.Select(command => new GlobalHotKeyBinding(
+			command?.Name,
+			command?.Caption,
+			command == null ? Keys.None : HotKeyAssignment.Resolve(assignments, command),
+			command?.Execute) { Release = command?.Release }));
 	}
 
 	/// <summary>Makes the registered shortcuts match the bindings; a failed binding keeps its previous registration.</summary>
@@ -55,11 +59,9 @@ public class GlobalHotKeySet : IDisposable {
 			Release(key);
 		foreach (var binding in wanted.Values.Where(binding => binding.Shortcut != Keys.None)) {
 			var created = !_registrations.TryGetValue(binding.Key, out var registration);
-			if (created) {
+			if (created)
 				registration = new Registration(CreateHotKey());
-				registration.HotKey.Pressed += (_, _) => Tools.Exceptions.ExecuteIgnoringException(registration.Action);
-			}
-			registration.Action = binding.Action;
+			registration.Configure(binding.Action, binding.Release);
 			if (registration.Shortcut != binding.Shortcut) {
 				if (registration.HotKey.TryRegister(binding.Shortcut, out var error))
 					registration.Shortcut = binding.Shortcut;
@@ -68,7 +70,7 @@ public class GlobalHotKeySet : IDisposable {
 			}
 			if (created && registration.Shortcut == Keys.None) {
 				// A new binding that failed to register holds nothing worth keeping.
-				Tools.Exceptions.ExecuteIgnoringException(registration.HotKey.Dispose);
+				Tools.Exceptions.ExecuteIgnoringException(registration.Dispose);
 				continue;
 			}
 			_registrations[binding.Key] = registration;
@@ -90,19 +92,54 @@ public class GlobalHotKeySet : IDisposable {
 	private void Release(string key) {
 		var registration = _registrations[key];
 		_registrations.Remove(key);
-		Tools.Exceptions.ExecuteIgnoringException(registration.HotKey.Dispose);
+		Tools.Exceptions.ExecuteIgnoringException(registration.Dispose);
 	}
 
 	#region Inner Types
 
-	private sealed class Registration {
-		public Registration(IGlobalHotKey hotKey) => HotKey = hotKey;
+	private sealed class Registration : SyncDisposable {
+		private Action _heldRelease;
+		private Action _release;
+
+		public Registration(IGlobalHotKey hotKey) {
+			HotKey = hotKey;
+			HotKey.Pressed += HotKey_Pressed;
+		}
 
 		public IGlobalHotKey HotKey { get; }
 
 		public Keys Shortcut { get; set; }
 
-		public Action Action { get; set; }
+		public Action Action { get; private set; }
+
+		public void Configure(Action action, Action release) {
+			if (_release != release) {
+				HotKey_Released();
+				if (_release != null)
+					HotKey.Released -= HotKey_Released;
+				_release = release;
+				if (_release != null)
+					HotKey.Released += HotKey_Released;
+			}
+			Action = action;
+		}
+
+		protected override void DisposeInternal() {
+			using var release = Tools.Scope.ExecuteOnDispose(HotKey_Released);
+			HotKey.Dispose();
+		}
+
+		private void HotKey_Pressed() {
+			_heldRelease = _release;
+			Tools.Exceptions.ExecuteIgnoringException(Action);
+		}
+
+		private void HotKey_Released() {
+			var release = _heldRelease;
+			_heldRelease = null;
+			if (release != null)
+				Tools.Exceptions.ExecuteIgnoringException(release);
+		}
 	}
 
 	#endregion
