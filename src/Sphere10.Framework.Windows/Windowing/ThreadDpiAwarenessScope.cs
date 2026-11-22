@@ -19,12 +19,24 @@ public readonly struct ThreadDpiAwarenessScope : IScope {
 	private readonly IntPtr _previousContext;
 	private readonly int _threadId;
 
-	public ThreadDpiAwarenessScope(DpiAwarenessContext context) {
-		Guard.Argument(Enum.IsDefined(context), nameof(context), "Select a supported Windows DPI awareness context.");
+	public ThreadDpiAwarenessScope(DpiAwarenessContext context)
+		: this(ToNative(context)) {
+	}
+
+	private ThreadDpiAwarenessScope(IntPtr nativeContext) {
 		_threadId = Environment.CurrentManagedThreadId;
-		_previousContext = WinAPI.USER32.SetThreadDpiAwarenessContext(new IntPtr((int)context));
+		_previousContext = WinAPI.USER32.SetThreadDpiAwarenessContext(nativeContext);
 		if (_previousContext == IntPtr.Zero)
 			throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows could not set the thread DPI awareness context.");
+	}
+
+	/// <summary>Enters the DPI awareness a window was created with, so that coordinates read and written in the scope are the window's own.</summary>
+	/// <remarks>A window keeps the awareness it was created with whatever its thread uses later; WinForms fixes it when a control is constructed.</remarks>
+	public static ThreadDpiAwarenessScope OfWindow(IntPtr window) {
+		var context = WinAPI.USER32.GetWindowDpiAwarenessContext(window);
+		if (context == IntPtr.Zero)
+			throw new Win32Exception(Marshal.GetLastPInvokeError(), "The window's DPI awareness could not be read.");
+		return new ThreadDpiAwarenessScope(context);
 	}
 
 	public void Dispose() {
@@ -36,4 +48,10 @@ public readonly struct ThreadDpiAwarenessScope : IScope {
 	}
 
 	public ValueTask DisposeAsync() => ValueTask.FromException(new NotSupportedException("This scope does not support async"));
+
+	// Validated before the thread's context is changed.
+	private static IntPtr ToNative(DpiAwarenessContext context) {
+		Guard.Argument(Enum.IsDefined(context), nameof(context), "Select a supported Windows DPI awareness context.");
+		return new IntPtr((int)context);
+	}
 }

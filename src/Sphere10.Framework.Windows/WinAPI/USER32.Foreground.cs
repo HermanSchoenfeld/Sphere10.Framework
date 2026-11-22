@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework.Windows;
@@ -18,5 +19,10 @@ public static partial class WinAPI {
 		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool AllowSetForegroundWindow(uint processId);
+
+		/// <summary>Brings a window's thread to the foreground and activates the window, when Windows allows the caller to.</summary>
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetForegroundWindow(IntPtr window);
 	}
 }

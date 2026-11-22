@@ -15,8 +15,34 @@ namespace Sphere10.Framework.Windows;
 public static partial class WinAPI {
 	/// <summary>Read-only COM prefixes from the Windows SDK UIAutomationClient.idl. Prefix slots retain their native order.</summary>
 	public static partial class UIAUTOMATION {
-		[ComImport, Guid("ff48dba4-60ef-4201-aa87-54103eef594e")]
-		public class CUIAutomation {
+		public const int UIA_ButtonControlTypeId = 50000;
+		public const int UIA_CheckBoxControlTypeId = 50002;
+		public const int UIA_ComboBoxControlTypeId = 50003;
+		public const int UIA_EditControlTypeId = 50004;
+		public const int UIA_HyperlinkControlTypeId = 50005;
+		public const int UIA_ImageControlTypeId = 50006;
+		public const int UIA_ListItemControlTypeId = 50007;
+		public const int UIA_MenuItemControlTypeId = 50011;
+		public const int UIA_RadioButtonControlTypeId = 50013;
+		public const int UIA_SliderControlTypeId = 50015;
+		public const int UIA_TabItemControlTypeId = 50019;
+		public const int UIA_TextControlTypeId = 50020;
+		public const int UIA_SplitButtonControlTypeId = 50031;
+		public const int UIA_GroupControlTypeId = 50026;
+		public const int UIA_DocumentControlTypeId = 50030;
+		public const int UIA_PaneControlTypeId = 50033;
+		public const int UIA_LegacyIAccessiblePatternId = 10018;
+		public const int TreeScope_Element = 1;
+		public const int TreeScope_Descendants = 4;
+
+		/// <summary>Limits how long one provider request may take, through the SDK's IUIAutomation2 slot 63.</summary>
+		internal static unsafe int SetTransactionTimeout(IntPtr automation, uint milliseconds)
+			=> ((delegate* unmanaged[Stdcall]<IntPtr, uint, int>)(*(void***)automation)[63])(automation, milliseconds);
+
+		/// <summary>Reads the underlying MSAA object through the SDK's IUIAutomationLegacyIAccessiblePattern slot 26.</summary>
+		internal static unsafe int GetLegacyAccessible(IntPtr pattern, out IntPtr accessible) {
+			fixed (IntPtr* result = &accessible)
+				return ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)(*(void***)pattern)[26])(pattern, result);
 		}
 
 		[GeneratedComInterface, Guid("30cbe57d-d9d0-452a-ab13-7ac5ac4825ee")]
@@ -39,6 +65,14 @@ public static partial class WinAPI {
 			[PreserveSig] int GetControlViewCondition(out IntPtr condition);
 			[PreserveSig] int GetContentViewCondition(out IntPtr condition);
 			[PreserveSig] int CreateCacheRequest([MarshalUsing(typeof(UniqueComInterfaceMarshaller<IUIAutomationCacheRequest>))] out IUIAutomationCacheRequest cache);
+			[PreserveSig] int CreateTrueCondition(out IntPtr condition);
+			[PreserveSig] int CreateFalseCondition(out IntPtr condition);
+			[PreserveSig] int CreatePropertyCondition(int property, [MarshalUsing(typeof(WindowsVariantMarshaller))] object value, out IntPtr condition);
+			[PreserveSig] int CreatePropertyConditionEx(int property, [MarshalUsing(typeof(WindowsVariantMarshaller))] object value, int flags, out IntPtr condition);
+			[PreserveSig] int CreateAndCondition(IntPtr first, IntPtr second, out IntPtr condition);
+			[PreserveSig] int CreateAndConditionFromArray(IntPtr conditions, out IntPtr condition);
+			[PreserveSig] int CreateAndConditionFromNativeArray(IntPtr conditions, int count, out IntPtr condition);
+			[PreserveSig] int CreateOrCondition(IntPtr first, IntPtr second, out IntPtr condition);
 		}
 
 		[GeneratedComInterface, Guid("d22108aa-8ac5-49a5-837b-37bbb3d7591e")]
@@ -48,12 +82,20 @@ public static partial class WinAPI {
 			[PreserveSig] int FindFirst(int scope, IntPtr condition, [MarshalUsing(typeof(UniqueComInterfaceMarshaller<IUIAutomationElement>))] out IUIAutomationElement element);
 			[PreserveSig] int FindAll(int scope, IntPtr condition, out IntPtr elements);
 			[PreserveSig] int FindFirstBuildCache(int scope, IntPtr condition, IUIAutomationCacheRequest cache, [MarshalUsing(typeof(UniqueComInterfaceMarshaller<IUIAutomationElement>))] out IUIAutomationElement element);
-			[PreserveSig] int FindAllBuildCache(int scope, IntPtr condition, IUIAutomationCacheRequest cache, out IntPtr elements);
+			[PreserveSig] int FindAllBuildCache(int scope, IntPtr condition, IUIAutomationCacheRequest cache, [MarshalUsing(typeof(UniqueComInterfaceMarshaller<IUIAutomationElementArray>))] out IUIAutomationElementArray elements);
 			[PreserveSig] int BuildUpdatedCache(IUIAutomationCacheRequest cache, [MarshalUsing(typeof(UniqueComInterfaceMarshaller<IUIAutomationElement>))] out IUIAutomationElement element);
 			[PreserveSig] int GetCurrentPropertyValue(int property, [MarshalUsing(typeof(WindowsVariantMarshaller))] out object value);
 			[PreserveSig] int GetCurrentPropertyValueEx(int property, [MarshalAs(UnmanagedType.Bool)] bool ignoreDefault, [MarshalUsing(typeof(WindowsVariantMarshaller))] out object value);
 			[PreserveSig] int GetCachedPropertyValue(int property, [MarshalUsing(typeof(WindowsVariantMarshaller))] out object value);
 			[PreserveSig] int GetCachedPropertyValueEx(int property, [MarshalAs(UnmanagedType.Bool)] bool ignoreDefault, [MarshalUsing(typeof(WindowsVariantMarshaller))] out object value);
+			[PreserveSig] int GetCurrentPatternAs(int pattern, in Guid interfaceId, out IntPtr result);
+			[PreserveSig] int GetCachedPatternAs(int pattern, in Guid interfaceId, out IntPtr result);
+		}
+
+		[GeneratedComInterface, Guid("14314595-b4bc-4055-95f2-58f2e42c9855")]
+		public partial interface IUIAutomationElementArray {
+			[PreserveSig] int GetLength(out int length);
+			[PreserveSig] int GetElement(int index, [MarshalUsing(typeof(UniqueComInterfaceMarshaller<IUIAutomationElement>))] out IUIAutomationElement element);
 		}
 
 		[GeneratedComInterface, Guid("b32a92b5-bc25-4078-9c08-d7ee95c48e03")]

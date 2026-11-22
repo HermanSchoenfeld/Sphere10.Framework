@@ -13,9 +13,18 @@ namespace Sphere10.Framework.Windows;
 
 public static partial class WinAPI {
 	public static class DWMAPI {
+		public const uint DWMWA_CAPTION_BUTTON_BOUNDS = 5;
 		public const uint DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+		public const uint DWMWA_CLOAKED = 14;
 
-		/// <summary>Returns an HRESULT and a physical screen rectangle for DWMWA_EXTENDED_FRAME_BOUNDS.</summary>
+		/// <summary>Returns an HRESULT and a DWORD value, including the DWMWA_CLOAKED flags.</summary>
+		[DllImport("dwmapi.dll", EntryPoint = "DwmGetWindowAttribute", ExactSpelling = true)]
+		public static extern int DwmGetWindowUIntAttribute(IntPtr window, uint attribute, out uint value, uint valueSize);
+
+		/// <summary>
+		/// Returns an HRESULT and a physical rectangle: screen coordinates for DWMWA_EXTENDED_FRAME_BOUNDS, coordinates relative
+		/// to the window's outer rectangle for DWMWA_CAPTION_BUTTON_BOUNDS.
+		/// </summary>
 		[DllImport("dwmapi.dll", ExactSpelling = true)]
 		public static extern int DwmGetWindowAttribute(IntPtr window, uint attribute, out RECT value, uint valueSize);
 

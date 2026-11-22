@@ -1351,6 +1351,11 @@ public static partial class WinAPI {
 		[DllImport("user32.dll", ExactSpelling = true)]
 		public static extern IntPtr MonitorFromWindow(IntPtr window, uint flags);
 
+		public const uint MONITOR_DEFAULTTONEAREST = 2;
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr MonitorFromRect(ref RECT rectangle, uint flags);
+
 		[DllImport("user32.dll", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO information);
@@ -1554,7 +1559,9 @@ public static partial class WinAPI {
 		public const int CBN_CLOSEUP = 8;
 		public const int GWL_STYLE = -16;
 		public const int GWL_EXSTYLE = -20;
+		public const int GWLP_HWNDPARENT = -8;
 		public const uint WS_CHILD = 0x40000000;
+		public const uint WS_CAPTION = 0x00C00000;
 		public const int WS_MINIMIZE = 0x20000000;
 		public const int WS_MAXIMIZE = 0x01000000;
 		public const int WS_EX_LAYOUTRTL = 0x400000;

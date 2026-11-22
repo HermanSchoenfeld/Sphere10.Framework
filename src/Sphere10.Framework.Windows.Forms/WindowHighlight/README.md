@@ -12,4 +12,4 @@ A click-through outline drawn over another window's physical desktop bounds, and
 |---|---|---|
 | [`WindowHighlightScope`](WindowHighlightScope.cs) | class | Scope that owns a topmost, click-through outline frame over caller-supplied physical bounds. |
 | [`WindowPicker`](WindowPicker.cs) | class | One-use, disposable desktop window picker driven by input hooks with a hover outline. |
-| [`Tools.WinForms.Windowing`](WindowsFormsWindowUtil.cs) | static class | Factory for window pickers, exposed as `Tools.WinForms.Windowing`. |
+| [`Tools.WinForms.Windowing`](WindowsFormsWindowUtil.cs) | static class | Factory for window pickers and [title-bar buttons](../WindowTitleBar/README.md), exposed as `Tools.WinForms.Windowing`. |

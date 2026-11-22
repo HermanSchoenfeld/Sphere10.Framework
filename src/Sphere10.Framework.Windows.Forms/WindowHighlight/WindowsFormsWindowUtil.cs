@@ -19,5 +19,8 @@ public static partial class WinForms {
 	public static class Windowing {
 		/// <summary>Creates a one-use picker on the dispatcher's UI thread. The dispatcher must have a live handle; dispose the picker on that same thread after PickAsync completes.</summary>
 		public static WindowPicker CreatePicker(Control dispatcher) => new WindowPicker(dispatcher);
+
+		/// <summary>Creates the owner of a small button beside the caption buttons of other applications' windows. Create, start, stop and dispose it on one UI thread.</summary>
+		public static WindowTitleBarButtons CreateTitleBarButtons() => new WindowTitleBarButtons();
 	}
 }
