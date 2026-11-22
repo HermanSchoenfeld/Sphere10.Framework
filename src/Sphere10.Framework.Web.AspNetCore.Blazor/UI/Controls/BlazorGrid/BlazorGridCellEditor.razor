@@ -20,7 +20,7 @@
 				<option value="False">No</option>
 			} else {
 				@foreach (var name in ValueType.GetEnumNames()) {
-					<option value="@name">@name</option>
+					<option value="@name">@(((Enum)Enum.Parse(ValueType, name)).GetDisplayText())</option>
 				}
 			}
 		</select>

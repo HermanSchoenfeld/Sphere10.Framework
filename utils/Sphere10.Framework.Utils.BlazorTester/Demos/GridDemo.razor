@@ -85,6 +85,38 @@
 	SettingsKey="tester.standalone-grid" />
 </section>
 
+<section class="demo-example" data-demo="hierarchy-grid">
+<h2>Source-owned hierarchy</h2>
+<p>Expand a team to read its child source. Each level pages, searches and sorts its own siblings, while root selection stays independent.
+	Shared services appears beneath both teams; the return link to Alpha stops expanding once Alpha is already on that path.</p>
+<BlazorGrid TItem="GraphNode<GridDemoHierarchyDataSource.Row>" DataSource="_hierarchySource" Columns="_hierarchyColumns"
+	Caption="Teams" PageSize="2" DetailHeight="260" PersistSettings="false" GridType="0" />
+</section>
+
+<section class="demo-example" data-demo="custom-grid-details">
+<h2>Custom row presentations</h2>
+<p>A normal flat source can provide detail panels through a template, without pretending to be a hierarchy.</p>
+<BlazorGrid TItem="TestClass" DataSource="_dataSource" Columns="_referenceColumns" PageSize="3" PersistSettings="false"
+	Caption="Record details" AllowedCapabilities="DataSourceCapabilities.ReadOnly" GridType="0" DetailIdentity="item => item.Id">
+	<DetailTemplate Context="detail">
+		<article aria-label="Record detail panel">
+			<strong>@detail.Node.Name</strong>
+			<p>Record @detail.Node.Id · @detail.Node.Color · Age @detail.Node.Age</p>
+			<p>@detail.Node.Note</p>
+		</article>
+	</DetailTemplate>
+</BlazorGrid>
+</section>
+
+<section class="demo-example" data-demo="open-grid">
+<h2>Rows that open on a click</h2>
+<p>Click a row to open its record, as a record list does. The Flag button in a cell and the pencil icon do only their own work, and a double-click opens the row once.</p>
+<BlazorGrid TItem="TestClass" DataSource="_dataSource" Columns="_openColumns" PageSize="3" PersistSettings="false" Caption="Records to open"
+	AllowedCapabilities="DataSourceCapabilities.ReadOnly" ActionStyle="BlazorGridActionStyle.Icons" RowCommands="BlazorGridRowCommands.Open"
+	RowClick="BlazorGridRowClick.Open" ItemOpened="OpenRecord" />
+<p role="status" data-testid="open-grid-status">@_openStatus</p>
+</section>
+
 @code {
 	[Parameter] public BlazorGridSettings GridPreferences { get; set; }
 
@@ -95,6 +127,11 @@
 	[Parameter] public EventCallback<BlazorGridSettings> LiveGridPreferencesChanged { get; set; }
 
 	private readonly TestClassDataSource _dataSource = new();
+	private readonly GridDemoHierarchyDataSource _hierarchySource = new();
+	private readonly BlazorGridColumn<GraphNode<GridDemoHierarchyDataSource.Row>>[] _hierarchyColumns = {
+		new() { ColumnName = "Name", PropertyName = nameof(GridDemoHierarchyDataSource.Row.Name), SortName = nameof(GridDemoHierarchyDataSource.Row.Name),
+			DataType = typeof(string), PropertyValue = node => node.Entity.Name, CanEditCell = false, ExpandsToFit = true }
+	};
 	private readonly GridDemoRefreshableDataSource _liveSource = new();
 	private readonly PollingDataSource<GridDemoDataSource.Row> _liveDataSource;
 	private readonly CancellationTokenSource _lifetime = new();
@@ -117,6 +154,10 @@
 	private bool _publishing;
 	private bool _disposed;
 	private string _liveStatus = "Ready. Select a row to try a targeted refresh or removal.";
+	private BlazorGridColumn<TestClass>[] _openColumns = Array.Empty<BlazorGridColumn<TestClass>>();
+	private int _opens;
+	private int _flags;
+	private string _openStatus = "Opened: none; opens: 0; flags: 0.";
 	private bool LiveActionsDisabled => _liveGrid == null || _publishing || _liveGrid.Controller.IsLoading || _liveGrid.Controller.IsSaving || _liveGrid.Controller.IsRefreshing;
 
 	public GridDemo() {
@@ -150,6 +191,14 @@
 		referenceName.CanEditCell = false;
 		referenceName.ExpandsToFit = true;
 		_referenceColumns = new[] { referenceId, referenceName };
+		var flag = new BlazorGridColumn<TestClass> {
+			ColumnName = "Flag",
+			PreferenceKey = "Flag",
+			CanEditCell = false,
+			Width = 90,
+			Template = item => @<button type="button" class="btn btn-sm btn-outline-secondary" data-testid="open-grid-flag" @onclick="() => FlagRecord(item)">Flag</button>
+		};
+		_openColumns = new[] { referenceId, referenceName, flag };
 		var related = new BlazorGridColumn<TestClass> {
 			ColumnName = "Related record",
 			PropertyName = nameof(TestClass.RelatedItem),
@@ -208,6 +257,17 @@
 	private static string RelatedItemText(TestClass item) => $"{item.Name} (ID {item.Id})";
 
 	private void SelectItem(TestClass item) => _selectedItem = item;
+
+	// The open-on-click grid's opener and its cell button report what ran, so a click that opened nothing is visible.
+	private void OpenRecord(TestClass item) {
+		_opens++;
+		_openStatus = $"Opened: {item.Name}; opens: {_opens}; flags: {_flags}.";
+	}
+
+	private void FlagRecord(TestClass item) {
+		_flags++;
+		_openStatus = $"Flagged: {item.Name}; opens: {_opens}; flags: {_flags}.";
+	}
 
 	private Task ShowDetailsAsync(TestClass item) => ViewService.DialogAsync("Record details", item.ToString());
 

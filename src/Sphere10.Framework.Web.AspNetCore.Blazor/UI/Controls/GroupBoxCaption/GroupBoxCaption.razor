@@ -1,0 +1,71 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+
+@* A group box's caption: its heading on the left and, on the right, its state icons (ChildContent) followed by the screen commands
+   that act on the group box's feature, as ScreenCommandIcon buttons. The icons sit on the heading's line without making the caption
+   taller than the heading alone, and the caption keeps the heading's spacing below it. *@
+<div class="@CaptionClass">
+	@switch (Level) {
+		case 1:
+			<h1 class="sphere10-group-caption-text">@Text</h1>
+			break;
+		case 3:
+			<h3 class="sphere10-group-caption-text">@Text</h3>
+			break;
+		case 4:
+			<h4 class="sphere10-group-caption-text">@Text</h4>
+			break;
+		case 5:
+			<h5 class="sphere10-group-caption-text">@Text</h5>
+			break;
+		case 6:
+			<h6 class="sphere10-group-caption-text">@Text</h6>
+			break;
+		default:
+			<h2 class="sphere10-group-caption-text">@Text</h2>
+			break;
+	}
+	@if (ChildContent != null || Commands.Length > 0) {
+		<div class="sphere10-group-caption-icons">
+			@ChildContent
+			@foreach (var command in Commands) {
+				<ScreenCommandIcon @key="command" Command="command" />
+			}
+		</div>
+	}
+</div>
+
+@code {
+	/// <summary>The group box's caption in Title Case, such as "License Template".</summary>
+	[Parameter, EditorRequired] public string Text { get; set; }
+
+	/// <summary>The heading level, 1 to 6. Defaults to 2.</summary>
+	[Parameter] public int Level { get; set; } = 2;
+
+	/// <summary>The screen commands that act on this group box's feature, in order; each also stays on the toolbar.</summary>
+	[Parameter] public ScreenCommand[] Commands { get; set; } = [];
+
+	/// <summary>State icons, such as a <see cref="StateIcon"/>, shown before the commands.</summary>
+	[Parameter] public RenderFragment ChildContent { get; set; }
+
+	/// <summary>Additional classes for the caption element.</summary>
+	[Parameter] public string Class { get; set; }
+
+	private string CaptionClass => "sphere10-group-caption" + (string.IsNullOrWhiteSpace(Class) ? null : " " + Class);
+
+	/// <summary>Validates the heading level and commands.</summary>
+	protected override void OnParametersSet() {
+		Guard.ArgumentInRange(Level, 1, 6, nameof(Level));
+		Guard.ArgumentNotNull(Commands, nameof(Commands));
+		Guard.Argument(Commands.All(command => command != null), nameof(Commands), "Commands cannot contain null.");
+	}
+}

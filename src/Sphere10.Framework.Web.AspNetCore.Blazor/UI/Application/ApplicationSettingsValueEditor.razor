@@ -25,9 +25,15 @@
 		@if (IsScalar(property.PropertyType)) {
 			<label for="@GetInputId(path)">@property.DisplayName</label>
 			@if (disabled) {
-				<output id="@GetInputId(path)">@FormatValue(value, property.PropertyType)</output>
+				<output id="@GetInputId(path)">@(value is Enum choice ? GetEnumTitle(choice) : FormatValue(value, property.PropertyType))</output>
 			} else if (property.PropertyType == typeof(bool)) {
 				<input id="@GetInputId(path)" type="checkbox" checked="@(value is true)" @onchange="args => ChangeValueAsync(property, args.Value)" />
+			} else if (property.PropertyType == typeof(bool?)) {
+				<select id="@GetInputId(path)" value="@FormatValue(value, property.PropertyType)" @onchange="args => ChangeValueAsync(property, args.Value)">
+					<option value="">Default</option>
+					<option value="@bool.TrueString">Yes</option>
+					<option value="@bool.FalseString">No</option>
+				</select>
 			} else if ((Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType).IsEnum) {
 				<select id="@GetInputId(path)" value="@FormatValue(value, property.PropertyType)" @onchange="args => ChangeValueAsync(property, args.Value)">
 					@if (Nullable.GetUnderlyingType(property.PropertyType) != null) {

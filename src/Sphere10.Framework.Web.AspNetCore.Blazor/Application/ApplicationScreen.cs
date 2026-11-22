@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -18,11 +19,23 @@ using SharedUI = global::Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A renderer-owned screen using its registration's actual settings and existing activation lifecycle.</summary>
-public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAsyncDisposable {
+/// <remarks>
+/// After each render the screen compares the values its shell presents (title, unsaved state and the captions, visibility, availability
+/// and checked state of its menus and toolbar items) with those it last published, and notifies its host when they differ. A screen
+/// therefore needs <see cref="NotifyScreenChanged"/> only for a change that is not followed by a render of the screen itself.
+/// A screen contributes commands either by declaring <see cref="ScreenCommand"/>s with <see cref="Command"/> and placing them
+/// with <see cref="UseCommands"/>, which the default <see cref="Menus"/> and <see cref="ToolBarItems"/> publish, or by
+/// overriding those two properties with menu items of its own.
+/// </remarks>
+public abstract partial class ApplicationScreen : ComponentBase, IApplicationScreen, IAsyncDisposable, IHandleAfterRender {
 	private Guid? _attachedSessionId;
 	private bool _settingsDirty;
 	private string _settingsError;
 	private bool _disposed;
+	private bool _rendered;
+	// Set once a renderer has initialized the screen; only then can the screen render itself.
+	private bool _initialized;
+	private object[] _publishedPresentation;
 
 	/// <summary>The registration instance owning this renderer's screen and settings.</summary>
 	[CascadingParameter]
@@ -49,10 +62,10 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	public virtual SettingsObject ScreenSettings => Session?.Definition.Settings;
 
 	/// <inheritdoc />
-	public virtual IApplicationMenu[] Menus => Array.Empty<IApplicationMenu>();
+	public virtual IApplicationMenu[] Menus => GetCommandMenus();
 
 	/// <inheritdoc />
-	public virtual IApplicationMenuItem[] ToolBarItems => Array.Empty<IApplicationMenuItem>();
+	public virtual IApplicationMenuItem[] ToolBarItems => GetCommandToolBarItems();
 
 	/// <inheritdoc />
 	public virtual bool HasUnsavedChanges => false;
@@ -80,6 +93,9 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 
 	/// <summary>The most recent settings failure, cleared after a successful save or settings application.</summary>
 	public string SettingsError => _settingsError;
+
+	// Closing removes the session before the renderer disposes this component.
+	private bool IsPresented => !_disposed && _attachedSessionId.HasValue && Host != null && Session?.Host == Host && ReferenceEquals(Session.Screen, this);
 
 	/// <summary>Saves a completed local settings edit through the actual object's configured provider.</summary>
 	public async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
@@ -120,8 +136,22 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	/// <inheritdoc />
 	Task SharedUI.IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) => OnDeactivatedAsync(cancellationToken);
 
+	/// <summary>Runs the component's after-render hooks, then publishes changed shell presentation.</summary>
+	/// <remarks>
+	/// This re-implements the renderer's after-render callback of <see cref="ComponentBase"/>, which has no further logic, so a derived
+	/// screen's <see cref="ComponentBase.OnAfterRender"/> override cannot suppress the publication by omitting its base call.
+	/// </remarks>
+	Task IHandleAfterRender.OnAfterRenderAsync() {
+		var firstRender = !_rendered;
+		_rendered = true;
+		OnAfterRender(firstRender);
+		PublishPresentationChanges();
+		return OnAfterRenderAsync(firstRender);
+	}
+
 	/// <summary>Applies restored settings before attaching or constructing operational child controls.</summary>
 	protected override async Task OnInitializedAsync() {
+		_initialized = true;
 		await base.OnInitializedAsync();
 		foreach (var settings in GetObservedSettings())
 			settings.OnChanged += SettingsChanged;
@@ -174,10 +204,56 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	protected virtual ValueTask DisposeAsyncCore() => ValueTask.CompletedTask;
 
 	/// <summary>Refreshes the current host's screen presentation when the screen remains attached.</summary>
+	/// <remarks>Rendering the screen publishes changed commands, title and unsaved state automatically; call this after a change made without a render.</remarks>
 	protected void NotifyScreenChanged() {
-		// Closing removes the session before the renderer disposes this component.
-		if (!_disposed && _attachedSessionId.HasValue && Host != null && Session?.Host == Host && ReferenceEquals(Session.Screen, this))
+		if (IsPresented)
 			Host.NotifyScreenChanged(_attachedSessionId.Value);
+		if (!_disposed)
+			CommandsChanged?.Invoke();
+	}
+
+	// Notifies the host only when a presented value changed, so the shell render that follows a notification cannot cause another one.
+	private void PublishPresentationChanges() {
+		if (!IsPresented)
+			return;
+		var presentation = CapturePresentation();
+		if (_publishedPresentation != null && _publishedPresentation.SequenceEqual(presentation))
+			return;
+		_publishedPresentation = presentation;
+		Host.NotifyScreenChanged(_attachedSessionId.Value);
+	}
+
+	// Captures values rather than command references: screens may rebuild equivalent commands on every read.
+	private object[] CapturePresentation() {
+		var values = new List<object> { Title, HasUnsavedChanges };
+		var menus = Menus ?? Array.Empty<IApplicationMenu>();
+		values.Add(menus.Length);
+		foreach (var menu in menus) {
+			values.Add(menu?.Id);
+			values.Add(menu?.Text);
+			CaptureCommands(menu?.Items, values);
+		}
+		CaptureCommands(ToolBarItems, values);
+		return values.ToArray();
+	}
+
+	// Records each command's presented state, including the children of action groups.
+	private static void CaptureCommands(IApplicationMenuItem[] items, List<object> values) {
+		values.Add(items?.Length ?? 0);
+		foreach (var item in items ?? Array.Empty<IApplicationMenuItem>()) {
+			if (item == null) {
+				values.Add(null);
+				continue;
+			}
+			values.Add(item.Id);
+			values.Add(item.Title);
+			values.Add(item.Icon);
+			values.Add(item.IsVisible);
+			values.Add(item.IsEnabled);
+			values.Add(item is IApplicationCheckableMenuItem checkable && checkable.IsChecked);
+			if (item is ApplicationMenuGroup group)
+				CaptureCommands(group.Items, values);
+		}
 	}
 
 	// Settings notifications carry the actual changed value; presentation work remains on the renderer.

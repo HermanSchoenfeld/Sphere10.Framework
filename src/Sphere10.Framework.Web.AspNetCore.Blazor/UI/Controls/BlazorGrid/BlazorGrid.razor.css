@@ -64,6 +64,10 @@ This notice must not be removed when duplicating this file or its contents, in w
 	outline-offset: 2px;
 }
 .sphere10-grid-viewport { position: relative; min-width: 0; max-width: 100%; overflow: auto; }
+.sphere10-grid-detail-toggle { width: 40px; text-align: center; }
+.sphere10-grid-detail-toggle button { border: 0; background: transparent; padding: .2rem; }
+.sphere10-grid-detail-row > td { padding: .5rem .5rem .5rem 1.5rem; }
+.sphere10-grid-detail-status { padding: .75rem; }
 .sphere10-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .sphere10-grid-table th, .sphere10-grid-table td {
 	box-sizing: border-box;
@@ -71,8 +75,10 @@ This notice must not be removed when duplicating this file or its contents, in w
 	border-bottom: 1px solid var(--sphere10-border, #e4e9f0);
 	text-align: left;
 	vertical-align: middle;
-	overflow-wrap: anywhere;
+	/* Text wraps between words; a word breaks only when it alone is wider than its cell. */
+	overflow-wrap: break-word;
 }
+.sphere10-grid-table td.sphere10-grid-nowrap { white-space: nowrap; }
 .sphere10-grid-table th {
 	position: sticky;
 	top: 0;
@@ -84,9 +90,12 @@ This notice must not be removed when duplicating this file or its contents, in w
 .sphere10-grid-table tbody tr:hover { background: var(--sphere10-table-hover-background, var(--sphere10-hover, #f5f8fc)); }
 .sphere10-grid-table tbody tr.sphere10-grid-selected { background: var(--sphere10-selected, #deeffd); }
 .sphere10-grid-table tbody tr.sphere10-grid-editing { background: var(--sphere10-editing, #f2f8ed); }
+/* A row that opens on a click shows it can be clicked. */
+.sphere10-grid-table tbody tr[data-grid-open-row] { cursor: pointer; }
 .sphere10-grid-table .sphere10-grid-empty { padding: 2rem; text-align: center; color: var(--sphere10-muted, #58687b); }
-.sphere10-grid-table .sphere10-grid-sort { display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; background: transparent; border: 0; padding: 0; padding-right: 6px; box-shadow: none; text-align: left; }
-.sphere10-grid-sort > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+/* A sortable header reads like any other header: the button takes the header cell's font, weight and colour. */
+.sphere10-grid-table .sphere10-grid-sort { display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; background: transparent; border: 0; padding: 0; padding-right: 6px; box-shadow: none; text-align: left; font: inherit; color: inherit; }
+.sphere10-grid-sort > span:first-child { min-width: 0; overflow-wrap: break-word; }
 .sphere10-grid-sort-indicator { display: inline-block; flex: 0 0 1em; width: 1em; text-align: center; }
 .sphere10-grid-resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; touch-action: none; }
 .sphere10-grid-resizer:hover { background: var(--sphere10-accent, #1263a160); }
@@ -212,3 +221,59 @@ This notice must not be removed when duplicating this file or its contents, in w
 	background: var(--sphere10-surface, #fff);
 }
 .sphere10-grid ::deep fieldset.sphere10-grid-editor { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+/* Icon row commands and the header reload icon: small square buttons whose names are their tooltips. The selector outranks the text-button rule above. */
+.sphere10-grid .sphere10-grid-table button.sphere10-grid-icon-button {
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	margin: 0 .05rem;
+	padding: 0;
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
+	vertical-align: middle;
+}
+.sphere10-grid .sphere10-grid-table button.sphere10-grid-icon-button:not(:disabled):hover { border-color: var(--sphere10-border-strong, #adb9c8); background: var(--sphere10-hover, #eaf3fa); }
+.sphere10-grid-icon-button svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sphere10-grid-icon-button img { display: block; width: 16px; height: 16px; object-fit: contain; }
+.sphere10-grid-icon-button > span[aria-hidden="true"] { font-size: .85rem; line-height: 1; }
+.sphere10-grid-table th.sphere10-grid-command-header { padding-top: 0; padding-bottom: 0; text-align: right; }
+.sphere10-grid-table td.sphere10-grid-actions { white-space: nowrap; }
+.sphere10-grid-table td.sphere10-grid-actions:has(> .sphere10-grid-icon-button) { padding-top: 0; padding-bottom: 0; text-align: right; }
+
+/* Compact density: smaller paddings and type for dense power-user screens. Rows keep enough height to read comfortably (owner,
+   19 November 2026: .1rem rows looked "stupidly thin"; Normal's .5rem was too wide). */
+.sphere10-grid-compact {
+	--sphere10-grid-cell-padding: .3rem .5rem;
+	--sphere10-control-padding-y: .05rem;
+	--sphere10-control-padding-x: .3rem;
+	--sphere10-button-padding-y: .05rem;
+	--sphere10-button-padding-x: .4rem;
+	font-size: .85rem;
+	line-height: 1.25;
+}
+.sphere10-grid-compact .sphere10-grid-toolbar, .sphere10-grid-compact .sphere10-grid-footer, .sphere10-grid-compact .sphere10-grid-edit-bar, .sphere10-grid-compact .sphere10-grid-confirm {
+	gap: .3rem;
+	padding: .2rem .35rem;
+}
+.sphere10-grid-compact .sphere10-grid-caption { padding: .2rem .4rem; }
+.sphere10-grid-compact .sphere10-grid-table th { font-weight: 600; }
+.sphere10-grid-compact .sphere10-grid-detail-row > td { padding: .2rem .2rem .2rem 1rem; }
+.sphere10-grid-compact .sphere10-grid-table .sphere10-grid-empty { padding: .6rem; }
+.sphere10-grid-compact .sphere10-grid-detail-toggle button { padding: 0; line-height: 1; }
+.sphere10-grid.sphere10-grid-compact .sphere10-grid-page-button { width: 1.5rem; height: 1.5rem; min-width: 1.5rem; min-height: 1.5rem; }
+.sphere10-grid-compact .sphere10-grid-page-button svg { width: 14px; height: 14px; }
+
+/* Fill: the grid takes its container's height and its viewport scrolls the rows beneath the sticky header. */
+.sphere10-grid-fill {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	height: 100%;
+	min-height: 0;
+}
+.sphere10-grid-fill > .sphere10-grid-viewport { flex: 1 1 auto; min-height: 0; }

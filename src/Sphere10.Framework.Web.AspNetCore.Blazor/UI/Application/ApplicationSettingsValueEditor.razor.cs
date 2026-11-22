@@ -194,7 +194,7 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 		return type == typeof(string) || converter.CanConvertFrom(typeof(string)) && converter.CanConvertTo(typeof(string));
 	}
 
-	// A schema fixes the set of known grid columns; only their nullable manual widths are editable.
+	// A schema fixes the set of known grid columns; only their nullable width, stretch and visibility overrides are editable.
 	private static bool IsColumnSchema(Type type) => GetElementType(type) == typeof(ApplicationGridColumnPreferences);
 
 	// Collection element type comes from the declared schema, including an empty array.
@@ -235,9 +235,8 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 	// Readable grid-column titles make an unopened page's width entries recognizable.
 	private static string GetItemTitle(object item, int index) => item is ApplicationGridColumnPreferences column ? column.Title ?? column.Key : "Item " + (index + 1);
 
-	// Enum descriptions are presentation metadata; the stored value remains the declared enum.
-	private static string GetEnumTitle(object value)
-		=> value.GetType().GetField(value.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? value.ToString();
+	// Enum descriptions, or names as Title Case words, are presentation metadata; the stored value remains the declared enum.
+	private static string GetEnumTitle(object value) => ((Enum)value).GetDisplayText();
 
 	// Only value schemas with an ordinary construction path offer Add/Set controls.
 	private static bool CanCreate(Type type)

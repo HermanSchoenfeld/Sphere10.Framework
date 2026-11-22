@@ -22,6 +22,130 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Category("Browser")]
 [NonParallelizable]
 public class BlazorGridBrowserTests {
+	[Test]
+	public async Task HierarchyExpansionPagesChildrenAndStopsCyclesWithoutChangingRootSelection() {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True);
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {
+			Headless = true,
+			ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		await using var context = await browser.NewContextAsync(new BrowserNewContextOptions {
+			ViewportSize = new ViewportSize { Width = 1280, Height = 1000 }
+		});
+		var page = await context.NewPageAsync();
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		await page.WaitForFunctionAsync("() => location.pathname === '/application' && !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=hierarchy-grid] > .sphere10-grid > .sphere10-grid-viewport > table')?.style.width");
+		var grid = page.Locator(".sphere10-screen:not([hidden]) [data-demo=hierarchy-grid] > .sphere10-grid");
+		var rows = grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr[aria-selected]");
+		await rows.Nth(1).Locator("td").Nth(1).ClickAsync();
+		await Assertions.Expect(rows.Nth(1)).ToHaveAttributeAsync("aria-selected", "true");
+		await rows.Nth(0).GetByRole(AriaRole.Button, new() { Name = "Expand details", Exact = true }).ClickAsync();
+		var child = grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > .sphere10-grid-detail-row > td > .sphere10-grid");
+		await Assertions.Expect(child).ToHaveCountAsync(1);
+		var childRows = child.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr[aria-selected]");
+		await Assertions.Expect(childRows).ToHaveCountAsync(2);
+		await Assertions.Expect(childRows.Nth(0)).ToContainTextAsync("Shared services");
+		await childRows.Nth(0).Locator("td").Nth(1).ClickAsync();
+		await Assertions.Expect(rows.Nth(1)).ToHaveAttributeAsync("aria-selected", "true");
+		await childRows.Nth(0).GetByRole(AriaRole.Button, new() { Name = "Expand details", Exact = true }).ClickAsync();
+		var grandchild = child.Locator(":scope > .sphere10-grid-viewport > table > tbody > .sphere10-grid-detail-row > td > .sphere10-grid");
+		await Assertions.Expect(grandchild).ToContainTextAsync("Alpha team");
+		await Assertions.Expect(grandchild.GetByRole(AriaRole.Button, new() { Name = "Expand details", Exact = true })).ToHaveCountAsync(0);
+		await child.Locator(":scope > .sphere10-grid-footer").GetByRole(AriaRole.Button, new() { Name = "Next page", Exact = true }).ClickAsync();
+		await Assertions.Expect(childRows.Nth(0)).ToContainTextAsync("Alpha member 2");
+		await Assertions.Expect(grandchild).ToHaveCountAsync(0);
+		await Assertions.Expect(rows).ToHaveCountAsync(2);
+		await rows.Nth(0).GetByRole(AriaRole.Button, new() { Name = "Collapse details", Exact = true }).ClickAsync();
+		await Assertions.Expect(child).ToHaveCountAsync(0);
+
+		// Auto paging counts source rows only, so the last fitted row keeps its place when its detail opens.
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Paging mode", Exact = true }).ClickAsync();
+		await grid.GetByRole(AriaRole.Menuitemradio, new() { Name = "Auto", Exact = true }).ClickAsync();
+		await Assertions.Expect(grid).ToHaveAttributeAsync("aria-busy", "false");
+		await SampleLayoutAsync(grid, sampleRows: false);
+		var fitted = await rows.CountAsync();
+		var lastName = await rows.Nth(fitted - 1).Locator("td").Nth(1).InnerTextAsync();
+		await rows.Nth(fitted - 1).GetByRole(AriaRole.Button, new() { Name = "Expand details", Exact = true }).ClickAsync();
+		await Assertions.Expect(child).ToHaveCountAsync(1);
+		await SampleLayoutAsync(grid, sampleRows: false);
+		await Assertions.Expect(child).ToHaveCountAsync(1);
+		await Assertions.Expect(rows).ToHaveCountAsync(fitted);
+		await Assertions.Expect(rows.Nth(fitted - 1).Locator("td").Nth(1)).ToHaveTextAsync(lastName);
+		await rows.Nth(fitted - 1).GetByRole(AriaRole.Button, new() { Name = "Collapse details", Exact = true }).ClickAsync();
+		await Assertions.Expect(child).ToHaveCountAsync(0);
+		var custom = page.Locator(".sphere10-screen:not([hidden]) [data-demo=custom-grid-details] > .sphere10-grid");
+		await custom.GetByRole(AriaRole.Button, new() { Name = "Expand details", Exact = true }).First.ClickAsync();
+		await Assertions.Expect(custom.GetByRole(AriaRole.Article, new() { Name = "Record detail panel", Exact = true })).ToBeVisibleAsync();
+		Assert.That(errors, Is.Empty);
+	}
+
+	/// <summary>
+	/// Clicking a row opens it (owner, 22 November 2026): one click selects and opens the row, a double-click opens it once, a button
+	/// inside a cell and the row's own Open icon do only their own work, and Enter opens the focused row.
+	/// </summary>
+	[Test]
+	public async Task RowClickOpensOnceAndControlsInsideTheRowKeepTheirOwnAction() {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True);
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {
+			Headless = true,
+			ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		await using var context = await browser.NewContextAsync(new BrowserNewContextOptions {
+			ViewportSize = new ViewportSize { Width = 1280, Height = 1000 }
+		});
+		var page = await context.NewPageAsync();
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		await page.WaitForFunctionAsync("() => location.pathname === '/application' && !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=open-grid] > .sphere10-grid > .sphere10-grid-viewport > table')?.style.width");
+		var demo = page.Locator(".sphere10-screen:not([hidden]) [data-demo=open-grid]");
+		var grid = demo.Locator(":scope > .sphere10-grid");
+		var status = demo.GetByTestId("open-grid-status");
+		var rows = grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr[aria-selected]");
+		await Assertions.Expect(rows).ToHaveCountAsync(3);
+		var names = new List<string>();
+		for (var index = 0; index < 3; index++)
+			names.Add((await rows.Nth(index).Locator("td").Nth(1).InnerTextAsync()).Trim());
+		Assert.That(await rows.First.EvaluateAsync<string>("row => getComputedStyle(row).cursor"), Is.EqualTo("pointer"));
+
+		// One click selects and opens the row.
+		await rows.Nth(0).Locator("td").Nth(1).ClickAsync();
+		await Assertions.Expect(status).ToHaveTextAsync($"Opened: {names[0]}; opens: 1; flags: 0.");
+		await Assertions.Expect(rows.Nth(0)).ToHaveAttributeAsync("aria-selected", "true");
+
+		// A double-click opens once, and clicking the selected row again opens it again without clearing the selection.
+		await rows.Nth(1).Locator("td").Nth(0).DblClickAsync();
+		await Assertions.Expect(status).ToHaveTextAsync($"Opened: {names[1]}; opens: 2; flags: 0.");
+		await rows.Nth(1).Locator("td").Nth(0).ClickAsync();
+		await Assertions.Expect(status).ToHaveTextAsync($"Opened: {names[1]}; opens: 3; flags: 0.");
+		await Assertions.Expect(rows.Nth(1)).ToHaveAttributeAsync("aria-selected", "true");
+
+		// A button in a cell does only its own work.
+		await rows.Nth(2).GetByTestId("open-grid-flag").ClickAsync();
+		await Assertions.Expect(status).ToHaveTextAsync($"Flagged: {names[2]}; opens: 3; flags: 1.");
+
+		// The row's Open icon is the edit pencil and opens once.
+		var open = rows.Nth(2).GetByRole(AriaRole.Button, new() { Name = "Open", Exact = true });
+		var edit = await open.Locator("svg path").GetAttributeAsync("d");
+		Assert.That(edit, Is.EqualTo("M3 17l1-4 9-9 3 3-9 9zM11 6l3 3"), "The built-in Open icon is the edit pencil.");
+		await open.ClickAsync();
+		await Assertions.Expect(status).ToHaveTextAsync($"Opened: {names[2]}; opens: 4; flags: 1.");
+
+		// Enter opens the focused row.
+		await rows.Nth(0).FocusAsync();
+		await rows.Nth(0).PressAsync("Enter");
+		await Assertions.Expect(status).ToHaveTextAsync($"Opened: {names[0]}; opens: 5; flags: 1.");
+		Assert.That(errors, Is.Empty);
+	}
+
 	/// <summary>Verifies complete-row paging and selection during silent refresh.</summary>
 	[TestCase(1280, 1000, 1.25f, 1.25)]
 	[TestCase(390, 900, 1.5f, 1.0)]
@@ -64,6 +188,7 @@ public class BlazorGridBrowserTests {
 			"""), Is.True, "Automatic paging must fit complete rows including browser zoom, caption/header and the horizontal scrollbar.");
 		var first = table.Locator(":scope > tbody > tr").Nth(0);
 		var second = table.Locator(":scope > tbody > tr").Nth(1);
+		var priorRevision = int.Parse(await second.Locator("td").Nth(4).InnerTextAsync());
 		await first.Locator("td").First.ClickAsync();
 		await demo.GetByRole(AriaRole.Button, new() { Name = "Publish snapshot", Exact = true }).ClickAsync();
 		await second.Locator("td").First.ClickAsync();
@@ -71,7 +196,8 @@ public class BlazorGridBrowserTests {
 		Assert.That(await demo.GetByRole(AriaRole.Button, new() { Name = "Publish snapshot", Exact = true }).IsDisabledAsync(), Is.True,
 			"The second row must become selected while the delayed source refresh is still in progress.");
 		Assert.That(await grid.Locator(".sphere10-grid-loading").CountAsync(), Is.Zero, "An actual delayed source read must not replace the interactive rows with a loading mask.");
-		await Assertions.Expect(demo.Locator("[data-testid=live-grid-status]")).ToContainTextAsync("Published");
+		await Assertions.Expect(demo.GetByRole(AriaRole.Button, new() { Name = "Publish snapshot", Exact = true })).ToBeEnabledAsync();
+		await Assertions.Expect(second.Locator("td").Nth(4)).ToHaveTextAsync((priorRevision + 1).ToString());
 		await Assertions.Expect(second).ToHaveAttributeAsync("aria-selected", "true");
 		await Assertions.Expect(demo.GetByRole(AriaRole.Button, new() { Name = "Refresh selected row", Exact = true })).ToBeEnabledAsync();
 		await grid.GetByRole(AriaRole.Button, new() { Name = "Paging mode", Exact = true }).ClickAsync();
@@ -139,6 +265,113 @@ public class BlazorGridBrowserTests {
 		await page.ReloadAsync();
 		await Assertions.Expect(table.Locator(":scope > tbody > tr")).ToHaveCountAsync(5);
 		Assert.That(await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)"), Is.EqualTo(manual).Within(.25), "Only this browser's explicitly keyed grid restores the saved width.");
+		Assert.That(errors, Is.Empty);
+	}
+
+	/// <summary>Verifies that columns wider than their viewport wrap their text between words instead of scrolling sideways.</summary>
+	[TestCase(1.0f, 1.0)]
+	[TestCase(1.25f, 1.25)]
+	public async Task ColumnsWiderThanTheViewportWrapBetweenWordsInsteadOfScrolling(float deviceScale, double zoom) {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True);
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {
+			Headless = true,
+			IgnoreDefaultArgs = new[] { "--hide-scrollbars" },
+			ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		const int wideWidth = 2400;
+		const int height = 1000;
+		await using var context = await browser.NewContextAsync(new BrowserNewContextOptions {
+			ViewportSize = new ViewportSize { Width = wideWidth, Height = height },
+			DeviceScaleFactor = deviceScale
+		});
+		var page = await context.NewPageAsync();
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		await page.EvaluateAsync("zoom => document.documentElement.style.zoom = String(zoom)", zoom);
+		var grid = page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid");
+		var viewport = grid.Locator(":scope > .sphere10-grid-viewport");
+		var table = viewport.Locator(":scope > table");
+		await Assertions.Expect(table.Locator(":scope > tbody > tr[aria-selected]")).ToHaveCountAsync(10);
+		await page.WaitForFunctionAsync("() => !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid table')?.style.width");
+		await SampleLayoutAsync(grid);
+		const string ColumnWidths = "columns => columns.map(column => parseFloat(column.style.width))";
+		var wide = await table.Locator(":scope > colgroup > col").EvaluateAllAsync<double[]>(ColumnWidths);
+		// Before any narrowing, the table's minimum width is the sum of the columns' natural widths.
+		var natural = await table.EvaluateAsync<double>("table => parseFloat(table.style.minWidth)");
+		Assert.That(natural, Is.LessThanOrEqualTo(await viewport.EvaluateAsync<double>("viewport => viewport.clientWidth")), "The wide viewport must hold the natural widths.");
+		// The narrowest table whose text wraps only between words, measured on a detached copy in the table's own CSS pixels.
+		var wrapped = await table.EvaluateAsync<double>("""
+			table => {
+				const probe = table.cloneNode(true);
+				for (const identified of [probe, ...probe.querySelectorAll('[id]')]) identified.removeAttribute('id');
+				Object.assign(probe.style, { position: 'absolute', visibility: 'hidden', width: 'min-content', minWidth: '0', tableLayout: 'auto' });
+				for (const column of probe.querySelectorAll('col')) column.style.width = 'auto';
+				for (const cell of probe.querySelectorAll('th, td')) cell.style.overflowWrap = 'normal';
+				table.parentElement.append(probe);
+				try {
+					const scale = table.getBoundingClientRect().width / parseFloat(getComputedStyle(table).width);
+					return Math.ceil(probe.getBoundingClientRect().width / scale);
+				} finally {
+					probe.remove();
+				}
+			}
+			""");
+		Assert.That(wrapped, Is.LessThan(natural - 100), "The demo grid's headers and cells must be able to wrap between words.");
+
+		// Size the grid viewport between the two, near the wrapped minimum so that headers must wrap; the page around the grid sets the
+		// difference between the browser and grid viewport widths.
+		var target = Math.Ceiling(wrapped + (natural - wrapped) * .2);
+		var pageWidth = wideWidth;
+		var available = 0d;
+		for (var attempt = 0; attempt < 6; attempt++) {
+			available = await viewport.EvaluateAsync<double>("viewport => viewport.clientWidth");
+			if (available > wrapped + 10 && available < natural - 10 && Math.Abs(available - target) < 40)
+				break;
+			pageWidth = Math.Max(320, pageWidth + (int)Math.Round((target - available) * zoom));
+			await page.SetViewportSizeAsync(pageWidth, height);
+			await SampleLayoutAsync(grid, sampleRows: false);
+		}
+		Assert.That(available, Is.GreaterThan(wrapped + 10).And.LessThan(natural - 10), $"The grid viewport must lie between the wrapped ({wrapped}px) and natural ({natural}px) widths.");
+
+		var narrow = await SampleLayoutAsync(grid);
+		Assert.That(narrow.MaximumGeometryRange, Is.LessThanOrEqualTo(.25), narrow.Description("Narrow"));
+		Assert.That(await viewport.EvaluateAsync<bool>("viewport => viewport.scrollWidth <= viewport.clientWidth"), Is.True,
+			$"Columns that can wrap must fit the {available}px viewport without horizontal overflow. {narrow.Description("Narrow")}");
+		var headers = await table.EvaluateAsync<string[][]>("""
+			table => {
+				const broken = [];
+				const wrapped = [];
+				for (const header of table.tHead.rows[0].cells) {
+					const lines = new Set();
+					const walker = document.createTreeWalker(header, NodeFilter.SHOW_TEXT);
+					for (let node; (node = walker.nextNode());) {
+						if (node.parentElement.closest('.sphere10-grid-visually-hidden')) continue;
+						for (const word of node.data.matchAll(/\S+/g)) {
+							const range = document.createRange();
+							range.setStart(node, word.index);
+							range.setEnd(node, word.index + word[0].length);
+							const tops = new Set(Array.from(range.getClientRects(), rectangle => Math.round(rectangle.top)));
+							if (tops.size > 1) broken.push(word[0]);
+							tops.forEach(top => lines.add(top));
+						}
+					}
+					if (lines.size > 1) wrapped.push(header.innerText.trim());
+				}
+				return [broken, wrapped];
+			}
+			""");
+		Assert.That(headers[0], Is.Empty, "No header text may break inside a word.");
+		Assert.That(headers[1], Is.Not.Empty, "Some header must wrap between its words at this width.");
+
+		await page.SetViewportSizeAsync(wideWidth, height);
+		var restored = await SampleLayoutAsync(grid);
+		Assert.That(restored.MaximumGeometryRange, Is.LessThanOrEqualTo(.25), restored.Description("Restored"));
+		Assert.That(await table.Locator(":scope > colgroup > col").EvaluateAllAsync<double[]>(ColumnWidths), Is.EqualTo(wide).Within(.25),
+			"Widening the viewport again must restore the natural widths.");
 		Assert.That(errors, Is.Empty);
 	}
 

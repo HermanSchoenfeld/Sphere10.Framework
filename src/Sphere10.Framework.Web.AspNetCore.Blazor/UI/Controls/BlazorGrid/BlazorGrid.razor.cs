@@ -20,12 +20,20 @@ using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 
-/// <summary>A data-source grid with buffered row editing, paging and optional user preferences.</summary>
+/// <summary>Displays data-source rows with paging, sorting, buffered editing, expandable details and optional user preferences.</summary>
+/// <typeparam name="TItem">The row type used by the columns, selection and CRUD operations.</typeparam>
+/// <remarks>
+/// Bind <see cref="DataSource"/> to supply rows and their supported operations. A hierarchical source also supplies row identities,
+/// resolved entities and child sources. Expanded rows use <see cref="DetailTemplate"/> or a nested grid when no template is supplied.
+/// Nested grids have independent queries and selections. This component borrows its bound source and owns the child views it acquires for details.
+/// </remarks>
 public partial class BlazorGrid<TItem> : IAsyncDisposable {
-	private readonly IBlazorGridController<TItem> _controller = new BlazorGridController<TItem>();
+	private readonly BlazorGridController<TItem> _controller = new();
 	private readonly Dictionary<BlazorGridColumn<TItem>, string> _editErrors = new();
 	private BlazorGridColumn<TItem>[] _autoColumns;
+	// The displayed columns; hidden columns of the declared schema are omitted.
 	private BlazorGridColumn<TItem>[] _columns = Array.Empty<BlazorGridColumn<TItem>>();
+	private BlazorGridColumn<TItem>[] _schemaColumns = Array.Empty<BlazorGridColumn<TItem>>();
 	private ElementReference _element;
 	private ElementReference _pageModeButton;
 	private Task _initializationTask;
@@ -44,6 +52,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private BlazorGridPageMode _parameterPageMode;
 	private string _settingsKey;
 	private IDataSource<TItem> _boundSource;
+	private bool _sourceReplacementDeferred;
 	private DataSourceCapabilities _allowedCapabilities;
 
 	/// <summary>The rendered grid element's unique ID.</summary>
@@ -142,9 +151,6 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	/// <summary>The current number of available pages.</summary>
 	public int TotalPages => Controller.TotalPages;
 
-	/// <summary>The entity currently selected in the grid.</summary>
-	public TItem SelectedItem => Controller.SelectedItem;
-
 	/// <summary>The current action or controller error.</summary>
 	public string ErrorMessage => _operationError ?? Controller.ErrorMessage;
 
@@ -158,11 +164,11 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	// Prevents navigation during work, edits and confirmation.
 	private bool NavigationDisabled => IsBusy || Controller.IsEditing || _confirmDelete || _settingsDraft != null;
 
-	// Determines whether the row-action column is visible.
-	private bool ShowActions => Actions.Length > 0 && (GridType == 0 || GridType.HasFlag(GridTypes.ActionColumn));
+	// Determines whether the row-action column is visible, for custom actions or built-in row commands.
+	private bool ShowActions => (Actions.Length > 0 || VisibleRowCommandCount > 0) && (GridType == 0 || GridType.HasFlag(GridTypes.ActionColumn));
 
-	// Counts the rendered typed, legacy and action columns.
-	private int ColumnCount => Math.Max(1, _columns.Length + ColumnDefinitions.Length + (ShowActions ? 1 : 0));
+	// Counts the rendered typed, legacy and command columns.
+	private int ColumnCount => Math.Max(1, _columns.Length + ColumnDefinitions.Length + (ShowCommandColumn ? 1 : 0) + (ShowDetailColumn ? 1 : 0));
 
 	// Checks whether paging currently follows the viewport.
 	private bool UsesViewportPageSize => Controller.PageMode == BlazorGridPageMode.Auto && Can(DataSourceCapabilities.CanPage);
@@ -170,6 +176,9 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	// Builds the height constraints for the current paging mode.
 	private string ViewportStyle {
 		get {
+			// A filling grid takes its height from its container through its stylesheet.
+			if (Fill)
+				return null;
 			return UsesViewportPageSize || Controller.PageMode == BlazorGridPageMode.Single
 				? $"height: {Height}px" : $"max-height: {Height}px;{(Controller.IsLoading && Controller.Items.Length == 0 ? $" min-height: {Height}px;" : null)}";
 		}
@@ -178,7 +187,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	// Combines column requirements into the minimum table width.
 	private string MinimumTableWidth {
 		get {
-			return Math.Max(40D, _columns.Sum(PreferredColumnWidth) + ColumnDefinitions.Length * 140D + (ShowActions ? 120 : 0))
+			return Math.Max(40D, _columns.Sum(PreferredColumnWidth) + ColumnDefinitions.Length * 140D + (ShowCommandColumn ? CommandColumnWidth : 0) + (ShowDetailColumn ? 40 : 0))
 				.ToString(CultureInfo.InvariantCulture);
 		}
 	}
@@ -323,12 +332,117 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	/// <summary>Releases grid subscriptions and browser interop after pending initialization.</summary>
 	public async ValueTask DisposeAsync() {
-		if (_disposed)
+		if (_disposed) {
+			await _detailDisposal.Task;
 			return;
+		}
 		_disposed = true;
-		Controller.Changed -= HandleChanged;
-		Controller.Dispose();
-		using var referenceScope = Tools.Scope.ExecuteOnDispose(() => _reference?.Dispose());
+		try {
+			Controller.Changed -= HandleChanged;
+			// Browser interop is released after the drain, including when admitted work reports a failure.
+			using (Tools.Scope.ExecuteOnDispose(() => _reference?.Dispose())) {
+				await using (Tools.Scope.ExecuteOnDisposeAsync(ReleaseJavascriptAsync)) {
+					var controllerDisposal = Controller.DisposeAsync().AsTask();
+					var releasingDetails = ClearDetailsAsync();
+					await Task.WhenAll(_detailWork.Append(controllerDisposal).Append(releasingDetails).ToArray());
+				}
+			}
+		} finally {
+			_registeredDetail?.Consumers.Remove(this);
+			_detailDisposal.TrySetResult();
+		}
+	}
+
+	/// <summary>Attaches the controller's change notification.</summary>
+	protected override void OnInitialized() => Controller.Changed += HandleChanged;
+
+	/// <summary>Reconciles parameters while preserving a valid row draft.</summary>
+	protected override Task OnParametersSetAsync() => ReconcileParametersAsync();
+
+	/// <summary>Loads browser behavior after the grid has rendered.</summary>
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(LoadJavascript,
+			error => error is JSDisconnectedException || error is OperationCanceledException && _disposed);
+	}
+
+	// Applies the current parameters. It runs again when a draft that deferred a replacement view has ended.
+	private async Task ReconcileParametersAsync() {
+		if (!ReferenceEquals(_registeredDetail, AncestorPath?.Container)) {
+			_registeredDetail?.Consumers.Remove(this);
+			_registeredDetail = AncestorPath?.Container;
+			_registeredDetail?.Consumers.Add(this);
+		}
+		Guard.ArgumentNotNullOrEmpty(Id, nameof(Id));
+		Guard.ArgumentNotNull(DataSource, nameof(DataSource));
+		Guard.ArgumentNotNull(Actions, nameof(Actions));
+		Guard.ArgumentNotNull(ColumnDefinitions, nameof(ColumnDefinitions));
+		Guard.Argument(ColumnDefinitions.All(column => column is IBlazorGridLegacyColumn), nameof(ColumnDefinitions), "Legacy columns must implement IBlazorGridLegacyColumn.");
+		Guard.ArgumentInRange(PageSize, 1, 9999, nameof(PageSize));
+		Guard.ArgumentGT(Height, 0, nameof(Height));
+		Guard.ArgumentGT(DetailHeight, 0, nameof(DetailHeight));
+		Guard.ArgumentGT(MaximumDetailDepth, 0, nameof(MaximumDetailDepth));
+		Guard.ArgumentGT(MaximumExpandedDetails, 0, nameof(MaximumExpandedDetails));
+		Guard.Argument(Enum.IsDefined(CaptionAlignment), nameof(CaptionAlignment), "Select a supported caption alignment.");
+		Guard.Argument(Enum.IsDefined(PageMode), nameof(PageMode), "Select a supported page mode.");
+		var requestedPageMode = AutoPageSize ? BlazorGridPageMode.Auto : PageMode;
+		// A row identity also matches selection and row events to the current rows after a read replaces them.
+		if (_boundSource == null && (Hierarchy != null || DetailIdentity != null))
+			Controller.EntityComparer = new ProjectionEqualityComparer<TItem, object>(GetDetailKey);
+		if (Preferences != null || !PersistSettings || string.IsNullOrWhiteSpace(SettingsKey))
+			_settingsKey = null;
+
+		// Column changes can request a render while the first read is pending; seed saved geometry before that render.
+		if (_boundSource == null && Preferences != null)
+			AcceptPreferenceValues(GetPreferenceSettings(Preferences), Preferences);
+		var declaredColumns = Columns ?? (AutoGenerateColumns ? _autoColumns ??= BlazorGridColumn<TItem>.AutoGenerate() : Array.Empty<BlazorGridColumn<TItem>>());
+		Guard.Argument(declaredColumns.All(column => column != null), nameof(Columns), "Columns cannot contain null.");
+		// Keep a detached schema so later changes to the caller's array cannot alter the rendered columns or a draft.
+		if (!declaredColumns.SequenceEqual(_schemaColumns))
+			_schemaColumns = Tools.Array.Clone(declaredColumns);
+		ApplyColumnVisibility();
+		ValidatePreferenceKeys();
+		foreach (var column in _schemaColumns) {
+			Guard.ArgumentGT(column.ImageWidth, 0, nameof(column.ImageWidth));
+			Guard.ArgumentGT(column.ImageHeight, 0, nameof(column.ImageHeight));
+			Guard.Argument(Enum.IsDefined(column.ImageAlignment), nameof(column.ImageAlignment), "Select a supported image alignment.");
+			Guard.Argument(!column.ImageResizeMethod.HasValue || Enum.IsDefined(column.ImageResizeMethod.Value), nameof(column.ImageResizeMethod), "Select a supported image resize method.");
+		}
+		var compatibleView = AncestorPath != null && _boundSource is IHierarchicalDataSource<TItem> && DataSource is IHierarchicalDataSource<TItem>
+			&& _allowedCapabilities == AllowedCapabilities && _parameterPageSize == PageSize;
+		// A parent's compatible replacement view waits for this grid's draft, as its own source notifications do.
+		// The parent retires the view still bound here only after this grid has moved to the replacement.
+		_sourceReplacementDeferred = compatibleView && !ReferenceEquals(_boundSource, DataSource) && (Controller.IsEditing || Controller.IsSaving);
+		if (!_sourceReplacementDeferred && (!ReferenceEquals(_boundSource, DataSource) || _allowedCapabilities != AllowedCapabilities || _parameterPageSize != PageSize)) {
+			_boundSource = DataSource;
+			_allowedCapabilities = AllowedCapabilities;
+			_parameterPageSize = PageSize;
+			_parameterPageMode = requestedPageMode;
+			_confirmDelete = false;
+			ResetEditor();
+			if (Preferences == null && PersistSettings && !string.IsNullOrWhiteSpace(SettingsKey) && _settingsKey != SettingsKey) {
+				_bindPending = true;
+				return;
+			}
+			var settings = Preferences == null ? _appliedPreferences : GetPreferenceSettings(Preferences);
+			AcceptPreferenceValues(settings, Preferences);
+			_sourceBinding = compatibleView ? _controller.ReplaceSourceAsync(DataSource)
+				: Controller.BindAsync(DataSource, AllowedCapabilities, PageSize, requestedPageMode, settings);
+			NotifySourceChanged();
+			await _sourceBinding;
+			_searchText = Controller.SearchTerm;
+			await NotifySelectionAsync();
+		} else if (_parameterPageMode != requestedPageMode) {
+			_parameterPageMode = requestedPageMode;
+			await SetPageModeAsync(requestedPageMode);
+		}
+		if (Preferences != null && (!PreferenceSettingsEqual(_appliedPreferences, GetPreferenceSettings(Preferences)) || !PreferenceSchemaEqual(Preferences)))
+			await ApplyGridPreferencesAsync(Preferences);
+		await ApplySelectionRequestAsync();
+		await ReconcileDetailsAsync();
+	}
+
+	// Waits for pending initialization, then disposes the browser behavior and its module.
+	private async ValueTask ReleaseJavascriptAsync() {
 		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			if (_initializationTask != null)
 				await _initializationTask;
@@ -342,66 +456,6 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 				await reference.DisposeAsync();
 			}, error => error is OperationCanceledException or JSDisconnectedException);
 		}
-	}
-
-	/// <summary>Attaches the controller's change notification.</summary>
-	protected override void OnInitialized() => Controller.Changed += HandleChanged;
-
-	/// <summary>Reconciles parameters while preserving a valid row draft.</summary>
-	protected override async Task OnParametersSetAsync() {
-		Guard.ArgumentNotNullOrEmpty(Id, nameof(Id));
-		Guard.ArgumentNotNull(DataSource, nameof(DataSource));
-		Guard.ArgumentNotNull(Actions, nameof(Actions));
-		Guard.ArgumentNotNull(ColumnDefinitions, nameof(ColumnDefinitions));
-		Guard.Argument(ColumnDefinitions.All(column => column is IBlazorGridLegacyColumn), nameof(ColumnDefinitions), "Legacy columns must implement IBlazorGridLegacyColumn.");
-		Guard.ArgumentInRange(PageSize, 1, 9999, nameof(PageSize));
-		Guard.ArgumentGT(Height, 0, nameof(Height));
-		Guard.Argument(Enum.IsDefined(CaptionAlignment), nameof(CaptionAlignment), "Select a supported caption alignment.");
-		Guard.Argument(Enum.IsDefined(PageMode), nameof(PageMode), "Select a supported page mode.");
-		var requestedPageMode = AutoPageSize ? BlazorGridPageMode.Auto : PageMode;
-		if (Preferences != null || !PersistSettings || string.IsNullOrWhiteSpace(SettingsKey))
-			_settingsKey = null;
-
-		// Column changes can request a render while the first read is pending; seed saved geometry before that render.
-		if (_boundSource == null && Preferences != null)
-			AcceptPreferenceValues(GetPreferenceSettings(Preferences), Preferences);
-		Controller.Columns = Columns ?? (AutoGenerateColumns ? _autoColumns ??= BlazorGridColumn<TItem>.AutoGenerate() : Array.Empty<BlazorGridColumn<TItem>>());
-		_columns = Controller.Columns;
-		ValidatePreferenceKeys();
-		foreach (var column in _columns) {
-			Guard.ArgumentGT(column.ImageWidth, 0, nameof(column.ImageWidth));
-			Guard.ArgumentGT(column.ImageHeight, 0, nameof(column.ImageHeight));
-			Guard.Argument(Enum.IsDefined(column.ImageAlignment), nameof(column.ImageAlignment), "Select a supported image alignment.");
-			Guard.Argument(!column.ImageResizeMethod.HasValue || Enum.IsDefined(column.ImageResizeMethod.Value), nameof(column.ImageResizeMethod), "Select a supported image resize method.");
-		}
-		if (!ReferenceEquals(_boundSource, DataSource) || _allowedCapabilities != AllowedCapabilities || _parameterPageSize != PageSize) {
-			_boundSource = DataSource;
-			_allowedCapabilities = AllowedCapabilities;
-			_parameterPageSize = PageSize;
-			_parameterPageMode = requestedPageMode;
-			_confirmDelete = false;
-			ResetEditor();
-			if (Preferences == null && PersistSettings && !string.IsNullOrWhiteSpace(SettingsKey) && _settingsKey != SettingsKey) {
-				_bindPending = true;
-				return;
-			}
-			var settings = Preferences == null ? _appliedPreferences : GetPreferenceSettings(Preferences);
-			AcceptPreferenceValues(settings, Preferences);
-			await Controller.BindAsync(DataSource, AllowedCapabilities, PageSize, requestedPageMode, settings);
-			_searchText = Controller.SearchTerm;
-			await NotifySelectionAsync();
-		} else if (_parameterPageMode != requestedPageMode) {
-			_parameterPageMode = requestedPageMode;
-			await SetPageModeAsync(requestedPageMode);
-		}
-		if (Preferences != null && (!PreferenceSettingsEqual(_appliedPreferences, GetPreferenceSettings(Preferences)) || !PreferenceSchemaEqual(Preferences)))
-			await ApplyGridPreferencesAsync(Preferences);
-	}
-
-	/// <summary>Loads browser behavior after the grid has rendered.</summary>
-	protected override async Task OnAfterRenderAsync(bool firstRender) {
-		await Tools.Exceptions.ExecuteCapturingExceptionAsync(LoadJavascript,
-			error => error is JSDisconnectedException || error is OperationCanceledException && _disposed);
 	}
 
 	// Creates the grid's browser behavior and callback reference.
@@ -423,13 +477,21 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	// Schedules a render after controller state changes.
 	private void HandleChanged() {
+		NotifySourceChanged();
 		if (!_disposed)
 			_ = InvokeAsync(async () => {
 				if (!_disposed) {
 					if (NavigationDisabled)
 						ClosePageModeMenu();
+					if (_sourceReplacementDeferred && !Controller.IsEditing && !Controller.IsSaving)
+						await ReconcileParametersAsync();
+					// Detail bookkeeping is synchronous; child views load after the accepted rows and selection are presented.
+					var details = ReconcileDetailsAsync();
 					StateHasChanged();
 					await NotifySelectionAsync();
+					// A bound selection waits for the page that displays its item.
+					await ApplySelectionRequestAsync();
+					await details;
 				}
 			});
 	}
@@ -444,22 +506,22 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		await SelectedItemChanged.InvokeAsync(Controller.SelectedItem);
 	}
 
-	// Changes row selection when interaction permits.
+	// Changes row selection when interaction permits. A row that opens on a click stays selected; the browser behavior opens it.
 	private async Task SelectRowAsync(TItem item, MouseEventArgs args) {
-		if (NavigationDisabled || args.Detail > 1)
+		if (NavigationDisabled || args.Detail > 1 || !TryGetVisibleItem(item, out var row))
 			return;
-		if (IsSelected(item) && LeftClickToDeselect)
+		if (IsSelected(row) && LeftClickToDeselect && !OpensOnClick)
 			Controller.ClearSelection();
 		else
-			Controller.Select(item);
+			Controller.Select(row);
 		await NotifySelectionAsync();
 	}
 
 	// Starts a row edit from an editable cell.
 	private async Task BeginInlineEditAsync(TItem item) {
-		if (!AllowCellEditing || NavigationDisabled || !Can(DataSourceCapabilities.CanUpdate))
+		if (!AllowCellEditing || NavigationDisabled || !Can(DataSourceCapabilities.CanUpdate) || !TryGetVisibleItem(item, out var row))
 			return;
-		BeginEdit(item);
+		BeginEdit(row);
 		await NotifySelectionAsync();
 	}
 
@@ -469,8 +531,10 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			await BeginInlineEditAsync(item);
 		else if (args.Key == "Escape" && Controller.IsEditing && !IsBusy)
 			CancelEdit();
-		else if ((args.Key == "Enter" || args.Key == " ") && !NavigationDisabled) {
-			Controller.Select(item);
+		else if (args.Key == "Enter" && ItemOpened.HasDelegate && !NavigationDisabled)
+			await OpenItemAsync(item);
+		else if ((args.Key == "Enter" || args.Key == " ") && !NavigationDisabled && TryGetVisibleItem(item, out var row)) {
+			Controller.Select(row);
 			await NotifySelectionAsync();
 		}
 	}
@@ -615,18 +679,18 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		};
 	}
 
-	// Runs a row action and refreshes after successful completion.
+	// Runs a row action on the item's displayed row and refreshes after successful completion.
 	private async Task PerformActionAsync(GridAction<TItem> action, TItem item) {
-		if (NavigationDisabled || !(action.IsActionAvailable?.Invoke(item) ?? true))
+		if (NavigationDisabled || !TryGetVisibleItem(item, out var row) || !(action.IsActionAvailable?.Invoke(row) ?? true))
 			return;
 		_performingAction = true;
 		_operationError = null;
 		using var scope = Tools.Scope.ExecuteOnDispose(() => _performingAction = false);
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (action.ActionWorkAsync != null)
-				await action.ActionWorkAsync(item);
+				await action.ActionWorkAsync(row);
 			else
-				action.ActionWork?.Invoke(item);
+				action.ActionWork?.Invoke(row);
 			if (!_disposed)
 				await RefreshAsync();
 		});
@@ -694,7 +758,12 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	}
 
 	// The initial HTML uses restored manual widths before JavaScript performs any natural sizing.
-	private string ColumnStyle(BlazorGridColumn<TItem> column) => $"width: {PreferredColumnWidth(column).ToString(CultureInfo.InvariantCulture)}px";
+	// A grid spans its viewport: the columns marked ExpandsToFit share the spare width, and when none is marked the widest configured
+	// column takes it, so a grid never ends partway across its card (owner, 19 November 2026).
+	private bool ExpandsToFit(BlazorGridColumn<TItem> column)
+		=> column.ExpandsToFit || !_columns.Any(other => other.ExpandsToFit) && ReferenceEquals(column, _columns.MaxBy(other => other.Width));
+
+	private string ColumnStyle(BlazorGridColumn<TItem> column) =>$"width: {PreferredColumnWidth(column).ToString(CultureInfo.InvariantCulture)}px";
 
 	// Unspecified columns retain their configured natural/stretch minimum.
 	private double PreferredColumnWidth(BlazorGridColumn<TItem> column)
@@ -714,6 +783,10 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			_ => "center center"
 		};
 	}
+
+	// A date or time is one value: its cells never wrap at its hyphens, so a narrow grid narrows other columns first (22 November 2026).
+	private static bool IsTemporal(Type dataType) => (Nullable.GetUnderlyingType(dataType) ?? dataType) is var type
+		&& (type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(DateOnly) || type == typeof(TimeOnly) || type == typeof(TimeSpan));
 
 	// Maps shared image alignment to CSS vertical alignment.
 	private static string ImageVerticalAlignment(ResizeAlignment alignment) {
@@ -748,6 +821,9 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		if (!(column.PropertyHasValue?.Invoke(item) ?? true))
 			return string.Empty;
 		var value = column.PropertyValue?.Invoke(item);
+		// An enum reads as its display text ("Payment Failed") unless the column names a format, such as "D" for its number.
+		if (value is Enum choice && string.IsNullOrEmpty(column.Format))
+			return choice.GetDisplayText();
 		return value is IFormattable formattable
 			? formattable.ToString(column.Format, CultureInfo.CurrentCulture)
 			: value?.ToString() ?? string.Empty;

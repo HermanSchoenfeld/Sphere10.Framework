@@ -265,6 +265,42 @@ public class BlazorGridRenderingTests {
 		}, runtime);
 	}
 
+	/// <summary>Verifies hidden columns leave the rendered table while their schema and visibility round-trip by stable key.</summary>
+	[Test]
+	public async Task HiddenColumnsLeaveTheTableAndRoundTripByStableKey() {
+		var name = BlazorGridColumn<Row>.For(row => row.Name);
+		var enabled = BlazorGridColumn<Row>.For(row => row.Enabled);
+		enabled.Hidden = true;
+		var parameters = GridParameters(new ProbeSource<Row>(new Row { Name = "A" }), name, enabled);
+		parameters[nameof(BlazorGrid<Row>.Preferences)] = new BlazorGridSettings();
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, rendered) => {
+			var html = rendered.ToHtmlString();
+			Assert.That(html, Does.Contain("data-grid-key=\"Name\""));
+			Assert.That(html, Does.Not.Contain("data-grid-key=\"Enabled\""), "A column hidden by its schema is not rendered.");
+			var values = grid.CaptureGridPreferences();
+			Assert.That(values.Columns.Select(column => column.Key), Is.EqualTo(new[] { "Name", "Enabled" }), "The captured schema keeps hidden columns.");
+			Assert.That(values.Columns.Select(column => column.Hidden), Is.EqualTo(new bool?[] { false, true }));
+
+			// An accepted preference overrides the schema in both directions.
+			values.Columns[0].Hidden = true;
+			values.Columns[1].Hidden = false;
+			await grid.ApplyGridPreferencesAsync(values);
+			html = rendered.ToHtmlString();
+			Assert.That(html, Does.Not.Contain("data-grid-key=\"Name\""));
+			Assert.That(html, Does.Contain("data-grid-key=\"Enabled\""));
+			Assert.That(grid.CaptureGridPreferences().Columns.Select(column => column.Hidden), Is.EqualTo(new bool?[] { true, false }));
+
+			// Restoring defaults releases the choices, so the schema decides again.
+			var reset = grid.CaptureGridPreferences();
+			reset.RestoreDefaultValues();
+			Assert.That(reset.Columns.All(column => column.Hidden == null), Is.True);
+			await grid.ApplyGridPreferencesAsync(reset);
+			html = rendered.ToHtmlString();
+			Assert.That(html, Does.Contain("data-grid-key=\"Name\""));
+			Assert.That(html, Does.Not.Contain("data-grid-key=\"Enabled\""));
+		});
+	}
+
 	/// <summary>Verifies standalone restore precedes its first data query.</summary>
 	[Test]
 	public async Task StandaloneRestorePrecedesItsFirstDataQuery() {
@@ -622,7 +658,8 @@ public class BlazorGridRenderingTests {
 		await RenderAsync<BlazorGrid<EmptyRow>>(parameters, (_, _, rendered) => {
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Actions</th>"));
 			Assert.That(rendered.ToHtmlString(), Does.Contain(">Inspect</button>"));
-			Assert.That(rendered.ToHtmlString(), Does.Contain("1 items"));
+			// One row is counted in the singular.
+			Assert.That(rendered.ToHtmlString(), Does.Contain("1 item<").And.Not.Contain("1 items"));
 			return Task.CompletedTask;
 		});
 	}

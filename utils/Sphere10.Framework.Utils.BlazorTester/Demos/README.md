@@ -9,7 +9,7 @@ Each demo is a self-contained component that injects `ViewService` and exercises
 | Type | Kind | Purpose |
 |---|---|---|
 | [`DialogsDemo`](DialogsDemo.razor) | class | Razor demo of awaited information, confirmation and custom dialogs through `ViewService` |
-| [`GridDemo`](GridDemo.razor) | class | Razor demo of buffered editing, validation, reference selection and row actions in `BlazorGrid`, plus a live grid with paging, retained layout, refresh, removal and export |
+| [`GridDemo`](GridDemo.razor) | class | Buffered editing, references and row actions; live refresh and retained layout; a hierarchical graph with shared nodes and cycles; flat-source custom detail panels; and rows that open on a single click while a cell button keeps its own action |
 | [`TablesDemo`](TablesDemo.razor) | class | Razor demo of `PagedTable`, `VirtualPagedTable` and `RapidTable` |
 | [`ThemeDemo`](ThemeDemo.razor) | class | Razor gallery of buttons, semantic colors, alerts, forms, navigation, tables and dialogs under the current theme |
 | [`WizardsDemo`](WizardsDemo.razor) | class | Razor launcher of the branching new-wallet wizard and its step validation |

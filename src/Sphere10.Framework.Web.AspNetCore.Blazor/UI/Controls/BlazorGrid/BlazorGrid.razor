@@ -11,8 +11,9 @@
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
 @typeparam TItem
 
-<div class="sphere10-grid" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()" data-grid-auto-size="@AutoSizeColumns.ToString().ToLowerInvariant()"
+<div class="@GridClass" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()" data-grid-auto-size="@AutoSizeColumns.ToString().ToLowerInvariant()"
 	data-grid-page-size="@Controller.PageSize" data-grid-page-identity="@(Controller.CurrentPage + ":" + Controller.SearchTerm + ":" + Controller.SortProperty + ":" + Controller.SortDirection)">
+	@if (ShowToolbar) {
 	<div class="sphere10-grid-toolbar">
 		@if (Can(DataSourceCapabilities.CanSearch)) {
 			<label for="@(Id)-search">Search</label>
@@ -20,20 +21,23 @@
 			<button type="button" @onclick="SearchAsync" disabled="@NavigationDisabled">Search</button>
 			<button type="button" @onclick="ClearSearchAsync" disabled="@(NavigationDisabled || string.IsNullOrEmpty(Controller.SearchTerm))">Clear</button>
 		}
-		<button type="button" @onclick="RefreshAsync" disabled="@(NavigationDisabled || !Can(DataSourceCapabilities.CanRead))">Reload</button>
-		@if (Can(DataSourceCapabilities.CanCreate) && (GridType == 0 || GridType.HasFlag(GridTypes.NewItem))) {
+		@if (ReloadPlacement == BlazorGridReloadPlacement.Toolbar) {
+			<button type="button" @onclick="RefreshAsync" disabled="@(NavigationDisabled || !Can(DataSourceCapabilities.CanRead))">Reload</button>
+		}
+		@if (ShowNewCommand) {
 			<button type="button" @onclick="BeginCreateAsync" disabled="@NavigationDisabled">New</button>
 		}
-		@if (Can(DataSourceCapabilities.CanUpdate)) {
+		@if (ShowEditCommand) {
 			<button type="button" @onclick="EditSelectedAsync" disabled="@(NavigationDisabled || !Controller.HasSelection)">Edit</button>
 		}
-		@if (Can(DataSourceCapabilities.CanDelete) && Controller.HasSelection) {
+		@if (ShowDeleteCommand) {
 			<button type="button" @onclick="RequestDelete" disabled="@NavigationDisabled">Delete</button>
 		}
 		@if (Preferences != null) {
 			<button type="button" @onclick="BeginGridSettings" disabled="@(NavigationDisabled || !CanEditGridSettings)">Settings</button>
 		}
 	</div>
+	}
 	@if (_settingsDraft != null) {
 		<section class="sphere10-grid-settings" role="region" aria-label="Grid settings">
 			<h3>Grid settings</h3>
@@ -76,22 +80,30 @@
 	}
 	<div class="sphere10-grid-viewport" style="@ViewportStyle">
 		<table id="@Id" class="sphere10-grid-table" style="min-width: @(MinimumTableWidth)px">
-			<caption class="sphere10-grid-caption" style="text-align: @CaptionAlignment.ToString().ToLowerInvariant()">@Caption</caption>
+			@if (ShowCaption) {
+				<caption class="sphere10-grid-caption" style="text-align: @CaptionAlignment.ToString().ToLowerInvariant()">@Caption</caption>
+			}
 			<colgroup>
+				@if (ShowDetailColumn) {
+					<col data-grid-width="40" style="width: 40px" />
+				}
 				@foreach (var column in _columns) {
-					<col @key="column" data-grid-width="@Math.Max(40, column.Width)" data-grid-expands="@column.ExpandsToFit.ToString().ToLowerInvariant()"
+					<col @key="column" data-grid-width="@Math.Max(40, column.Width)" data-grid-expands="@ExpandsToFit(column).ToString().ToLowerInvariant()"
 						data-grid-key="@column.PreferenceKey" style="@ColumnStyle(column)" />
 				}
 				@foreach (var column in ColumnDefinitions) {
 					<col @key="column" data-grid-width="140" style="width: 140px" />
 				}
-				@if (ShowActions) {
-					<col data-grid-width="120" style="width: 120px" />
+				@if (ShowCommandColumn) {
+					<col data-grid-width="@CommandColumnWidth" style="width: @(CommandColumnWidth)px" />
 				}
 			</colgroup>
 
 			<thead>
 				<tr>
+					@if (ShowDetailColumn) {
+						<th scope="col"><span class="sphere10-grid-visually-hidden">Details</span></th>
+					}
 					@foreach (var column in _columns) {
 						<th scope="col" aria-sort="@GetAriaSort(column)">
 							@if (Can(DataSourceCapabilities.CanSort) && !string.IsNullOrEmpty(column.SortName)) {
@@ -108,29 +120,51 @@
 					@foreach (var column in ColumnDefinitions) {
 						<th scope="col">@GetLegacyColumnName(column)</th>
 					}
-					@if (ShowActions) {
-						<th scope="col">Actions</th>
+					@if (ShowCommandColumn) {
+						if (ReloadPlacement == BlazorGridReloadPlacement.Header) {
+							<th scope="col" class="sphere10-grid-command-header"><button type="button" class="sphere10-grid-icon-button" title="Reload" aria-label="Reload"
+								disabled="@(NavigationDisabled || !Can(DataSourceCapabilities.CanRead))" @onclick="RefreshAsync"><svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="16" height="16"><path d="@ReloadIconPath" /></svg></button><span class="sphere10-grid-visually-hidden">@(ActionStyle == BlazorGridActionStyle.Text ? "Actions" : "Row commands")</span></th>
+						} else if (ActionStyle == BlazorGridActionStyle.Icons) {
+							<th scope="col" class="sphere10-grid-command-header"><span class="sphere10-grid-visually-hidden">Row commands</span></th>
+						} else {
+							<th scope="col">Actions</th>
+						}
 					}
 				</tr>
 			</thead>
-			<tbody>
+			<tbody data-grid-rows="@(OpensOnClick ? CaptureClickRows() : (int?)null)">
 				@if (Controller.IsEditing && Controller.IsNewItem) {
 					<tr class="sphere10-grid-editing" @onkeydown="args => RowKeyDownAsync(Controller.EditingItem, args)">
+						@if (ShowDetailColumn) {
+							<td></td>
+						}
 						@foreach (var column in _columns) {
 							<td>@RenderEditor(column)</td>
 						}
-						@if (ColumnDefinitions.Length > 0 || ShowActions) {
-							<td colspan="@(ColumnDefinitions.Length + (ShowActions ? 1 : 0))"></td>
+						@if (ColumnDefinitions.Length > 0 || ShowCommandColumn) {
+							<td colspan="@(ColumnDefinitions.Length + (ShowCommandColumn ? 1 : 0))"></td>
 						}
 					</tr>
 				}
+				@{ var rowIndex = 0; }
 				@foreach (var item in Controller.Items) {
 					var selected = IsSelected(item);
 					var editing = selected && Controller.IsEditing && !Controller.IsNewItem;
-					<tr class="@(selected ? "sphere10-grid-selected" : null)" aria-selected="@selected.ToString().ToLowerInvariant()"
-						tabindex="0" @onclick="args => SelectRowAsync(item, args)" @ondblclick="() => BeginInlineEditAsync(item)" @onkeydown="args => RowKeyDownAsync(item, args)">
+					var detail = ShowDetailColumn ? FindDetail(item) : null;
+					var clickIndex = rowIndex++;
+					<tr class="@(selected ? "sphere10-grid-selected" : null)" aria-selected="@selected.ToString().ToLowerInvariant()" data-grid-open-row="@(OpensOnClick ? clickIndex : (int?)null)"
+						tabindex="0" @onclick="args => SelectRowAsync(item, args)" @ondblclick="() => RowDoubleClickAsync(item)" @onkeydown="args => RowKeyDownAsync(item, args)">
+						@if (ShowDetailColumn) {
+							<td class="sphere10-grid-detail-toggle" @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown:stopPropagation>
+								@if (CanExpandDetail(item)) {
+									<button type="button" aria-label="@(detail == null ? "Expand details" : "Collapse details")"
+										aria-expanded="@(detail == null ? "false" : "true")" disabled="@(NavigationDisabled || detail == null && DetailLimitReached)"
+										@onclick="() => ToggleDetailAsync(item)"><span aria-hidden="true">@(detail == null ? "▶" : "▼")</span></button>
+								}
+							</td>
+						}
 						@foreach (var column in _columns) {
-							<td style="@(column.ImageSource == null ? null : $"vertical-align: {ImageVerticalAlignment(column.ImageAlignment)}")">
+							<td class="@(IsTemporal(column.DataType) ? "sphere10-grid-nowrap" : null)" style="@(column.ImageSource == null ? null : $"vertical-align: {ImageVerticalAlignment(column.ImageAlignment)}")">
 								@if (editing && column.CanEdit(item)) {
 									@RenderEditor(column)
 								} else if (column.Template != null) {
@@ -148,16 +182,63 @@
 						@foreach (var column in ColumnDefinitions) {
 							<td>@RenderLegacyColumn(item, column)</td>
 						}
-						@if (ShowActions) {
+						@if (ShowCommandColumn) {
 							<td class="sphere10-grid-actions" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
-								@foreach (var action in Actions) {
-									if (action.IsActionAvailable?.Invoke(item) ?? true) {
-										<button type="button" title="@action.Name" @onclick="() => PerformActionAsync(action, item)" disabled="@NavigationDisabled">@action.Name</button>
+								@if (ShowActions) {
+									var icons = ActionStyle == BlazorGridActionStyle.Icons;
+									@foreach (var command in GetRowCommands(item)) {
+										<button type="button" class="@(icons ? "sphere10-grid-icon-button" : null)" title="@command.Name" aria-label="@(icons ? command.Name : null)"
+											@onclick="command.Execute" disabled="@NavigationDisabled">
+											@if (!icons) {
+												@command.Name
+											} else if (!string.IsNullOrEmpty(command.IconClass)) {
+												<span class="@command.IconClass" aria-hidden="true"></span>
+											} else if (command.IconPath != null) {
+												<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="16" height="16"><path d="@command.IconPath" /></svg>
+											} else if (!string.IsNullOrEmpty(command.ImageUrl)) {
+												<img src="@command.ImageUrl" alt="" />
+											} else {
+												@command.Name
+											}
+										</button>
+									}
+									@if (!icons) {
+										@foreach (var action in Actions) {
+											if (action.IsActionAvailable?.Invoke(item) ?? true) {
+												<button type="button" title="@action.Name" @onclick="() => PerformActionAsync(action, item)" disabled="@NavigationDisabled">@action.Name</button>
+											}
+										}
 									}
 								}
 							</td>
 						}
 					</tr>
+					@if (detail != null) {
+						<tr @key="detail" class="sphere10-grid-detail-row">
+							<td colspan="@ColumnCount">
+								@if (detail.Loading) {
+									<div role="status" class="sphere10-grid-detail-status">Loading details…</div>
+								} else if (detail.Error != null) {
+									<div role="alert" class="sphere10-grid-detail-status">@detail.Error</div>
+								} else if (detail.Context != null) {
+									<CascadingValue Value="detail.Path" IsFixed="true">
+										@if (DetailTemplate != null) {
+											@DetailTemplate(detail.Context)
+										} else if (detail.Context.ChildDataSource != null) {
+											<BlazorGrid TItem="TItem" DataSource="detail.Context.ChildDataSource" Columns="_columns" ShowHiddenColumns="true" AutoGenerateColumns="false"
+												Caption="Child items" PageSize="PageSize" Height="DetailHeight" PersistSettings="false"
+												AllowedCapabilities="AllowedCapabilities" GridType="GridType" Actions="Actions" AllowCellEditing="AllowCellEditing"
+												DetailTemplate="DetailTemplate" HasDetail="HasDetail" DetailIdentity="DetailIdentity" DetailHeight="DetailHeight"
+												MaximumDetailDepth="MaximumDetailDepth" MaximumExpandedDetails="MaximumExpandedDetails"
+												Density="EffectiveDensity" ActionStyle="ActionStyle" RowCommands="RowCommands" RowClick="RowClick" ItemOpened="ItemOpened"
+												OpenCommandIcon="@OpenCommandIcon" EditCommandIcon="@EditCommandIcon" DeleteCommandIcon="@DeleteCommandIcon"
+												ItemCreated="ItemCreated" ItemUpdated="ItemUpdated" ItemDeleted="ItemDeleted" />
+										}
+									</CascadingValue>
+								}
+							</td>
+						</tr>
+					}
 				}
 				@if (Controller.Items.Length == 0 && !Controller.IsNewItem) {
 					<tr><td colspan="@ColumnCount" class="sphere10-grid-empty">@(Controller.IsLoading ? string.Empty : EmptyText)</td></tr>
@@ -171,8 +252,9 @@
 			</div>
 		}
 	</div>
+	@if (ShowFooter) {
 	<div class="sphere10-grid-footer">
-		<span role="status">@(Controller.IsLoading ? "Loading…" : $"{TotalDataCount} items")</span>
+		<span role="status">@(Controller.IsLoading ? "Loading…" : TotalDataCount == 1 ? "1 item" : $"{TotalDataCount} items")</span>
 		@if (Can(DataSourceCapabilities.CanPage)) {
 			<div class="sphere10-grid-page-mode" @onkeydown="PageModeKeyDownAsync" @onkeydown:stopPropagation>
 				<button @ref="_pageModeButton" type="button" class="sphere10-grid-page-button" aria-label="Paging mode"
@@ -225,4 +307,5 @@
 			}
 		}
 	</div>
+	}
 </div>

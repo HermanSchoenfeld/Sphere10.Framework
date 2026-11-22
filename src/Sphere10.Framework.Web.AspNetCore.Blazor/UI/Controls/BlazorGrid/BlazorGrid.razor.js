@@ -30,15 +30,23 @@ export function Initialize(element, receiver, initialWidths = {}) {
 			target.style[property] = value;
 	};
 	const MeasureNaturalWidths = columns => {
-		if (element.dataset.gridAutoSize !== "true" || element.getAttribute("aria-busy") === "true"
-			|| element.querySelector(".sphere10-grid-edit-bar") || !table.tBodies[0]?.querySelector("tr[aria-selected]"))
+		if (element.dataset.gridAutoSize !== "true" || element.getAttribute("aria-busy") === "true" || element.querySelector(".sphere10-grid-edit-bar"))
 			return;
-		if (columns.every(column => naturalWidths.get(column)?.configuration === Configuration(column)))
+		// An empty result measures its headers alone, so they never break mid-word; those widths are provisional and the first
+		// nonempty result measures again.
+		const empty = !table.tBodies[0]?.querySelector("tr[aria-selected]");
+		const Measured = column => {
+			const entry = naturalWidths.get(column);
+			return entry?.configuration === Configuration(column) && (!entry.provisional || empty);
+		};
+		if (columns.every(Measured))
 			return;
 
 		// Measure a detached presentation copy once; never resize the live rows while evaluating their natural widths.
 		const probe = table.cloneNode(true);
 		probe.removeAttribute("id");
+		for (const detail of probe.querySelectorAll(".sphere10-grid-detail-row")) detail.remove();
+		for (const placeholder of probe.querySelectorAll(".sphere10-grid-empty")) placeholder.closest("tr")?.remove();
 		for (const identified of probe.querySelectorAll("[id]")) identified.removeAttribute("id");
 		Object.assign(probe.style, { position: "absolute", visibility: "hidden", pointerEvents: "none", width: "max-content", minWidth: "0", tableLayout: "auto" });
 		for (const column of probe.querySelectorAll("col")) column.style.width = "auto";
@@ -47,9 +55,16 @@ export function Initialize(element, receiver, initialWidths = {}) {
 		try {
 			const scale = table.getBoundingClientRect().width / (parseFloat(getComputedStyle(table).width) || 1);
 			const headers = probe.tHead.rows[0].cells;
+			const natural = Array.from(headers, header => Math.ceil(header.getBoundingClientRect().width / (scale || 1)));
+			// The narrowest each column can be when its text wraps between words (never inside one): a grid wider than its viewport
+			// narrows its columns towards these before it scrolls sideways. Cells keep their stylesheet white-space, so a cell that never
+			// wraps (the row command icons) keeps its full width.
+			probe.style.width = "min-content";
+			for (const cell of probe.querySelectorAll("th, td")) Object.assign(cell.style, { whiteSpace: "", overflowWrap: "normal" });
+			const narrowest = Array.from(headers, header => Math.ceil(header.getBoundingClientRect().width / (scale || 1)));
 			for (let index = 0; index < columns.length; index++) {
-				if (naturalWidths.get(columns[index])?.configuration === Configuration(columns[index])) continue;
-				naturalWidths.set(columns[index], { width: Math.ceil(headers[index].getBoundingClientRect().width / (scale || 1)), configuration: Configuration(columns[index]) });
+				if (Measured(columns[index])) continue;
+				naturalWidths.set(columns[index], { width: natural[index], minimum: Math.min(narrowest[index], natural[index]), configuration: Configuration(columns[index]), provisional: empty });
 			}
 		} finally {
 			probe.remove();
@@ -73,6 +88,24 @@ export function Initialize(element, receiver, initialWidths = {}) {
 			const natural = naturalWidths.get(column);
 			return resizedWidths.get(column)?.width ?? Math.max(configuredWidth, natural?.configuration === Configuration(column) ? natural.width : 0);
 		});
+		// Wider than the viewport: unresized columns give up width towards their word-wrapped minimum (never below it), in proportion
+		// to what each can spare; only what remains scrolls. A column the user resized keeps its width.
+		const viewportPixels = Math.floor(viewportWidth);
+		let excess = widths.reduce((total, width) => total + width, 0) - viewportPixels;
+		if (excess > 0) {
+			const floors = columns.map((column, index) => {
+				const natural = naturalWidths.get(column);
+				if (resizedWidths.has(column) || natural?.configuration !== Configuration(column) || !Number.isFinite(natural.minimum))
+					return widths[index];
+				return Math.min(widths[index], natural.minimum);
+			});
+			const spare = widths.reduce((total, width, index) => total + (width - floors[index]), 0);
+			if (spare > 0) {
+				const share = Math.min(1, excess / spare);
+				for (let index = 0; index < widths.length; index++)
+					widths[index] = Math.max(floors[index], Math.floor(widths[index] - (widths[index] - floors[index]) * share));
+			}
+		}
 		const stretches = columns.map(column => column.dataset.gridExpands === "true" && !resizedWidths.has(column));
 		const stretchCount = stretches.filter(Boolean).length;
 		const minimumWidth = widths.reduce((total, width) => total + width, 0);
@@ -94,11 +127,12 @@ export function Initialize(element, receiver, initialWidths = {}) {
 		if (!autoPageSize || element.getAttribute("aria-busy") === "true" || element.querySelector(".sphere10-grid-edit-bar"))
 			return;
 
-		const rows = Array.from(table?.tBodies[0]?.rows ?? []);
+		const rows = Array.from(table?.tBodies[0]?.rows ?? []).filter(row => !row.classList.contains("sphere10-grid-detail-row"));
 		if (!rows.length || rows[0].querySelector(".sphere10-grid-empty"))
 			return;
 		const scale = viewport.getBoundingClientRect().height / (viewport.offsetHeight || 1);
 		const available = viewport.clientHeight * scale - table.tHead.getBoundingClientRect().height - (table.caption?.getBoundingClientRect().height ?? 0);
+		// Capacity counts source rows only. An expanded detail scrolls within the viewport and never pages its own row away.
 		const heights = rows.map(row => row.getBoundingClientRect().height);
 		if (heights.some(height => height <= 0) || available <= 0)
 			return;
@@ -152,6 +186,23 @@ export function Initialize(element, receiver, initialWidths = {}) {
 		drag = { grip, columns, widths, scale, index: header.cellIndex, pointerId: event.pointerId, startX: event.clientX };
 		grip.setPointerCapture(event.pointerId);
 	};
+	// A single click on a row that opens on a click (data-grid-open-row) opens it, unless it landed on a control inside the row, which
+	// does only what that control does, or it ended a text selection. The second click of a double-click opens nothing more. Blazor's
+	// own click handler still selects the row.
+	const OnClick = event => {
+		if (event.button !== 0 || event.detail > 1)
+			return;
+		const row = event.target.closest("tr[data-grid-open-row]");
+		if (!row || row.parentElement?.parentElement !== table)
+			return;
+		const control = event.target.closest(RowControlSelector);
+		if (control && row.contains(control))
+			return;
+		const selection = window.getSelection();
+		if (selection && !selection.isCollapsed && row.contains(selection.anchorNode))
+			return;
+		receiver.invokeMethodAsync("OpenClickedRowAsync", Number(row.parentElement.dataset.gridRows), Number(row.dataset.gridOpenRow)).catch(() => {});
+	};
 	const OnPointerMove = event => {
 		if (!drag || event.pointerId !== drag.pointerId)
 			return;
@@ -177,6 +228,7 @@ export function Initialize(element, receiver, initialWidths = {}) {
 		element.removeEventListener("pointermove", OnPointerMove);
 		element.removeEventListener("pointerup", StopDrag);
 		element.removeEventListener("pointercancel", StopDrag);
+		element.removeEventListener("click", OnClick);
 	};
 	const resizeObserver = new ResizeObserver(entries => {
 		let measurementPending = false;
@@ -207,6 +259,7 @@ export function Initialize(element, receiver, initialWidths = {}) {
 	element.addEventListener("pointermove", OnPointerMove);
 	element.addEventListener("pointerup", StopDrag);
 	element.addEventListener("pointercancel", StopDrag);
+	element.addEventListener("click", OnClick);
 
 	// Blazor calls Update after rendering; geometry changes are coalesced into the next animation frame.
 	return {
@@ -232,6 +285,12 @@ export function Initialize(element, receiver, initialWidths = {}) {
 		Dispose
 	};
 }
+
+// The controls inside a row whose clicks never open it: the row commands, the detail toggle, editors, links, buttons and other
+// interactive elements of cell templates, and anything a template marks with data-grid-no-open.
+const RowControlSelector = "a[href], button, input, select, textarea, label, summary, [contenteditable]:not([contenteditable='false']), "
+	+ "[role='button'], [role='link'], [role='checkbox'], [role='switch'], [role='menuitem'], [role='tab'], [data-grid-no-open], "
+	+ ".sphere10-grid-actions, .sphere10-grid-detail-toggle, .sphere10-grid-editor";
 
 // Reads an existing legacy value only; current preferences are saved through UserSettings.
 export function ReadLegacySettings(key) {

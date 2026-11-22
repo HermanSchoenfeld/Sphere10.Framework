@@ -103,6 +103,7 @@ The component gallery binds one grid value per role inside its nested `GallerySe
 | `/`, `/application` | Workspace / Overview | Retained counter, single/multiple screen instances, explicit switching guards and scoped actions. |
 | `/patterns/cards` | Application patterns / Cards & collections | Artwork cards, shared searchable/paged data source, table selection, keyed retained editors and Save/Discard guards. |
 | `/patterns/menus` | Application patterns / Menus & commands | Merged File/Tools, nested Export, enabled/hidden commands and preview dialogs. |
+| `/patterns/records` | Application patterns / Power-user records | Icon toolbar, File and Product menus, a compact grid with icon row commands and a reload icon, and a detail panel bound to the selection in a split container. |
 | `/patterns/wizards` | Application patterns / Guided workflows | The same validated conditional workflow in an embedded host or a dialog, with a preset detour and review. |
 | `/patterns/themes` | Application patterns / Theme studio | All catalogue presets applied to a complete dashboard, selectable chart, editable form and dialog. |
 | `/components/grid`, `/modern` | Component gallery / Visual grid | Buffered editing, validation, reference selection and async row actions. |
@@ -127,7 +128,7 @@ The single [Workspace.razor](Application/Workspace.razor) route component handle
 | [Layouts/DemoNavigation.cs](Layouts/DemoNavigation.cs) | Compatibility URL mappings and header search over the actual registered application screens. |
 | [Pages](Pages) | Component content reused by hosted screens. |
 | [Modern/UI/Index.razor](Modern/UI/Index.razor) | Grid content and related-demo links, hosted by ComponentScreen. |
-| [Demos/GridDemo.razor](Demos/GridDemo.razor) | Editable CRUD/reference grid plus an independent live-snapshot workspace for paging, retained column layout, no-indicator refresh, row refresh/removal and filtered export. |
+| [Demos/GridDemo.razor](Demos/GridDemo.razor) | Editable CRUD/reference grid plus an independent live-snapshot workspace for paging, retained column layout, no-indicator refresh, row refresh/removal and filtered export, and a grid whose rows open on a single click (`RowClick` Open). |
 | [Modern/UI/Controls/GridDemoDataSource.cs](Modern/UI/Controls/GridDemoDataSource.cs) | Local immutable sample rows in a `ListDataSource`, with no native collection or external services. |
 | [Modern/UI/Controls/GridDemoRefreshableDataSource.cs](Modern/UI/Controls/GridDemoRefreshableDataSource.cs) | `RefreshableDataSourceBase` over the sample rows. It publishes the next revision of every row with stable IDs, and a polling decorator supplies the live cadence. |
 | [Demos/TablesDemo.razor](Demos/TablesDemo.razor), [Demos/DialogsDemo.razor](Demos/DialogsDemo.razor), [Demos/WizardsDemo.razor](Demos/WizardsDemo.razor) | Reusable examples rendered inside registered application screens. |
@@ -301,7 +302,7 @@ The URL carries the active screen's `block`, `screen` and `instance` query value
 
 ## Wizard walkthrough
 
-Open `/widget-gallery/wizards` for the original widget wizard or `/components/wizards` for the wallet example. **Allow cancellation** is checked before opening either wizard. Clearing it creates a wizard with `WithCancellation(false)`: Cancel and the header close button are hidden, and Escape keeps the wizard open. Complete the wizard to leave this mode. A step may also opt out through `IsCancellable`; an application `OnCancelled` callback can still reject cancellation and display a specific validation message.
+Open `/widget-gallery/wizards` for the original widget wizard or `/components/wizards` for the wallet example. **Allow cancellation** is checked before opening either wizard. Clearing it creates a wizard with `WithCancellation(false)`: Cancel and the header close button are hidden, and Escape or a click outside keeps the wizard open. Complete the wizard to leave this mode. With cancellation allowed, the wallet wizard's close button cancels it directly, while a click outside it or Escape first asks "Are you sure you want to close?", where No returns to the wizard with its entries. The original widget wizard still closes on either without asking. A step may also opt out through `IsCancellable`; an application `OnCancelled` callback can still reject cancellation and display a specific validation message.
 
 In **New Widget**, try Next with empty fields to see validation. Enter Name, Description and a positive Price. Select **Supply dimensions**, continue to Height and Length, then use Back to change the selection. The following steps update without duplicating the dimensions page. The summary offers Finish; only Finish adds a row to the example's table. Cancel or closing a cancellable wizard discards its unfinished model.
 
@@ -323,7 +324,7 @@ builder.NewWizard("New record")
 	.Build();
 ```
 
-`WizardBrowserTests` executes both demos through required-field validation, non-cancellable Escape handling, completion, cancellable reopening and focus restoration. `ApplicationTabsBrowserTests` exercises singleton reuse, independent instance IDs/state, per-instance switching locks, tabs, command merging and screen modes.
+`WizardBrowserTests` executes both demos through required-field validation, non-cancellable Escape and outside-click handling, completion, cancellable reopening and focus restoration. It also takes the wallet wizard through the close question raised by a click outside and by Escape, answered No and Yes, and through its close button. `ApplicationTabsBrowserTests` exercises singleton reuse, independent instance IDs/state, per-instance switching locks, tabs, command merging and screen modes.
 
 `WizardCancellationTests` verifies default/disabled cancellation, step policies, guarded Cancel/close requests and branching. Browser verification should additionally check keyboard dismissal, field and checkbox sizing, footer wrapping and navigation while a dialog is open.
 
@@ -343,7 +344,7 @@ dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framew
 
 The [test guide](../../tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/README.md) describes controller, conversion, rendering, source and interop coverage. `HtmlRenderer` tests inspect markup and managed callbacks. Complete the grid walkthrough in a real browser when changing interactions, keyboard behavior, layout or JavaScript; fake interop tests do not execute DOM code.
 
-The active host uses import maps and fingerprinted static assets. Grid styles come through the host styles bundle; the grid imports its collocated JavaScript module on demand. Modal hosts import an isolated module. The active host loads bundled Bootstrap base styles from `wwwroot/vendor/bootstrap` and the shared theme system. Archived admin/modern stylesheets remain inactive migration references.
+The active host uses import maps and fingerprinted static assets. Grid styles come through the host styles bundle; the grid imports its collocated JavaScript module on demand. Modal hosts import an isolated module. The active host loads bundled Bootstrap base styles from `wwwroot/vendor/bootstrap` and the shared theme system. `App.razor` also loads Font Awesome Free 5.15 from `wwwroot/modern/css/icons.css` with its fonts in `wwwroot/modern/fonts`; the `fas fa-*` classes of the menu, toolbar and grid row commands come from it, because the library ships no icon font. Archived admin/modern stylesheets remain inactive migration references.
 
 ### Browser checks for the common shell
 

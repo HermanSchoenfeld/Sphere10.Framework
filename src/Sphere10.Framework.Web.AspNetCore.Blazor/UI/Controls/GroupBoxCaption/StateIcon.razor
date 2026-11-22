@@ -1,0 +1,35 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+
+@* A state shown as an icon in a fixed slot, such as a padlock while a record is locked, instead of a text label. The slot keeps its
+   size while the state is off, so showing or hiding the icon never moves anything beside it. *@
+@if (Shown) {
+	<span class="@SlotClass" role="img" title="@Text" aria-label="@Text" data-state-shown="true"><span class="@Icon" aria-hidden="true"></span></span>
+} else {
+	<span class="@SlotClass" aria-hidden="true" data-state-shown="false"></span>
+}
+
+@code {
+	/// <summary>The icon's CSS classes from the host's icon set, such as "fas fa-lock".</summary>
+	[Parameter, EditorRequired] public string Icon { get; set; }
+
+	/// <summary>Whether the state holds; while it does not, the empty slot keeps its place.</summary>
+	[Parameter] public bool Shown { get; set; }
+
+	/// <summary>The state's name, such as "Locked": the icon's tooltip and accessible name.</summary>
+	[Parameter, EditorRequired] public string Text { get; set; }
+
+	/// <summary>Additional classes for the slot, for example a colour.</summary>
+	[Parameter] public string Class { get; set; }
+
+	private string SlotClass => "sphere10-state-icon" + (string.IsNullOrWhiteSpace(Class) ? null : " " + Class);
+}
