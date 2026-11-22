@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
@@ -29,19 +30,21 @@ public class WindowsWindowLayeringTests {
 		sprite.Show();
 		fadingPopup.Show();
 		var references = new[] { host.Handle };
+		// Global enumeration also sees independent desktop overlays; these assertions cover every fixture-owned window.
+		var owned = new[] { host.Handle, sprite.Handle, fadingPopup.Handle };
 
 		Assert.That(WindowsWindowLayering.IsPassiveOverlay(sprite.Handle), Is.True);
 		Assert.That(WindowsWindowLayering.IsPassiveOverlay(fadingPopup.Handle), Is.False, "A layered window that still takes input is not a passive overlay.");
-		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references), Is.EqualTo(new[] { sprite.Handle }));
+		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references).Where(owned.Contains), Is.EqualTo(new[] { sprite.Handle }));
 
 		// Promoting the reference above the sprite must stop reporting it; excluding it would hide it beneath the reference.
 		Assert.That(WinAPI.USER32.SetWindowPos(host.Handle, WinAPI.USER32.HWND_TOPMOST, 0, 0, 0, 0, WinAPI.USER32.SetWindowPosFlags.SWP_NOMOVE | WinAPI.USER32.SetWindowPosFlags.SWP_NOSIZE | WinAPI.USER32.SetWindowPosFlags.SWP_NOACTIVATE), Is.True);
-		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references), Is.Empty);
+		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references).Where(owned.Contains), Is.Empty);
 
 		Assert.That(WinAPI.USER32.SetWindowPos(sprite.Handle, WinAPI.USER32.HWND_TOPMOST, 0, 0, 0, 0, WinAPI.USER32.SetWindowPosFlags.SWP_NOMOVE | WinAPI.USER32.SetWindowPosFlags.SWP_NOSIZE | WinAPI.USER32.SetWindowPosFlags.SWP_NOACTIVATE), Is.True);
-		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references), Is.EqualTo(new[] { sprite.Handle }));
+		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references).Where(owned.Contains), Is.EqualTo(new[] { sprite.Handle }));
 		sprite.Hide();
-		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references), Is.Empty, "Hidden overlays are not captured and need no exclusion.");
+		Assert.That(WindowsWindowLayering.GetPassiveOverlaysAbove(references).Where(owned.Contains), Is.Empty, "Hidden overlays are not captured and need no exclusion.");
 	}
 
 	[Test]

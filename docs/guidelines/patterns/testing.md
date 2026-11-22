@@ -44,9 +44,22 @@ in [its NUnit 4 guidance](https://docs.nunit.org/articles/nunit/Towards-NUnit4.h
 
 Test changed behavior and contracts, including material rejection, cancellation, ownership and completion paths. Avoid tests that mirror private implementation details or only repeat assignments. Run affected fixtures and required checks; broaden or repeat for a new change, failure or unresolved concern, and report what actually ran. Keep opt-in live-service integration fixtures distinct from ordinary unit/integration coverage.
 
+Serialize separate test processes that share the native desktop, global input or
+clipboard. Headless browser fixtures that use the real clipboard require the same
+exclusive access; a separate browser context does not isolate that system resource.
+
 See [sync/async hierarchies](sync-async.md) for opposite-direction adapter checks and [application ownership](application-ownership.md) for lifecycle and cleanup contracts. New test source files follow [Code Styling](../code-styling.md).
 
 ## WinForms UI test contexts
+
+Desktop enumeration fixtures must identify the windows they own. A query for
+global overlays can correctly return a user's running application's windows in
+addition to the fixture's windows. Assert the fixture-owned subset when testing
+its ordering or visibility transitions, preserving positive and negative checks.
+Do not stop other applications or change the production query to make the desktop
+look empty. Likewise, derive read-only security expectations from the actual host
+instead of assuming an administrator group has no members. Elevation-dependent
+tests retain their explicit prerequisites.
 
 `[Apartment(ApartmentState.STA)]` selects the apartment; it does not provide a UI
 dispatcher or guarantee that an awaited continuation returns to the constructing

@@ -11,6 +11,7 @@ using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Security;
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Principal;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 namespace Sphere10.Framework.UnitTests;
@@ -1091,7 +1092,9 @@ public class WindowsSecurityTests {
 		NTLocalGroup group = GetObjectByName(localGroups, "Administrators");
 		NTLocalObject[] members = group.GetLocalMembers();
 		Assert.That(members, Is.Not.Null);
-		Assert.That(members, Is.Empty);
+		// This fixture addresses the same machine by name; its real group membership must agree with the local query.
+		var localGroup = GetObjectByName(NTHost.CurrentMachine.GetLocalGroups(), "Administrators");
+		Assert.That(members.Select(member => member.SID), Is.EquivalentTo(localGroup.GetLocalMembers().Select(member => member.SID)));
 	}
 
 

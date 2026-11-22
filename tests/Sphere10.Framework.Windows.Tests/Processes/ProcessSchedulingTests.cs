@@ -30,7 +30,11 @@ public class ProcessSchedulingTests {
 		Assert.That(metadata.Architecture, Is.Not.Empty);
 		Assert.That(metadata.UserSid, Does.StartWith("S-1-"));
 		Assert.That(metadata.IntegritySid, Does.StartWith("S-1-16-"));
-		Assert.That(metadata.Mitigations, Has.Length.EqualTo(14));
+		Assert.That(metadata.Mitigations.Select(policy => policy.Name), Is.EquivalentTo(new[] {
+			"DEP", "ASLR", "Dynamic Code", "Strict Handles", "System Calls", "Extension Points", "Control Flow Guard",
+			"Binary Signatures", "Fonts", "Image Loading", "System Call Filter", "Payload Restrictions", "Child Processes",
+			"Side Channels", "User Shadow Stack", "Redirection Trust", "User Pointer Authentication", "SEHOP"
+		}));
 		Assert.That(metadata.Mitigations.All(policy => policy.Flags.HasValue || policy.Error.HasValue), Is.True);
 		var original = await ProcessSchedulingService.ReadAsync(identity);
 		Assert.That(original.AffinityMask, Is.GreaterThan(0));
