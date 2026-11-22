@@ -89,6 +89,11 @@ public static partial class Windows {
 
 		public static Task<WindowsPrinterInfo[]> GetPrintersAsync(CancellationToken cancellationToken = default) => WindowsComputer.GetPrintersAsync(cancellationToken);
 
+		/// <summary>Reads the installed Windows product, its build and its product keys from the registry and the firmware.</summary>
+		public static WindowsProductInfo GetProductInfo() => WindowsProductKeys.Read();
+
+		public static Task<WindowsProductInfo> GetProductInfoAsync(CancellationToken cancellationToken = default) => WindowsProductKeys.ReadAsync(cancellationToken);
+
 		public static void Rename(string expectedCurrentName, string newName) => WindowsComputer.Rename(expectedCurrentName, newName);
 
 		public static Task RenameAsync(string expectedCurrentName, string newName, CancellationToken cancellationToken = default) => WindowsComputer.RenameAsync(expectedCurrentName, newName, cancellationToken);
