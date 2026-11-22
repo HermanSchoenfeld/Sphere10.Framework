@@ -31,9 +31,10 @@ public class VeryLargeSQLBuilder : SQLBuilderDecorator, IDisposable {
 	}
 
 	public override ICollection<SQLStatement> CreateContainerForStatements() {
+		// One page of statements stays in memory; the rest swap to temporary files.
 		var container = new LargeCollection<SQLStatement>(
 			_pageSize,
-			1,
+			_pageSize,
 			statement => sizeof(SQLStatementType) + statement.SQL.Length * sizeof(char)
 		);
 		//objectStream.PageSwapped += (statements, oldPage, newPage) =>
