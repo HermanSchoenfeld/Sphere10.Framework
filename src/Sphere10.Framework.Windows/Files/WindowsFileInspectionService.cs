@@ -37,7 +37,7 @@ public class WindowsFileInspectionService {
 			checkpoint?.Invoke();
 			hasher.Transform(buffer.AsSpan(0, count));
 		}
-		var hash = Convert.ToHexString(hasher.GetResult());
+		var hash = hasher.GetResult().ToHexString(true).ToUpperInvariant();
 		stream.Position = 0;
 		var version = FileVersionInfo.GetVersionInfo(path);
 		checkpoint?.Invoke();

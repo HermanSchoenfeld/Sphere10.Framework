@@ -213,7 +213,7 @@ public class RecordedWorkerIdentityTests {
 		}
 		foreach (var path in local) {
 			Assert.That(new FileInfo(path).Length, Is.EqualTo(item.GetProperty("Length").GetInt64()));
-			Assert.That(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))), Is.EqualTo(StringValue(item, "Sha256")).IgnoreCase);
+			Assert.That(SHA256.HashData(File.ReadAllBytes(path)).ToHexString(true).ToUpperInvariant(), Is.EqualTo(StringValue(item, "Sha256")).IgnoreCase);
 			if (assembly && item.GetProperty("ModuleVersionId").ValueKind == JsonValueKind.String) {
 				using var stream = File.OpenRead(path);
 				using var reader = new PEReader(stream);

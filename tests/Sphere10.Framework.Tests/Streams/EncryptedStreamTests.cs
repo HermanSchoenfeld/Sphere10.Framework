@@ -19,10 +19,10 @@ namespace Sphere10.Framework.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class EncryptedStreamTests {
-	private static readonly byte[] _initialCounter = Convert.FromHexString("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
-	private static readonly byte[] _plaintext = Convert.FromHexString("6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e5130c81c46a35ce411e5fbc1191a0a52eff69f2445df4f9b17ad2b417be66c3710");
-	private static readonly byte[] _key = Convert.FromHexString("2b7e151628aed2a6abf7158809cf4f3c");
-	private static readonly byte[] _ciphertext = Convert.FromHexString("874d6191b620e3261bef6864990db6ce9806f66b7970fdff8617187bb9fffdff5ae4df3edbd5d35e5b4f09020db03eab1e031dda2fbe03d1792170a0f3009cee");
+	private static readonly byte[] _initialCounter = "f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff".ToHexByteArray();
+	private static readonly byte[] _plaintext = "6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e5130c81c46a35ce411e5fbc1191a0a52eff69f2445df4f9b17ad2b417be66c3710".ToHexByteArray();
+	private static readonly byte[] _key = "2b7e151628aed2a6abf7158809cf4f3c".ToHexByteArray();
+	private static readonly byte[] _ciphertext = "874d6191b620e3261bef6864990db6ce9806f66b7970fdff8617187bb9fffdff5ae4df3edbd5d35e5b4f09020db03eab1e031dda2fbe03d1792170a0f3009cee".ToHexByteArray();
 
 	// NIST SP 800-38A, appendix F.5: independent AES-128/192/256 CTR known-answer vectors.
 	[TestCase("2b7e151628aed2a6abf7158809cf4f3c", "874d6191b620e3261bef6864990db6ce9806f66b7970fdff8617187bb9fffdff5ae4df3edbd5d35e5b4f09020db03eab1e031dda2fbe03d1792170a0f3009cee")]
@@ -30,9 +30,9 @@ public class EncryptedStreamTests {
 	[TestCase("603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4", "601ec313775789a5b7a7f504bbf3d228f443e3ca4d62b59aca84e990cacaf5c52b0930daa23de94ce87017ba2d84988ddfc9c58db67aada613c2dd08457941a6")]
 	public void MatchesPublishedVectors(string keyHex, string ciphertextHex) {
 		using var storage = new MemoryStream();
-		using var stream = CreateStream(storage, Convert.FromHexString(keyHex), _initialCounter, leaveOpen: true);
+		using var stream = CreateStream(storage, keyHex.ToHexByteArray(), _initialCounter, leaveOpen: true);
 		stream.Write(_plaintext);
-		Assert.That(storage.ToArray(), Is.EqualTo(Convert.FromHexString(ciphertextHex)));
+		Assert.That(storage.ToArray(), Is.EqualTo(ciphertextHex.ToHexByteArray()));
 		stream.Position = 0;
 		var result = new byte[_plaintext.Length];
 		stream.ReadExactly(result);

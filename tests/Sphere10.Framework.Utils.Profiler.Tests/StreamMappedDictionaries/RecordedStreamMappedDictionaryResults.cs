@@ -129,7 +129,7 @@ public class RecordedStreamMappedDictionaryResults {
 			var path = ResolveRelative(directory, capture.Key);
 			Assert.That(File.Exists(path), Is.True, "A present campaign must retain every declared raw capture.");
 			Assert.That(capture.Value, Does.Match(HashPattern.ToString()));
-			Assert.That(Convert.ToHexString(Hashers.Hash(CHF.SHA2_256, File.ReadAllBytes(path))), Is.EqualTo(capture.Value).IgnoreCase);
+			Assert.That(Hashers.Hash(CHF.SHA2_256, File.ReadAllBytes(path)).ToHexString(true).ToUpperInvariant(), Is.EqualTo(capture.Value).IgnoreCase);
 			TestContext.AddTestAttachment(path, "Original raw capture with verified SHA256");
 			documents.Add(capture.Key, XDocument.Load(path));
 		}

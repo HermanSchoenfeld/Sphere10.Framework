@@ -497,8 +497,7 @@ public static class StringExtensions {
 			return Regex.Replace(@string,
 				@"[^\u0021\u0023-\u0025\u0028-\u003B\u003D\u003F-\u005B\u005D-\u007E]",
 				new MatchEvaluator(delegate(Match match) {
-					byte[] bb = Encoding.Unicode.GetBytes(match.Value);
-					return String.Format(@"\u{0}{1}", bb[1].ToString("x2"), bb[0].ToString("x2"));
+					return @"\u" + Encoding.BigEndianUnicode.GetBytes(match.Value).ToHexString(true);
 				}));
 		}
 	}

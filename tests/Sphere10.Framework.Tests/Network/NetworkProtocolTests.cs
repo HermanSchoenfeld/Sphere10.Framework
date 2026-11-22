@@ -25,7 +25,7 @@ public sealed class NetworkProtocolTests {
 		Assert.That(message.Questions.Single().Name, Is.EqualTo("example.com"));
 		Assert.That(message.Records.Single().Value, Is.EqualTo("192.0.2.1"));
 		Assert.That(message.Records.Single().TimeToLiveSeconds, Is.EqualTo(60));
-		Assert.That(Tools.Network.TryDecodeDnsMessage(Convert.FromHexString("123401000001000000000000C00C00010001"), out _), Is.False, "A cyclic/self name pointer cannot be projected as a name.");
+		Assert.That(Tools.Network.TryDecodeDnsMessage("123401000001000000000000C00C00010001".ToHexByteArray(), out _), Is.False, "A cyclic/self name pointer cannot be projected as a name.");
 	}
 
 	[Test]
@@ -52,7 +52,7 @@ public sealed class NetworkProtocolTests {
 		}
 	}
 
-	public static byte[] DnsResponse() => Convert.FromHexString("123481800001000100000000076578616D706C6503636F6D0000010001C00C000100010000003C0004C0000201");
+	public static byte[] DnsResponse() => "123481800001000100000000076578616D706C6503636F6D0000010001C00C000100010000003C0004C0000201".ToHexByteArray();
 
 	public static byte[] ClientHello() {
 		static byte[] U16(int value) => EndianBitConverter.Big.GetBytes((ushort)value);

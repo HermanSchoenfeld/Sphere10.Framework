@@ -38,7 +38,7 @@ public sealed record WindowsMonitorEdid {
 			DigitalInput = valid ? (bytes[20] & 128) != 0 : null, WidthCm = width, HeightCm = height,
 			Gamma = valid && bytes[23] != 255 ? (bytes[23] + 100) / 100.0 : null,
 			DiagonalInches = width.HasValue ? Math.Sqrt(width.Value * width.Value + height.Value * height.Value) / 2.54 : null,
-			RawHex = Convert.ToHexString(bytes)
+			RawHex = bytes.ToHexString(true).ToUpperInvariant()
 		};
 	}
 }

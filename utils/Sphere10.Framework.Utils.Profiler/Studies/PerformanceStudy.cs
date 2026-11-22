@@ -136,7 +136,7 @@ public static class PerformanceStudy {
 			Runtime = RuntimeInformation.FrameworkDescription, LogicalProcessors = Environment.ProcessorCount, Processor = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"),
 			HasAttachedDebugger = Debugger.IsAttached, Configuration = "Release", Assemblies = new[] { typeof(PerformanceStudy).Assembly, typeof(Sphere10FrameworkDefaults).Assembly }
 				.Select(assembly => new { Name = assembly.GetName().Name, Version = assembly.GetName().Version.ToString(), ModuleVersionId = assembly.ManifestModule.ModuleVersionId,
-					Sha256 = Convert.ToHexString(Hashers.Hash(CHF.SHA2_256, File.ReadAllBytes(assembly.Location))) }).ToArray(),
+					Sha256 = Hashers.Hash(CHF.SHA2_256, File.ReadAllBytes(assembly.Location)).ToHexString(true).ToUpperInvariant() }).ToArray(),
 			Stopwatch.Frequency, CommandArguments = commandArguments, ProcessId = Environment.ProcessId, Stage = plan.Stage,
 			Method = "Synchronous owner-thread Stopwatch batches, deterministic shuffled profile order each round, independent baseline restoration, verification outside timing. No forced GC or outlier removal.",
 			Caveats = new[] { "One process per study; shared JIT/GC/OS caches. Screening requires independent-process BenchmarkDotNet confirmation.",

@@ -41,10 +41,11 @@ public static class AlternateDataStreamContent {
 		if (TryDecode(bytes.AsSpan(0, limit), limit >= total, out var text, out var bom))
 			return summary + $"UTF-8{(bom ? " with BOM" : string.Empty)}\r\n\r\n" + text;
 		var output = new StringBuilder(summary).AppendLine("Binary / non-UTF-8: hexadecimal bytes").AppendLine();
+		var hex = bytes.AsSpan(0, limit).ToArray().ToHexString(true).ToUpperInvariant();
 		for (var offset = 0; offset < limit; offset += 16) {
 			output.Append(offset.ToString("X8")).Append("  ");
 			for (var index = offset; index < Math.Min(limit, offset + 16); index++)
-				output.Append(bytes[index].ToString("X2")).Append(' ');
+				output.Append(hex, index * 2, 2).Append(' ');
 			output.AppendLine();
 		}
 		return output.ToString();

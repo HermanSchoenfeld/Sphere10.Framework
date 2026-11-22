@@ -67,7 +67,7 @@ public class BTreeNodeIoPerformanceTests {
 				if (sample >= 0)
 					samples.Add(new {
 						Sample = sample, Workload = workload, AllocatedBytes = allocatedBytes, ElapsedTicks = elapsedTicks,
-						StreamBytes = stream.Length, StorageSha256 = Convert.ToHexString(Hashers.Hash(CHF.SHA2_256, stream.GetBuffer().AsSpan(0, (int)stream.Length)))
+						StreamBytes = stream.Length, StorageSha256 = Hashers.Hash(CHF.SHA2_256, stream.GetBuffer().AsSpan(0, (int)stream.Length)).ToHexString(true).ToUpperInvariant()
 					});
 			}
 		}

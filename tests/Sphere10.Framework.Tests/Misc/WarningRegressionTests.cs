@@ -20,7 +20,7 @@ public class WarningRegressionTests {
 	[Test]
 	public void LegacyPasswordDerivationIsCompatible() {
 		var key = PBKDF2.DeriveKey("warning-test-password", Encoding.UTF8.GetBytes("salt1234"), 1000, 32);
-		Assert.That(Convert.ToHexString(key), Is.EqualTo("809B544CAE95FCB09A6648D2E2FA4504D92140B009A33EE3DA9E221FE11CA17C"));
+		Assert.That(key.ToHexString(true).ToUpperInvariant(), Is.EqualTo("809B544CAE95FCB09A6648D2E2FA4504D92140B009A33EE3DA9E221FE11CA17C"));
 	}
 
 	[TestCase(0)]

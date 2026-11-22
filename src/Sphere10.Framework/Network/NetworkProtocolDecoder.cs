@@ -55,7 +55,7 @@ internal static class NetworkProtocolDecoder {
 					at += length;
 				}
 				value = text.Length > 1024 ? text.ToString(0, 1024) + "… (Text Preview Limited)" : text.ToString();
-			} else value = "Raw: " + Convert.ToHexString(data.Slice(offset, Math.Min(size, (ushort)256))) + (size > 256 ? "… (Raw Prefix; Packet Retains Full RDATA)" : string.Empty);
+			} else value = "Raw: " + data.Slice(offset, Math.Min(size, (ushort)256)).ToArray().ToHexString(true).ToUpperInvariant() + (size > 256 ? "… (Raw Prefix; Packet Retains Full RDATA)" : string.Empty);
 			records.Add(new DnsResourceRecord(index < answers ? "Answer" : index < answers + authority ? "Authority" : "Additional",
 				name, type, recordClass, ttl, size, value));
 			offset = next;

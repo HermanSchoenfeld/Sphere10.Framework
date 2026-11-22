@@ -156,7 +156,7 @@ public class RetainedPerformanceReportTests {
 		=> Directory.GetFiles(directory, "*", SearchOption.AllDirectories).OrderBy(path => path, StringComparer.Ordinal).Select(path => {
 			var file = new FileInfo(path);
 			return Path.GetRelativePath(directory, path) + "|" + file.Length.ToString(CultureInfo.InvariantCulture) + "|"
-				+ file.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) + "|" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
+				+ file.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) + "|" + SHA256.HashData(File.ReadAllBytes(path)).ToHexString(true).ToUpperInvariant();
 		}).ToArray();
 
 	// Test arrangement and cleanup use a GUID-owned temporary directory. Only the report operation is asserted to be read-only.

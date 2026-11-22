@@ -66,7 +66,7 @@ public class WindowsDisplayTests {
 		Checksum(bytes);
 		var edid = WindowsMonitorEdid.Parse(bytes);
 		Assert.That(edid.Complete, Is.False);
-		Assert.That(edid.RawHex, Is.EqualTo(Convert.ToHexString(bytes)));
+		Assert.That(edid.RawHex, Is.EqualTo(bytes.ToHexString(true).ToUpperInvariant()));
 	}
 
 	[Test]

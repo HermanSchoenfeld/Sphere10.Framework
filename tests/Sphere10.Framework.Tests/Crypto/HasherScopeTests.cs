@@ -74,7 +74,7 @@ public class HasherScopeTests {
 		firstScope.Dispose();
 		using var nextScope = Hashers.EnterBorrowHasherScope(CHF.SHA2_256, out var next);
 		Assert.That(next, Is.SameAs(first));
-		Assert.That(next.GetResult(), Is.EqualTo(System.Convert.FromHexString("E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855")));
+		Assert.That(next.GetResult(), Is.EqualTo("E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855".ToHexByteArray()));
 	}
 
 	[Test]
@@ -99,10 +99,10 @@ public class HasherScopeTests {
 		Assert.That(() => stream.WriteByte(7), Throws.TypeOf<ObjectDisposedException>());
 		Assert.That(() => stream.GetDigest(), Throws.TypeOf<ObjectDisposedException>());
 		first.Transform("ab"u8);
-		Assert.That(second.GetResult(), Is.EqualTo(System.Convert.FromHexString("E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855")));
+		Assert.That(second.GetResult(), Is.EqualTo("E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855".ToHexByteArray()));
 		first.Transform("c"u8);
 		Assert.That(first.GetResult(), Is.EqualTo(AbcDigest));
 	}
 
-	private static byte[] AbcDigest => System.Convert.FromHexString("BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD");
+	private static byte[] AbcDigest => "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD".ToHexByteArray();
 }

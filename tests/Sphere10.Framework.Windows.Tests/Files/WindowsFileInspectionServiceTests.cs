@@ -36,7 +36,7 @@ public class WindowsFileInspectionServiceTests {
 				var result = await service.InspectAsync(path);
 				Assert.That(result.Path, Is.EqualTo(path));
 				Assert.That(result.SizeBytes, Is.EqualTo(contents.Length));
-				Assert.That(result.Sha256, Is.EqualTo(Convert.ToHexString(SHA256.HashData(contents))));
+				Assert.That(result.Sha256, Is.EqualTo(SHA256.HashData(contents).ToHexString(true).ToUpperInvariant()));
 				Assert.That(result.TrustStatus, Is.EqualTo(WinAPI.WINTRUST.TRUST_E_NOSIGNATURE).Or.EqualTo(WinAPI.WINTRUST.TRUST_E_SUBJECT_FORM_UNKNOWN));
 				Assert.That(result.Signer, Is.Empty);
 			}

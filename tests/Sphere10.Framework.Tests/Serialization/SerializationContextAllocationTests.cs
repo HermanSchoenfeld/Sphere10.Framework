@@ -131,7 +131,7 @@ public class SerializationContextAllocationTests {
 		Assert.That(result.First, Is.SameAs(result.Second));
 		Assert.That(result.First, Is.Not.SameAs(result.Third));
 		Assert.That(result.Third, Is.EqualTo(shared));
-		TestContext.WriteLine($"Reference graph bytes (mixed context={mixedContext}): {Convert.ToHexString(bytes)}");
+		TestContext.WriteLine($"Reference graph bytes (mixed context={mixedContext}): {bytes.ToHexString(true).ToUpperInvariant()}");
 	}
 
 	[Test]
