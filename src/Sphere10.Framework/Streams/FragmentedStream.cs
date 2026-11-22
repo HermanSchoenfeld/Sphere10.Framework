@@ -16,10 +16,13 @@ namespace Sphere10.Framework;
 /// <summary>
 /// A stream implementation that connects multiple disparate byte fragments into one logical stream. The fragments are managed through a <see cref="IStreamFragmentProvider"/>.
 /// </summary>
-/// <remarks>Array and single-byte operations delegate to the corresponding virtual span overload.</remarks>
+/// <remarks>Array and single-byte operations delegate to the corresponding virtual span overload. Positions and lengths are 64-bit. As with other
+/// seekable streams, the position may lie past the end: reading there returns nothing, and writing extends the stream, the gap reading as zeros.
+/// <see cref="Flush"/> commits what the provider buffers, and disposal releases the provider.</remarks>
 public class FragmentedStream : Stream {
 
 	private long _position;
+	private bool _disposed;
 
 	public FragmentedStream(IStreamFragmentProvider fragmentProvider)
 		: this(fragmentProvider, fragmentProvider?.TotalBytes ?? 0) {
@@ -35,26 +38,33 @@ public class FragmentedStream : Stream {
 
 	public IStreamFragmentProvider FragmentProvider { get; }
 
-	public override bool CanRead => true;
+	public override bool CanRead => !_disposed;
 
-	public override bool CanSeek => true;
+	public override bool CanSeek => !_disposed;
 
-	public override bool CanWrite => true;
+	public override bool CanWrite => !_disposed;
 
-	public override long Length => StreamLength;
+	public override long Length {
+		get {
+			EnsureOpen();
+			return StreamLength;
+		}
+	}
 
 	public long StreamLength { get; private set; }
 
 	public override long Position {
 		get => _position;
 		set {
-			Guard.ArgumentInRange(value, 0, Length, "Value");
+			EnsureOpen();
+			Guard.ArgumentNotNegative(value, nameof(value));
 			_position = value;
 		}
 	}
 
 	public override void SetLength(long value) {
-		Guard.ArgumentInRange(value, 0, int.MaxValue, nameof(value));
+		EnsureOpen();
+		Guard.ArgumentNotNegative(value, nameof(value));
 		FragmentProvider.SetTotalBytes(value);
 
 		if (Position > value)
@@ -63,24 +73,16 @@ public class FragmentedStream : Stream {
 	}
 
 	public override long Seek(long offset, SeekOrigin origin) {
-		switch (origin) {
-			case SeekOrigin.Begin:
-				Guard.ArgumentInRange(offset, 0, Math.Max(0, Length), nameof(offset));
-				Position = offset;
-				break;
-
-			case SeekOrigin.Current:
-				Guard.ArgumentInRange(offset, -Position, Math.Max(0, Length - Position), nameof(offset));
-				Position += offset;
-				break;
-
-			case SeekOrigin.End:
-				Guard.ArgumentInRange(offset, -Length, 0, nameof(offset));
-				Position = Length + offset;
-				break;
-		}
-
-		return Position;
+		EnsureOpen();
+		var position = origin switch {
+			SeekOrigin.Begin => offset,
+			SeekOrigin.Current => checked(Position + offset),
+			SeekOrigin.End => checked(Length + offset),
+			_ => throw new ArgumentOutOfRangeException(nameof(origin))
+		};
+		if (position < 0)
+			throw new IOException("Cannot seek before the start of a stream.");
+		return Position = position;
 	}
 
 	public override int ReadByte() {
@@ -101,6 +103,7 @@ public class FragmentedStream : Stream {
 	}
 
 	public override int Read(Span<byte> buffer) {
+		EnsureOpen();
 		var bytesToRead = Math.Max(0, Math.Min(buffer.Length, Length - Position));
 		var bufferOffset = 0;
 		var totalRead = (int)bytesToRead;
@@ -132,10 +135,13 @@ public class FragmentedStream : Stream {
 	}
 
 	public override void Write(ReadOnlySpan<byte> buffer) {
+		EnsureOpen();
 		var remainingStreamBytes = Length - Position;
 		var bytesToWrite = buffer.Length;
+		if (bytesToWrite == 0)
+			return;
 
-		// Grow stream if required
+		// Grow stream if required; from a position past the end, the provider's zero-filled growth is the gap.
 		if (bytesToWrite > remainingStreamBytes) {
 			var newStreamLength = Length + (bytesToWrite - remainingStreamBytes);
 			var prePos = Position;
@@ -168,7 +174,10 @@ public class FragmentedStream : Stream {
 		Write(bytes);
 	}
 
+	/// <summary>Commits what the fragment provider buffers.</summary>
 	public override void Flush() {
+		EnsureOpen();
+		FragmentProvider.Flush();
 	}
 
 	public virtual byte[] ToArray() {
@@ -191,7 +200,11 @@ public class FragmentedStream : Stream {
 	}
 
 	protected override void Dispose(bool disposing) {
+		if (_disposed)
+			return;
+		_disposed = true;
 		base.Dispose(disposing);
+		// A provider that buffers commits on its own disposal, which this releases once.
 		if (disposing) {
 			if (FragmentProvider is IDisposable disposable)
 				disposable.Dispose();
@@ -205,6 +218,8 @@ public class FragmentedStream : Stream {
 		if (FragmentProvider is IAsyncDisposable asyncDisposable && FragmentProvider is not IDisposable)
 			await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 	}
+
+	private void EnsureOpen() => ObjectDisposedException.ThrowIf(_disposed, this);
 
 }
 

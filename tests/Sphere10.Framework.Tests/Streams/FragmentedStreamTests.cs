@@ -311,6 +311,33 @@ public class FragmentedStreamTests {
 	}
 
 	[Test]
+	public void WritingPastTheEndLeavesAZeroFilledGapAsAMemoryStreamDoes() {
+		using var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(3));
+		var expected = new MemoryStream();
+		stream.WriteBytes(new byte[] { 1, 2 });
+		expected.WriteBytes(new byte[] { 1, 2 });
+		Assert.That(stream.Seek(5, SeekOrigin.End), Is.EqualTo(expected.Seek(5, SeekOrigin.End)));
+		Assert.That(stream.ReadByte(), Is.EqualTo(-1), "A read past the end returns nothing.");
+		stream.WriteBytes(new byte[] { 9 });
+		expected.WriteBytes(new byte[] { 9 });
+		Assert.That(stream.ToArray(), Is.EqualTo(expected.ToArray()));
+		Assert.That(() => stream.Seek(-1, SeekOrigin.Begin), Throws.TypeOf<IOException>());
+	}
+
+	[Test]
+	public void FlushReachesTheProviderAndDisposalClosesTheStream() {
+		var provider = new FlushCountingProvider();
+		var stream = new FragmentedStream(provider);
+		stream.WriteBytes(new byte[] { 1 });
+		stream.Flush();
+		Assert.That(provider.Flushes, Is.EqualTo(1));
+		stream.Dispose();
+		Assert.That((stream.CanRead, stream.CanWrite, stream.CanSeek), Is.EqualTo((false, false, false)));
+		Assert.That(() => stream.ReadByte(), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(stream.Dispose, Throws.Nothing);
+	}
+
+	[Test]
 	public void IntegrationTests_ConstantSizeFragments([Values(0, 3, 111, 1371)] int maxSize, [Values(3, 11, 10000)] int fragmentSize) {
 		var rng = new Random(31337);
 		using var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(fragmentSize));
@@ -322,6 +349,11 @@ public class FragmentedStreamTests {
 		var rng = new Random(31337);
 		using var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(() => new byte[rng.Next(1, 100)]));
 		AssertEx.StreamIntegrationTests(maxSize, stream, RNG: rng);
+	}
+
+	private sealed class FlushCountingProvider : ByteArrayStreamFragmentProvider, IStreamFragmentProvider {
+		public int Flushes { get; private set; }
+		void IStreamFragmentProvider.Flush() => Flushes++;
 	}
 
 }

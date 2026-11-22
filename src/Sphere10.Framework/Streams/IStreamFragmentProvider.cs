@@ -63,8 +63,14 @@ public interface IStreamFragmentProvider {
 	/// When the <see cref="FragmentedStream"/> resizes, the fragment provider needs to allocate (or deallocate) fragments.
 	/// </summary>
 	/// <param name="length">Requested new space</param>
-	/// <returns>Whether fragment stores can accomodate total allocation</returns>
+	/// <remarks>Space added by growth reads as zeros, including space a shrink released, so a stream written past its end has a zero-filled
+	/// gap as other streams do.</remarks>
 	void SetTotalBytes(long length);
+
+	/// <summary>Commits fragment changes the provider buffers, such as cached pages, to its backing store. <see cref="FragmentedStream.Flush"/>
+	/// calls it; a provider that writes through has nothing to commit.</summary>
+	void Flush() {
+	}
 
 }
 
