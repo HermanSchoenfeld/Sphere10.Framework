@@ -33,6 +33,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 	private const string ScreensMenuId = "sphere10-screens-menu";
 
+	private readonly StandardCommands _standardCommands = new();
 	private NavigationRequest? _lastRequest;
 	private readonly CancellationTokenSource _lifetimeCancellation = new();
 	private CancellationTokenSource _routeCancellation;
@@ -404,6 +405,12 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			var menus = ApplicationHelper.MergeApplicationMenus<IApplicationMenu, IApplicationMenuItem>(
 				(menu, items) => new ApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
 				menu => menu.Id, item => item.Id, GetApplicationCommandLayers()).ToList();
+
+			// The standard File heading is shown only once an application, block or screen menu contributes to it.
+			menus.RemoveAll(menu => menu.Id == global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.FileMenuId && menu.Items.Length == 0);
+			var file = menus.FindIndex(menu => menu.Id == global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.FileMenuId);
+			if (file >= 0)
+				menus[file] = SeparateApplicationItems(menus[file]);
 			var settings = menus.FirstOrDefault(menu => menu.Id == global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.SettingsMenuId);
 			if (settings != null) {
 				menus.Remove(settings);
@@ -452,6 +459,17 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		return new ApplicationMenu(ownsItems: false) { Id = ScreensMenuId, Text = "Screens", Items = items.ToArray() };
 	}
 
+	// The merged File menu lists the application's items first; a separator divides them from the active block's and screen's items.
+	private IApplicationMenu SeparateApplicationItems(IApplicationMenu menu) {
+		var applicationItems = Application.Menus.Where(candidate => candidate.Id == menu.Id).SelectMany(candidate => candidate.Items).ToHashSet(ReferenceEqualityComparer.Instance);
+		var items = menu.Items.ToList();
+		var last = items.FindLastIndex(item => applicationItems.Contains(item));
+		if (last < 0 || last == items.Count - 1 || items[last + 1] is IApplicationMenuSeparator)
+			return menu;
+		items.Insert(last + 1, new BlazorMenuSeparator());
+		return new ApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items.ToArray() };
+	}
+
 	// Screens menu commands belong to the shell, so they run through its own guarded screen paths rather than the command graph.
 	private Task ExecuteScreensCommandAsync(ScreensMenuCommand command) {
 		var closable = ScreenHost.OpenScreens.Where(screen => screen.ScreenKind == SharedUI.ScreenKind.Normal && !screen.IsPermanent);
@@ -476,9 +494,11 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		=> string.Equals(menu.Text?.Replace("&", string.Empty).Trim(), heading, StringComparison.OrdinalIgnoreCase);
 
 	// Commands follow the visible screen's owners; sidebar browsing contributes no presentation commands.
+	// The shell's standard headings form the first application layer, so a contributed File menu is placed first as on the native main form.
 	private ApplicationCommandLayer[] GetApplicationCommandLayers() {
 		var screen = ScreenHost.ActiveScreen;
-		return ApplicationHelper.GetCommandLayers(Application, screen?.Block, screen);
+		return ApplicationHelper.GetCommandLayers(Application, screen?.Block, screen)
+			.Prepend(new ApplicationCommandLayer(ApplicationCommandLevel.Application, _standardCommands)).ToArray();
 	}
 
 	// Selects a stable render key for a command.
@@ -662,6 +682,17 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		/// <summary>The registered screen to restore; null keeps the application's default startup policy.</summary>
 		[DefaultValue(null)]
 		public ApplicationStartupScreen StartupScreen { get; set; }
+	}
+
+	/// <summary>The shell's empty standard headings, which application, block and screen menus with the same ID extend.</summary>
+	private sealed class StandardCommands : IApplicationCommandProvider {
+
+		/// <summary>The File heading, merged by <c>Application.FileMenuId</c>.</summary>
+		public SharedUI.IApplicationMenu[] Menus { get; } = {
+			new ApplicationMenu(ownsItems: false) {
+				Id = global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.FileMenuId, Text = "File", Items = Array.Empty<IApplicationMenuItem>()
+			}
+		};
 	}
 
 	#endregion

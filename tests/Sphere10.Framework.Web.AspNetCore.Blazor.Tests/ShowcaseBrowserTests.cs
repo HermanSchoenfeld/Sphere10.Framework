@@ -163,6 +163,100 @@ public class ShowcaseBrowserTests {
 		Assert.That(await screen.GetByTestId("command-review-state").InnerTextAsync(), Is.EqualTo("Reviewed"));
 	}
 
+	[Test]
+	public async Task PowerUserRecordsUseIconCommandsACompactGridAndASelectionBoundDetailSplit() {
+		await OpenPatternScreenAsync("Power-user records", "[data-showcase=records]");
+		var screen = ActiveScreen.Locator("[data-showcase=records]");
+		var toolbar = ApplicationToolbar;
+		var open = toolbar.GetByRole(AriaRole.Button, new() { Name = "Open Product", Exact = true });
+		var create = toolbar.GetByRole(AriaRole.Button, new() { Name = "New Product", Exact = true });
+
+		// Icon-only toolbar commands carry their caption as tooltip; the opted-in command shows its text.
+		Assert.That(await open.GetAttributeAsync("title"), Is.EqualTo("Open Product"));
+		Assert.That((await open.InnerTextAsync()).Trim(), Is.Empty);
+		Assert.That(await open.IsDisabledAsync(), Is.True);
+		Assert.That(await create.InnerTextAsync(), Does.Contain("New Product"));
+		var master = screen.Locator(".sphere10-split-panel1 > .sphere10-grid");
+		Assert.That(await master.GetAttributeAsync("class"), Does.Contain("sphere10-grid-compact"));
+		Assert.That(await master.Locator(":scope > .sphere10-grid-toolbar").CountAsync(), Is.Zero);
+		Assert.That(await master.Locator(":scope > .sphere10-grid-footer").CountAsync(), Is.Zero);
+		Assert.That(await master.Locator("caption").CountAsync(), Is.Zero);
+		var rows = master.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr[aria-selected]");
+		await rows.First.WaitForAsync();
+		var count = await rows.CountAsync();
+		Assert.That(count, Is.EqualTo(12));
+		var rowHeight = (await rows.First.BoundingBoxAsync()).Height;
+		Assert.That(rowHeight, Is.LessThan(30), "Compact rows are tight.");
+		var panel = await screen.Locator(".sphere10-split-panel1").BoundingBoxAsync();
+		Assert.That((await master.BoundingBoxAsync()).Height, Is.EqualTo(panel.Height).Within(2), "A filling grid stretches to its split panel.");
+
+		// Selecting a row binds the detail panel and enables the screen's commands without NotifyScreenChanged.
+		await rows.Nth(1).Locator("td").First.ClickAsync();
+		var detail = screen.GetByTestId("records-detail");
+		await detail.GetByRole(AriaRole.Group, new() { Name = "Product", Exact = true }).WaitForAsync();
+		var selectedName = await rows.Nth(1).Locator("td").First.InnerTextAsync();
+		Assert.That(await detail.GetByLabel("Name", new() { Exact = true }).InnerTextAsync(), Is.EqualTo(selectedName));
+		await _page.WaitForFunctionAsync("() => !document.querySelector('[role=toolbar] button[title=\"Open Product\"]').disabled");
+		Assert.That(await detail.Locator(".sphere10-grid tbody tr[aria-selected]").CountAsync(), Is.EqualTo(3), "The detail shows the product's editions.");
+		var nameLabel = detail.Locator("label", new() { HasText = "Name" }).First;
+		Assert.That(await nameLabel.EvaluateAsync<string>("label => getComputedStyle(label, '::after').content"), Does.StartWith("\":\""), "Labels read \"Name:\" on screen.");
+		Assert.That((await nameLabel.BoundingBoxAsync()).Height, Is.LessThan(24), "Field rows are about a compact grid row high.");
+		await AttachScreenshotAsync("records-selected");
+
+		// Row icons open and delete; double-click opens; the header holds the reload icon.
+		var openRow = rows.Nth(1).GetByRole(AriaRole.Button, new() { Name = "Open", Exact = true });
+		Assert.That(await openRow.GetAttributeAsync("title"), Is.EqualTo("Open"));
+		await openRow.ClickAsync();
+		var dialog = _page.Locator("#modern-modal");
+		await dialog.GetByRole(AriaRole.Heading, new() { Name = "Open Product", Exact = true }).WaitForAsync();
+		Assert.That(await dialog.InnerTextAsync(), Does.Contain(selectedName));
+		await CloseDialogAsync();
+		await rows.Nth(2).Locator("td").First.DblClickAsync();
+		await dialog.GetByRole(AriaRole.Heading, new() { Name = "Open Product", Exact = true }).WaitForAsync();
+		await CloseDialogAsync();
+		await master.Locator("thead").GetByRole(AriaRole.Button, new() { Name = "Reload", Exact = true }).ClickAsync();
+		await rows.First.WaitForAsync();
+		// The grid's built-in icon Delete confirms through the confirmation dialog.
+		await rows.Nth(0).GetByRole(AriaRole.Button, new() { Name = "Delete", Exact = true }).ClickAsync();
+		await dialog.GetByText("Delete the selected item?", new() { Exact = true }).WaitForAsync();
+		Assert.That(await master.Locator("[aria-label='Confirm deletion']").CountAsync(), Is.Zero, "Icon-style grids do not use the inline confirmation bar.");
+		await dialog.GetByRole(AriaRole.Button, new() { Name = "Delete", Exact = true }).ClickAsync();
+		await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+		await _page.WaitForFunctionAsync("() => document.querySelectorAll('[data-showcase=records] .sphere10-split-panel1 > .sphere10-grid > .sphere10-grid-viewport > table > tbody > tr[aria-selected]').length === 11");
+
+		// The screen's File items merge into the standard File menu and its Product menu follows it.
+		await ApplicationCommands.GetByRole(AriaRole.Button, new() { Name = "File", Exact = true }).ClickAsync();
+		var file = ApplicationCommands.GetByRole(AriaRole.Group, new() { Name = "File", Exact = true });
+		await file.GetByRole(AriaRole.Button, new() { Name = "New Product", Exact = true }).WaitForAsync();
+		Assert.That(await file.GetByRole(AriaRole.Button, new() { Name = "Exit application", Exact = true }).CountAsync(), Is.EqualTo(1), "Application File items remain.");
+		await AttachScreenshotAsync("records-file-menu");
+		await ApplicationCommands.GetByRole(AriaRole.Button, new() { Name = "File", Exact = true }).PressAsync("Escape");
+		var menus = await ApplicationCommands.Locator(".sphere10-menu-button").AllInnerTextsAsync();
+		Assert.That(menus.Take(2), Is.EqualTo(new[] { "File", "View" }));
+		Assert.That(menus, Does.Contain("Product"));
+
+		// Dragging the splitter resizes the panels.
+		var splitter = screen.GetByRole(AriaRole.Separator, new() { Name = "Resize product detail", Exact = true });
+		var before = (await screen.Locator(".sphere10-split-panel1").BoundingBoxAsync()).Height;
+		var grip = await splitter.BoundingBoxAsync();
+		await _page.Mouse.MoveAsync(grip.X + grip.Width / 2, grip.Y + grip.Height / 2);
+		await _page.Mouse.DownAsync();
+		await _page.Mouse.MoveAsync(grip.X + grip.Width / 2, grip.Y + grip.Height / 2 - 90, new() { Steps = 6 });
+		await _page.Mouse.UpAsync();
+
+		// The drag reports its position to .NET once, which re-renders the splitter's value and keeps the new layout.
+		await _page.WaitForFunctionAsync("() => document.querySelector('[data-showcase=records] [role=separator]')?.getAttribute('aria-valuenow') !== '55'");
+		var after = (await screen.Locator(".sphere10-split-panel1").BoundingBoxAsync()).Height;
+		Assert.That(after, Is.LessThan(before - 60), "Dragging the splitter up shrinks the master panel.");
+		await VerifyContainmentAsync();
+		await AttachScreenshotAsync("records-resized");
+
+		// Commands leave with their screen.
+		await OpenPatternScreenAsync("Theme studio", "[data-demo=theme-studio]");
+		Assert.That(await toolbar.GetByRole(AriaRole.Button, new() { Name = "Open Product", Exact = true }).CountAsync(), Is.Zero);
+		Assert.That(await ApplicationCommands.GetByRole(AriaRole.Button, new() { Name = "Product", Exact = true }).CountAsync(), Is.Zero);
+	}
+
 	[TestCase("dark", 1500, 1000)]
 	[TestCase("dark", 390, 844)]
 	[TestCase("landkit", 1500, 1000)]

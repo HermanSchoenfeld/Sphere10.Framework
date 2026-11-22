@@ -25,6 +25,9 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Projects a circuit's live host and startup plugin definitions without loading or owning those plugins again.</summary>
 public class Application : AsyncApplicationBase, IApplication {
+	/// <summary>The ID of the standard File menu. The shell places it first, and a block or screen menu with this ID extends it while that owner is active.</summary>
+	public const string FileMenuId = "file";
+
 	internal const string SettingsMenuId = "sphere10-screen-options-menu";
 
 	private readonly IBlazorPlugin[] _loadedPlugins;

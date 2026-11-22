@@ -12,6 +12,7 @@ using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Cards;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Commands;
+using Sphere10.Framework.Utils.BlazorTester.Showcase.Records;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Themes;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Wizards;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -37,6 +38,7 @@ public static class ShowcasePlugin {
 				.WithTooltip("Cards, workflows, native commands and complete theme layouts")
 				.AddScreen<CardsScreen>("Cards & collections", activationMode: ScreenActivationMode.SingleInstance)
 				.AddScreen<CommandsScreen>("Menus & commands", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<RecordsScreen>("Power-user records", activationMode: ScreenActivationMode.SingleInstance)
 				.AddScreen<GuidedWizardsScreen>("Guided workflows", activationMode: ScreenActivationMode.SingleInstance)
 				.AddScreen<ThemeStudioScreen>("Theme studio", activationMode: ScreenActivationMode.SingleInstance)
 				.AddScreen<CollectionDetailScreen>("Collection details", activationMode: ScreenActivationMode.MultiInstance)
@@ -44,6 +46,7 @@ public static class ShowcasePlugin {
 				.AddMenu("Application patterns", id: "patterns", icon: "fas fa-layer-group", configure: menu => menu
 					.AddItem<CardsScreen>("Cards & collections", id: "cards-gallery", icon: "fas fa-th-large")
 					.AddItem<CommandsScreen>("Menus & commands", id: "commands", icon: "fas fa-bars")
+					.AddItem<RecordsScreen>("Power-user records", id: "records", icon: "fas fa-table")
 					.AddItem<GuidedWizardsScreen>("Guided workflows", id: "guided-wizards", icon: "fas fa-magic")
 					.AddItem<ThemeStudioScreen>("Theme studio", id: "theme-studio", icon: "fas fa-palette")
 				)

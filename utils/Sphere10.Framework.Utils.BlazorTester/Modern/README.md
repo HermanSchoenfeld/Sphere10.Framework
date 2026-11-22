@@ -19,6 +19,7 @@ Holds the grid content, sample entities and data sources, grid cell components a
 | Type | Kind | Purpose |
 |---|---|---|
 | [`GridDemoDataSource`](UI/Controls/GridDemoDataSource.cs) | class | Read-only, notifying `ListDataSource` over one capture of sample `Row` records (a nested record of id, name, group, revision, usage and details) |
+| [`GridDemoHierarchyDataSource`](UI/Controls/GridDemoHierarchyDataSource.cs) | class | Read-only graph source with shared nodes, a cycle and independently paged siblings; its nested `Row` record carries id and name |
 | [`GridDemoRefreshableDataSource`](UI/Controls/GridDemoRefreshableDataSource.cs) | class | `RefreshableDataSourceBase` that serves a new `GridDemoDataSource` capture with the next revision of every row and supports removing a sample |
 | [`TestClass`](UI/Controls/TestClass.cs) | class | Grid entity with id, name, enum color, date, decimal, flag, details, note and an optional related item, and a nested `TestEnum` |
 | [`TestClass2`](UI/Controls/TestClass2.cs) | class | Unused `IColumnDefinition` sample with text, value and locked flag rendered by `ComponentForTestClass2` |
@@ -39,10 +40,10 @@ Holds the grid content, sample entities and data sources, grid cell components a
 | Type | Kind | Purpose |
 |---|---|---|
 | [`NewWalletModel`](UI/Wizard/Examples/NewWallet/NewWalletModel.cs) | class | Wizard model with wallet type, password, name and seed |
-| [`PasswordStep`](UI/Wizard/Examples/NewWallet/PasswordStep.razor) | class | Razor wizard step that collects and validates the wallet password |
-| [`RestoreStep`](UI/Wizard/Examples/NewWallet/RestoreStep.razor) | class | Razor wizard step that collects and requires the seed for a restored wallet |
-| [`SummaryStep`](UI/Wizard/Examples/NewWallet/SummaryStep.razor) | class | Razor wizard step that summarizes the chosen settings |
-| [`WalletNameStep`](UI/Wizard/Examples/NewWallet/WalletNameStep.razor) | class | Razor wizard step that collects and validates the wallet name |
+| [`PasswordStep`](UI/Wizard/Examples/NewWallet/PasswordStep.razor) | class | Razor wizard step that collects and validates the wallet password in `FieldGrid` rows |
+| [`RestoreStep`](UI/Wizard/Examples/NewWallet/RestoreStep.razor) | class | Razor wizard step that collects and requires the seed for a restored wallet in a wide `FieldGrid` row |
+| [`SummaryStep`](UI/Wizard/Examples/NewWallet/SummaryStep.razor) | class | Razor wizard step that summarizes the chosen name and type as read-only `FieldGrid` values |
+| [`WalletNameStep`](UI/Wizard/Examples/NewWallet/WalletNameStep.razor) | class | Razor wizard step that collects and validates the wallet name in a `FieldGrid` row |
 | [`WalletType`](UI/Wizard/Examples/NewWallet/NewWalletModel.cs) | enum | Wizard branch: `Standard` creates a wallet with a password, `Restore` restores one from a seed |
 | [`WalletTypeStep`](UI/Wizard/Examples/NewWallet/WalletTypeStep.razor) | class | Razor wizard step that chooses the wallet type and replaces the following steps with password and summary, or restore and summary |
 

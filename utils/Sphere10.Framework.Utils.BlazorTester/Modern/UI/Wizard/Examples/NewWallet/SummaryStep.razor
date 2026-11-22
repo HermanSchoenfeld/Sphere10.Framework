@@ -8,11 +8,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
 @inherits BlazorWizardStep<NewWalletModel>
 
 <div>
 	<h5 class="h6 card-title">Summary</h5>
-	<p> Name: @Model.Name</p>
+	<FieldGrid>
+		<FieldRow Label="Name" Value="@Model.Name" />
+		<FieldRow Label="Type" Value="@Model.Type.ToString()" />
+	</FieldGrid>
 </div>
 
 @code {

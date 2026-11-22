@@ -1,0 +1,44 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
+@inherits BlazorWizardStep<NewProductDraft>
+
+<FieldGrid>
+	<FieldRow Label="Name" For="@($"{_id}-name")"><input id="@($"{_id}-name")" class="form-control form-control-sm" size="28" maxlength="60" @bind="Model.Name" @bind:event="oninput" /></FieldRow>
+	<FieldRow Label="Code" For="@($"{_id}-code")"><input id="@($"{_id}-code")" class="form-control form-control-sm" size="8" maxlength="8" @bind="Model.Code" @bind:event="oninput" /></FieldRow>
+	<FieldRow Label="Version" For="@($"{_id}-version")"><input id="@($"{_id}-version")" class="form-control form-control-sm" size="10" maxlength="16" @bind="Model.Version" /></FieldRow>
+	<FieldRow Label="Status" For="@($"{_id}-status")">
+		<select id="@($"{_id}-status")" class="form-select form-select-sm" @bind="Model.Status">
+			@foreach (var status in Enum.GetValues<ProductStatus>()) {
+				<option value="@status">@status</option>
+			}
+		</select>
+	</FieldRow>
+</FieldGrid>
+
+@code {
+	private readonly string _id = $"new-product-{Guid.NewGuid():N}";
+
+	public override string Title => "New Product";
+
+	public override string FinishButtonText => "Create";
+
+	public override Task<Result> OnNextAsync() {
+		if (string.IsNullOrWhiteSpace(Model.Name))
+			return Task.FromResult(Result.Error("Name is required."));
+		if (string.IsNullOrWhiteSpace(Model.Code))
+			return Task.FromResult(Result.Error("Code is required."));
+		Model.Name = Model.Name.Trim();
+		Model.Code = Model.Code.Trim().ToUpperInvariant();
+		return Task.FromResult(Result.Success);
+	}
+}

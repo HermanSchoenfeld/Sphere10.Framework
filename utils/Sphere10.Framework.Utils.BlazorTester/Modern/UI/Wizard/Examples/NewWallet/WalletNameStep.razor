@@ -8,11 +8,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
 @inherits BlazorWizardStep<NewWalletModel>
 
 <EditForm Model="Model">
-	<label for="wallet-name" class="form-label">Wallet Name</label>
-	<InputText id="wallet-name" @bind-Value="Model.Name" class="form-control" />
+	<FieldGrid>
+		<FieldRow Label="Wallet Name" For="wallet-name"><InputText id="wallet-name" @bind-Value="Model.Name" class="form-control form-control-sm" size="32" /></FieldRow>
+	</FieldGrid>
 </EditForm>
 
 @code {

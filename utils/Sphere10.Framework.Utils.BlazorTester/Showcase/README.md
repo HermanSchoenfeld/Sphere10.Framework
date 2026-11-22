@@ -4,7 +4,7 @@ Demonstrates complete application interactions (card catalogues, keyed editors, 
 
 This block demonstrates complete, generic application interactions composed from the public Sphere10 Blazor APIs. It sits beside the component reference, and the original grid, tables, dialogs, wallet wizard and legacy examples remain available. All sample data belongs to the current service scope and resets on browser refresh.
 
-`ShowcasePlugin.Configure` registers the block, its menus, its five screens and the scoped `CollectionCatalogue`. The screens derive from `ApplicationScreen`, and the wizard steps derive from `BlazorWizardStep<WorkspaceSetupDraft>`. Razor components compile to public partial classes named after their files. The block is hosted by the tester's [Application](../Application/README.md) workspace, and `WizardsPage` in [Pages](../Pages/README.md) reuses `GuidedWorkspaceDemo`.
+`ShowcasePlugin.Configure` registers the block, its menus, its six screens and the scoped `CollectionCatalogue`. The screens derive from `ApplicationScreen`, and the wizard steps derive from `BlazorWizardStep<WorkspaceSetupDraft>` or, for the records screen, `BlazorWizardStep<NewProductDraft>`. Razor components compile to public partial classes named after their files. The block is hosted by the tester's [Application](../Application/README.md) workspace, and `WizardsPage` in [Pages](../Pages/README.md) reuses `GuidedWorkspaceDemo`.
 
 ## Contents
 
@@ -30,6 +30,18 @@ This block demonstrates complete, generic application interactions composed from
 |---|---|---|
 | [`CommandsScreen`](Commands/CommandsScreen.razor) | class | Razor screen that contributes File, Tools, nested Export and toolbar commands whose enabled and visible states follow the selected document |
 
+### Records
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`EditionRecord`](Records/EditionRecord.cs) | record | Sample product edition with name, code, price and maximum seats |
+| [`NewProductDraft`](Records/NewProductDraft.cs) | class | Values entered in the one-step New Product wizard |
+| [`NewProductStep`](Records/NewProductStep.razor) | class | Razor wizard step that enters a product's name, code, version and status as `FieldGrid` rows |
+| [`ProductRecord`](Records/ProductRecord.cs) | class | Circuit-local sample product with its editions |
+| [`ProductRecordSource`](Records/ProductRecordSource.cs) | class | `ListDataSource` over twelve sample products that sorts before paging and adds and removes rows for the screen's commands |
+| [`ProductStatus`](Records/ProductRecord.cs) | enum | Sample product status: `Active` or `Retired` |
+| [`RecordsScreen`](Records/RecordsScreen.razor) | class | Razor power-user screen: File and Product menu commands and icon toolbar items enabled from the selection, a compact grid with icon row commands, a header reload icon and bound selection, and a detail panel of `FieldGrid` values and an editions grid in a `SplitContainer` |
+
 ### Themes
 
 | Type | Kind | Purpose |
@@ -54,8 +66,9 @@ This block demonstrates complete, generic application interactions composed from
 
 1. **Cards & collections:** filter or search the nine creative collections, select a cover, switch to the native table, then open two different collections. Reopening one returns to its existing tab. Edit its name, try to leave with an unsaved draft, then use Save collection or Discard changes. Saving refreshes the shared catalogue.
 2. **Menus & commands:** choose a sample document and inspect the active File, Tools and toolbar commands. Export contains nested Documents and Structured data groups. Clear the document selection, disable review actions or reveal diagnostics to see enabled and hidden command states change. Prepared exports remain a readable local preview.
-3. **Guided workflows:** start Workspace setup inline or in a dialog. Required fields validate on Next. Choose Team to add Reviewers, go Back to change to Solo, and take the preset chooser detour from Settings. Applying or backing out of a preset returns to Settings. Review the values before creating a workspace; cancelling retains the last completed summary.
-4. **Theme studio:** browse every ThemeCatalog preset, filter by name or light/dark scheme, and inspect a complete release-board layout. Edit the note, select a chart bar by pointer or keyboard, then change the preset. The same components and draft remain in place. Open a preview dialog and compare the exhaustive color/component gallery through its link.
+3. **Power-user records:** the body shows only data. Select a product to fill the detail panel and enable Open, Retire and Delete in the toolbar and the Product menu; hover an icon for its name. New Product (the toolbar command that shows its text) opens a one-step wizard, Retire and Delete ask for confirmation, and File holds the screen's New and Delete beside the application's commands. Use the row icons or double-click to open, the header icon to reload, and drag or arrow-key the splitter; its position is remembered.
+4. **Guided workflows:** start Workspace setup inline or in a dialog. Required fields validate on Next. Choose Team to add Reviewers, go Back to change to Solo, and take the preset chooser detour from Settings. Applying or backing out of a preset returns to Settings. Review the values before creating a workspace; cancelling retains the last completed summary.
+5. **Theme studio:** browse every ThemeCatalog preset, filter by name or light/dark scheme, and inspect a complete release-board layout. Edit the note, select a chart bar by pointer or keyboard, then change the preset. The same components and draft remain in place. Open a preview dialog and compare the exhaustive color/component gallery through its link.
 
 The Overview also has an **Activate the block's default screen** checkbox. It switches the native ApplicationShell behavior between browsing a block's menus and activating its default screen. Ordinary screen guards apply in both modes.
 
@@ -67,6 +80,7 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 | Card/table catalogue | [CardsScreen.razor](Cards/CardsScreen.razor), [CollectionDataSource.cs](Cards/CollectionDataSource.cs) | BulkFetchDataSource, BlazorGridController, BlazorGrid, PageSizeSelector, ExpandsToFit |
 | Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | ApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
 | Native commands | [CommandsScreen.razor](Commands/CommandsScreen.razor) | Menus/ToolBarItems, merge by ID, WithChildren, EnabledWhen, WithVisibility and ViewService |
+| Power-user records | [RecordsScreen.razor](Records/RecordsScreen.razor), [NewProductStep.razor](Records/NewProductStep.razor) | Application.FileMenuId, icon-only toolbar and WithToolBarText, render-published command state, BlazorGrid Density, ActionStyle, RowCommands, ReloadPlacement, Footer, SelectedItem and ItemOpened, SplitContainer and FieldGrid |
 | Guided wizard | [GuidedWorkspaceDemo.razor](Wizards/GuidedWorkspaceDemo.razor), [WorkspaceSetupFlow.cs](Wizards/WorkspaceSetupFlow.cs) | BlazorWizardBuilder, conditional UpdateSteps, BlazorWizardStep, embedded BlazorWizardHost and ViewService.WizardDialogAsync |
 | Theme studio | [ThemeStudioScreen.razor](Themes/ThemeStudioScreen.razor) | ThemeCatalog, scoped IThemeService, ThemeProvider, semantic CSS tokens and themed dialogs |
 

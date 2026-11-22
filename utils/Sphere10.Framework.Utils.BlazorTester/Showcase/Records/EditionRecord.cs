@@ -1,0 +1,12 @@
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+namespace Sphere10.Framework.Utils.BlazorTester.Showcase.Records;
+
+/// <summary>A sample product edition shown in the records screen's detail panel.</summary>
+public sealed record EditionRecord(string Name, string Code, decimal Price, int MaxSeats);

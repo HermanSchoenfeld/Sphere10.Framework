@@ -1,0 +1,208 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using System.Globalization
+@using System.Threading
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard
+@using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor
+@namespace Sphere10.Framework.Utils.BlazorTester.Showcase.Records
+@inherits ApplicationScreen
+@inject ViewService ViewService
+
+@* A power-user record screen: the commands are in the merged File and Product menus and the icon toolbar; the body only shows data. *@
+<section class="records-screen" data-showcase="records">
+	<SplitContainer Orientation="SplitOrientation.Horizontal" @bind-SplitterPosition="_splitterPosition" Panel1MinSize="120" Panel2MinSize="120"
+		SettingsKey="Sphere10.Framework.Utils.BlazorTester.Records.Split" SplitterLabel="Resize product detail" style="height: 100%">
+		<Panel1>
+			<BlazorGrid @ref="_grid" TItem="ProductRecord" DataSource="_source" Columns="_columns" Actions="_actions" Caption=""
+				AllowedCapabilities="MasterCapabilities" AllowCellEditing="false" PersistSettings="false" PageSize="50" Fill="true"
+				Density="BlazorGridDensity.Compact" ActionStyle="BlazorGridActionStyle.Icons" RowCommands="BlazorGridRowCommands.Open | BlazorGridRowCommands.Delete"
+				OpenCommandIcon="fas fa-folder-open" DeleteCommandIcon="fas fa-trash-alt" ReloadPlacement="BlazorGridReloadPlacement.Header" Footer="BlazorGridFooterMode.Paged"
+				LeftClickToDeselect="false" @bind-SelectedItem="_selected" ItemOpened="OpenAsync" ItemDeleted="ProductDeleted" />
+		</Panel1>
+		<Panel2>
+			@if (_selected == null) {
+				<p class="records-empty" role="status">No product selected.</p>
+			} else {
+				<div class="records-detail" data-testid="records-detail">
+					<FieldGrid Label="Product">
+						<FieldRow Label="Name" Value="@_selected.Name" />
+						<FieldRow Label="Code" Value="@_selected.Code" />
+						<FieldRow Label="Version" Value="@_selected.Version" />
+						<FieldRow Label="Status" Value="@_selected.Status.ToString()" />
+						<FieldRow Label="Released" Value="@_selected.Released.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" />
+						<FieldRow Label="License Count" Value="@_selected.LicenseCount.ToString(CultureInfo.InvariantCulture)" />
+					</FieldGrid>
+					<BlazorGrid @key="_selected" TItem="EditionRecord" DataSource="EditionsFor(_selected)" Columns="_editionColumns" Caption=""
+						AllowedCapabilities="DataSourceCapabilities.CanRead" PersistSettings="false" PageMode="BlazorGridPageMode.Single" Height="240"
+						Density="BlazorGridDensity.Compact" ReloadPlacement="BlazorGridReloadPlacement.Hidden" Footer="BlazorGridFooterMode.Hidden" />
+				</div>
+			}
+		</Panel2>
+	</SplitContainer>
+</section>
+
+@code {
+	// The grid reads, sorts and deletes; its built-in Delete row command asks through the confirmation dialog.
+	private const DataSourceCapabilities MasterCapabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage | DataSourceCapabilities.CanDelete;
+	private readonly ProductRecordSource _source = new();
+	private readonly Dictionary<ProductRecord, ArrayDataSource<EditionRecord>> _editionSources = new();
+	private BlazorGrid<ProductRecord> _grid;
+	private BlazorGridColumn<ProductRecord>[] _columns;
+	private BlazorGridColumn<EditionRecord>[] _editionColumns;
+	private GridAction<ProductRecord>[] _actions;
+	private BlazorUI.IApplicationMenu[] _menus;
+	private BlazorUI.IApplicationMenuItem[] _toolBarItems;
+	private ProductRecord _selected;
+	private double _splitterPosition = 55;
+
+	public override string Title => "Power-user records";
+
+	// The commands are built once; their enabled states read the bound selection, and every render publishes changes to the shell.
+	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(_menus);
+
+	public override BlazorUI.IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems);
+
+	protected override void OnInitialized() {
+		_columns = new[] {
+			Column(BlazorGridColumn<ProductRecord>.For(record => record.Name), expands: true),
+			Column(BlazorGridColumn<ProductRecord>.For(record => record.Code)),
+			Column(BlazorGridColumn<ProductRecord>.For(record => record.Version)),
+			Column(BlazorGridColumn<ProductRecord>.For(record => record.Status)),
+			Column(BlazorGridColumn<ProductRecord>.For(record => record.Released, "Released"), format: "yyyy-MM-dd"),
+			Column(BlazorGridColumn<ProductRecord>.For(record => record.LicenseCount, "License Count"))
+		};
+		_editionColumns = new[] {
+			BlazorGridColumn<EditionRecord>.For(edition => edition.Name),
+			BlazorGridColumn<EditionRecord>.For(edition => edition.Code),
+			BlazorGridColumn<EditionRecord>.For(edition => edition.Price),
+			BlazorGridColumn<EditionRecord>.For(edition => edition.MaxSeats, "Max Seats")
+		};
+		_actions = new[] {
+			new GridAction<ProductRecord>("Retire Product", null, null) {
+				Icon = "fas fa-archive", ActionWorkAsync = RetireAsync, IsActionAvailable = record => record.Status == ProductStatus.Active
+			}
+		};
+		var newProduct = new ApplicationMenuItemBuilder()
+			.WithId("records-new")
+			.WithText("New Product")
+			.WithIcon("fas fa-plus")
+			.WithToolBarText()
+			.WithAction((_, token) => NewAsync(token))
+			.Build();
+		var openProduct = new ApplicationMenuItemBuilder()
+			.WithId("records-open")
+			.WithText("Open Product")
+			.WithIcon("fas fa-folder-open")
+			.EnabledWhen(() => _selected != null)
+			.WithAction((_, _) => OpenAsync(_selected))
+			.Build();
+		var retireProduct = new ApplicationMenuItemBuilder()
+			.WithId("records-retire")
+			.WithText("Retire Product")
+			.WithIcon("fas fa-archive")
+			.EnabledWhen(() => _selected?.Status == ProductStatus.Active)
+			.WithAction((_, _) => RetireAsync(_selected))
+			.Build();
+		var deleteProduct = new ApplicationMenuItemBuilder()
+			.WithId("records-delete")
+			.WithText("Delete Product")
+			.WithIcon("fas fa-trash-alt")
+			.EnabledWhen(() => _selected != null)
+			.WithAction((_, _) => DeleteAsync(_selected))
+			.Build();
+		var reload = new ApplicationMenuItemBuilder()
+			.WithId("records-reload")
+			.WithText("Reload Products")
+			.WithIcon("fas fa-sync-alt")
+			.WithAction((_, _) => _grid.RefreshAsync())
+			.Build();
+		_menus = new BlazorUI.IApplicationMenu[] {
+			new ApplicationMenuBuilder()
+				.WithId(BlazorUI.Application.FileMenuId)
+				.WithText("File")
+				.AddItem(newProduct)
+				.AddItem(deleteProduct)
+				.Build(),
+			new ApplicationMenuBuilder()
+				.WithId("records-product")
+				.WithText("Product")
+				.AddItem(openProduct)
+				.AddItem(retireProduct)
+				.AddItem(new BlazorMenuSeparator())
+				.AddItem(reload)
+				.Build()
+		};
+		_toolBarItems = new BlazorUI.IApplicationMenuItem[] { newProduct, new BlazorMenuSeparator(), openProduct, retireProduct, deleteProduct, new BlazorMenuSeparator(), reload };
+	}
+
+	private static BlazorGridColumn<ProductRecord> Column(BlazorGridColumn<ProductRecord> column, bool expands = false, string format = null) {
+		column.CanEditCell = false;
+		column.ExpandsToFit = expands;
+		column.Format = format;
+		return column;
+	}
+
+	// Each product's editions are served from one array source for the lifetime of the screen.
+	private ArrayDataSource<EditionRecord> EditionsFor(ProductRecord record) {
+		if (!_editionSources.TryGetValue(record, out var source)) {
+			source = new ArrayDataSource<EditionRecord>(record.Editions);
+			_editionSources.Add(record, source);
+		}
+		return source;
+	}
+
+	private Task OpenAsync(ProductRecord record) => record == null ? Task.CompletedTask
+		: ViewService.DialogAsync("Open Product", $"{record.Name} ({record.Code}) version {record.Version}, {record.Status}, {record.LicenseCount} licenses.");
+
+	// Input commands open a wizard; the new product becomes the selection once the grid displays it.
+	private async Task NewAsync(CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		var wizard = new BlazorWizardBuilder<NewProductDraft>()
+			.NewWizard("New Product")
+			.WithModel(new NewProductDraft())
+			.WithCancellation(true)
+			.AddStep<NewProductStep>()
+			.OnFinished(async draft => {
+				var record = _source.Add(draft.Name, draft.Code, draft.Version, draft.Status);
+				await InvokeAsync(async () => {
+					await _grid.RefreshAsync();
+					_selected = record;
+					StateHasChanged();
+				});
+				return true;
+			})
+			.Build();
+		await ViewService.WizardDialogAsync(wizard);
+	}
+
+	// The grid's Delete row command removed the product; its editions source is no longer needed.
+	private void ProductDeleted(ProductRecord record) => _editionSources.Remove(record);
+
+	// Commands that only confirm use the confirmation dialog.
+	private async Task RetireAsync(ProductRecord record) {
+		if (record == null || record.Status == ProductStatus.Retired || !await ViewService.ConfirmDialogAsync("Retire Product", $"Retire {record.Name}?", "Retire"))
+			return;
+		record.Status = ProductStatus.Retired;
+		await _grid.RefreshAsync();
+	}
+
+	private async Task DeleteAsync(ProductRecord record) {
+		if (record == null || !await ViewService.ConfirmDialogAsync("Delete Product", $"Delete {record.Name}?", "Delete"))
+			return;
+		_source.Remove(record);
+		_editionSources.Remove(record);
+		await _grid.RefreshAsync();
+	}
+}

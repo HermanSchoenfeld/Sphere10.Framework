@@ -30,6 +30,7 @@ public static class DemoNavigation {
 		new("/components/themes", "components", "themes"),
 		new("/patterns/cards", "patterns", "cards-gallery"),
 		new("/patterns/menus", "patterns", "commands"),
+		new("/patterns/records", "patterns", "records"),
 		new("/patterns/wizards", "patterns", "guided-wizards"),
 		new("/patterns/themes", "patterns", "theme-studio"),
 		new("/modern", "components", "gallery"),

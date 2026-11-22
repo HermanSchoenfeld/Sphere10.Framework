@@ -8,14 +8,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
 @inherits BlazorWizardStep<NewWalletModel>
 
 <h6 class="mb-3">Restore from seed </h6>
 <EditForm Model="Model">
-	<div class="form-group">
-		<label for="wallet-seed" class="form-label">Seed text</label>
-		<InputTextArea id="wallet-seed" class="form-control" rows="3" @bind-Value="Model.Seed"/>
-	</div>
+	<FieldGrid>
+		<FieldRow Label="Seed text" For="wallet-seed" Wide="true"><InputTextArea id="wallet-seed" class="form-control form-control-sm" rows="3" @bind-Value="Model.Seed"/></FieldRow>
+	</FieldGrid>
 </EditForm>
 
 

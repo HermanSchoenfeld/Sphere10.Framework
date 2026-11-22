@@ -26,6 +26,9 @@ public class ModalService {
 	/// <param name="component"> modal host</param>
 	public void Initialize(ModalHost component) => ModalInstance = component ?? throw new ArgumentNullException(nameof(component));
 
+	/// <summary>Whether a modal host has been supplied, so dialogs can be shown in this scope.</summary>
+	public bool IsInitialized => ModalInstance != null;
+
 	/// <summary>
 	/// Show the modal component of type,
 	/// <typeparam name="T"> modal component to show. must implement modal component</typeparam>

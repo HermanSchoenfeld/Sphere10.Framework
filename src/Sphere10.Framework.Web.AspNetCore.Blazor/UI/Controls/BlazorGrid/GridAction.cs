@@ -19,6 +19,9 @@ public class GridAction<TItem> {
 	public PerformAction ActionWork { get; init; }
 	public Func<TItem, Task> ActionWorkAsync { get; init; }
 	public string IconURL { get; init; }
+
+	/// <summary>An icon CSS class, such as "fas fa-trash-alt", shown by a grid whose ActionStyle is Icons; the name becomes its tooltip.</summary>
+	public string Icon { get; init; }
 	public IsActionAvailableDelegate IsActionAvailable { get; init; }
 
 	public GridAction(string name, PerformAction actionWork, string iconURL, IsActionAvailableDelegate isActionAvailable = null) {
