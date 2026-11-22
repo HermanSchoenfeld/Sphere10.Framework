@@ -26,6 +26,9 @@ public static class EnumExtensions {
 		return Tools.Enums.GetDescription(value, @default);
 	}
 
+	/// <summary>The value's text for a user: its [Description], or its name as Title Case words. See <see cref="Tools.Enums.GetDisplayText"/>.</summary>
+	public static string GetDisplayText(this Enum value) => Tools.Enums.GetDisplayText(value);
+
 	public static object GetDefaultValue(this Enum value) {
 		return Tools.Enums.GetDefaultValue(value);
 	}

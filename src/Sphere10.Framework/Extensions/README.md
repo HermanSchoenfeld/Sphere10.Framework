@@ -22,7 +22,7 @@ Each class extends one target type or family, and its name says which. The membe
 | [`DebugExtensions`](DebugExtensions.cs) | static class | C# extension members on `Debug` that record the main thread and assert, in debug builds, that code is not running on it. |
 | [`DecoratorExtensions`](DecoratorExtensions.cs) | static class | Activates decorators, adapters and projections over collections, dictionaries, sets, comparers, streams and serializers. |
 | [`DirectoryInfoExtensions`](DirectoryInfoExtensions.cs) | static class | Lists the subfolder names of a `DirectoryInfo`. |
-| [`EnumExtensions`](EnumExtensions.cs) | static class | Enum attributes and descriptions, default values and flag set, clear, test and combine operations. |
+| [`EnumExtensions`](EnumExtensions.cs) | static class | Enum attributes and descriptions, display text (`GetDisplayText`), default values and flag set, clear, test and combine operations. |
 | [`ExceptionExtensions`](ExceptionExtensions.cs) | static class | Flattens inner and aggregate exceptions, finds the innermost one and formats display and diagnostic text. |
 | [`ExpressionExtensions`](ExpressionExtensions.cs) | static class | Resolves the member that a lambda expression accesses. |
 | [`FileInfoExtensions`](FileInfoExtensions.cs) | static class | Determines the MIME type of a `FileInfo`. |

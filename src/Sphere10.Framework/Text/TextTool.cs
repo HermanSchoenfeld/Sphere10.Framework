@@ -126,6 +126,52 @@ public static class Text {
 
 	}
 
+	/// <summary>
+	/// Splits an identifier, such as an enum member or property name, into Title Case words for display: "ApplyTemplate" gives
+	/// "Apply Template", "Last30Days" "Last 30 Days" and "lastMonth" "Last Month". Underscores, hyphens and spaces separate words.
+	/// </summary>
+	/// <remarks>
+	/// Acronyms stay whole: an upper-case run followed by a capitalised word ends before that word's capital ("IPAddress" gives
+	/// "IP Address"), unless only one lower-case letter follows, as in "IPv4" or "URLs". A number is a word of its own when it stands
+	/// between a lower-case letter and a capitalised word ("Last30Days"); otherwise it stays with its letters ("SHA256",
+	/// "SECP256k1", "Tier1"). Each word's first letter is capitalised and the other letters keep their case.
+	/// </remarks>
+	public static string ToTitleCaseWords(string identifier) {
+		Guard.ArgumentNotNull(identifier, nameof(identifier));
+		var words = new List<string>();
+		foreach (var part in identifier.Split(new[] { '_', '-', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)) {
+			var start = 0;
+			for (var index = 1; index < part.Length; index++) {
+				if (StartsWord(part, index)) {
+					words.Add(part.Substring(start, index - start));
+					start = index;
+				}
+			}
+			words.Add(part.Substring(start));
+		}
+		return string.Join(" ", words.Select(word => char.ToUpperInvariant(word[0]) + word.Substring(1)));
+
+		// Whether a new word starts at the index within one separator-free part.
+		static bool StartsWord(string part, int index) {
+			var previous = part[index - 1];
+			var current = part[index];
+			if (char.IsUpper(current))
+				return char.IsLower(previous) || (char.IsUpper(previous) || char.IsDigit(previous)) && StartsCapitalisedWord(part, index);
+			// A number between a lower-case letter and a capitalised word stands alone: "Last30Days".
+			if (char.IsDigit(current) && char.IsLower(previous)) {
+				var end = index;
+				while (end < part.Length && char.IsDigit(part[end]))
+					end++;
+				return end < part.Length && StartsCapitalisedWord(part, end);
+			}
+			return false;
+		}
+
+		// Whether a capital at the index begins a word of at least two lower-case letters, so "IPAddress" splits and "IPv4" does not.
+		static bool StartsCapitalisedWord(string part, int index)
+			=> index + 2 < part.Length && char.IsUpper(part[index]) && char.IsLower(part[index + 1]) && char.IsLower(part[index + 2]);
+	}
+
 	public static bool IsAsciiLetter(char c) => AsciiLetterRegex.IsMatch(c.ToString());
 
 	public static IEnumerable<string> FindSentencesWithText(string paragraph, string text) {

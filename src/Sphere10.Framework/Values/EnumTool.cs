@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using Sphere10.Framework;
 
@@ -39,6 +40,24 @@ public static class Enums {
 
 	public static string GetHumanReadableName(Enum @enum)
 		=> GetDescription(@enum) ?? GetDisplayName(@enum) ?? @enum.ToString();
+
+	/// <summary>
+	/// The text a user sees for an enum value: its <see cref="DescriptionAttribute"/> when it has one, otherwise its name split into
+	/// Title Case words by <see cref="Text.ToTitleCaseWords"/> ("ApplyTemplate" gives "Apply Template", "Last30Days" "Last 30 Days").
+	/// </summary>
+	/// <remarks>
+	/// A combination of a flags enum that no member names on its own lists each member's text, separated by ", ", as
+	/// <see cref="Enum.ToString()"/> lists their names. A value that no member defines shows its number.
+	/// </remarks>
+	public static string GetDisplayText(Enum value) {
+		Guard.ArgumentNotNull(value, nameof(value));
+		var type = value.GetType();
+		var names = value.ToString().Split(", ");
+		// An undefined value prints as its number, which is then its only text.
+		if (!names.All(name => Enum.IsDefined(type, name)))
+			return value.ToString();
+		return string.Join(", ", names.Select(name => type.GetField(name).GetCustomAttribute<DescriptionAttribute>(false)?.Description ?? Text.ToTitleCaseWords(name)));
+	}
 
 	/// <summary>
 	/// For all enums, returns all their name candidates. An enum can have multiple serializable names based on attributes

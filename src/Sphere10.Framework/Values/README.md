@@ -29,7 +29,7 @@ Value types and helpers for deferred values, operation results, variable-length 
 | [`Result`](Result.cs) | class | Serializable operation outcome holding result codes with severities and messages or enum values, with success, failure and merge helpers. |
 | [`Result<TValue>`](Result.cs) | class | `Result` that also carries a value, with implicit conversions to and from the value. |
 | [`ShortGuid`](ShortGuid.cs) | struct | GUID wrapper whose string form is the base62 encoding of its bytes. |
-| [`Tools.Enums`](EnumTool.cs) | tools | Enum helpers for name candidates, `EnumMember`, description and display-name attributes, value lists, range checks and parsing. |
+| [`Tools.Enums`](EnumTool.cs) | tools | Enum helpers for name candidates, `EnumMember`, description and display-name attributes, value lists, range checks and parsing. `GetDisplayText` gives the text a user sees: the `[Description]`, or the name as Title Case words ("Last30Days" reads "Last 30 Days"), with flag combinations listed. |
 | [`Tools.Time`](DateTimeTool.cs) | tools | Date helpers for year and month differences, next day of week or month, Unix and 1979-based timestamps, ordinal suffixes, month names and minimum or maximum dates. |
 | [`Tools.Values`](ValueTool.cs) | tools | Value helpers for clipping, swapping, base-N digits, minimum and maximum, double formatting and parsing, and the `Future` factory for each future type. |
 | [`ValueRange<T>`](ValueRange.cs) | class | Immutable range with inclusive or exclusive ends, a comparer, `Contains` and step iterators. |

@@ -24,7 +24,7 @@ String formatting with named tokens, type-converter parsing, casing and inflecti
 | [`TextBank`](TextBank.cs) | class | List of the string forms of objects that can be searched for substrings. |
 | [`TextCasing`](TextCasing.cs) | enum | Target casings `PascalCase`, `CamelCase`, `SnakeCase` and `KebabCase`. |
 | [`Tools.Parser`](ParseTool.cs) | tools | `Parse`, `TryParse` and `SafeParse` that forward to `GenericParser`. |
-| [`Tools.Text`](TextTool.cs) | tools | Casing conversion, sentence search, token formatting, random strings, Base62 and Base32, byte conversion and text compression helpers. |
+| [`Tools.Text`](TextTool.cs) | tools | Casing conversion, identifier to Title Case words (`ToTitleCaseWords`), sentence search, token formatting, random strings, Base62 and Base32, byte conversion and text compression helpers. |
 | [`UnicodeRange`](UnicodeRange.cs) | static class | Named `ValueRange<char>` values for the Unicode blocks, from `BasicLatin` onwards. |
 
 ### ReadableRex
