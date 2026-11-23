@@ -9,7 +9,7 @@
     <PackageVersion Include="AutoFixture" Version="5.0.0-rc.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
     <PackageVersion Include="BouncyCastle.Cryptography" Version="2.7.0" />
-    <PackageVersion Include="FirebirdSql.Data.FirebirdClient" Version="11.0.0-alpha1" />
+    <PackageVersion Include="FirebirdSql.Data.FirebirdClient" Version="10.3.4" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
     <PackageVersion Include="FluentNHibernate" Version="3.5.0" />
@@ -27,7 +27,7 @@
     <PackageVersion Include="Microsoft.Playwright" Version="1.64.0" />
     <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="11.0.0" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
-    <PackageVersion Include="Newtonsoft.Json" Version="14.0.1-beta2" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NHibernate" Version="5.7.0" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
     <PackageVersion Include="NUnit" Version="5.0.0" />

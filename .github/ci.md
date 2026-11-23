@@ -42,4 +42,4 @@ Logical-cluster memoization remains controlled by the file-local `#define Logica
 
 ## Stable dependencies
 
-`Directory.Packages.props` contains the current dependency versions, including some prereleases. Review those dependencies before a stable tag. NuGet reports NU5104 when a stable package depends on a prerelease dependency. Continuous development packages are explicitly prerelease versions.
+`Directory.Packages.props` contains the current dependency versions. Every dependency that a public package carries is a stable release for the stable `3.2.0` tag; `AutoFixture` and `BenchmarkDotNet` remain prereleases because only test and benchmark projects use them. Review the dependencies before each stable tag. NuGet reports NU5104 when a stable package depends on a prerelease dependency. Continuous development packages are explicitly prerelease versions.
