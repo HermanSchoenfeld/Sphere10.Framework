@@ -70,7 +70,7 @@ function New-Consumer {
 		$privateAssets = if ($id -eq 'Sphere10.Framework.Generators') { ' PrivateAssets="all"' } else { '' }
 		"`t`t<PackageReference Include=`"$id`" Version=`"[$version]`"$privateAssets />"
 	}
-	$desktopProperties = if ($name -eq 'Desktop') { '<UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>' } else { '' }
+	$desktopProperties = if ($name -in @('Desktop', 'Store')) { '<UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>' } else { '' }
 	if ($name -eq 'Renderer') { $desktopProperties = '<OutputType>Exe</OutputType>' }
 	$projectPath = Join-Path $directory "PackageConsumer.$name.csproj"
 	Write-TextFile $projectPath @"
@@ -214,8 +214,11 @@ $applicationProject = New-Consumer 'Application' @('Sphere10.Framework.Applicati
 Assert-UiIndependentConsumer $applicationProject
 $libraryIds = @($packageIds | Where-Object { $_ -notlike 'Sphere10.Framework.Windows*' -and $_ -notlike 'Sphere10.Framework.Web.AspNetCore*' })
 $null = New-Consumer 'Libraries' $libraryIds
-$desktopIds = @($packageIds | Where-Object { $_ -like 'Sphere10.Framework.Windows*' })
+# The Store package needs the Windows 10 SDK projection; every other Windows package must also suit a plain Windows target.
+$storeIds = @($packageIds | Where-Object { $_ -eq 'Sphere10.Framework.Windows.Store' })
+$desktopIds = @($packageIds | Where-Object { $_ -like 'Sphere10.Framework.Windows*' -and $_ -notin $storeIds })
 if ($desktopIds.Count) { $null = New-Consumer 'Desktop' $desktopIds 'Microsoft.NET.Sdk' "$consumerFramework-windows" }
+if ($storeIds.Count) { $null = New-Consumer 'Store' $storeIds 'Microsoft.NET.Sdk' "$consumerFramework-windows10.0.19041.0" }
 $rendererProject = New-Consumer 'Renderer' @('Sphere10.Framework.Web.VisualRenderer')
 Invoke-Dotnet @('run', '--project', $rendererProject, '-c', $configuration, '--no-build', '--no-restore') 'run-renderer'
 $webProject = New-Consumer 'Web' @('Sphere10.Framework.Web.AspNetCore.MVC', 'Sphere10.Framework.Web.AspNetCore.Blazor') 'Microsoft.NET.Sdk.Web'
@@ -290,7 +293,7 @@ $report = [PSCustomObject]@{
 	Version = $version
 	Solution = $solutionPath
 	Packages = @($packageIds | Sort-Object)
-	Consumers = @('Core', 'Application', 'Libraries', 'Renderer', 'Web') + $(if ($desktopIds.Count) { 'Desktop' })
+	Consumers = @('Core', 'Application', 'Libraries', 'Renderer', 'Web') + @(if ($desktopIds.Count) { 'Desktop' }) + @(if ($storeIds.Count) { 'Store' })
 	TargetFramework = $consumerFramework
 	PublishedWeb = $publishDirectory
 	HttpChecks = 'Plugin and ApplicationBlock SSR, typed grid, theme CSS, MVC XML, scoped CSS, grid and picker JavaScript'

@@ -71,6 +71,8 @@ public static class PackageUsage {
 		public IApplicationMenu[] Menus => _menus.ToArray();
 
 		public void AddMenu(IApplicationMenu menu) => _menus.Add(menu);
+
+		protected override bool DetermineAvailability(IServiceProvider services) => true;
 	}
 
 	private sealed class Menu : ApplicationMenuBase<Command> {

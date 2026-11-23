@@ -13,9 +13,9 @@ Run the script from the Framework repository root with PowerShell and the .NET 1
 
 | Parameter | Default | Purpose |
 |---|---|---|
-| `-solutionPath` | `src/Sphere10.Framework (Win).sln` | The solution whose packable projects under `src/` are packed. The Windows solution covers every active library and needs the Windows desktop targeting pack. The cross-platform solution leaves out the Windows libraries, so the `Desktop` consumer is skipped. |
+| `-solutionPath` | `src/Sphere10.Framework (Win).sln` | The solution whose packable projects under `src/` are packed. The Windows solution covers every active library and needs the Windows desktop targeting pack. The cross-platform solution leaves out the Windows libraries, so the `Desktop` and `Store` consumers are skipped. |
 | `-configuration` | `Release` | The configuration, `Debug` or `Release`, used for packing and for building the consumers. |
-| `-consumerFramework` | `net10.0` | Select `net10.0` or `net11.0`. Desktop consumers add the Windows suffix. CI checks both. |
+| `-consumerFramework` | `net10.0` | Select `net10.0` or `net11.0`. The `Desktop` consumer adds the Windows suffix and the `Store` consumer the `windows10.0.19041.0` suffix. CI checks both. |
 | `-packagesDirectory` | Not set | Validate an existing package batch instead of rebuilding it. Requires `-packageVersion`. |
 | `-packageVersion` | Generated validation version | Exact version of the supplied package batch. |
 | `-workspaceDirectory` | New temporary folder | Optional new workspace for isolated consumers, cache and reports. Existing directories are rejected. |
@@ -45,7 +45,8 @@ After a successful run, create the release packages with `./scripts/pack.ps1`, a
 | `Core` | `Sphere10.Framework.Web` | Creates a `SitemapXml`. Its restore graph and framework references must contain no ASP.NET Core, JS interop, MAUI, Windows desktop, WinForms, WPF or `System.Drawing.Common` assemblies, and no `Sphere10.Framework.Windows*`, `Sphere10.Framework.Web.AspNetCore*` or `Sphere10.Framework.Drawing` package. |
 | `Application` | `Sphere10.Framework.Application` | Uses the UI-independent application model in `Sphere10.Framework.Application.UI`. It derives a block, a menu and a menu item from `ApplicationBlockBase`, `ApplicationMenuBase<T>` and `ApplicationMenuItemBase`, and it uses screen definitions, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>`, `IApplication.LoadedPlugins` and `Blocks`, the screen-host contracts and `Wizard<TModel, TStep>`. Its restore graph passes the same UI-free check as `Core`. |
 | `Libraries` | Every package except `Sphere10.Framework.Windows*` and `Sphere10.Framework.Web.AspNetCore*` | A partial property compiles through the packed `[AutoDirty]` generator, and `AssertEx` and `UnitTestDAC` resolve from the NUnit packages. |
-| `Desktop` | Every `Sphere10.Framework.Windows*` package, for the selected Windows target | Derives the WinForms `ApplicationScreen` and builds a plugin and its block with the WinForms `ApplicationPluginBuilder`. |
+| `Desktop` | Every `Sphere10.Framework.Windows*` package except `Sphere10.Framework.Windows.Store`, for the selected plain Windows target | Derives the WinForms `ApplicationScreen` and builds a plugin and its block with the WinForms `ApplicationPluginBuilder`. |
+| `Store` | `Sphere10.Framework.Windows.Store`, for the selected target with the `windows10.0.19041.0` platform its Store APIs require | Creates a `WindowsStoreProductUpdater` as a `ProductUpdaterBase` and the Store `ModuleConfiguration`. |
 | `Renderer` | `Sphere10.Framework.Web.VisualRenderer` | Executes HTML rendering, opens the embedded theme archive and verifies that license notices reach the consumer output. |
 | `Web` | `Sphere10.Framework.Web.AspNetCore.MVC` and `Sphere10.Framework.Web.AspNetCore.Blazor` | Builds, publishes and serves the Blazor host that [The Web consumer](#the-web-consumer) describes. |
 
