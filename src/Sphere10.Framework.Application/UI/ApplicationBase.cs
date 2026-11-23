@@ -25,6 +25,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	public event ProgressHandler Progress;
 
 	private readonly CriticalObject _lifecycle = new();
+	private readonly CriticalObject _blockOwnership = new();
 	private readonly CancellationTokenSource _exitLifetime = new();
 	private readonly AsyncLocal<TaskCompletionSource> _runningInitialization = new();
 	private readonly AsyncLocal<TaskCompletionSource> _runningFinalization = new();
@@ -369,6 +370,8 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	}
 
 	private void RefreshBlockParents() {
+		// A cancelled exit can notify a change on another thread while disposal releases the blocks, so both hold the block ownership lock.
+		using var ownership = _blockOwnership.EnterAccessScope();
 		if (IsDisposed)
 			return;
 		var blocks = ScreenHost?.Blocks ?? Array.Empty<IApplicationBlock>();
@@ -502,16 +505,18 @@ public abstract class ApplicationBase : Disposable, IApplication {
 		using var context = Tools.Scope.ExecuteOnDispose(() => _runningDisposal.Value = previous);
 		var errors = new List<Exception>();
 		using (Tools.Scope.ExecuteOnDispose(() => {
-			IsDisposed = true;
-			if (_observedHost != null)
-				Tools.Exceptions.ExecuteCapturingException(() => _observedHost.Changed -= OnScreenHostChanged, errors);
-			foreach (var block in _parentedBlocks)
-				Tools.Exceptions.ExecuteCapturingException(() => {
-					if (ReferenceEquals(block.Parent, this))
-						block.Parent = null;
-				}, errors);
-			_parentedBlocks = Array.Empty<IApplicationBlock>();
-			_observedHost = null;
+			using (_blockOwnership.EnterAccessScope()) {
+				IsDisposed = true;
+				if (_observedHost != null)
+					Tools.Exceptions.ExecuteCapturingException(() => _observedHost.Changed -= OnScreenHostChanged, errors);
+				foreach (var block in _parentedBlocks)
+					Tools.Exceptions.ExecuteCapturingException(() => {
+						if (ReferenceEquals(block.Parent, this))
+							block.Parent = null;
+					}, errors);
+				_parentedBlocks = Array.Empty<IApplicationBlock>();
+				_observedHost = null;
+			}
 			Changed = null;
 			Initializing = null;
 			Initialized = null;
