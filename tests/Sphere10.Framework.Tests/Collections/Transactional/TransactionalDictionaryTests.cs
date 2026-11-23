@@ -17,6 +17,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsBase {
 
 	protected override IDisposable Create<TKey, TValue>(

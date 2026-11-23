@@ -13,6 +13,7 @@ using NUnit.Framework;
 using Sphere10.Framework.NUnit;
 namespace Sphere10.Framework.Tests;
 
+[Category("CollectionIntegration")]
 public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 	protected abstract IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> merkleDictionary);
 

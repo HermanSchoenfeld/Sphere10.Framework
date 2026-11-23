@@ -18,6 +18,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 
 	private IDisposable CreateList(ClusteredStreamsPolicy policy, bool useChecksumIndex, out IStreamMappedList<TestObject> clusteredList) {

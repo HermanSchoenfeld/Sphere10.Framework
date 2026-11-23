@@ -18,6 +18,7 @@ namespace Sphere10.Framework.Tests;
 /// Abstract test harness for all B-tree family implementations.
 /// Subclasses provide a concrete tree via <see cref="CreateInstance{K,V}"/>.
 /// </summary>
+[Category("CollectionIntegration")]
 public abstract class BTreeBaseTests {
 	public const int MaxStringValueLength = 100;
 	public const int IntegrationTestItemCount = 1000;

@@ -16,6 +16,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 
 	protected override IDisposable CreateList<T>(IItemSerializer<T> serializer, IEqualityComparer<T> comparer, out IRecyclableList<T> list) {

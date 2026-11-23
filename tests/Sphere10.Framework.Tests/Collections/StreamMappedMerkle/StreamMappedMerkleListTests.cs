@@ -16,6 +16,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class StreamMappedMerkleListTests : MerkleListTestsBase {
 	private const int DefaultClusterSize = 256;
 

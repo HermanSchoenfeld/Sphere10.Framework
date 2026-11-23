@@ -19,6 +19,7 @@ namespace Sphere10.Framework.Tests;
 /// </remarks>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class ClusterMapTests {
 
 	public enum ClusterMapImplementationType {

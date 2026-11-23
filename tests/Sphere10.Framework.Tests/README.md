@@ -36,6 +36,12 @@ Leave out the packaging-script category:
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter "TestCategory!=Packaging"
 ```
 
+Leave out the storage-backed collection fixtures, which take most of the run time. CI runs them on .NET 11 only:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 -f net8.0 --filter "TestCategory!=CollectionIntegration"
+```
+
 Run the explicit file-backed `BufferedStream` measurements on one target:
 
 ```powershell
@@ -48,6 +54,7 @@ Quote filter expressions so the shell does not interpret `|` or `&`. Add
 | Group | Selection | Notes |
 |---|---|---|
 | Ordinary fixtures | Run by default | Most fixtures run their children in parallel. |
+| `CollectionIntegration` category | Run by default; CI runs it on .NET 11 only | The B-tree, buffer, paged, stream-mapped, stream-mapped Merkle, stream-paged and transactional collection fixtures, and the clustered-stream fixtures. |
 | `Packaging` category | Run by default | `PackageScriptTests` only. It needs PowerShell, as described in [Requirements](#requirements). |
 | `Performance` category | `[Explicit]`, so a filter must select it | `BufferedStreamPerformanceTests` only. It writes JSON and CSV results to a new folder under the temporary directory, or to the `BufferedStreamPerformanceDirectory` test parameter. |
 | Ignored | Never run | `FastMarshalStructSerializerTests`, one `StringFormatterTests` case and one `ScopeAllocationDiagnostics` case. |

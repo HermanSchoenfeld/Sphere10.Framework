@@ -17,6 +17,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionaryTestsBase {
 	private const int DefaultClusterSize = 256;
 	private const int ConstantKeySize = 200;

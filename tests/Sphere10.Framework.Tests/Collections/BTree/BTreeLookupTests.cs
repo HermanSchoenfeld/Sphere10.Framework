@@ -15,6 +15,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class BTreeLookupTests {
 
 	#region InMemoryBTreeLookup Tests

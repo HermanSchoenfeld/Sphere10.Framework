@@ -13,6 +13,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class InMemoryBTreePlusTests : BTreePlusTests {
 
 	protected override BTreeBase<K, V> CreateInstance<K, V>(int order, IComparer<K> comparer = null)

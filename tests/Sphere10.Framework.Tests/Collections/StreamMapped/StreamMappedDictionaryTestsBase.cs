@@ -14,6 +14,7 @@ using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests;
 
+[Category("CollectionIntegration")]
 public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 	private const int EstimatedTestObjectSize = 400 + 256;
 

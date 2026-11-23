@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class ClusterMapChangedEventArgsTests {
 
 	[Test]

@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("CollectionIntegration")]
 public class BTreeSpecTests {
 	/// <summary>Verifies that the shared default specification uses the framework-owned type and order constants.</summary>
 	[Test]
