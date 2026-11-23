@@ -48,7 +48,12 @@ public class WindowsFileInspectionService {
 		var certificateError = 0;
 		if (encodedCertificate.Length > 0) {
 			Tools.Exceptions.ExecuteCapturingException<CryptographicException>(() => {
+#if NET9_0_OR_GREATER
 				using var certificate = X509CertificateLoader.LoadCertificate(encodedCertificate);
+#else
+				// X509CertificateLoader arrived in .NET 9; earlier targets decode through the certificate constructor.
+				using var certificate = new X509Certificate2(encodedCertificate);
+#endif
 				signer = certificate.Subject;
 				issuer = certificate.Issuer;
 				thumbprint = certificate.Thumbprint;

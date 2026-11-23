@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+// The ICSharpCode decompiler supports only .NET 10 and later.
+#if NET10_0_OR_GREATER
 using System;
 using System.IO;
 using System.Linq;
@@ -180,4 +182,4 @@ public class ManagedAssemblyTests {
 		writer.Write(bytes);
 	}
 }
-
+#endif

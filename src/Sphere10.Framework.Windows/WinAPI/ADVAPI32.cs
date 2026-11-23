@@ -519,6 +519,8 @@ public static partial class WinAPI {
 		public const uint SERVICE_QUERY_CONFIG = 1;
 		public const uint SERVICE_CHANGE_CONFIG = 2;
 		public const uint SERVICE_QUERY_STATUS = 4;
+		public const uint SERVICE_STOP = 0x20;
+		public const uint SERVICE_CONTROL_STOP = 1;
 		public const uint SERVICE_NO_CHANGE = uint.MaxValue;
 		public const uint SERVICE_CONFIG_DESCRIPTION = 1;
 		public const uint SERVICE_CONFIG_FAILURE_ACTIONS = 2;
@@ -582,6 +584,17 @@ public static partial class WinAPI {
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
+		public struct SERVICE_STATUS {
+			public uint ServiceType;
+			public uint CurrentState;
+			public uint ControlsAccepted;
+			public uint Win32ExitCode;
+			public uint ServiceSpecificExitCode;
+			public uint CheckPoint;
+			public uint WaitHint;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
 		public struct SERVICE_STATUS_PROCESS {
 			public uint ServiceType;
 			public uint CurrentState;
@@ -607,6 +620,9 @@ public static partial class WinAPI {
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool QueryServiceConfig2W(IntPtr service, uint level, IntPtr buffer, uint size, out uint needed);
+		[DllImport("advapi32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ControlService(IntPtr service, uint control, out SERVICE_STATUS status);
 		[DllImport("advapi32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool QueryServiceStatusEx(IntPtr service, uint level, out SERVICE_STATUS_PROCESS status, uint size, out uint needed);

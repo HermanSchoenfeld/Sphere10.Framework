@@ -34,16 +34,24 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
 
-    <!-- Target .NET 11 as well when the building SDK supports it; machines with only the .NET 10 SDK keep building net10.0. -->
+    <!-- Libraries reach .NET 8 and 9 apps as well as the supported .NET 10, and add .NET 11 (runtime async) when the building SDK supports it. -->
     <FrameworkBuildSdkVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildSDKsPath)'))))</FrameworkBuildSdkVersion>
     <FrameworkBuildSupportsNet11 Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(FrameworkBuildSdkVersion)', '^\d+\.')) and $([MSBuild]::VersionGreaterThanOrEquals('$(FrameworkBuildSdkVersion)', '11.0'))">true</FrameworkBuildSupportsNet11>
-    <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0;net11.0</FrameworkTargetFrameworks>
-    <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == ''">net10.0</FrameworkTargetFrameworks>
-    <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows;net11.0-windows</FrameworkWindowsTargetFrameworks>
-    <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == ''">net10.0-windows</FrameworkWindowsTargetFrameworks>
+    <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net8.0;net9.0;net10.0;net11.0</FrameworkTargetFrameworks>
+    <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == ''">net8.0;net9.0;net10.0</FrameworkTargetFrameworks>
+    <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net8.0-windows;net9.0-windows;net10.0-windows;net11.0-windows</FrameworkWindowsTargetFrameworks>
+    <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == ''">net8.0-windows;net9.0-windows;net10.0-windows</FrameworkWindowsTargetFrameworks>
+    <!-- UI libraries build on .NET 10 UI APIs, such as Form.ShowDialogAsync for WinForms dialogs and ASP.NET Core static web assets for
+         Blazor, so they start at .NET 10. -->
+    <FrameworkUITargetFrameworks Condition="'$(FrameworkUITargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0;net11.0</FrameworkUITargetFrameworks>
+    <FrameworkUITargetFrameworks Condition="'$(FrameworkUITargetFrameworks)' == ''">net10.0</FrameworkUITargetFrameworks>
+    <FrameworkWindowsUITargetFrameworks Condition="'$(FrameworkWindowsUITargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows;net11.0-windows</FrameworkWindowsUITargetFrameworks>
+    <FrameworkWindowsUITargetFrameworks Condition="'$(FrameworkWindowsUITargetFrameworks)' == ''">net10.0-windows</FrameworkWindowsUITargetFrameworks>
+    <FrameworkWindowsStoreUITargetFrameworks Condition="'$(FrameworkWindowsStoreUITargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0</FrameworkWindowsStoreUITargetFrameworks>
+    <FrameworkWindowsStoreUITargetFrameworks Condition="'$(FrameworkWindowsStoreUITargetFrameworks)' == ''">net10.0-windows10.0.19041.0</FrameworkWindowsStoreUITargetFrameworks>
     <!-- Libraries that call Windows Runtime APIs, such as the Windows Store updater, name a Windows SDK version; the SDK supplies their projection. -->
-    <FrameworkWindowsStoreTargetFrameworks Condition="'$(FrameworkWindowsStoreTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0</FrameworkWindowsStoreTargetFrameworks>
-    <FrameworkWindowsStoreTargetFrameworks Condition="'$(FrameworkWindowsStoreTargetFrameworks)' == ''">net10.0-windows10.0.19041.0</FrameworkWindowsStoreTargetFrameworks>
+    <FrameworkWindowsStoreTargetFrameworks Condition="'$(FrameworkWindowsStoreTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net8.0-windows10.0.19041.0;net9.0-windows10.0.19041.0;net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0</FrameworkWindowsStoreTargetFrameworks>
+    <FrameworkWindowsStoreTargetFrameworks Condition="'$(FrameworkWindowsStoreTargetFrameworks)' == ''">net8.0-windows10.0.19041.0;net9.0-windows10.0.19041.0;net10.0-windows10.0.19041.0</FrameworkWindowsStoreTargetFrameworks>
 
     <!-- NuGet Packaging -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

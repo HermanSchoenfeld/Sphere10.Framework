@@ -3,8 +3,20 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
+  <!--
+    Runtime-band packages follow the target's .NET version. Their 11.x releases build only for .NET 10 and 11, so a .NET 8 or 9 target would
+    otherwise get their .NET Standard build, which for System.Drawing.Common only throws PlatformNotSupportedException.
+    Dependency injection stays on 11.x for every target: its .NET Standard build is complete, and BenchmarkDotNet and SqlClient need it at 10 or later.
+  -->
+  <PropertyGroup>
+    <FrameworkRuntimeBand Condition="$(TargetFramework.StartsWith('net8.0'))">8</FrameworkRuntimeBand>
+    <FrameworkRuntimeBand Condition="$(TargetFramework.StartsWith('net9.0'))">9</FrameworkRuntimeBand>
+    <FrameworkRuntimeBand Condition="$(TargetFramework.StartsWith('net10.0'))">10</FrameworkRuntimeBand>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.34" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="AngleSharp" Version="1.8.0" />
     <PackageVersion Include="AutoFixture" Version="5.0.0-rc.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
@@ -20,12 +32,16 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.1" />
     <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.1.1" />
     <PackageVersion Include="Microsoft.Diagnostics.Runtime" Version="4.2.751201" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.64.0" />
-    <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="8.0.0" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NHibernate" Version="5.7.0" />
@@ -37,19 +53,33 @@
     <PackageVersion Include="SharpDX" Version="4.2.0" />
     <PackageVersion Include="SharpDX.DirectSound" Version="4.2.0" />
     <PackageVersion Include="SourceGear.sqlite3" Version="3.53.4" />
-    <PackageVersion Include="System.CodeDom" Version="11.0.0" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="11.0.0" />
+    <PackageVersion Include="System.CodeDom" Version="8.0.0" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.CodeDom" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.CodeDom" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.1" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
     <PackageVersion Include="System.Data.SQLite" Version="2.0.4" />
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="11.0.0" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.2" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <!-- Drawing must match WindowsDesktop: its private Windows interop ABI differs between .NET 10 and 11. -->
-    <PackageVersion Include="System.Drawing.Common" Version="10.0.15" Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net10.0-windows'" />
-    <PackageVersion Include="System.Drawing.Common" Version="11.0.0" Condition="'$(TargetFramework)' != 'net10.0' and '$(TargetFramework)' != 'net10.0-windows'" />
-    <PackageVersion Include="System.Formats.Nrbf" Version="11.0.0" />
+    <PackageVersion Include="System.Drawing.Common" Version="8.0.34" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.Drawing.Common" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.Drawing.Common" Version="10.0.15" Condition="'$(FrameworkRuntimeBand)' == '10'" />
+    <PackageVersion Include="System.Drawing.Common" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9' and '$(FrameworkRuntimeBand)' != '10'" />
+    <PackageVersion Include="System.Formats.Nrbf" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.Formats.Nrbf" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.Formats.Nrbf" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="System.Linq.Async" Version="7.0.1" />
-    <PackageVersion Include="System.Management" Version="11.0.0" />
+    <PackageVersion Include="System.Management" Version="8.0.0" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.Management" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.Management" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.1" Condition="'$(FrameworkRuntimeBand)' == '8'" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.23" Condition="'$(FrameworkRuntimeBand)' == '9'" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0" Condition="'$(FrameworkRuntimeBand)' != '8' and '$(FrameworkRuntimeBand)' != '9'" />
     <PackageVersion Include="WorkflowCore.Persistence.EntityFramework" Version="3.20.0" />
     <PackageVersion Include="WorkflowCore.Persistence.SqlServer" Version="3.20.0" />
   </ItemGroup>

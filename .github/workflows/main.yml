@@ -68,6 +68,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
+            8.0.x
+            9.0.x
             10.0.x
             11.0.x
       - name: Build solution
@@ -96,6 +98,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
+            8.0.x
+            9.0.x
             10.0.x
             11.0.x
       - uses: actions/setup-python@v5
@@ -129,7 +133,7 @@ jobs:
           ./scripts/pack.ps1 -Version $env:PACKAGE_VERSION -SourceRevision $env:GITHUB_SHA -OutputDirectory "${{ runner.temp }}/nuget-batch" -ArtifactsPath "${{ runner.temp }}/package-build"
           python scripts/nuget-release.py seal "${{ runner.temp }}/nuget-batch" --version $env:PACKAGE_VERSION --commit $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          foreach ($framework in @('net10.0', 'net11.0')) {
+          foreach ($framework in @('net8.0', 'net9.0', 'net10.0', 'net11.0')) {
             ./scripts/validate-packages.ps1 -packagesDirectory "${{ runner.temp }}/nuget-batch" -packageVersion $env:PACKAGE_VERSION -consumerFramework $framework -workspaceDirectory "${{ runner.temp }}/package-consumers-$framework"
           }
       - name: Verify sealed batch
@@ -228,15 +232,18 @@ jobs:
     name: Test
     needs: build
     runs-on: windows-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        framework: [net10.0, net11.0]
+        framework: [net8.0, net9.0, net10.0, net11.0]
     steps:
       - name: Setup .NET 10 and 11 SDKs
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
+            8.0.x
+            9.0.x
             10.0.x
             11.0.x
       - name: Download compiled tests
@@ -245,19 +252,16 @@ jobs:
           name: compiled-tests
           path: compiled-tests
       - name: Run unit tests
-        run: >-
-          dotnet vstest
-          "compiled-tests/Sphere10.Framework.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Tests.dll"
-          "compiled-tests/Sphere10.Framework.Application.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Application.Tests.dll"
-          "compiled-tests/Sphere10.Framework.CryptoEx.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.CryptoEx.Tests.dll"
-          "compiled-tests/Sphere10.Framework.Data.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Data.Tests.dll"
-          "compiled-tests/Sphere10.Framework.Communications.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Communications.Tests.dll"
-          "compiled-tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.dll"
-          "compiled-tests/Sphere10.Framework.Web.AspNetCore.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Web.AspNetCore.Tests.dll"
-          "compiled-tests/Sphere10.Framework.Web.VisualRenderer.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Web.VisualRenderer.Tests.dll"
-          /Logger:"console;verbosity=detailed"
-          /Logger:trx /ResultsDirectory:TestResults
-          -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+        shell: pwsh
+        run: |
+          # The UI test suites (Blazor, WinForms) exist only for .NET 10 and later, so run the suites built for this target.
+          $suites = @('Sphere10.Framework.Tests', 'Sphere10.Framework.Application.Tests', 'Sphere10.Framework.CryptoEx.Tests', 'Sphere10.Framework.Data.Tests',
+            'Sphere10.Framework.Communications.Tests', 'Sphere10.Framework.Web.AspNetCore.Blazor.Tests', 'Sphere10.Framework.Web.AspNetCore.Tests',
+            'Sphere10.Framework.Web.VisualRenderer.Tests')
+          $assemblies = @($suites | ForEach-Object { "compiled-tests/$_/bin/Debug/${{ matrix.framework }}/$_.dll" } | Where-Object { Test-Path -LiteralPath $_ })
+          if ($assemblies.Count -lt 6) { throw "Only $($assemblies.Count) test assemblies were built for ${{ matrix.framework }}." }
+          dotnet vstest @assemblies /Logger:"console;verbosity=detailed" /Logger:trx /ResultsDirectory:TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -278,6 +282,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
+            8.0.x
+            9.0.x
             10.0.x
             11.0.x
       - name: Run wizard browser regressions

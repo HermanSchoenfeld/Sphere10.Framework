@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>$(FrameworkWindowsTargetFrameworks)</TargetFrameworks>
+		<TargetFrameworks>$(FrameworkWindowsUITargetFrameworks)</TargetFrameworks>
 		<UseWindowsForms>true</UseWindowsForms>
 		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>

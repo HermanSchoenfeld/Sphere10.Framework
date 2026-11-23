@@ -374,13 +374,15 @@ public class Scheduler<TJob, TJobSchedule> : SyncDisposable where TJob : class, 
 		var shouldDispose = false;
 		using (_timeLine.EnterReadScope()) {
 			if (_timeLine.Count > 0) {
+				// System.Timers.Timer takes at most int.MaxValue milliseconds (about 24.8 days); .NET 8 overflows on more. A later start re-arms
+				// the timer when it fires, because the elapsed handler runs only the schedules that are due.
 				_timer.Interval =
 					_timeLine
 						.Peek()
 						.NextStartTime
 						.Subtract(DateTime.UtcNow)
 						.TotalMilliseconds
-						.ClipTo(1, double.MaxValue);
+						.ClipTo(1, int.MaxValue);
 				Log.Debug($"Scheduler RestartTimer Interval = {_timer.Interval}");
 				_timer.Start();
 			} else {

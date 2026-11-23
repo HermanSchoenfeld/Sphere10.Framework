@@ -89,7 +89,11 @@ public class WindowsDiagnosticsDependencyTests {
 	[Test]
 	public void WindowsUtilitiesAreStaticClassesNestedInTheFacadeAndDoNotExportApiAliases() {
 		// Only the utilities that own state remain instances behind a facade property
+#if NET10_0_OR_GREATER
 		var stateful = new[] { nameof(Tools.Windows.Assemblies), nameof(Tools.Windows.UiAutomation), nameof(Tools.Windows.Registry), nameof(Tools.Windows.Dumps) };
+#else
+		var stateful = new[] { nameof(Tools.Windows.UiAutomation), nameof(Tools.Windows.Registry), nameof(Tools.Windows.Dumps) };
+#endif
 		Assert.That(typeof(Tools.Windows).GetProperties(BindingFlags.Public | BindingFlags.Static).Select(property => property.Name), Is.EquivalentTo(stateful));
 		var utilities = typeof(Tools.Windows).GetNestedTypes(BindingFlags.Public);
 		Assert.That(utilities.Select(type => type.Name), Is.SupersetOf(new[] { "Network", "Drives", "Startup", "EventLogs", "Services", "Environment", "SecurityDescriptors", "Files", "Processes", "Shell" }));

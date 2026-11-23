@@ -26,9 +26,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- The decompiler supports only .NET 10 and later, so Tools.Windows.Assemblies exists only in those builds. -->
+  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
     <PackageReference Include="ICSharpCode.BamlDecompiler" />
     <PackageReference Include="ICSharpCode.Decompiler" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Diagnostics.Runtime" />
     <PackageReference Include="Microsoft.Win32.Registry.AccessControl" />
     <PackageReference Include="System.CodeDom" />

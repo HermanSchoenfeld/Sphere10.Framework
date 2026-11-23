@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace Sphere10.Framework.Tests;
+namespace Sphere10.Framework.Communications.Tests;
 
 [TestFixture]
 [Category("Integration")]
@@ -115,7 +115,11 @@ public class MailTlsIntegrationTests {
 		request.CertificateExtensions.Add(names.Build());
 		using var generatedCertificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow.AddDays(1));
 		// Reimport so Windows Schannel can use the private key; disposal deletes the temporary key container.
+#if NET9_0_OR_GREATER
 		using var certificate = X509CertificateLoader.LoadPkcs12(generatedCertificate.Export(X509ContentType.Pfx), null);
+#else
+		using var certificate = new X509Certificate2(generatedCertificate.Export(X509ContentType.Pfx));
+#endif
 		RemoteCertificateValidationCallback validationPolicy = null;
 		var validationCalls = 0;
 		if (trustTestCertificate) {

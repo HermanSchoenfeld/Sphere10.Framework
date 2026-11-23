@@ -125,7 +125,7 @@ public static partial class Windows {
 
 		public static void StartService(string name, TimeSpan timeout) => ControlService(name, timeout, ServiceControllerStatus.Running, controller => controller.Start());
 
-		public static void StopService(string name, TimeSpan timeout) => ControlService(name, timeout, ServiceControllerStatus.Stopped, controller => controller.Stop(false));
+		public static void StopService(string name, TimeSpan timeout) => ControlService(name, timeout, ServiceControllerStatus.Stopped, StopWithoutDependents);
 
 		public static void PauseService(string name, TimeSpan timeout) => ControlService(name, timeout, ServiceControllerStatus.Paused, controller => controller.Pause());
 
@@ -135,7 +135,7 @@ public static partial class Windows {
 			=> ControlServiceAsync(name, timeout, ServiceControllerStatus.Running, controller => controller.Start(), cancellationToken);
 
 		public static Task StopServiceAsync(string name, TimeSpan timeout, CancellationToken cancellationToken = default)
-			=> ControlServiceAsync(name, timeout, ServiceControllerStatus.Stopped, controller => controller.Stop(false), cancellationToken);
+			=> ControlServiceAsync(name, timeout, ServiceControllerStatus.Stopped, StopWithoutDependents, cancellationToken);
 
 		public static Task PauseServiceAsync(string name, TimeSpan timeout, CancellationToken cancellationToken = default)
 			=> ControlServiceAsync(name, timeout, ServiceControllerStatus.Paused, controller => controller.Pause(), cancellationToken);
@@ -331,6 +331,19 @@ public static partial class Windows {
 			using var controller = new ServiceController(name);
 			action(controller);
 			controller.WaitForStatus(status, timeout);
+		}
+
+		// Stops only this service and leaves its dependents running. ServiceController.Stop(false) arrived in .NET 10; earlier targets send
+		// the same stop control natively, because their Stop() also stops the dependent services.
+		private static void StopWithoutDependents(ServiceController controller) {
+#if NET10_0_OR_GREATER
+			controller.Stop(false);
+#else
+			using var manager = OpenManager();
+			using var service = OpenService(manager, controller.ServiceName, WinAPI.ADVAPI32.SERVICE_STOP);
+			if (!WinAPI.ADVAPI32.ControlService(service.DangerousGetHandle(), WinAPI.ADVAPI32.SERVICE_CONTROL_STOP, out _))
+				throw new Win32Exception(Marshal.GetLastWin32Error());
+#endif
 		}
 
 		private static WindowsServiceInfo[] ReadControllers(ServiceController[] controllers, Action checkpoint = null) {

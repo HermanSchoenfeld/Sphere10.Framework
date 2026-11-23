@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFrameworks>$(FrameworkWindowsTargetFrameworks)</TargetFrameworks>
+		<TargetFrameworks>$(FrameworkWindowsUITargetFrameworks)</TargetFrameworks>
 		<UseWindowsForms>true</UseWindowsForms>
 		<NoWarn>$(NoWarn);WFO1000</NoWarn>
 		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
@@ -13,7 +13,7 @@
 
 	<!-- A Windows Store distribution (dotnet build -p:Distribution=WindowsStore) updates through the Store; every other build uses the release server. -->
 	<PropertyGroup Condition="'$(Distribution)' == 'WindowsStore'">
-		<TargetFrameworks>$(FrameworkWindowsStoreTargetFrameworks)</TargetFrameworks>
+		<TargetFrameworks>$(FrameworkWindowsStoreUITargetFrameworks)</TargetFrameworks>
 		<DefineConstants>$(DefineConstants);WINDOWS_STORE</DefineConstants>
 	</PropertyGroup>
 

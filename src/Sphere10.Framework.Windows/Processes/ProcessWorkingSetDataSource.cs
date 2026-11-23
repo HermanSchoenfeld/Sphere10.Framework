@@ -154,7 +154,7 @@ public class ProcessWorkingSetDataSource : PollingDataSource<WorkingSetFaultRow,
 		}
 		token.ThrowIfCancellationRequested();
 		using var scope = EnterReadScope();
-		return _rows.Snapshot().Reverse().ToArray();
+		return _rows.Reverse().ToArray();
 	}
 
 	private string FormatStatus() {

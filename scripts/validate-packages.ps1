@@ -22,7 +22,7 @@ param(
 	[string]$packagesDirectory,
 	[string]$packageVersion,
 	[string]$workspaceDirectory,
-	[ValidateSet('net10.0', 'net11.0')]
+	[ValidateSet('net8.0', 'net9.0', 'net10.0', 'net11.0')]
 	[string]$consumerFramework = 'net10.0'
 )
 
@@ -70,7 +70,7 @@ function New-Consumer {
 		$privateAssets = if ($id -eq 'Sphere10.Framework.Generators') { ' PrivateAssets="all"' } else { '' }
 		"`t`t<PackageReference Include=`"$id`" Version=`"[$version]`"$privateAssets />"
 	}
-	$desktopProperties = if ($name -in @('Desktop', 'Store')) { '<UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>' } else { '' }
+	$desktopProperties = if ($name -in @('Desktop', 'Store', 'Windows')) { '<UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>' } else { '' }
 	if ($name -eq 'Renderer') { $desktopProperties = '<OutputType>Exe</OutputType>' }
 	$projectPath = Join-Path $directory "PackageConsumer.$name.csproj"
 	Write-TextFile $projectPath @"
@@ -212,88 +212,95 @@ $coreProject = New-Consumer 'Core' @('Sphere10.Framework.Web')
 Assert-UiIndependentConsumer $coreProject
 $applicationProject = New-Consumer 'Application' @('Sphere10.Framework.Application')
 Assert-UiIndependentConsumer $applicationProject
-$libraryIds = @($packageIds | Where-Object { $_ -notlike 'Sphere10.Framework.Windows*' -and $_ -notlike 'Sphere10.Framework.Web.AspNetCore*' })
+$libraryIds = @($packageIds | Where-Object { $_ -notlike 'Sphere10.Framework.Windows*' -and $_ -notlike 'Sphere10.Framework.Web.AspNetCore.Blazor*' })
 $null = New-Consumer 'Libraries' $libraryIds
+# The UI packages (WinForms and Blazor) target .NET 10 and later; every other package also targets .NET 8 and 9.
+$uiConsumers = $consumerFramework -in @('net10.0', 'net11.0')
 # The Store package needs the Windows 10 SDK projection; every other Windows package must also suit a plain Windows target.
 $storeIds = @($packageIds | Where-Object { $_ -eq 'Sphere10.Framework.Windows.Store' })
+$windowsIds = @($packageIds | Where-Object { $_ -like 'Sphere10.Framework.Windows*' -and $_ -notlike 'Sphere10.Framework.Windows.Forms*' -and $_ -notin $storeIds })
 $desktopIds = @($packageIds | Where-Object { $_ -like 'Sphere10.Framework.Windows*' -and $_ -notin $storeIds })
-if ($desktopIds.Count) { $null = New-Consumer 'Desktop' $desktopIds 'Microsoft.NET.Sdk' "$consumerFramework-windows" }
+if ($windowsIds.Count) { $null = New-Consumer 'Windows' $windowsIds 'Microsoft.NET.Sdk' "$consumerFramework-windows" }
+if ($desktopIds.Count -and $uiConsumers) { $null = New-Consumer 'Desktop' $desktopIds 'Microsoft.NET.Sdk' "$consumerFramework-windows" }
 if ($storeIds.Count) { $null = New-Consumer 'Store' $storeIds 'Microsoft.NET.Sdk' "$consumerFramework-windows10.0.19041.0" }
 $rendererProject = New-Consumer 'Renderer' @('Sphere10.Framework.Web.VisualRenderer')
 Invoke-Dotnet @('run', '--project', $rendererProject, '-c', $configuration, '--no-build', '--no-restore') 'run-renderer'
-$webProject = New-Consumer 'Web' @('Sphere10.Framework.Web.AspNetCore.MVC', 'Sphere10.Framework.Web.AspNetCore.Blazor') 'Microsoft.NET.Sdk.Web'
-$publishDirectory = Join-Path $workspace 'published-web'
-Invoke-Dotnet @('publish', $webProject, '-c', $configuration, '--no-restore', '-o', $publishDirectory, '--nologo') 'publish-web'
-foreach ($entry in @($blazorEntries | Where-Object { $_.StartsWith('staticwebassets/') -and -not $_.EndsWith('/') })) {
-	$asset = $entry.Substring('staticwebassets/'.Length)
-	$assetPath = Join-Path $publishDirectory "wwwroot/_content/Sphere10.Framework.Web.AspNetCore.Blazor/$asset"
-	if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) { throw "Published Razor asset missing: $assetPath" }
-}
-
-$scopedCssDirectory = Join-Path $publishDirectory 'wwwroot/_content/Sphere10.Framework.Web.AspNetCore.Blazor'
-if (-not @(Get-ChildItem -LiteralPath $scopedCssDirectory -Filter '*.bundle.scp.css' -File).Count) {
-	throw 'Published Blazor scoped CSS bundle is missing.'
-}
-$hostStyles = Join-Path $publishDirectory 'wwwroot/PackageConsumer.Web.styles.css'
-if (-not (Test-Path -LiteralPath $hostStyles) -or (Get-Content -LiteralPath $hostStyles -Raw) -notmatch 'Sphere10.Framework.Web.AspNetCore.Blazor') {
-	throw 'Host CSS does not import the packaged Blazor scoped styles.'
-}
-
-# Start only this generated application, on a loopback port chosen by Kestrel.
-$stdout = Join-Path $workspace 'web-stdout.log'
-$stderr = Join-Path $workspace 'web-stderr.log'
-$processArguments = @{
-	FilePath = (Get-Command dotnet).Source
-	ArgumentList = @(('"' + (Join-Path $publishDirectory 'PackageConsumer.Web.dll') + '"'), '--urls', 'http://127.0.0.1:0', '--environment', 'Production')
-	WorkingDirectory = $publishDirectory
-	RedirectStandardOutput = $stdout
-	RedirectStandardError = $stderr
-	PassThru = $true
-}
-if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) { $processArguments.WindowStyle = 'Hidden' }
-$webProcess = Start-Process @processArguments
-try {
-	$baseUrl = $null
-	$deadline = [DateTime]::UtcNow.AddSeconds(30)
-	while ([DateTime]::UtcNow -lt $deadline -and -not $webProcess.HasExited) {
-		$log = Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue
-		if ($log -match 'Now listening on: (http://127\.0\.0\.1:\d+)') {
-			$baseUrl = $Matches[1]
-			break
-		}
-		Start-Sleep -Milliseconds 250
+$publishDirectory = $null
+if ($uiConsumers) {
+	$webProject = New-Consumer 'Web' @('Sphere10.Framework.Web.AspNetCore.MVC', 'Sphere10.Framework.Web.AspNetCore.Blazor') 'Microsoft.NET.Sdk.Web'
+	$publishDirectory = Join-Path $workspace 'published-web'
+	Invoke-Dotnet @('publish', $webProject, '-c', $configuration, '--no-restore', '-o', $publishDirectory, '--nologo') 'publish-web'
+	foreach ($entry in @($blazorEntries | Where-Object { $_.StartsWith('staticwebassets/') -and -not $_.EndsWith('/') })) {
+		$asset = $entry.Substring('staticwebassets/'.Length)
+		$assetPath = Join-Path $publishDirectory "wwwroot/_content/Sphere10.Framework.Web.AspNetCore.Blazor/$asset"
+		if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) { throw "Published Razor asset missing: $assetPath" }
 	}
-	if (-not $baseUrl) { throw "Published app did not start. Inspect $stdout and $stderr" }
-	$routes = @('/', '/sitemap.xml', '/PackageConsumer.Web.styles.css', '/_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes.css')
-	$routes += @($blazorEntries | Where-Object { $_ -match '^staticwebassets/.*\.(?:js|mjs)$' } | ForEach-Object {
-		'/_content/Sphere10.Framework.Web.AspNetCore.Blazor/' + $_.Substring('staticwebassets/'.Length)
-	})
-	foreach ($route in $routes) {
-		$response = Invoke-WebRequest -Uri ($baseUrl + $route) -UseBasicParsing -TimeoutSec 15
-		if ($response.StatusCode -ne 200) { throw "Published route failed: $route" }
-		if ($route -eq '/') {
-			foreach ($expected in @('ApplicationBlock loaded from NuGet', 'Package grid', 'data-sphere10-theme="light"', 'aria-label="Theme"',
-				'id="package-grid"', 'Packed record Alpha', 'Packed record Beta', 'Related record')) {
-				if ($response.Content -notmatch [regex]::Escape($expected)) {
-					throw "The packaged plugin, theme or typed grid did not render: $expected"
+
+	$scopedCssDirectory = Join-Path $publishDirectory 'wwwroot/_content/Sphere10.Framework.Web.AspNetCore.Blazor'
+	if (-not @(Get-ChildItem -LiteralPath $scopedCssDirectory -Filter '*.bundle.scp.css' -File).Count) {
+		throw 'Published Blazor scoped CSS bundle is missing.'
+	}
+	$hostStyles = Join-Path $publishDirectory 'wwwroot/PackageConsumer.Web.styles.css'
+	if (-not (Test-Path -LiteralPath $hostStyles) -or (Get-Content -LiteralPath $hostStyles -Raw) -notmatch 'Sphere10.Framework.Web.AspNetCore.Blazor') {
+		throw 'Host CSS does not import the packaged Blazor scoped styles.'
+	}
+
+	# Start only this generated application, on a loopback port chosen by Kestrel.
+	$stdout = Join-Path $workspace 'web-stdout.log'
+	$stderr = Join-Path $workspace 'web-stderr.log'
+	$processArguments = @{
+		FilePath = (Get-Command dotnet).Source
+		ArgumentList = @(('"' + (Join-Path $publishDirectory 'PackageConsumer.Web.dll') + '"'), '--urls', 'http://127.0.0.1:0', '--environment', 'Production')
+		WorkingDirectory = $publishDirectory
+		RedirectStandardOutput = $stdout
+		RedirectStandardError = $stderr
+		PassThru = $true
+	}
+	if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) { $processArguments.WindowStyle = 'Hidden' }
+	$webProcess = Start-Process @processArguments
+	try {
+		$baseUrl = $null
+		$deadline = [DateTime]::UtcNow.AddSeconds(30)
+		while ([DateTime]::UtcNow -lt $deadline -and -not $webProcess.HasExited) {
+			$log = Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue
+			if ($log -match 'Now listening on: (http://127\.0\.0\.1:\d+)') {
+				$baseUrl = $Matches[1]
+				break
+			}
+			Start-Sleep -Milliseconds 250
+		}
+		if (-not $baseUrl) { throw "Published app did not start. Inspect $stdout and $stderr" }
+		$routes = @('/', '/sitemap.xml', '/PackageConsumer.Web.styles.css', '/_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes.css')
+		$routes += @($blazorEntries | Where-Object { $_ -match '^staticwebassets/.*\.(?:js|mjs)$' } | ForEach-Object {
+			'/_content/Sphere10.Framework.Web.AspNetCore.Blazor/' + $_.Substring('staticwebassets/'.Length)
+		})
+		foreach ($route in $routes) {
+			$response = Invoke-WebRequest -Uri ($baseUrl + $route) -UseBasicParsing -TimeoutSec 15
+			if ($response.StatusCode -ne 200) { throw "Published route failed: $route" }
+			if ($route -eq '/') {
+				foreach ($expected in @('ApplicationBlock loaded from NuGet', 'Package grid', 'data-sphere10-theme="light"', 'aria-label="Theme"',
+					'id="package-grid"', 'Packed record Alpha', 'Packed record Beta', 'Related record')) {
+					if ($response.Content -notmatch [regex]::Escape($expected)) {
+						throw "The packaged plugin, theme or typed grid did not render: $expected"
+					}
 				}
 			}
+			if ($route.EndsWith('/css/themes.css') -and $response.Content -notmatch '--sphere10-surface') {
+				throw 'Packaged theme styles were not served.'
+			}
+			if ($route -eq '/sitemap.xml' -and $response.Content -notmatch 'urlset') { throw 'Packaged MVC XML result did not render.' }
 		}
-		if ($route.EndsWith('/css/themes.css') -and $response.Content -notmatch '--sphere10-surface') {
-			throw 'Packaged theme styles were not served.'
-		}
-		if ($route -eq '/sitemap.xml' -and $response.Content -notmatch 'urlset') { throw 'Packaged MVC XML result did not render.' }
+	} finally {
+		if (-not $webProcess.HasExited) { Stop-Process -Id $webProcess.Id }
+		$webProcess.Dispose()
 	}
-} finally {
-	if (-not $webProcess.HasExited) { Stop-Process -Id $webProcess.Id }
-	$webProcess.Dispose()
 }
 
 $report = [PSCustomObject]@{
 	Version = $version
 	Solution = $solutionPath
 	Packages = @($packageIds | Sort-Object)
-	Consumers = @('Core', 'Application', 'Libraries', 'Renderer', 'Web') + @(if ($desktopIds.Count) { 'Desktop' }) + @(if ($storeIds.Count) { 'Store' })
+	Consumers = @('Core', 'Application', 'Libraries', 'Renderer') + @(if ($uiConsumers) { 'Web' }) + @(if ($windowsIds.Count) { 'Windows' }) + @(if ($desktopIds.Count -and $uiConsumers) { 'Desktop' }) + @(if ($storeIds.Count) { 'Store' })
 	TargetFramework = $consumerFramework
 	PublishedWeb = $publishDirectory
 	HttpChecks = 'Plugin and ApplicationBlock SSR, typed grid, theme CSS, MVC XML, scoped CSS, grid and picker JavaScript'

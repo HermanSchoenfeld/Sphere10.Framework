@@ -136,7 +136,7 @@ public static partial class Windows {
 		/// nibbles reversed under ip6.arpa.</summary>
 		internal static string GetReverseLookupName(IPAddress address) {
 			Guard.ArgumentNotNull(address, nameof(address));
-			var bytes = address.GetAddressBytes().Reverse();
+			var bytes = Enumerable.Reverse(address.GetAddressBytes());
 			return address.AddressFamily == AddressFamily.InterNetwork
 				? string.Join(".", bytes.Select(item => item.ToString(CultureInfo.InvariantCulture))) + ".in-addr.arpa"
 				: string.Join(".", bytes.SelectMany(item => new[] { item & 0xF, item >> 4 }).Select(nibble => nibble.ToString("x", CultureInfo.InvariantCulture))) + ".ip6.arpa";

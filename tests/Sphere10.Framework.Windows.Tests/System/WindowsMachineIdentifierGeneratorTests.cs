@@ -69,7 +69,7 @@ public class WindowsMachineIdentifierGeneratorTests {
 
 	[Test]
 	public void ComputeIdentifierIgnoresEnumerationOrderAndDuplicates() {
-		var reordered = SampleMachine.Reverse().Concat(new[] { SampleMachine[1] }).ToArray();
+		var reordered = Enumerable.Reverse(SampleMachine).Concat(new[] { SampleMachine[1] }).ToArray();
 		Assert.That(MachineIdentity.ComputeIdentifier(reordered), Is.EqualTo(MachineIdentity.ComputeIdentifier(SampleMachine)));
 	}
 

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(FrameworkUITargetFrameworks)</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

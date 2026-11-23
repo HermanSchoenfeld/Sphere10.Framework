@@ -24,8 +24,11 @@ namespace Tools;
 /// </summary>
 public static partial class Windows {
 
+#if NET10_0_OR_GREATER
+	// The decompiler supports only .NET 10 and later.
 	[ThreadStatic] private static ManagedAssemblyUtil _assemblies;
 	public static ManagedAssemblyUtil Assemblies => _assemblies ??= new();
+#endif
 
 	[ThreadStatic] private static WindowsUiAutomationUtil _uiAutomation;
 	public static WindowsUiAutomationUtil UiAutomation => _uiAutomation ??= new();

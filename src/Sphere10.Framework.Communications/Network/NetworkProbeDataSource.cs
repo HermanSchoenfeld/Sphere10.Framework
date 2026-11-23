@@ -182,7 +182,7 @@ public sealed class NetworkProbeDataSource : PollingDataSource<NetworkProbeObser
 
 	private NetworkProbeObservation[] Retained() {
 		using var scope = _state.EnterReadScope();
-		return _history.Snapshot().Reverse().ToArray();
+		return _history.Reverse().ToArray();
 	}
 
 	private void Publish(ProbeRun run, NetworkProbeObservation row) {
@@ -191,7 +191,7 @@ public sealed class NetworkProbeDataSource : PollingDataSource<NetworkProbeObser
 		using (var scope = _state.EnterWriteScope()) {
 			if (_stopped || !ReferenceEquals(_run, run) || !_history.TryAdd(row))
 				return;
-			rows = _history.Snapshot().Reverse().ToArray();
+			rows = _history.Reverse().ToArray();
 		}
 
 		// Each observation is served as soon as it arrives; the round's own publication is then superseded.

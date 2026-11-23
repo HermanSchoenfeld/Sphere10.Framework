@@ -3,7 +3,7 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFrameworks>$(FrameworkWindowsTargetFrameworks)</TargetFrameworks>
+		<TargetFrameworks>$(FrameworkWindowsUITargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Windows Forms UI framework and component library for building desktop applications with Sphere10 Framework. Provides reusable WinForms controls, dialogs, layout/helpers, and common UI utilities intended to integrate cleanly with the framework's application and data layers.</Description>

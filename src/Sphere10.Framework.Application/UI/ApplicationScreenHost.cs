@@ -771,7 +771,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 	private void IndexBlockDefinitions(TBlock block) {
 		var definitions = block.ScreenDefinitions;
 		if (_blockDefinitions.TryGetValue(block, out var previous)) {
-			if (previous.SequenceEqual(definitions, ReferenceEqualityComparer.Instance))
+			if (Enumerable.SequenceEqual(previous, definitions, ReferenceEqualityComparer.Instance))
 				return;
 			foreach (var definition in previous)
 				if (!definitions.Contains(definition, ReferenceEqualityComparer.Instance)
