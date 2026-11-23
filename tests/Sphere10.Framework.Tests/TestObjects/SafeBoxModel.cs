@@ -8,7 +8,6 @@
 
 using System;
 using Sphere10.Framework.Generators;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework.Tests.SafeBox;
 

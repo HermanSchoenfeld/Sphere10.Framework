@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sphere10.Framework.CryptoEx.HF;
-using Sphere10.Framework.Maths;
 using Org.BouncyCastle.Utilities;
 
 namespace Sphere10.Framework.CryptoEx;

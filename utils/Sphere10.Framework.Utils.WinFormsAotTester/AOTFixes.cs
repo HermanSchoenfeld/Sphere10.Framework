@@ -8,7 +8,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Sphere10.Framework.ObjectSpaces;
 using Account = Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen.Account;
 using Identity = Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen.Identity;
 using Preserve = System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes;

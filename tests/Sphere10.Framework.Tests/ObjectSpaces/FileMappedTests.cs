@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Sphere10.Framework.ObjectSpaces;
 using NUnit.Framework;
 using Sphere10.Framework;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;

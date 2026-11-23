@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using NUnit.Framework;
-using Sphere10.Framework.ComponentModel;
 
 namespace Sphere10.Framework.Data.Tests;
 

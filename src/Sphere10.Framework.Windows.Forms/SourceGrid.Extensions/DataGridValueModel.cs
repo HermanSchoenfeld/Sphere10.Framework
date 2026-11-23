@@ -10,7 +10,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Sphere10.Framework.ComponentModel;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 

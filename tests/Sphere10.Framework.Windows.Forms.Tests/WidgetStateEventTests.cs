@@ -18,7 +18,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
-using Sphere10.Framework.ComponentModel;
 using Sphere10.Framework.Windows.Forms.VisualCalendar;
 using VisualCalendarControl = Sphere10.Framework.Windows.Forms.VisualCalendar.VisualCalendar;
 using FormsApplication = System.Windows.Forms.Application;

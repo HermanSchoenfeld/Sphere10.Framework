@@ -10,7 +10,6 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Framework.ObjectSpaces;
 using Sphere10.Framework.Utils.Profiler.ObjectSpaces;
 using Sphere10.Framework.Utils.Profiler.ObjectSpaces.Lab;
 

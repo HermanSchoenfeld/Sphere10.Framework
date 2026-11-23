@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework.Utils.Profiler.ObjectSpaces.Lab;
 

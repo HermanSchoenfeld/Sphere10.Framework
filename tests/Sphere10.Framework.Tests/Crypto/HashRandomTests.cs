@@ -10,7 +10,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Sphere10.Framework.Maths;
 using NUnit.Framework;
 namespace Sphere10.Framework.Tests;
 

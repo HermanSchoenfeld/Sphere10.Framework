@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Maths;
 
 namespace Sphere10.Framework;
 

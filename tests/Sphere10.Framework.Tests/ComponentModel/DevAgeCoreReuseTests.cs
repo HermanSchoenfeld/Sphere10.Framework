@@ -12,7 +12,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Framework.ComponentModel;
 
 namespace Sphere10.Framework.Tests.ComponentModel;
 

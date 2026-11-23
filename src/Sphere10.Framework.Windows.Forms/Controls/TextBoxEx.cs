@@ -11,7 +11,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using Sphere10.Framework.ComponentModel;
 
 namespace Sphere10.Framework.Windows.Forms;
 

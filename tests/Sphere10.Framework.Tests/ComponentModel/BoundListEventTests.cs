@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework.ComponentModel;
 
 namespace Sphere10.Framework.Tests;
 

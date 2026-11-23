@@ -9,7 +9,6 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using Sphere10.Framework.Collections;
 using WrapperKind = Sphere10.Framework.Tests.StreamWrapperSpanTests.WrapperKind;
 
 namespace Sphere10.Framework.Tests;

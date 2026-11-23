@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Sphere10.Framework.Mapping;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 

@@ -18,7 +18,6 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.CryptoEx;
 using Sphere10.Framework.CryptoEx.EC;
-using Sphere10.Framework.ObjectSpaces;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;

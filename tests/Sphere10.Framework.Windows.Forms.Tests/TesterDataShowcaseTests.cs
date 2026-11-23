@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.ObjectSpaces;
 using Sphere10.Framework.Utils.WinFormsTester;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using FormsUI = global::Sphere10.Framework.Windows.Forms;

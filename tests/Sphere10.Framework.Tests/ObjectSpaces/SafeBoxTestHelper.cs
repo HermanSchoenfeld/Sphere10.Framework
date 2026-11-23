@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Sphere10.Framework.ObjectSpaces;
 using SB = Sphere10.Framework.Tests.SafeBox;
 
 namespace Sphere10.Framework.Tests.ObjectSpaces;

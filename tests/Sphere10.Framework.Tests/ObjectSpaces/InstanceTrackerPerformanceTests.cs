@@ -13,7 +13,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework.Tests.ObjectSpaces;
 

@@ -16,7 +16,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
-using Sphere10.Framework.ComponentModel;
 using SourceGrid = Sphere10.Framework.Windows.Forms.SourceGrid;
 using Tools;
 

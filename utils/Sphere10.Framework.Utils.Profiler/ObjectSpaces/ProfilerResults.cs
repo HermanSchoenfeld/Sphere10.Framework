@@ -14,7 +14,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using BenchmarkDotNet.Reports;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework.Utils.Profiler.ObjectSpaces;
 

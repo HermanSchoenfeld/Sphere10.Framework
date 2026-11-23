@@ -8,8 +8,6 @@
 
 using System.Collections.Generic;
 using NUnit.Framework;
-using Sphere10.Framework.Mapping;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework.Tests.ObjectSpaces;
 

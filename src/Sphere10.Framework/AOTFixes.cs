@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Diagnostics.CodeAnalysis;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 

@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 

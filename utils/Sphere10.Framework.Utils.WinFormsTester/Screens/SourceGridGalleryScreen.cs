@@ -19,7 +19,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
-using Sphere10.Framework.ComponentModel;
 using Sphere10.Framework.Data;
 using Sphere10.Framework.Windows.Forms;
 using SourceGrid = Sphere10.Framework.Windows.Forms.SourceGrid;

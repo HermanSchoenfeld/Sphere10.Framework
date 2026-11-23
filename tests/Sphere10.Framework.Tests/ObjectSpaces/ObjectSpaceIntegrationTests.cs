@@ -8,7 +8,6 @@
 
 using BenchmarkDotNet.Attributes;
 using NUnit.Framework;
-using Sphere10.Framework.ObjectSpaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

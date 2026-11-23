@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using Sphere10.Framework.Mapping;
+using Sphere10.Framework;
 
 namespace Tools;
 

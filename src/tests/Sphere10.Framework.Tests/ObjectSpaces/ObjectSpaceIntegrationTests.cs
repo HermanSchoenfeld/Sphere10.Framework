@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using NUnit.Framework;
-using Sphere10.Framework.ObjectSpaces;
 using SB = Sphere10.Framework.Tests.SafeBox;
 
 namespace Sphere10.Framework.Tests.ObjectSpaces;
