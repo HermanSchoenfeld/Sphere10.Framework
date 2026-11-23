@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Marks a dimension type as a GC root. Root dimension objects are user-managed and

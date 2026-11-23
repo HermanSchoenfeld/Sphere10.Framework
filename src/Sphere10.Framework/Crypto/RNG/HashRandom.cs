@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A deterministic cryptographically secure random number generator that generates a sequence of random bytes based on a given seed.

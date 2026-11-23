@@ -12,7 +12,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A TypeConverter that support string conversion from and to string with the percent symbol.

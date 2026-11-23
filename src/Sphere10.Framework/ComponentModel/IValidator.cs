@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// An interface to support value conversion and validation.

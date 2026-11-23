@@ -9,7 +9,7 @@
 using System;
 using System.Net;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Communications;
 
 public sealed record NetworkProbeObservation(DateTime TimestampUtc, string Operation, string Target, string Address,
 	int? Hop, string Status, long? RoundTripMilliseconds, double? ElapsedMilliseconds, string Detail);

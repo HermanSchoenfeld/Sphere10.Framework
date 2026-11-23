@@ -28,7 +28,7 @@ public partial class ValidatedTextBoxButton : EditableControl {
 	/// </summary>
 	public event EventHandler DialogClosed;
 
-	private Sphere10.Framework.ComponentModel.IValidator _validator = null;
+	private Sphere10.Framework.IValidator _validator = null;
 	private object _value = null;
 
 	/// <summary>
@@ -49,7 +49,7 @@ public partial class ValidatedTextBoxButton : EditableControl {
 	/// You can use the ApplyValidatorRules method to apply the settings of the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public Sphere10.Framework.ComponentModel.IValidator Validator {
+	public Sphere10.Framework.IValidator Validator {
 		get => _validator;
 		set {
 			if (_validator != value) {

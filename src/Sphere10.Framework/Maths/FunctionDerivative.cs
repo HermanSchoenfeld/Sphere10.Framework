@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 public class FunctionDerivative : IFunction {
 	private IFunction _function = null;

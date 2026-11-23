@@ -14,7 +14,6 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using Sphere10.Framework;
 
 #if USE_FAST_REFLECTION
@@ -68,14 +67,6 @@ namespace Tools {
 		public static bool Compare(object obj1, object obj2) {
 			var comparer = new DeepObjectComparer();
 			return comparer.Equals(obj1, obj2);
-		}
-
-		public static void DecryptMembers(object obj) {
-			ObjectEncryptor.DecryptMembers(obj);
-		}
-
-		public static void EncryptMembers(object obj) {
-			ObjectEncryptor.EncryptMembers(obj);
 		}
 
 		//public static int CombineHashCodes(int hashCode1, int hashCode2) {

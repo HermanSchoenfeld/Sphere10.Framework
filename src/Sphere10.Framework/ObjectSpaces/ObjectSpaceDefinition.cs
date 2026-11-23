@@ -9,9 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework.Mapping;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Defines the structure and policies for an <see cref="ObjectSpace"/>, including dimensions, indexes, and optional merkle/autosave traits.

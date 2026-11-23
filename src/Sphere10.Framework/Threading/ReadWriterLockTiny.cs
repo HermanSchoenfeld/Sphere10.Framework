@@ -10,7 +10,7 @@
 
 using System.Threading;
 
-namespace Sphere10.Framework.Threading;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Hierarchical locks are not supported!!!

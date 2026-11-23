@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Communications;
 
-namespace Sphere10.Framework.UnitTests;
+namespace Sphere10.Framework.Communications.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]

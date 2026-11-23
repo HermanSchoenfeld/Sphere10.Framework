@@ -7,7 +7,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>Receives a value-conversion request and its mutable conversion status.</summary>
 public delegate void ConvertingObjectEventHandler(object sender, ConvertingObjectEventArgs args);

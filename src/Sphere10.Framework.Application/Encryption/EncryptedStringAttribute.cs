@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Application;
 
 public class EncryptedStringAttribute : Attribute {
 	public const string DefaultPepper = "00000000";

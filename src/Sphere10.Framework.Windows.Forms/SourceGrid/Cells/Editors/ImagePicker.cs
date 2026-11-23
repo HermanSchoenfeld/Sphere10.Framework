@@ -41,7 +41,7 @@ public class ImagePicker : EditorControlBase {
 		if (val == null)
 			return null;
 		if (val is System.Drawing.Image) {
-			var imageValidator = new Sphere10.Framework.ComponentModel.TypeConverterValidator(typeof(System.Drawing.Image));
+			var imageValidator = new Sphere10.Framework.TypeConverterValidator(typeof(System.Drawing.Image));
 			return imageValidator.ValueToObject(val, typeof(byte[]));
 			//Stranamente questo codice in caso di ico va in eccezione!
 			//				System.Drawing.Image img = (System.Drawing.Image)val;
@@ -78,7 +78,7 @@ public class ImagePicker : EditorControlBase {
 	protected override Control CreateControl() {
 		var editor = new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor();
 		editor.BorderStyle = Sphere10.Framework.Windows.Forms.Drawing.BorderStyle.None;
-		editor.Validator = new Sphere10.Framework.ComponentModel.TypeConverterValidator(typeof(System.Drawing.Image));
+		editor.Validator = new Sphere10.Framework.TypeConverterValidator(typeof(System.Drawing.Image));
 		return editor;
 	}
 

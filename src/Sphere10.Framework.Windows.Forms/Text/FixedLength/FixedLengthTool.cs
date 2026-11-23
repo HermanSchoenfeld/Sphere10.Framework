@@ -47,7 +47,7 @@ public static class FixedLength {
 
 				//ValueMapping - to convert specific values, can be an array of attribute, one for each conversion
 				if (valueMappings.Length > 0) {
-					var mapping = new Sphere10.Framework.ComponentModel.ValueMapping();
+					var mapping = new Sphere10.Framework.ValueMapping();
 					var values = new object[valueMappings.Length];
 					var strings = new object[valueMappings.Length];
 					for (var index = 0; index < valueMappings.Length; index++) {
@@ -78,13 +78,13 @@ public static class FixedLength {
 		return fields;
 	}
 
-	public static Sphere10.Framework.ComponentModel.IValidator CreateValidator(Type type, ParseFormatAttribute parseAttributes) {
+	public static Sphere10.Framework.IValidator CreateValidator(Type type, ParseFormatAttribute parseAttributes) {
 		//Check for nullable
 		type = GetBaseType(type, out var nullable);
 		var converter = GetConverterFromPrimitiveType(type, parseAttributes);
 
 		// Apply the field format and null handling to its validator.
-		var validator = new Sphere10.Framework.ComponentModel.TypeConverterValidator(type, converter);
+		var validator = new Sphere10.Framework.TypeConverterValidator(type, converter);
 		validator.CultureInfo = parseAttributes.CultureInfo;
 		validator.NullString = "";
 		validator.NullDisplayString = "";
@@ -118,11 +118,11 @@ public static class FixedLength {
 		if (type == typeof(int))
 			return new System.ComponentModel.Int32Converter();
 		if (type == typeof(double))
-			return new Sphere10.Framework.ComponentModel.NumberTypeConverter(typeof(double), parseAttributes.NumberFormat);
+			return new Sphere10.Framework.NumberTypeConverter(typeof(double), parseAttributes.NumberFormat);
 		if (type == typeof(decimal))
-			return new Sphere10.Framework.ComponentModel.NumberTypeConverter(typeof(decimal), parseAttributes.NumberFormat);
+			return new Sphere10.Framework.NumberTypeConverter(typeof(decimal), parseAttributes.NumberFormat);
 		if (type == typeof(DateTime))
-			return new Sphere10.Framework.ComponentModel.DateTimeTypeConverter(parseAttributes.DateTimeFormat, new string[] { parseAttributes.DateTimeFormat });
+			return new Sphere10.Framework.DateTimeTypeConverter(parseAttributes.DateTimeFormat, new string[] { parseAttributes.DateTimeFormat });
 		throw new TypeNotSupportedException(type);
 	}
 }

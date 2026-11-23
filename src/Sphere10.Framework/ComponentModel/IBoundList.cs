@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A generic binded list interface. See BoundDataView or BoundList for a concreate implementation.

@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests;
+namespace Sphere10.Framework.Communications.Tests;
 
 [TestFixture]
 public sealed class NetworkProtocolTests {

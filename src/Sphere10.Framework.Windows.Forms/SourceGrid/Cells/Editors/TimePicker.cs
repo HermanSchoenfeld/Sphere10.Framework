@@ -27,7 +27,7 @@ public class TimePicker : DateTimePicker {
 	/// Constructor
 	/// </summary>
 	public TimePicker(System.String toStringFormat, string[] parseFormats) {
-		var timeConverter = new Sphere10.Framework.ComponentModel.DateTimeTypeConverter(toStringFormat, parseFormats);
+		var timeConverter = new Sphere10.Framework.DateTimeTypeConverter(toStringFormat, parseFormats);
 		TypeConverter = timeConverter;
 	}
 

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Threading;
+namespace Sphere10.Framework;
 
 public class DelayedAction {
 	private readonly object _threadLock;

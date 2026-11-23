@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 /// Model that implements the IImage interface, used to read the Image directly from the Value of the cell.
 /// </summary>
 public class ValueImage : IImage {
-	private Sphere10.Framework.ComponentModel.TypeConverterValidator _imageConverter = new Sphere10.Framework.ComponentModel.TypeConverterValidator(typeof(System.Drawing.Image));
+	private Sphere10.Framework.TypeConverterValidator _imageConverter = new Sphere10.Framework.TypeConverterValidator(typeof(System.Drawing.Image));
 
 	public static readonly ValueImage Default = new ValueImage();
 

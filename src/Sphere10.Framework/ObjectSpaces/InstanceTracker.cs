@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Tracks live object instances within an <see cref="ObjectSpace"/>, maintaining:

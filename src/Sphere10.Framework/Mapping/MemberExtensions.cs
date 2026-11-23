@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 public static class MemberExtensions {
 	public static Member ToMember(this PropertyInfo propertyInfo) {

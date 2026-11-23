@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 public class MemberEqualityComparer : IEqualityComparer<Member>
 {

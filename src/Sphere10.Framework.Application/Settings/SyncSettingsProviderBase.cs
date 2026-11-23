@@ -59,7 +59,7 @@ public abstract class SyncSettingsProviderBase : SettingsProviderBase {
 		var encrypted = EncryptSettings;
 		var storedSettings = encrypted ? Tools.Object.Clone(settings) : settings;
 		if (encrypted)
-			Tools.Object.EncryptMembers(storedSettings);
+			ObjectEncryptor.EncryptMembers(storedSettings);
 
 		try {
 			FireChanged();

@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests;
+namespace Sphere10.Framework.Communications.Tests;
 
 [TestFixture]
 public sealed class NetworkDiagnosticsTests {

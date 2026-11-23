@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Misc;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Compares two sequences.

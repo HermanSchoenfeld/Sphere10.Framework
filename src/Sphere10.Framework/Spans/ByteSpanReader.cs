@@ -9,7 +9,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework.Collections.Spans;
+namespace Sphere10.Framework;
 
 public class ByteSpanReader {
 	private int _ix;

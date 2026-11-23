@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Serializer decorator for handling reference types within an ObjectSpace. Wraps a standard

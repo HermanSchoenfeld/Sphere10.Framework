@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Collections;
+namespace Sphere10.Framework;
 
 public class EnumerableContainsSameComparer<T> : IEqualityComparer<IEnumerable<T>> {
 	public bool Equals(IEnumerable<T> x, IEnumerable<T> y) {

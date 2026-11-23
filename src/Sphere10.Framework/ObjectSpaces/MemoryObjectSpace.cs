@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// In-memory object space that stores data in a <see cref="MemoryStream"/> while reusing the same object space plumbing as file-backed instances.

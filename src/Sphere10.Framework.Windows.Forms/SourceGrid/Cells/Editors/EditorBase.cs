@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// Represents the base class of a DataModel. This DataModel support conversion but doesn't provide any user interface editor.
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
-public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidator {
+public class EditorBase : Sphere10.Framework.TypeConverterValidator {
 	private event ValidatingCellEventHandler ValidatingHandlers;
 
 	private event CellContextEventHandler ValidatedHandlers;

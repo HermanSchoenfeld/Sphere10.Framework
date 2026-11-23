@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework.Collections;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A buffer whose contents are mapped onto a stream.

@@ -19,13 +19,13 @@ public class Field : IField {
 	private string _name;
 	private int _length;
 	private bool _trimBeforeParse = true;
-	private Sphere10.Framework.ComponentModel.IValidator _validator;
+	private Sphere10.Framework.IValidator _validator;
 
 	public Field(int index, string name, int length, Type type)
-		: this(index, name, length, new Sphere10.Framework.ComponentModel.TypeConverterValidator(type)) {
+		: this(index, name, length, new Sphere10.Framework.TypeConverterValidator(type)) {
 	}
 
-	public Field(int index, string name, int length, Sphere10.Framework.ComponentModel.IValidator validator) {
+	public Field(int index, string name, int length, Sphere10.Framework.IValidator validator) {
 		_index = index;
 		_name = name;
 		Length = length;
@@ -50,7 +50,7 @@ public class Field : IField {
 		set => _trimBeforeParse = value;
 	}
 
-	public Sphere10.Framework.ComponentModel.IValidator Validator {
+	public Sphere10.Framework.IValidator Validator {
 		get => _validator;
 		set {
 			if (value == null)

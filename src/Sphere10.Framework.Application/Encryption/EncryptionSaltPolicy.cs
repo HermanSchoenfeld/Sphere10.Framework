@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Application;
 
 [Flags]
 public enum EncryptionSaltPolicy {

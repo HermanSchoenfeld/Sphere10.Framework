@@ -9,7 +9,7 @@
 using System;
 using System.Threading;
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A random number generator based on the Mersenne Twister algorithm.

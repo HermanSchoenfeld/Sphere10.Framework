@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Application;
 
 /// <summary>The running processes as a read-only, searchable and sortable list data source over the BCL <see cref="Process"/> type; loading fetches them.</summary>
 public class ProcessDataSource : ListDataSource<Process> {

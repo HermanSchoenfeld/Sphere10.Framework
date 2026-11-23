@@ -13,7 +13,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Application;
 
 public static class ObjectEncryptor {
 

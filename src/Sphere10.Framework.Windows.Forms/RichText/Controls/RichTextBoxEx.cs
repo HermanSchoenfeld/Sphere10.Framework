@@ -21,7 +21,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// Furthermore, it is possible to format single characters.
 /// </summary>
 public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
-	private Sphere10.Framework.ComponentModel.IValidator _validator = null;
+	private Sphere10.Framework.IValidator _validator = null;
 	private int _updating = 0;
 	private int _oldEventMask = 0;
 
@@ -135,7 +135,7 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 	/// the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public Sphere10.Framework.ComponentModel.IValidator Validator {
+	public Sphere10.Framework.IValidator Validator {
 		get => _validator;
 		set {
 			if (_validator != value) {

@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A class derived from BoundListBase that can be used to bind a list control (like SourceGrid) to a generic IList class.

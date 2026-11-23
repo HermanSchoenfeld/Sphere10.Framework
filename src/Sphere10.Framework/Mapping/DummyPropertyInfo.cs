@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 [Serializable]
 public sealed class DummyPropertyInfo : PropertyInfo {

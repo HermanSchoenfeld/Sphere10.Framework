@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Communications;
 
 /// <summary>Bounded RFC 1035 message and complete RFC 8446/6066 ClientHello projections, without stream reassembly or decryption.</summary>
 internal static class NetworkProtocolDecoder {

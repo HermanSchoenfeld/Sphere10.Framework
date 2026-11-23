@@ -94,7 +94,7 @@ public abstract class SettingsProviderBase : ISettingsProvider {
 		Guard.Ensure(settings != null, "The settings provider returned no settings value.");
 
 		if (EncryptSettings)
-			Tools.Object.DecryptMembers(settings);
+			ObjectEncryptor.DecryptMembers(settings);
 		settings.Provider = this;
 		return settings;
 	}
@@ -105,14 +105,14 @@ public abstract class SettingsProviderBase : ISettingsProvider {
 
 		var encrypt = EncryptSettings;
 		if (encrypt)
-			Tools.Object.EncryptMembers(settings);
+			ObjectEncryptor.EncryptMembers(settings);
 		return encrypt;
 	}
 
 	// Restore the operation's cleartext without consulting a possibly changed provider policy.
 	protected void DecryptSetting(SettingsObject settings, bool encrypted) {
 		if (encrypted)
-			Tools.Object.DecryptMembers(settings);
+			ObjectEncryptor.DecryptMembers(settings);
 	}
 
 	// Storage implementations retain their existing notification boundaries.

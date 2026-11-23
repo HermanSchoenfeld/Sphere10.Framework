@@ -81,4 +81,17 @@
   <PropertyGroup Condition="'$(TargetFramework)' != '' And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
+
+  <!--
+    SDK projects see every assembly of the shared .NET framework. A project that lists AllowedFrameworkAssembly items compiles
+    against only those, so using any other .NET assembly, such as System.Drawing in the core library, is a compile error.
+  -->
+  <Target Name="RestrictFrameworkAssemblies" AfterTargets="ResolveTargetingPackAssets" Condition="'@(AllowedFrameworkAssembly)' != ''">
+    <ItemGroup>
+      <_FrameworkAssemblyName Include="@(Reference->'%(Filename)')" Condition="'%(Reference.FrameworkReferenceName)' == 'Microsoft.NETCore.App'" ReferenceItem="%(Reference.Identity)" />
+      <_DisallowedFrameworkAssembly Include="@(_FrameworkAssemblyName)" Exclude="@(AllowedFrameworkAssembly)" />
+      <Reference Remove="@(_DisallowedFrameworkAssembly->'%(ReferenceItem)')" />
+    </ItemGroup>
+    <Error Condition="'@(_FrameworkAssemblyName)' == ''" Text="RestrictFrameworkAssemblies found no Microsoft.NETCore.App references to restrict." />
+  </Target>
 </Project>

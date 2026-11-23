@@ -12,7 +12,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Converts dates using configured display and parse formats with the selected culture.

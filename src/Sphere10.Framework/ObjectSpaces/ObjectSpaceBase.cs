@@ -13,9 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
-using Sphere10.Framework.Mapping;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Core implementation of an object space that orchestrates clustered streams, dimensions, serializers, and indexes for persisted objects.

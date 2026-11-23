@@ -370,7 +370,7 @@ public class PingGrid : GridVirtual {
 	private void BoundListCleared(object sender, EventArgs args) => Rows.ResetRowHeigth();
 
 	[Obsolete]
-	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) => Rows.RowDeleted(args.Item);
+	private void BoundListItemDeleted(object sender, Sphere10.Framework.ItemDeletedEventArgs<object> args) => Rows.RowDeleted(args.Item);
 
 	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
 		try {

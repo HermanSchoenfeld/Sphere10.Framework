@@ -10,7 +10,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A string editor that use a TypeConverter for conversion.

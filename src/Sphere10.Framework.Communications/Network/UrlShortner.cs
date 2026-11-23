@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Communications;
 
 public static class UrlShortner {
 	public static async Task<string> TinyUrlAsync(string url, string apiKey, string provider = "0_mk") {

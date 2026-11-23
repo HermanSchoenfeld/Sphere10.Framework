@@ -35,6 +35,14 @@ public static class FileSystem {
 		CrossPlatformForbiddenFileNames = new[] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", ".", ".." };
 	}
 
+	/// <summary>The MIME type for a file extension, such as ".png" or "png". Throws when no extension is given.</summary>
+	public static string GetMimeType(string filePathOrExt)
+		=> TryGetMimeType(filePathOrExt, out var mimeType) ? mimeType : throw new InvalidOperationException($"Unable to determine mimetype for {filePathOrExt}");
+
+	/// <summary>The MIME type for a file extension, such as ".png" or "png". Unknown extensions map to a generic type.</summary>
+	public static bool TryGetMimeType(string filePathOrExt, out string mimeType)
+		=> MimeHelper.TryGetMimeTypeFromFileExt(filePathOrExt, out mimeType);
+
 
 	public static bool DoPathsReferToSameFileName(string path1, string path2) {
 		

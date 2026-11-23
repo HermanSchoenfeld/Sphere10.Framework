@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests;
+namespace Sphere10.Framework.Communications.Tests;
 
 /// <summary>WHOIS referrals and the TCP port probe. The probe is run against listeners this fixture opens on the loopback address.</summary>
 [TestFixture]

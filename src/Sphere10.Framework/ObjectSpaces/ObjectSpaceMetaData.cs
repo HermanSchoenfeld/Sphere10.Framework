@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>ObjectSpace construction settings not already supplied by the clustered header.</summary>
 public sealed class ObjectSpaceMetaData {

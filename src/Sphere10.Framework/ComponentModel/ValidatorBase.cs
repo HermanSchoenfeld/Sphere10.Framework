@@ -13,7 +13,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A base class to support value conversion and validation. This class is used if no conversion is required or as a base class for specialized validator.

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Globally unique object identifier within an ObjectSpace.

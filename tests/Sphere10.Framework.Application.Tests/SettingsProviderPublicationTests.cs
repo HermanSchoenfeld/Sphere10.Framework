@@ -70,9 +70,9 @@ public class SettingsProviderPublicationTests {
 	public void NullEncryptedFieldPassesThroughEncryptionAndDecryption() {
 		var options = new SecretFieldOptions();
 
-		Assert.That(() => Tools.Object.EncryptMembers(options), Throws.Nothing);
+		Assert.That(() => ObjectEncryptor.EncryptMembers(options), Throws.Nothing);
 		Assert.That(options.Secret, Is.Null);
-		Assert.That(() => Tools.Object.DecryptMembers(options), Throws.Nothing);
+		Assert.That(() => ObjectEncryptor.DecryptMembers(options), Throws.Nothing);
 		Assert.That(options.Secret, Is.Null);
 	}
 

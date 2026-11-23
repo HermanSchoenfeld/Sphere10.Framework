@@ -10,7 +10,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Sphere10.Framework.ComponentModel;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
@@ -21,7 +20,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 [System.ComponentModel.ToolboxItem(true)]
 public class DataGrid : GridVirtual {
-	private Sphere10.Framework.ComponentModel.IBoundList _boundList;
+	private Sphere10.Framework.IBoundList _boundList;
 
 	private bool _endEditingRowOnValidate = true;
 
@@ -60,7 +59,7 @@ public class DataGrid : GridVirtual {
 	///  (that can be used to bind to a generic List) or BoundDataView (that can be used to bind to a DataView).
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Sphere10.Framework.ComponentModel.IBoundList DataSource {
+	public Sphere10.Framework.IBoundList DataSource {
 		get => _boundList;
 		set {
 			Unbind();
@@ -385,7 +384,7 @@ public class DataGrid : GridVirtual {
 
 	private void BoundListCleared(object sender, EventArgs args) => Rows.ResetRowHeigth();
 
-	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) => Rows.RowDeleted(args.Item);
+	private void BoundListItemDeleted(object sender, Sphere10.Framework.ItemDeletedEventArgs<object> args) => Rows.RowDeleted(args.Item);
 
 	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
 		try {

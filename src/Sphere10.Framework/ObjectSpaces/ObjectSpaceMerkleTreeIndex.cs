@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Maintains a <see cref="IMerkleTree"/> of an <see cref="ObjectSpace"/>. It does this by adopting the merkle-roots of the underlying <see cref="ObjectSpace"/>'s dimensions <see cref="IMerkleTree"/> as leaves in it's own tree.

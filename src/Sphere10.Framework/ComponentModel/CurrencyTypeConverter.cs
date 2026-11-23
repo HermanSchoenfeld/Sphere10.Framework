@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A TypeConverter that support string conversion from and to string with the currency symbol.

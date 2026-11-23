@@ -18,15 +18,25 @@ namespace Sphere10.Framework;
 /// </summary>
 public class TypeDescriptorEx {
 
-	private static Dictionary<Type, TypeConverter> _customConverters = new() {
+	// .NET has no converter for IPAddress.
+	private static readonly Dictionary<Type, TypeConverter> _customConverters = new() {
 		{ typeof(IPAddress), new IPAddressTypeConverter() }
-		// TODO: add for byte[],
 	};
 
+	/// <summary>The converter for a type: one registered with <see cref="RegisterConverter"/>, otherwise the component model's.</summary>
 	public static TypeConverter GetConverter(Type type) {
-		if (_customConverters.TryGetValue(type, out var converter))
-			return converter;
+		lock (_customConverters)
+			if (_customConverters.TryGetValue(type, out var converter))
+				return converter;
 		return TypeDescriptor.GetConverter(type);
+	}
+
+	/// <summary>Supplies the converter for a type the component model has none for. A library registers the converters for its own types.</summary>
+	public static void RegisterConverter(Type type, TypeConverter converter) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(converter, nameof(converter));
+		lock (_customConverters)
+			_customConverters[type] = converter;
 	}
 }
 

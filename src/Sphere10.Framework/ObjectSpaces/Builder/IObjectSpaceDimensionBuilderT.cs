@@ -6,9 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Mapping;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>Retains the fluent builder type and supplies the non-generic dimension-builder adapters.</summary>
 public interface IObjectSpaceDimensionBuilder<out TBuilder> : IObjectSpaceDimensionBuilder

@@ -1,7 +1,6 @@
 using System;
-using Sphere10.Framework.Mapping;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Encapsulates how change tracking is performed on objects, optionally mapping to a boolean property for automatic dirty flagging.

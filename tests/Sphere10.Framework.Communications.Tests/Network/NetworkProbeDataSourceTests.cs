@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework;
 
-namespace Sphere10.Framework.Tests;
+namespace Sphere10.Framework.Communications.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]

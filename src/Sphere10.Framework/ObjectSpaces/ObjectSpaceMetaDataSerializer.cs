@@ -8,7 +8,7 @@
 
 using System.IO;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>Serializes ObjectSpace settings and its one-off serializer factory record.</summary>
 public sealed class ObjectSpaceMetaDataSerializer : ItemSerializerBase<ObjectSpaceMetaData> {

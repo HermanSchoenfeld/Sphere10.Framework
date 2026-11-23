@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 public class PropertyChain : IAccessor {
 	private readonly Member[] _chain;

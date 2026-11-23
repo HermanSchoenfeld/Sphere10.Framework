@@ -14,7 +14,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Communications;
 
 /// <summary>Owns an explicitly requested probe session and its bounded observations. Reading or paging never starts a probe.</summary>
 /// <remarks>Each poll runs one round of the current command and publishes its observations as they arrive; the polling decorator repeats admitted commands on the chosen interval.</remarks>

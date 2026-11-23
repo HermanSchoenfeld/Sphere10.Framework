@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Sphere10.Framework.Mapping;
 
 namespace Sphere10.Framework;
 
@@ -299,7 +298,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		}
 
 		// Resolves the recorded declared field or property and rejects missing CLR members.
-		internal Sphere10.Framework.Mapping.Member Resolve() {
+		internal Sphere10.Framework.Member Resolve() {
 			// Resolve only the member declared by the recorded type; inherited names can identify different members.
 			const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 			MemberInfo info = IsField ? DeclaringType.GetField(Name, flags) : DeclaringType.GetProperty(Name, flags);

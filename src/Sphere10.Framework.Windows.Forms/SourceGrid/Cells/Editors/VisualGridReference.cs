@@ -43,7 +43,7 @@ public class VisualGridReference : TextBoxUITypeEditor {
 			}));
 	}
 
-	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ComponentModel.ConvertingObjectEventArgs args)
+	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ConvertingObjectEventArgs args)
 		=> args.Value = _binding.GetDisplayText(args.Value);
 
 	protected override void OnSendCharToEditor(char key) {

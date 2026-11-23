@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 public class ExpressionBuilder {
 	public static Expression<Func<T, object>> Create<T>(Member member) {

@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 [Serializable]
 internal class PropertyMember : Member {

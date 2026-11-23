@@ -24,7 +24,7 @@ public class TextBoxCurrency : TextBoxNumeric {
 	/// <param name="type">The type of this model</param>
 	public TextBoxCurrency(Type type)
 		: base(type) {
-		TypeConverter = new Sphere10.Framework.ComponentModel.CurrencyTypeConverter(type);
+		TypeConverter = new Sphere10.Framework.CurrencyTypeConverter(type);
 	}
 
 	#endregion

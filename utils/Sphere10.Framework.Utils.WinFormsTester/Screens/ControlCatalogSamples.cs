@@ -706,7 +706,7 @@ public static class ControlCatalogSamples {
 	}
 
 	private static Control CreateTypeEditor() {
-		var validator = new Sphere10.Framework.ComponentModel.TypeConverterValidator(typeof(Color));
+		var validator = new Sphere10.Framework.TypeConverterValidator(typeof(Color));
 		var editor = new TextBoxUITypeEditor { Validator = validator, Value = Color.SteelBlue };
 		editor.Disposed += (_, _) => validator.Dispose();
 		return editor;

@@ -15,6 +15,42 @@
 		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
+	<!--
+		The core library compiles against only these .NET assemblies. It must stay free of UI, drawing and platform libraries;
+		add an assembly here only when the core genuinely needs it.
+	-->
+	<ItemGroup>
+		<AllowedFrameworkAssembly Include="System.Collections" />
+		<AllowedFrameworkAssembly Include="System.Collections.Concurrent" />
+		<AllowedFrameworkAssembly Include="System.Collections.NonGeneric" />
+		<AllowedFrameworkAssembly Include="System.Collections.Specialized" />
+		<AllowedFrameworkAssembly Include="System.ComponentModel" />
+		<AllowedFrameworkAssembly Include="System.ComponentModel.Primitives" />
+		<AllowedFrameworkAssembly Include="System.ComponentModel.TypeConverter" />
+		<AllowedFrameworkAssembly Include="System.Console" />
+		<!-- The current process's identity for Tools.Runtime and SoftwareException; process helpers live in Sphere10.Framework.Application. -->
+		<AllowedFrameworkAssembly Include="System.Diagnostics.Process" />
+		<AllowedFrameworkAssembly Include="System.IO.Compression" />
+		<AllowedFrameworkAssembly Include="System.IO.FileSystem.Watcher" />
+		<AllowedFrameworkAssembly Include="System.Linq" />
+		<AllowedFrameworkAssembly Include="System.Linq.Expressions" />
+		<AllowedFrameworkAssembly Include="System.Memory" />
+		<!-- Only the IPAddress and IPEndPoint value types, which DeepObjectComparer compares; networking lives in Sphere10.Framework.Communications. -->
+		<AllowedFrameworkAssembly Include="System.Net.Primitives" />
+		<AllowedFrameworkAssembly Include="System.ObjectModel" />
+		<AllowedFrameworkAssembly Include="System.Runtime" />
+		<AllowedFrameworkAssembly Include="System.Runtime.InteropServices" />
+		<AllowedFrameworkAssembly Include="System.Runtime.Numerics" />
+		<AllowedFrameworkAssembly Include="System.Runtime.Serialization.Primitives" />
+		<AllowedFrameworkAssembly Include="System.Security.Cryptography" />
+		<AllowedFrameworkAssembly Include="System.Text.Encoding.Extensions" />
+		<AllowedFrameworkAssembly Include="System.Text.RegularExpressions" />
+		<AllowedFrameworkAssembly Include="System.Threading" />
+		<AllowedFrameworkAssembly Include="System.Threading.Tasks.Parallel" />
+		<AllowedFrameworkAssembly Include="System.Threading.Thread" />
+		<AllowedFrameworkAssembly Include="System.Threading.ThreadPool" />
+		<AllowedFrameworkAssembly Include="System.Xml.ReaderWriter" />
+	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Text\StopWordList.txt" />
 	</ItemGroup>

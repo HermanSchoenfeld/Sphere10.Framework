@@ -12,7 +12,7 @@ namespace Sphere10.Framework;
 
 public static class FileInfoExtensions {
 	public static string GetMimeType(this FileInfo fileInfo) {
-		return Tools.Network.GetMimeType(fileInfo.FullName);
+		return Tools.FileSystem.GetMimeType(fileInfo.FullName);
 	}
 }
 

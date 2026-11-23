@@ -341,7 +341,7 @@ public partial class VisualGrid {
 		var customFormat = columnBinding.GetDateTimeFormat(entity);
 		editor.Control.CustomFormat = customFormat;
 		var dtParseFormats = new[] { customFormat };
-		var dtConverter = new Sphere10.Framework.ComponentModel.DateTimeTypeConverter(customFormat, dtParseFormats, dtStyles);
+		var dtConverter = new Sphere10.Framework.DateTimeTypeConverter(customFormat, dtParseFormats, dtStyles);
 		editor.TypeConverter = dtConverter;
 		return new Cell(cellValue, editor);
 	}

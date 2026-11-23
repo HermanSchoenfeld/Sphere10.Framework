@@ -1,6 +1,6 @@
 using System;
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 public class RandomNumberGeneratorDecorator(IRandomNumberGenerator rng) : IRandomNumberGenerator {
 	protected IRandomNumberGenerator Internal = rng;

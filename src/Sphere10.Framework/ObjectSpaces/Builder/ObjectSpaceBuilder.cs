@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>Configures dimensions, factories and storage settings for independently built ObjectSpaces.</summary>
 public class ObjectSpaceBuilder {

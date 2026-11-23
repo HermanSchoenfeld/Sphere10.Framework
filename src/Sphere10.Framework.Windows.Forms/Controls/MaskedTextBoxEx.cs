@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// </summary>
 public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 	private bool _formatValue = false;
-	private Sphere10.Framework.ComponentModel.IValidator _validator = null;
+	private Sphere10.Framework.IValidator _validator = null;
 
 	/// <summary>
 	/// Gets or sets a property to enable or disable the automatic format of the Text when validating the control
@@ -33,7 +33,7 @@ public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 	/// You can use the ApplyValidatorRules method to apply the settings of the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public Sphere10.Framework.ComponentModel.IValidator Validator {
+	public Sphere10.Framework.IValidator Validator {
 		get => _validator;
 		set {
 			if (_validator != value) {

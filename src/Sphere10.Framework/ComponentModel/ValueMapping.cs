@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// The ValueMapping class can be used to easily map a value to a string value or a display string for conversion

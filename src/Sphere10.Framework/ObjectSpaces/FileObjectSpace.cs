@@ -9,7 +9,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Object space backed by a transactional file, wiring commit/rollback semantics to the underlying <see cref="TransactionalStream"/>.

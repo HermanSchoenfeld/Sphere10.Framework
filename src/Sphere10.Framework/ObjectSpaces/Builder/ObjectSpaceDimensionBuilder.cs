@@ -10,9 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Sphere10.Framework.Mapping;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>Configures one typed dimension and builds independent dimension definitions.</summary>
 public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<ObjectSpaceDimensionBuilder<T>> {

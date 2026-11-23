@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Sphere10.Framework.ComponentModel;
+namespace Sphere10.Framework;
 
 public class ConvertingObjectEventArgs : System.EventArgs {
 	private object _value;

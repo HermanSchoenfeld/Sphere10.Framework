@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 public class ErrorBandEqualityComparer : IEqualityComparer<decimal> {
 	private readonly decimal _tolerance;

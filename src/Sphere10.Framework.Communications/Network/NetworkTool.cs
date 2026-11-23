@@ -11,6 +11,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using Sphere10.Framework;
+using Sphere10.Framework.Communications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,12 +25,6 @@ using System.Threading.Tasks;
 namespace Tools;
 
 public static class Network {
-
-	public static string GetMimeType(string filePathOrExt)
-		=> TryGetMimeType(filePathOrExt, out var mimeType) ? mimeType : throw new InvalidOperationException($"Unable to determine mimetype for {filePathOrExt}");
-
-	public static bool TryGetMimeType(string filePathOrExt, out string mimeType)
-		=> MimeHelper.TryGetMimeTypeFromFileExt(filePathOrExt, out mimeType);
 
 	// TODO: needs refactoring like GetMacAddressses below
 	public static IPAddress GetNetworkAddress() {

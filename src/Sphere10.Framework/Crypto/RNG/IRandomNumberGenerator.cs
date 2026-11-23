@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 public interface IRandomNumberGenerator {
 	void NextBytes(Span<byte> output);

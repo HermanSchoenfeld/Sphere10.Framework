@@ -5,7 +5,7 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Collections;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A string-keyed property bag that serializes to XML with each key as an element

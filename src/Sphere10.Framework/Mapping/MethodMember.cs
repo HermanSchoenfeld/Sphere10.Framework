@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework.Mapping;
+namespace Sphere10.Framework;
 
 [Serializable]
 internal class MethodMember : Member {

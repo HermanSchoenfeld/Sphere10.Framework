@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Maths;
+namespace Sphere10.Framework;
 
 public sealed class Mersenne32Algorithm {
 	// Define MT19937 constants (32-bit RNG)

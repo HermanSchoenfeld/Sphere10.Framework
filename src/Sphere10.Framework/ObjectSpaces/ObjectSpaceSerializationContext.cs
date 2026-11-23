@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.ObjectSpaces;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// ObjectSpace-specific serialization context that provides external reference classification, serialization,

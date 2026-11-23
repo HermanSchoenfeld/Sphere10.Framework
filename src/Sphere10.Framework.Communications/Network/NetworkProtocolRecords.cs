@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework;
+namespace Sphere10.Framework.Communications;
 
 public sealed record DnsMessage(ushort TransactionId, bool IsResponse, ushort Flags, byte BaseResponseCode, bool Truncated,
 	DnsQuestion[] Questions, DnsResourceRecord[] Records);

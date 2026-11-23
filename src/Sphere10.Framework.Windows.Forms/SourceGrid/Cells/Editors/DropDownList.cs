@@ -109,7 +109,7 @@ public class DropDownList : EditorControlBase {
 		return editor;
 	}
 
-	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ComponentModel.ConvertingObjectEventArgs e) {
+	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ConvertingObjectEventArgs e) {
 		if (!string.IsNullOrEmpty(_displayMember) && e.Value != null)
 			e.Value = e.Value.GetType().GetProperty(_displayMember).FastGetValue(e.Value);
 		else
