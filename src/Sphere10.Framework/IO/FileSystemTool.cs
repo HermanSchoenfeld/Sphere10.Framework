@@ -35,13 +35,17 @@ public static class FileSystem {
 		CrossPlatformForbiddenFileNames = new[] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", ".", ".." };
 	}
 
-	/// <summary>The MIME type for a file extension, such as ".png" or "png". Throws when no extension is given.</summary>
+	/// <summary>The MIME type of a file, from its path, its name or its extension alone ("png" or ".png"). Throws when none is given.</summary>
 	public static string GetMimeType(string filePathOrExt)
 		=> TryGetMimeType(filePathOrExt, out var mimeType) ? mimeType : throw new InvalidOperationException($"Unable to determine mimetype for {filePathOrExt}");
 
-	/// <summary>The MIME type for a file extension, such as ".png" or "png". Unknown extensions map to a generic type.</summary>
-	public static bool TryGetMimeType(string filePathOrExt, out string mimeType)
-		=> MimeHelper.TryGetMimeTypeFromFileExt(filePathOrExt, out mimeType);
+	/// <summary>The MIME type of a file, from its path, its name or its extension alone ("png" or ".png"). An unknown extension maps to
+	/// application/octet-stream; an empty argument has no MIME type.</summary>
+	public static bool TryGetMimeType(string filePathOrExt, out string mimeType) {
+		// A path or file name is looked up by its extension; text without one is taken to be the extension itself.
+		var extension = Path.GetExtension(filePathOrExt);
+		return MimeHelper.TryGetMimeTypeFromFileExt(string.IsNullOrEmpty(extension) ? filePathOrExt : extension, out mimeType);
+	}
 
 
 	public static bool DoPathsReferToSameFileName(string path1, string path2) {
