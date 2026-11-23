@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -293,10 +292,7 @@ public class RakeAlgorithm {
 		//}
 
 		public static HashSet<string> ReadDefaultStopListWords() {
-			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = "Sphere10.Framework.Text.StopWordList.txt";
-			using var stream = assembly.GetManifestResourceStream(resourceName);
-			using var reader = new StreamReader(stream);
+			using var reader = new StringReader(Resources.StopWordList);
 			var hashSet = new HashSet<string>();
 			while (reader.ReadLine() is { } line) {
 				hashSet.Add(line);

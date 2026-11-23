@@ -51,12 +51,21 @@
 		<AllowedFrameworkAssembly Include="System.Threading.ThreadPool" />
 		<AllowedFrameworkAssembly Include="System.Xml.ReaderWriter" />
 	</ItemGroup>
+	<!-- Data files live in Resources and are embedded through Properties\Resources.resx, whose generated Resources class reads them. -->
 	<ItemGroup>
-	  <None Remove="Text\StopWordList.txt" />
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="Text\StopWordList.txt" />
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+			<CustomToolNamespace>Sphere10.Framework</CustomToolNamespace>
+		</EmbeddedResource>
 	</ItemGroup>
 
 

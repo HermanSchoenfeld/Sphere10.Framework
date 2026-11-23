@@ -29,6 +29,23 @@ public class MimeTypeTests {
 		Assert.That(Tools.FileSystem.GetMimeType(filePathOrExt), Is.EqualTo("image/png"));
 	}
 
+	[TestCase("webp", "image/webp")]
+	[TestCase("avif", "image/avif")]
+	[TestCase("svg", "image/svg+xml")]
+	[TestCase("woff2", "font/woff2")]
+	[TestCase("mp4", "video/mp4")]
+	[TestCase("webm", "video/webm")]
+	[TestCase("mp3", "audio/mpeg")]
+	[TestCase("wav", "audio/wav")]
+	[TestCase("js", "text/javascript")]
+	[TestCase("json", "application/json")]
+	[TestCase("wasm", "application/wasm")]
+	[TestCase("md", "text/markdown")]
+	[TestCase("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
+	[TestCase("jfif", "image/jpeg")]
+	public void CurrentFormatsMapToTheirRegisteredTypes(string extension, string mimeType)
+		=> Assert.That(Tools.FileSystem.GetMimeType(extension), Is.EqualTo(mimeType));
+
 	[Test]
 	public void AFileInfoResolvesByItsExtension()
 		=> Assert.That(new FileInfo(Path.Combine(Path.GetTempPath(), "report.pdf")).GetMimeType(), Is.EqualTo("application/pdf"));
