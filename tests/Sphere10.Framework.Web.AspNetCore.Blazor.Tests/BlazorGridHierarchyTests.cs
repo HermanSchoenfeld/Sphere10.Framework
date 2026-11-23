@@ -385,21 +385,28 @@ public class BlazorGridHierarchyTests {
 			await harness.Grid.ExpandDetailAsync(node);
 			var disposing = source.Children.Single();
 			var disposalGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-			disposing.DisposeGate = disposalGate.Task;
-			source.QueryVersion++;
-			await harness.Grid.RefreshAsync();
-			await disposing.DisposalStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 			var childGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-			source.ChildGate = childGate.Task;
-			source.ReplaceRows(new Node(1, "Latest", node.Children));
-			await harness.Grid.RefreshAsync();
-			Assert.That(source.ChildRequests, Is.EqualTo(2));
-			disposalGate.SetResult();
-			await disposing.Disposed.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			childGate.SetResult();
-			await harness.Rendered.QuiescenceTask;
-			await harness.Grid.CollapseDetailAsync(harness.Grid.Controller.Items[0]);
-			Assert.That(source.ChildRequests, Is.EqualTo(2), "A delayed prior release cannot start a second acquisition for the same state.");
+			// Released in finally, so a failed assertion fails the test instead of leaving the grid's disposal waiting forever.
+			try {
+				disposing.DisposeGate = disposalGate.Task;
+				source.QueryVersion++;
+				await harness.Grid.RefreshAsync();
+				await disposing.DisposalStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				source.ChildGate = childGate.Task;
+				source.ReplaceRows(new Node(1, "Latest", node.Children));
+				await harness.Grid.RefreshAsync();
+				// Expansion, the changed query key and the one refresh of the compatible replacement from its newest node.
+				Assert.That(source.ChildRequests, Is.EqualTo(3));
+				disposalGate.SetResult();
+				await disposing.Disposed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				childGate.SetResult();
+				await harness.Rendered.QuiescenceTask;
+				await harness.Grid.CollapseDetailAsync(harness.Grid.Controller.Items[0]);
+				Assert.That(source.ChildRequests, Is.EqualTo(3), "A delayed prior release cannot start a second acquisition for the same state.");
+			} finally {
+				disposalGate.TrySetResult();
+				childGate.TrySetResult();
+			}
 		});
 	}
 
