@@ -15,7 +15,10 @@ namespace Sphere10.Framework;
 /// <param name="Event">The event that occurs.</param>
 /// <param name="Start">When this occurrence starts.</param>
 /// <param name="End">When this occurrence ends. It equals <paramref name="Start"/> for an event without duration.</param>
-public sealed record CalendarOccurrence(CalendarEvent Event, DateTime Start, DateTime End) {
+/// <typeparam name="TLocation">Where an event takes place or what it acts on, as the calendar records it, such as a room name or a program.</typeparam>
+/// <typeparam name="TDecoration">How a view may present an event, such as a color, as the calendar defines it.</typeparam>
+/// <typeparam name="TTag">The calendar's own record of an event, such as an appointment row or a scheduled task.</typeparam>
+public sealed record CalendarOccurrence<TLocation, TDecoration, TTag>(CalendarEvent<TLocation, TDecoration, TTag> Event, DateTime Start, DateTime End) {
 	/// <summary>Whether the event has other occurrences.</summary>
 	public bool IsRecurring => Event.Recurrence.Frequency != CalendarFrequency.Once;
 }

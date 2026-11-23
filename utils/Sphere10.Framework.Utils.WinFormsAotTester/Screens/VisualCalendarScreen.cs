@@ -331,17 +331,17 @@ public partial class VisualCalendarScreen : ApplicationScreen {
 	// Two calendars of recurring events: one a person's, one a system's scheduled work. Dragging an occurrence moves its whole event.
 	private CalendarViewDataSource CreateCalendarSource() {
 		var today = DateTime.Today;
-		var personal = new MemoryCalendar("Personal",
-			new CalendarEvent { Title = "Stand-Up", Location = "Room 2", Recurrence = CalendarRecurrence.Weekly(today.AddDays(-30).AddHours(9), CalendarDaysOfWeek.Weekdays), Duration = TimeSpan.FromMinutes(30) },
-			new CalendarEvent { Title = "Gym", Recurrence = CalendarRecurrence.Weekly(today.AddDays(-30).AddHours(18), CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Wednesday | CalendarDaysOfWeek.Friday), Duration = TimeSpan.FromHours(1) },
-			new CalendarEvent { Title = "Dentist", Description = "Check-up", Recurrence = CalendarRecurrence.Once(today.AddDays(2).AddHours(14)), Duration = TimeSpan.FromHours(1) });
-		var system = new MemoryCalendar("System Tasks",
-			new CalendarEvent { Title = "Backup", Recurrence = CalendarRecurrence.Daily(today.AddDays(-30).AddHours(3)), Duration = TimeSpan.FromHours(1) },
-			new CalendarEvent { Title = "Disk Check", Recurrence = CalendarRecurrence.Weekly(today.AddDays(-30).AddHours(2), CalendarDaysOfWeek.Sunday), Duration = TimeSpan.FromHours(2) },
-			new CalendarEvent { Title = "Patch Install", Recurrence = CalendarRecurrence.MonthlyDayOfWeek(today.AddDays(-60).AddHours(3), CalendarWeeksOfMonth.Second, CalendarDaysOfWeek.Tuesday), Duration = TimeSpan.FromHours(2) },
-			new CalendarEvent { Title = "Month-End Report", Recurrence = CalendarRecurrence.Monthly(today.AddDays(-60).AddHours(23), null, lastDayOfMonth: true) },
-			new CalendarEvent { Title = "Sync", Recurrence = CalendarRecurrence.Daily(today.AddDays(-30).AddHours(8)) with { RepeatEvery = TimeSpan.FromHours(2), RepeatFor = TimeSpan.FromHours(8) } },
-			new CalendarEvent { Title = "Old Cleanup", Recurrence = CalendarRecurrence.Daily(today.AddDays(-30).AddHours(3).AddMinutes(30)), Enabled = false });
+		var personal = new MemoryCalendar<string, Color, string>("Personal",
+			new CalendarEvent<string, Color, string> { Title = "Stand-Up", Location = "Room 2", Recurrence = CalendarRecurrence.Weekly(today.AddDays(-30).AddHours(9), CalendarDaysOfWeek.Weekdays), Duration = TimeSpan.FromMinutes(30) },
+			new CalendarEvent<string, Color, string> { Title = "Gym", Recurrence = CalendarRecurrence.Weekly(today.AddDays(-30).AddHours(18), CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Wednesday | CalendarDaysOfWeek.Friday), Duration = TimeSpan.FromHours(1) },
+			new CalendarEvent<string, Color, string> { Title = "Dentist", Description = "Check-up", Decoration = Color.IndianRed, Recurrence = CalendarRecurrence.Once(today.AddDays(2).AddHours(14)), Duration = TimeSpan.FromHours(1) });
+		var system = new MemoryCalendar<string, Color, string>("System Tasks",
+			new CalendarEvent<string, Color, string> { Title = "Backup", Recurrence = CalendarRecurrence.Daily(today.AddDays(-30).AddHours(3)), Duration = TimeSpan.FromHours(1) },
+			new CalendarEvent<string, Color, string> { Title = "Disk Check", Recurrence = CalendarRecurrence.Weekly(today.AddDays(-30).AddHours(2), CalendarDaysOfWeek.Sunday), Duration = TimeSpan.FromHours(2) },
+			new CalendarEvent<string, Color, string> { Title = "Patch Install", Recurrence = CalendarRecurrence.MonthlyDayOfWeek(today.AddDays(-60).AddHours(3), CalendarWeeksOfMonth.Second, CalendarDaysOfWeek.Tuesday), Duration = TimeSpan.FromHours(2) },
+			new CalendarEvent<string, Color, string> { Title = "Month-End Report", Recurrence = CalendarRecurrence.Monthly(today.AddDays(-60).AddHours(23), null, lastDayOfMonth: true) },
+			new CalendarEvent<string, Color, string> { Title = "Sync", Recurrence = CalendarRecurrence.Daily(today.AddDays(-30).AddHours(8)) with { RepeatEvery = TimeSpan.FromHours(2), RepeatFor = TimeSpan.FromHours(8) } },
+			new CalendarEvent<string, Color, string> { Title = "Old Cleanup", Recurrence = CalendarRecurrence.Daily(today.AddDays(-30).AddHours(3).AddMinutes(30)), Enabled = false });
 		var source = new CalendarViewDataSource(personal, system);
 		source.RescheduleRequested += CalendarRescheduleRequested;
 		return source;

@@ -125,20 +125,20 @@ public class CalendarRecurrenceTests {
 
 	[Test]
 	public void AnEventsOccurrencesSpanItsDurationAndRepetitions() {
-		var meeting = new CalendarEvent { Title = "Review", Recurrence = CalendarRecurrence.Weekly(Monday, CalendarDaysOfWeek.Monday), Duration = TimeSpan.FromHours(2) };
+		var meeting = new CalendarEvent<string, string, object> { Title = "Review", Recurrence = CalendarRecurrence.Weekly(Monday, CalendarDaysOfWeek.Monday), Duration = TimeSpan.FromHours(2) };
 		var occurrences = meeting.GetOccurrences(Monday.AddHours(1), Monday.AddDays(8)).ToArray();
 		Assert.That(occurrences.Select(item => (item.Start, item.End)), Is.EqualTo(new[] { (Monday, Monday.AddHours(2)), (Monday.AddDays(7), Monday.AddDays(7).AddHours(2)) }),
 			"An occurrence that began before the period but reaches into it is included.");
 		Assert.That(occurrences[0].IsRecurring, Is.True);
-		var task = new CalendarEvent { Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday) with { RepeatEvery = TimeSpan.FromMinutes(15), RepeatFor = TimeSpan.FromHours(1) } };
+		var task = new CalendarEvent<string, string, object> { Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday) with { RepeatEvery = TimeSpan.FromMinutes(15), RepeatFor = TimeSpan.FromHours(1) } };
 		var run = task.GetOccurrences(Monday, Monday.AddDays(1)).Single();
 		Assert.That((run.Start, run.End), Is.EqualTo((Monday, Monday.AddHours(1))), "A repeating occurrence spans from its first to its last repetition.");
-		Assert.That(new CalendarEvent { Title = "Launch", Recurrence = CalendarRecurrence.Once(Monday) }.GetOccurrences(Monday, Monday.AddDays(1)).Single().IsRecurring, Is.False);
+		Assert.That(new CalendarEvent<string, string, object> { Title = "Launch", Recurrence = CalendarRecurrence.Once(Monday) }.GetOccurrences(Monday, Monday.AddDays(1)).Single().IsRecurring, Is.False);
 	}
 
 	[Test]
 	public void ReschedulingOneOccurrenceMovesTheWholeEvent() {
-		var weekly = new CalendarEvent { Title = "Backup", Recurrence = CalendarRecurrence.Weekly(Monday, CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Thursday), Duration = TimeSpan.FromHours(1) };
+		var weekly = new CalendarEvent<string, string, object> { Title = "Backup", Recurrence = CalendarRecurrence.Weekly(Monday, CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Thursday), Duration = TimeSpan.FromHours(1) };
 		var occurrence = weekly.GetOccurrences(Monday, Monday.AddDays(1)).Single();
 		// Dragged from Monday 03:30 to Tuesday 05:00 and stretched to two hours.
 		var moved = weekly.Reschedule(occurrence, Monday.AddDays(1).AddMinutes(90), Monday.AddDays(1).AddMinutes(210));
@@ -147,18 +147,18 @@ public class CalendarRecurrenceTests {
 		Assert.That(moved.Duration, Is.EqualTo(TimeSpan.FromHours(2)));
 		Assert.That(moved.GetOccurrences(Monday, Monday.AddDays(7)).Select(item => item.Start), Is.EqualTo(new[] { Monday.AddDays(1).AddMinutes(90), Monday.AddDays(4).AddMinutes(90) }));
 
-		var monthly = new CalendarEvent { Title = "Invoice", Recurrence = CalendarRecurrence.Monthly(new DateTime(2026, 11, 1, 9, 0, 0), new[] { 5, 20 }) };
+		var monthly = new CalendarEvent<string, string, object> { Title = "Invoice", Recurrence = CalendarRecurrence.Monthly(new DateTime(2026, 11, 1, 9, 0, 0), new[] { 5, 20 }) };
 		var fifth = monthly.GetOccurrences(new DateTime(2026, 11, 1), new DateTime(2026, 11, 10)).Single();
 		var later = monthly.Reschedule(fifth, new DateTime(2026, 11, 8, 10, 0, 0), new DateTime(2026, 11, 8, 10, 0, 0));
 		Assert.That(later.Recurrence.DaysOfMonth, Is.EqualTo(new[] { 8, 20 }), "Only the day that was moved changes.");
 		Assert.That(later.Recurrence.Start.TimeOfDay, Is.EqualTo(TimeSpan.FromHours(10)));
 
-		var secondTuesday = new CalendarEvent { Title = "Patch", Recurrence = CalendarRecurrence.MonthlyDayOfWeek(new DateTime(2026, 11, 1, 2, 0, 0), CalendarWeeksOfMonth.Second, CalendarDaysOfWeek.Tuesday) };
+		var secondTuesday = new CalendarEvent<string, string, object> { Title = "Patch", Recurrence = CalendarRecurrence.MonthlyDayOfWeek(new DateTime(2026, 11, 1, 2, 0, 0), CalendarWeeksOfMonth.Second, CalendarDaysOfWeek.Tuesday) };
 		var patch = secondTuesday.GetOccurrences(new DateTime(2026, 11, 1), new DateTime(2026, 12, 1)).Single();
 		var thirdWednesday = secondTuesday.Reschedule(patch, patch.Start.AddDays(8), patch.Start.AddDays(8));
 		Assert.That((thirdWednesday.Recurrence.WeeksOfMonth, thirdWednesday.Recurrence.DaysOfWeek), Is.EqualTo((CalendarWeeksOfMonth.Third, CalendarDaysOfWeek.Wednesday)));
 
-		var repeating = new CalendarEvent { Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday) with { RepeatEvery = TimeSpan.FromMinutes(15), RepeatFor = TimeSpan.FromHours(1) } };
+		var repeating = new CalendarEvent<string, string, object> { Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday) with { RepeatEvery = TimeSpan.FromMinutes(15), RepeatFor = TimeSpan.FromHours(1) } };
 		var run = repeating.GetOccurrences(Monday, Monday.AddDays(1)).Single();
 		var shifted = repeating.Reschedule(run, run.Start.AddHours(2), run.End.AddHours(4));
 		Assert.That((shifted.Recurrence.Start, shifted.Duration, shifted.Recurrence.RepeatFor), Is.EqualTo((Monday.AddHours(2), TimeSpan.Zero, (TimeSpan?)TimeSpan.FromHours(1))),
@@ -167,16 +167,16 @@ public class CalendarRecurrenceTests {
 
 	[Test]
 	public async Task AMemoryCalendarIdentifiesAnnouncesAndGuardsItsEvents() {
-		var calendar = new MemoryCalendar("Personal");
+		var calendar = new MemoryCalendar<string, string, object>("Personal");
 		var changes = 0;
 		calendar.Changed += () => changes++;
-		var added = await calendar.AddAsync(new CalendarEvent { Title = "Dentist", Recurrence = CalendarRecurrence.Once(Monday) });
+		var added = await calendar.AddAsync(new CalendarEvent<string, string, object> { Title = "Dentist", Recurrence = CalendarRecurrence.Once(Monday) });
 		Assert.That(added.Id, Is.Not.Null.And.Not.Empty);
 		var moved = await calendar.UpdateAsync(added, added with { Recurrence = CalendarRecurrence.Once(Monday.AddDays(1)) });
 		Assert.That(moved.Id, Is.EqualTo(added.Id));
 		Assert.That((await calendar.ReadEventsAsync()).Single().Recurrence.Start, Is.EqualTo(Monday.AddDays(1)));
 		Assert.That(await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => calendar.RemoveAsync(added)), Is.Not.Null, "A stale copy must not remove the changed event.");
-		Assert.That(await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => calendar.AddAsync(new CalendarEvent { Title = "Never", Recurrence = CalendarRecurrence.Weekly(Monday, CalendarDaysOfWeek.None) })),
+		Assert.That(await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => calendar.AddAsync(new CalendarEvent<string, string, object> { Title = "Never", Recurrence = CalendarRecurrence.Weekly(Monday, CalendarDaysOfWeek.None) })),
 			Is.InstanceOf<ArgumentException>(), "A rule that cannot occur is refused.");
 		await calendar.RemoveAsync(moved);
 		Assert.That(await calendar.ReadEventsAsync(), Is.Empty);

@@ -96,12 +96,12 @@ public class CalendarViewDataSourceTests {
 
 	[Test]
 	public async Task ACalendarSourceHasAColumnForEachCalendarOverTheRequestedPeriod() {
-		var personal = new MemoryCalendar("Personal", new CalendarEvent { Id = "gym", Title = "Gym", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(18)), Duration = TimeSpan.FromMinutes(45) });
-		var system = new MemoryCalendar("System Tasks",
-			new CalendarEvent { Id = "backup", Title = "Backup", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(3)), Duration = TimeSpan.FromHours(2) },
-			new CalendarEvent { Id = "scan", Title = "Scan", Recurrence = CalendarRecurrence.Weekly(Monday.AddHours(3).AddMinutes(10), CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Thursday) },
-			new CalendarEvent { Id = "sync", Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(8)) with { RepeatEvery = TimeSpan.FromHours(4), RepeatFor = TimeSpan.FromHours(8) } },
-			new CalendarEvent { Id = "report", Title = "Report", Recurrence = CalendarRecurrence.Once(Monday.AddDays(2).AddHours(22)), Duration = TimeSpan.FromHours(30), Enabled = false });
+		var personal = new MemoryCalendar<string, Color, string>("Personal", new CalendarEvent<string, Color, string> { Id = "gym", Title = "Gym", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(18)), Duration = TimeSpan.FromMinutes(45) });
+		var system = new MemoryCalendar<string, Color, string>("System Tasks",
+			new CalendarEvent<string, Color, string> { Id = "backup", Title = "Backup", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(3)), Duration = TimeSpan.FromHours(2) },
+			new CalendarEvent<string, Color, string> { Id = "scan", Title = "Scan", Recurrence = CalendarRecurrence.Weekly(Monday.AddHours(3).AddMinutes(10), CalendarDaysOfWeek.Monday | CalendarDaysOfWeek.Thursday) },
+			new CalendarEvent<string, Color, string> { Id = "sync", Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(8)) with { RepeatEvery = TimeSpan.FromHours(4), RepeatFor = TimeSpan.FromHours(8) } },
+			new CalendarEvent<string, Color, string> { Id = "report", Title = "Report", Recurrence = CalendarRecurrence.Once(Monday.AddDays(2).AddHours(22)), Duration = TimeSpan.FromHours(30), Enabled = false });
 		var source = new CalendarViewDataSource(personal, system) { SlotDuration = TimeSpan.FromMinutes(30) };
 		await source.LoadAsync();
 
@@ -142,7 +142,7 @@ public class CalendarViewDataSourceTests {
 
 	[Test]
 	public async Task AMoveOrResizeIsReportedWithTheOccurrencesRealNewTimesAndChangesNothing() {
-		var system = new MemoryCalendar("System Tasks", new CalendarEvent { Id = "scan", Title = "Scan", Recurrence = CalendarRecurrence.Once(Monday.AddHours(3).AddMinutes(10)) });
+		var system = new MemoryCalendar<string, Color, string>("System Tasks", new CalendarEvent<string, Color, string> { Id = "scan", Title = "Scan", Recurrence = CalendarRecurrence.Once(Monday.AddHours(3).AddMinutes(10)) });
 		var source = new CalendarViewDataSource(system);
 		await source.LoadAsync();
 		source.SetTimeRange(Monday, Monday.AddDays(6).AddHours(23));
@@ -155,15 +155,15 @@ public class CalendarViewDataSourceTests {
 		var request = requests.Single();
 		Assert.That((request.NewStart, request.NewEnd), Is.EqualTo((Monday.AddDays(2).AddHours(8).AddMinutes(10), Monday.AddDays(2).AddHours(8).AddMinutes(10))),
 			"The occurrence keeps its minutes and its length.");
-		Assert.That((request.Calendar, request.TargetCalendar, request.Occurrence.Event.Id), Is.EqualTo(((ICalendar)system, (ICalendar)system, "scan")));
+		Assert.That((request.Calendar, request.TargetCalendar, request.Occurrence.Event.Id), Is.EqualTo(((ICalendar<string, Color, string>)system, (ICalendar<string, Color, string>)system, "scan")));
 		Assert.That((await system.ReadEventsAsync()).Single().Recurrence.Start, Is.EqualTo(Monday.AddHours(3).AddMinutes(10)), "The source never changes a calendar itself.");
 		Assert.That(() => source.DeleteAppointment(column, block), Throws.TypeOf<NotSupportedException>());
 	}
 
 	[Test]
 	public async Task TheControlShowsACalendarSourceByWeekWithEachOccurrenceOnItsDay() {
-		var system = new MemoryCalendar("System Tasks",
-			new CalendarEvent { Id = "backup", Title = "Backup", Recurrence = CalendarRecurrence.Weekly(Monday.AddHours(3), CalendarDaysOfWeek.Tuesday | CalendarDaysOfWeek.Saturday), Duration = TimeSpan.FromHours(2) });
+		var system = new MemoryCalendar<string, Color, string>("System Tasks",
+			new CalendarEvent<string, Color, string> { Id = "backup", Title = "Backup", Recurrence = CalendarRecurrence.Weekly(Monday.AddHours(3), CalendarDaysOfWeek.Tuesday | CalendarDaysOfWeek.Saturday), Duration = TimeSpan.FromHours(2) });
 		var source = new CalendarViewDataSource(system);
 		await source.LoadAsync();
 		using var form = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1000, 700) };
@@ -184,10 +184,10 @@ public class CalendarViewDataSourceTests {
 	[Test]
 	public async Task ChangingViewAwayFromAWeekWithOverlappingEventsRebuildsTheGrid() {
 		// Overlapping events give Tuesday three lanes under one spanned day header; narrower views then remove those columns.
-		var system = new MemoryCalendar("System",
-			new CalendarEvent { Id = "a", Title = "A", Recurrence = CalendarRecurrence.Once(Monday.AddDays(1).AddHours(3)), Duration = TimeSpan.FromHours(3) },
-			new CalendarEvent { Id = "b", Title = "B", Recurrence = CalendarRecurrence.Once(Monday.AddDays(1).AddHours(4)), Duration = TimeSpan.FromHours(3) },
-			new CalendarEvent { Id = "c", Title = "C", Recurrence = CalendarRecurrence.Once(Monday.AddDays(1).AddHours(5)), Duration = TimeSpan.FromHours(3) });
+		var system = new MemoryCalendar<string, Color, string>("System",
+			new CalendarEvent<string, Color, string> { Id = "a", Title = "A", Recurrence = CalendarRecurrence.Once(Monday.AddDays(1).AddHours(3)), Duration = TimeSpan.FromHours(3) },
+			new CalendarEvent<string, Color, string> { Id = "b", Title = "B", Recurrence = CalendarRecurrence.Once(Monday.AddDays(1).AddHours(4)), Duration = TimeSpan.FromHours(3) },
+			new CalendarEvent<string, Color, string> { Id = "c", Title = "C", Recurrence = CalendarRecurrence.Once(Monday.AddDays(1).AddHours(5)), Duration = TimeSpan.FromHours(3) });
 		var source = new CalendarViewDataSource(system);
 		await source.LoadAsync();
 		using var form = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1000, 700) };
@@ -206,9 +206,9 @@ public class CalendarViewDataSourceTests {
 
 	[Test]
 	public async Task AnAsynchronousRefreshLaysThePeriodOutOnAWorkerAndShowsOnlyTheLatestRequest() {
-		var system = new MemoryCalendar("System",
-			new CalendarEvent { Id = "backup", Title = "Backup", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(3)), Duration = TimeSpan.FromHours(2) },
-			new CalendarEvent { Id = "sync", Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(8)) with { RepeatEvery = TimeSpan.FromMinutes(15), RepeatFor = TimeSpan.FromHours(12) } });
+		var system = new MemoryCalendar<string, Color, string>("System",
+			new CalendarEvent<string, Color, string> { Id = "backup", Title = "Backup", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(3)), Duration = TimeSpan.FromHours(2) },
+			new CalendarEvent<string, Color, string> { Id = "sync", Title = "Sync", Recurrence = CalendarRecurrence.Daily(Monday.AddHours(8)) with { RepeatEvery = TimeSpan.FromMinutes(15), RepeatFor = TimeSpan.FromHours(12) } });
 		var source = new ThreadRecordingDataSource(system);
 		await source.LoadAsync();
 		using var form = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1000, 700) };
@@ -296,13 +296,13 @@ public class CalendarViewDataSourceTests {
 
 	// Records the threads that decide which events are shown, which is part of every layout.
 	private sealed class ThreadRecordingDataSource : CalendarViewDataSource {
-		public ThreadRecordingDataSource(params ICalendar[] calendars)
+		public ThreadRecordingDataSource(params ICalendar<string, Color, string>[] calendars)
 			: base(calendars) {
 		}
 
 		public ConcurrentBag<int> Threads { get; } = new();
 
-		protected override bool Includes(ICalendar calendar, CalendarEvent calendarEvent) {
+		protected override bool Includes(ICalendar<string, Color, string> calendar, CalendarEvent<string, Color, string> calendarEvent) {
 			Threads.Add(Environment.CurrentManagedThreadId);
 			return true;
 		}

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 /// <summary>
-/// Shows the occurrences of one or more <see cref="ICalendar"/> objects in a <see cref="VisualCalendar"/>, with a column for each
+/// Shows the occurrences of one or more calendars of text locations, color decorations and text tags in a <see cref="VisualCalendar"/>, with a column for each
 /// calendar. The control's own Day, Week and Month views apply as they do to any data source. Occurrences of one calendar that
 /// overlap are placed side by side in extra columns, so nothing hides anything else. Use it for a person's calendars, a job
 /// schedule or an operating system's tasks.
@@ -37,8 +37,8 @@ public class CalendarViewDataSource : IVisualCalendarDataSource {
 	private static readonly Color[] _palette = {
 		Color.SteelBlue, Color.SeaGreen, Color.DarkOrange, Color.MediumPurple, Color.IndianRed, Color.Teal, Color.Goldenrod, Color.SlateGray
 	};
-	private readonly ICalendar[] _calendars;
-	private readonly Dictionary<ICalendar, CalendarEvent[]> _events = new();
+	private readonly ICalendar<string, Color, string>[] _calendars;
+	private readonly Dictionary<ICalendar<string, Color, string>, CalendarEvent<string, Color, string>[]> _events = new();
 	private readonly object _layoutLock = new();
 	private TimeSpan _slotDuration = TimeSpan.FromHours(1);
 	private DateTime _periodStart = DateTime.Today;
@@ -46,16 +46,16 @@ public class CalendarViewDataSource : IVisualCalendarDataSource {
 	private int _layoutVersion;
 	private Layout _layout;
 
-	public CalendarViewDataSource(params ICalendar[] calendars) {
+	public CalendarViewDataSource(params ICalendar<string, Color, string>[] calendars) {
 		Guard.ArgumentNotNull(calendars, nameof(calendars));
 		Guard.Argument(calendars.Length > 0 && calendars.All(calendar => calendar != null), nameof(calendars), "Show at least one calendar.");
-		_calendars = (ICalendar[])calendars.Clone();
+		_calendars = (ICalendar<string, Color, string>[])calendars.Clone();
 		foreach (var calendar in _calendars)
-			_events[calendar] = Array.Empty<CalendarEvent>();
+			_events[calendar] = Array.Empty<CalendarEvent<string, Color, string>>();
 	}
 
 	/// <summary>The calendars shown, in column order.</summary>
-	public ICalendar[] Calendars => (ICalendar[])_calendars.Clone();
+	public ICalendar<string, Color, string>[] Calendars => (ICalendar<string, Color, string>[])_calendars.Clone();
 
 	/// <summary>The height of one row in the time-of-day views. Set it to the view's row size, so that blocks start and end on rows.</summary>
 	public TimeSpan SlotDuration {
@@ -87,9 +87,9 @@ public class CalendarViewDataSource : IVisualCalendarDataSource {
 
 	/// <summary>Reads every calendar's events again. The view shows them at its next refresh.</summary>
 	public async Task LoadAsync(CancellationToken cancellationToken = default) {
-		var loaded = new Dictionary<ICalendar, CalendarEvent[]>();
+		var loaded = new Dictionary<ICalendar<string, Color, string>, CalendarEvent<string, Color, string>[]>();
 		foreach (var calendar in _calendars)
-			loaded[calendar] = await calendar.ReadEventsAsync(cancellationToken).ConfigureAwait(false) ?? Array.Empty<CalendarEvent>();
+			loaded[calendar] = await calendar.ReadEventsAsync(cancellationToken).ConfigureAwait(false) ?? Array.Empty<CalendarEvent<string, Color, string>>();
 		lock (_events) {
 			foreach (var pair in loaded)
 				_events[pair.Key] = pair.Value;
@@ -125,7 +125,7 @@ public class CalendarViewDataSource : IVisualCalendarDataSource {
 		// The block was drawn on whole rows, so the request carries how far it moved, applied to the occurrence's own times.
 		var start = item.Occurrence.Start + (newStartTime - appointment.StartTime);
 		var end = item.Occurrence.End + (newEndTime - appointment.EndTime);
-		var target = destColumn?.UserObject as ICalendar ?? item.Calendar;
+		var target = destColumn?.UserObject as ICalendar<string, Color, string> ?? item.Calendar;
 		RescheduleRequested?.Invoke(new CalendarRescheduleRequest(item.Calendar, target, item.Occurrence, start, end < start ? start : end));
 	}
 
@@ -141,11 +141,11 @@ public class CalendarViewDataSource : IVisualCalendarDataSource {
 	#endregion
 
 	/// <summary>Whether an event is shown. Override to hide events, for example disabled ones or those outside a search.</summary>
-	protected virtual bool Includes(ICalendar calendar, CalendarEvent calendarEvent) => true;
+	protected virtual bool Includes(ICalendar<string, Color, string> calendar, CalendarEvent<string, Color, string> calendarEvent) => true;
 
-	/// <summary>The color of an event that does not name one: its calendar's, or gray while it is disabled.</summary>
-	protected virtual Color GetColor(ICalendar calendar, CalendarEvent calendarEvent)
-		=> !calendarEvent.Enabled ? Color.Gainsboro : calendarEvent.Color ?? _palette[Array.IndexOf(_calendars, calendar) % _palette.Length];
+	/// <summary>The color of an event: gray while it is disabled, its decoration unless that is <see cref="Color.Empty"/>, otherwise its calendar's.</summary>
+	protected virtual Color GetColor(ICalendar<string, Color, string> calendar, CalendarEvent<string, Color, string> calendarEvent)
+		=> !calendarEvent.Enabled ? Color.Gainsboro : !calendarEvent.Decoration.IsEmpty ? calendarEvent.Decoration : _palette[Array.IndexOf(_calendars, calendar) % _palette.Length];
 
 	/// <summary>Drops the computed layout after the events, period or mode changed.</summary>
 	protected void Invalidate() {

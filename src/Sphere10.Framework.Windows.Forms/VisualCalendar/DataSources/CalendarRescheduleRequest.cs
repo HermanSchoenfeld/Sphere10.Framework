@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
@@ -16,4 +17,4 @@ namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 /// <param name="Occurrence">The occurrence as it stands.</param>
 /// <param name="NewStart">The requested start.</param>
 /// <param name="NewEnd">The requested end.</param>
-public sealed record CalendarRescheduleRequest(ICalendar Calendar, ICalendar TargetCalendar, CalendarOccurrence Occurrence, DateTime NewStart, DateTime NewEnd);
+public sealed record CalendarRescheduleRequest(ICalendar<string, Color, string> Calendar, ICalendar<string, Color, string> TargetCalendar, CalendarOccurrence<string, Color, string> Occurrence, DateTime NewStart, DateTime NewEnd);

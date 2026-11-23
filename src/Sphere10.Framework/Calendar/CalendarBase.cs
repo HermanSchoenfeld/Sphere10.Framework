@@ -15,7 +15,10 @@ namespace Sphere10.Framework;
 /// The template for a calendar. A derived calendar reads and writes its own store through the <c>*Core</c> hooks; this base checks
 /// arguments, refuses changes to a read-only calendar and announces accepted changes.
 /// </summary>
-public abstract class CalendarBase : ICalendar {
+/// <typeparam name="TLocation">Where an event takes place or what it acts on, as the calendar records it, such as a room name or a program.</typeparam>
+/// <typeparam name="TDecoration">How a view may present an event, such as a color, as the calendar defines it.</typeparam>
+/// <typeparam name="TTag">The calendar's own record of an event, such as an appointment row or a scheduled task.</typeparam>
+public abstract class CalendarBase<TLocation, TDecoration, TTag> : ICalendar<TLocation, TDecoration, TTag> {
 	public event EventHandlerEx Changed;
 
 	protected CalendarBase(string name) {
@@ -27,16 +30,16 @@ public abstract class CalendarBase : ICalendar {
 
 	public virtual bool IsReadOnly => false;
 
-	public Task<CalendarEvent[]> ReadEventsAsync(CancellationToken cancellationToken = default) => ReadEventsCoreAsync(cancellationToken);
+	public Task<CalendarEvent<TLocation, TDecoration, TTag>[]> ReadEventsAsync(CancellationToken cancellationToken = default) => ReadEventsCoreAsync(cancellationToken);
 
-	public async Task<CalendarEvent> AddAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default) {
+	public async Task<CalendarEvent<TLocation, TDecoration, TTag>> AddAsync(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, CancellationToken cancellationToken = default) {
 		Validate(calendarEvent, nameof(calendarEvent));
 		var added = await AddCoreAsync(calendarEvent, cancellationToken).ConfigureAwait(false);
 		NotifyChanged();
 		return added;
 	}
 
-	public async Task<CalendarEvent> UpdateAsync(CalendarEvent original, CalendarEvent changed, CancellationToken cancellationToken = default) {
+	public async Task<CalendarEvent<TLocation, TDecoration, TTag>> UpdateAsync(CalendarEvent<TLocation, TDecoration, TTag> original, CalendarEvent<TLocation, TDecoration, TTag> changed, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(original, nameof(original));
 		Validate(changed, nameof(changed));
 		var updated = await UpdateCoreAsync(original, changed, cancellationToken).ConfigureAwait(false);
@@ -44,7 +47,7 @@ public abstract class CalendarBase : ICalendar {
 		return updated;
 	}
 
-	public async Task RemoveAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default) {
+	public async Task RemoveAsync(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(calendarEvent, nameof(calendarEvent));
 		Guard.Ensure(!IsReadOnly, $"The calendar '{Name}' is read-only.");
 		await RemoveCoreAsync(calendarEvent, cancellationToken).ConfigureAwait(false);
@@ -60,15 +63,15 @@ public abstract class CalendarBase : ICalendar {
 	protected virtual void OnChanged() {
 	}
 
-	protected abstract Task<CalendarEvent[]> ReadEventsCoreAsync(CancellationToken cancellationToken);
+	protected abstract Task<CalendarEvent<TLocation, TDecoration, TTag>[]> ReadEventsCoreAsync(CancellationToken cancellationToken);
 
-	protected abstract Task<CalendarEvent> AddCoreAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken);
+	protected abstract Task<CalendarEvent<TLocation, TDecoration, TTag>> AddCoreAsync(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, CancellationToken cancellationToken);
 
-	protected abstract Task<CalendarEvent> UpdateCoreAsync(CalendarEvent original, CalendarEvent changed, CancellationToken cancellationToken);
+	protected abstract Task<CalendarEvent<TLocation, TDecoration, TTag>> UpdateCoreAsync(CalendarEvent<TLocation, TDecoration, TTag> original, CalendarEvent<TLocation, TDecoration, TTag> changed, CancellationToken cancellationToken);
 
-	protected abstract Task RemoveCoreAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken);
+	protected abstract Task RemoveCoreAsync(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, CancellationToken cancellationToken);
 
-	private void Validate(CalendarEvent calendarEvent, string parameter) {
+	private void Validate(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, string parameter) {
 		Guard.ArgumentNotNull(calendarEvent, parameter);
 		Guard.Ensure(!IsReadOnly, $"The calendar '{Name}' is read-only.");
 		Guard.Argument(calendarEvent.Recurrence != null, parameter, "A calendar event needs a recurrence.");

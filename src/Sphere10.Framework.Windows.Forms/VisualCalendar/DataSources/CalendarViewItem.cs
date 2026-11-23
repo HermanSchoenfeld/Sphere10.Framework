@@ -7,8 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.VisualCalendar;
 
 /// <summary>One displayed occurrence and the calendar it came from.</summary>
-public sealed record CalendarViewItem(ICalendar Calendar, CalendarOccurrence Occurrence);
+public sealed record CalendarViewItem(ICalendar<string, Color, string> Calendar, CalendarOccurrence<string, Color, string> Occurrence);
