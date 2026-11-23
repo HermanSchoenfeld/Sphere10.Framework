@@ -188,7 +188,13 @@ public class Values {
 
 		public static ExplicitFuture<T> Explicit<T>(T value) => ExplicitFuture<T>.For(value);
 
+		public static SynchronizedExplicitFuture<T> SynchronizedExplicit<T>() => new();
+
+		public static SynchronizedExplicitFuture<T> SynchronizedExplicit<T>(T value) => SynchronizedExplicitFuture<T>.For(value);
+
 		public static LazyLoad<T> LazyLoad<T>(Func<T> valueLoader) => new(valueLoader);
+
+		public static SynchronizedLazyLoad<T> SynchronizedLazyLoad<T>(Func<T> valueLoader) => new(valueLoader);
 
 		public static Reloadable<T> Reloadable<T>(Func<T> valueLoader) => new(valueLoader);
 
