@@ -56,7 +56,7 @@ All new source files must include the copyright header:
 
 ### Using directives
 
-Order namespace imports from general to specific. Put `System` namespaces first, followed by library and project namespaces; more complex namespaces such as `Sphere10.Framework.ObjectSpaces` belong at the end. Within a namespace family, put the parent namespace before its children. Apply this rule to source, tests and code examples.
+Order namespace imports from general to specific. Put `System` namespaces first, followed by library and project namespaces; more specific namespaces such as `Sphere10.Framework.Application` belong at the end. Within a namespace family, put the parent namespace before its children. Apply this rule to source, tests and code examples. The core library's domains all share the `Sphere10.Framework` namespace, so one `using Sphere10.Framework;` covers them.
 
 ```csharp
 using System;
@@ -64,7 +64,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Sphere10.Framework.ObjectSpaces;
+using Sphere10.Framework;
+using Sphere10.Framework.Application;
 ```
 
 ### Braces at end-of-line

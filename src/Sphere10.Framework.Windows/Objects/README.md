@@ -27,8 +27,12 @@ Every COM object the library uses follows the same procedure, so that the code r
 
 Do not use `Activator.CreateInstance` on a COM type, `Type.GetTypeFromCLSID`, `[ComImport]`, `dynamic` or an `object` parameter marshalled as an interface.
 
+The wrappers pass values as `ComVariant` and convert them with `ComVariantMarshaller`, which .NET 9 added. On `net8.0`, [ComVariantCompatibility.cs](ComVariantCompatibility.cs) (compiled under `#if !NET9_0_OR_GREATER`) supplies public stand-ins of the same names in `System.Runtime.InteropServices.Marshalling`: the same VARIANT layout, converted by the classic COM marshaller (`Marshal.GetNativeVariantForObject` and `GetObjectForNativeVariant`), which needs the JIT. The wrappers keep one API on every target, so every COM feature exists in the `net8.0` build, but only the `net9.0` and later builds are Native AOT safe.
+
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ComVariant`](ComVariantCompatibility.cs) | struct | `net8.0` only: stand-in for the .NET 9 VARIANT type, in `System.Runtime.InteropServices.Marshalling`, with `VarType` and `GetRawDataRef<T>` |
+| [`ComVariantMarshaller`](ComVariantCompatibility.cs) | static class | `net8.0` only: stand-in for the .NET 9 marshaller that converts through the classic COM marshaller, so it is not Native AOT safe |
 | [`Tools.Windows.COM`](COM.cs) | static class | Creates explicit COM wrappers for Native AOT, centralizing activation and generated-wrapper ownership |
 | [`WindowsInt32SafeArrayMarshaller`](WindowsInt32SafeArrayMarshaller.cs) | static class | Custom marshaller between `int[]` and a native SAFEARRAY of 32-bit integers |
 | [`WindowsAccessibleComObject`](WindowsAccessibleComObject.cs) | class | Owns typed MSAA/IAccessible2 provider queries, bounded child pages and independent retained references on one apartment |

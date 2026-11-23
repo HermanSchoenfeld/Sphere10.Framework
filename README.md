@@ -16,7 +16,7 @@ Copyright © Herman Schoenfeld 2005 - Present
 
 **Build desktop and web applications, embedded storage engines and cryptographic systems with one modular .NET toolkit.**
 
-Sphere10 Framework brings application shells, data access, embedded object storage, collections, binary serialization and cryptography together in one consistent set of C# libraries for .NET 10 and 11. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
+Sphere10 Framework brings application shells, data access, embedded object storage, collections, binary serialization and cryptography together in one consistent set of C# libraries for .NET 8, 9, 10 and 11, with the WinForms and Blazor UI libraries on .NET 10 and 11. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
 
 [Explore the features](#what-you-can-build) · [Try the demos](#see-it-in-action) · [Read the docs](docs/README.md) · [Install](#installation)
 
@@ -163,9 +163,9 @@ its first stable version. See [package channels and installation](docs/nuget-pub
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework) [Preview](https://www.nuget.org/packages/Sphere10.Framework#versions-body-tab) |
+| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more, compiled against an allowlist of .NET assemblies with no UI, drawing or networking | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework) [Preview](https://www.nuget.org/packages/Sphere10.Framework#versions-body-tab) |
 | [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/block hierarchy, startup plugins and wizard orchestration | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Application) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Application#versions-body-tab) |
-| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Networking over TCP, UDP, WebSockets and anonymous pipes, with JSON-RPC services | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Communications) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Communications#versions-body-tab) |
+| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Typed message protocols over TCP, UDP, WebSockets and anonymous pipes, JSON-RPC services, and the network diagnostics, mail and download tools | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Communications) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Communications#versions-body-tab) |
 | [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators delivered as a compiler analyzer, currently the `AutoDirty` property generator | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Generators.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Generators) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Generators#versions-body-tab) |
 | [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Internal C# code builder and math-expression compiler, not packed | |
 | [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![Stable](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg?label=stable)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) [Preview](https://www.nuget.org/packages/Sphere10.HashLib4CSharp#versions-body-tab) |
@@ -218,18 +218,18 @@ its first stable version. See [package channels and installation](docs/nuget-pub
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Color and geometry helpers, plus Windows image processing and GDI+ rendering | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) [Preview](https://www.nuget.org/packages/Sphere10.Framework.Drawing#versions-body-tab) |
 | [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.NUnit.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.NUnit) [Preview](https://www.nuget.org/packages/Sphere10.Framework.NUnit#versions-body-tab) |
 | [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | [![Stable](https://img.shields.io/nuget/v/Sphere10.Framework.NUnit.DB.svg?label=stable)](https://www.nuget.org/packages/Sphere10.Framework.NUnit.DB) [Preview](https://www.nuget.org/packages/Sphere10.Framework.NUnit.DB#versions-body-tab) |
-| [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Legacy Xamarin.iOS integration, outside the active .NET 10 solutions | |
-| [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Legacy Xamarin.Android integration, outside the active .NET 10 solutions | |
-| [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Legacy macOS integration source, outside the active .NET 10 solutions | |
+| [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Legacy Xamarin.iOS integration, outside the active solutions | |
+| [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Legacy Xamarin.Android integration, outside the active solutions | |
+| [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Legacy macOS integration source, outside the active solutions | |
 
 ### :test_tube: Test Projects
 
-The [Build workflow](.github/workflows/main.yml) compiles the cross-platform solution and runs the core, Application, CryptoEx, Data, Communications, ASP.NET Core, Blazor and VisualRenderer test assemblies on .NET 10 and 11. Separate jobs run the Blazor wizard browser tests and validate the complete Windows NuGet package set. Run the remaining test projects locally. The Windows, WinForms, LevelDB, Windows Store, HashLib4CSharp and Consensus tests are only in the Windows solution. See the [CI test guide](.github/ci.md) and [NuGet publishing guide](docs/nuget-publishing.md).
+The [Build workflow](.github/workflows/main.yml) compiles the cross-platform solution and runs the core, Application, CryptoEx, Data, Communications, ASP.NET Core and VisualRenderer test assemblies on .NET 8, 9, 10 and 11, and the Blazor test assembly on .NET 10 and 11 only. Separate jobs run the Blazor wizard browser tests and validate the complete Windows NuGet package set. Run the remaining test projects locally. The Windows, WinForms, LevelDB, Windows Store, HashLib4CSharp and Consensus tests are only in the Windows solution. See the [CI test guide](.github/ci.md) and [NuGet publishing guide](docs/nuget-publishing.md).
 
 | Test Project | Purpose |
 |--------------|---------|
 | [**Sphere10.HashLib4CSharp.Tests**](tests/Sphere10.HashLib4CSharp.Tests) | Tests for hashing algorithms |
-| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Channel disposal, pipe, TCP endpoint, UDP server and RPC dispatch tests. The networked JSON-RPC fixtures are commented out |
+| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Channel disposal, pipe, TCP endpoint, UDP server, RPC dispatch, typed protocol, network diagnostics and loopback mail tests. The networked JSON-RPC fixtures are commented out |
 | [**Sphere10.Framework.Consensus.Tests**](tests/Sphere10.Framework.Consensus.Tests) | Blockchain state, finalization, block-graph and consensus primitive tests |
 | [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
 | [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
@@ -300,7 +300,18 @@ Some projects keep third-party code under its original license, such as the [com
 - **.NET 11 SDK** for the complete solutions, utilities and recipes
 - An IDE that supports the **.NET 11 SDK**, such as Visual Studio or JetBrains Rider
 - **Windows** for the `Sphere10.Framework.Windows*` projects, the Windows solution and the WinForms tester
-- Install the **.NET 10 runtime** as well to run both test targets. Libraries using the `FrameworkTargetFrameworks` or `FrameworkWindowsTargetFrameworks` list from `Directory.Build.props` retain their .NET 10 targets and add .NET 11 when the SDK supports it. `Directory.Build.targets` enables runtime async for .NET 11. Individual libraries can still build their .NET 10 target with the .NET 10 SDK.
+- Install the **.NET 8, 9 and 10 runtimes** as well to run every test target.
+
+`Directory.Build.props` defines the target lists, and each list adds its .NET 11 target when the SDK supports it. `Directory.Build.targets` enables runtime async for `net11.0` only, and the .NET 10 SDK still builds every target except `net11.0`.
+
+| List | Targets | Projects |
+|---|---|---|
+| `FrameworkTargetFrameworks` | `net8.0`, `net9.0`, `net10.0`, `net11.0` | Core, Application, Communications, Data and its providers, Windows, Windows.LevelDB, Drawing, Web, Web.AspNetCore, Web.AspNetCore.MVC, Web.VisualRenderer, CryptoEx, Consensus, NUnit, NUnit.DB and their tests |
+| `FrameworkWindowsStoreTargetFrameworks` | `net8.0` to `net11.0`, each with `-windows10.0.19041.0` | Windows.Store and its tests |
+| `FrameworkUITargetFrameworks` | `net10.0`, `net11.0` | Web.AspNetCore.Blazor, its tests and the Blazor tester |
+| `FrameworkWindowsUITargetFrameworks` | `net10.0-windows`, `net11.0-windows` | Windows.Forms, the six Windows.Forms database editors, their tests and the WinForms tester |
+
+The UI packages need .NET 10: Windows Forms dialogs use `Form.ShowDialogAsync` behind `IApplicationDialog`, and the Blazor library relies on the .NET 10 ASP.NET Core static web assets. Windows.Forms.DataVisualization uses its own list with the same `net10.0-windows` and `net11.0-windows` targets. The WinForms AOT, MVC and Workflow testers target `net11.0` only.
 
 ### NuGet packages
 
@@ -346,7 +357,7 @@ dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Re
 
 ## Building and publishing packages
 
-Build the full package set on Windows with the .NET 11 SDK to include both supported runtime targets.
+Build the full package set on Windows with the .NET 11 SDK to include every supported runtime target: `net8.0` to `net11.0` for most packages, and `net10.0` and `net11.0` for the UI packages listed under [Prerequisites](#prerequisites). `Sphere10.Framework.Windows` references the ILSpy decompiler packages (`ICSharpCode.Decompiler` and `ICSharpCode.BamlDecompiler` 11.2.0.10050) only on `net10.0` and later, so its `Tools.Windows.Assemblies` utility exists only in those builds.
 
 ### Versions
 

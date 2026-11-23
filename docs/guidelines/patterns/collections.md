@@ -10,9 +10,8 @@ clustered-stream and persisted B-tree configuration practices.
 
 ## Select an existing collection
 
-Most of these types are in `Sphere10.Framework`, even when their source folders
-have more specific names. Import the actual declaring namespace; for example,
-`ValueReferenceInverseDictionary` is in `Sphere10.Framework.Collections`.
+These types are all in the `Sphere10.Framework` namespace, whatever their source
+folder is called, so `using Sphere10.Framework;` reaches every one of them.
 
 | Required behavior | Existing family | Selection details |
 |---|---|---|
@@ -152,7 +151,7 @@ another existing extended collection for each group.
 family for types sharing a short name.
 
 `MultiKeyDictionary` represents a path of separately compared key components,
-as [ProtocolMode](../../../src/Sphere10.Framework/Protocol/ProtocolMode.cs)
+as [ProtocolMode](../../../src/Sphere10.Framework.Communications/Protocol/ProtocolMode.cs)
 does for request/response types. It is not a one-key-to-many-values dictionary.
 `DictionaryChain` searches its head before its tail, updates the located link
 or adds to the head, and concatenates links for counts/enumeration. Duplicate
@@ -176,7 +175,7 @@ range traversal rather than retrieving all keys and filtering them. Tree
 For an XML property bag, the existing
 [PropertyBag](../../../src/Sphere10.Framework/Collections/Dictionaries/PropertyBag.cs)
 offers typed `Set`, `Get` and `TryGet` over named object values. It lives in
-`Sphere10.Framework.Collections` and is an `IXmlSerializable` object, not an
+`Sphere10.Framework` and is an `IXmlSerializable` object, not an
 `IDictionary` implementation. The older `IPersistedDictionary` contract is
 covered in [persistence and transactions](persistence-and-transactions.md).
 

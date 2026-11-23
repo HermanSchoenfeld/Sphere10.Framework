@@ -9,7 +9,7 @@ NUnit tests for the native WinForms application framework, screen hosting, contr
 
 ## Run the tests
 
-Run these commands from the repository root on Windows with the .NET 10 SDK. A machine with a .NET 11 SDK also builds and runs the `net11.0-windows` target.
+Run these commands from the repository root on Windows with the .NET 10 SDK. The project targets `net10.0-windows`, like the WinForms library it tests, and a machine with a .NET 11 SDK also builds and runs `net11.0-windows`. `dotnet test` runs every target; add `-f net10.0-windows` to run one.
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Windows.Forms.Tests.csproj -c Release -p:BuildRevision=0

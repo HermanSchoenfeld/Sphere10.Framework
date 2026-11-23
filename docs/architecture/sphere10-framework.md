@@ -16,7 +16,7 @@
 
 ## Introduction
 
-Sphere10 Framework is a **.NET framework** for building high-performance desktop, web and service applications. Its libraries target `net10.0`, plus `net11.0` when built with a .NET 11 SDK. It provides low-level primitives and high-level abstractions that work together to solve common development challenges.
+Sphere10 Framework is a **.NET framework** for building high-performance desktop, web and service applications. Its libraries target `net8.0`, `net9.0` and `net10.0`, plus `net11.0` (with runtime async) when built with a .NET 11 SDK. The Windows Forms and Blazor UI packages target only `net10.0` and `net11.0`, because they build on .NET 10 UI APIs. It provides low-level primitives and high-level abstractions that work together to solve common development challenges.
 
 ### What Makes It Different
 
@@ -326,7 +326,7 @@ Each provider implements the interface while exposing provider-specific features
 
 ### Cross-Platform Core
 
-`Sphere10.Framework` targets .NET 10, running on:
+`Sphere10.Framework` targets .NET 8, 9 and 10 (and .NET 11 with its SDK), compiles against an allowlist of .NET assemblies with no UI, drawing or networking, and runs on:
 
 - Windows (x64, x86, ARM64)
 - Linux (x64, ARM64)

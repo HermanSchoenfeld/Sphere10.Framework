@@ -12,7 +12,7 @@ The package supplies a database-manager base class, a data-generator base class,
 dotnet add package Sphere10.Framework.Data.NHibernate
 ```
 
-The package depends on `NHibernate`, `FluentNHibernate`, `Sphere10.Framework.Data`, `Sphere10.Framework.Data.MSSQL` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.NHibernate/Sphere10.Framework.Data.NHibernate.csproj` with a `ProjectReference`.
+The package depends on `NHibernate`, `FluentNHibernate`, `Sphere10.Framework.Data`, `Sphere10.Framework.Data.MSSQL` and `Sphere10.Framework`. The project targets `net8.0`, `net9.0` and `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.NHibernate/Sphere10.Framework.Data.NHibernate.csproj` with a `ProjectReference`.
 
 ## ⚡ Create a database and open sessions
 

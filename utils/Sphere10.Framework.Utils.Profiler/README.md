@@ -1,6 +1,7 @@
 # Sphere10 Framework profiler
 
-This cross-platform .NET 10 console project is the home for framework performance
+This cross-platform console project, targeting `net8.0` to `net10.0` (and `net11.0`
+with a .NET 11 SDK), is the home for framework performance
 studies. Its root command selects a profiling domain; it never runs every
 benchmark implicitly. The project uses the repository's centrally versioned
 BenchmarkDotNet package and references Core directly, with no UI dependency.
@@ -27,11 +28,12 @@ screening limits and independent-process finalist confirmation.
 
 ## Command line
 
-Run from the Framework root in Release, without a debugger:
+Run from the Framework root in Release, without a debugger. The project has several
+target frameworks, so `-f` chooses the runtime to measure:
 
 ```powershell
-dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- --help
-dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- object-spaces --help
+dotnet run -c Release -f net10.0 --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- --help
+dotnet run -c Release -f net10.0 --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- object-spaces --help
 ```
 
 CLI commands use `--no-launch-profile` to select their own arguments and skip the

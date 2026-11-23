@@ -9,6 +9,10 @@ source has not been vendored or relicensed into Sphere10 Framework.
 | ICSharpCode.BamlDecompiler | 11.2.0.10050 | [ILSpy BAML package source](https://github.com/icsharpcode/ILSpy/tree/c86190ef4e24f3137c13a9275316042842d2fada/ICSharpCode.BamlDecompiler) | [Retained MIT license](ThirdParty/ILSpy.LICENSE.txt) |
 | Microsoft.Diagnostics.Runtime | 4.2.751201 | [ClrMD package source](https://github.com/microsoft/clrmd/tree/2e7e5d74cddb2be0ac523aedead10b90a95e71c3) | [Retained MIT license](ThirdParty/ClrMD.LICENSE.txt) |
 
+The two ILSpy packages support only .NET 10 and later, so only the `net10.0` and
+`net11.0` builds reference them and carry their notices; the `net8.0` and `net9.0`
+builds have no decompiler. Microsoft.Diagnostics.Runtime is referenced on every target.
+
 Redistribution must preserve each package's license/copyright notices and the
 notices of its transitive dependencies. The referenced packages remain separate
 assemblies, with their original names, authorship and license metadata. Do not

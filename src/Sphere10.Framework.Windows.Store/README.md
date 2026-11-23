@@ -2,7 +2,7 @@
 
 Windows Store distribution support: the product updater of an application distributed through the Microsoft Store. A Store build references this library and adds its module; every other build leaves it out and keeps the release server's updater.
 
-The library targets a Windows SDK version (`net10.0-windows10.0.19041.0`, and `net11.0-windows10.0.19041.0` when the SDK supports .NET 11), whose target framework supplies the Windows Runtime projection. It references only the Application library and the core.
+The library targets a Windows SDK version (`net8.0-windows10.0.19041.0`, `net9.0-windows10.0.19041.0` and `net10.0-windows10.0.19041.0`, and `net11.0-windows10.0.19041.0` when the SDK supports .NET 11), whose target framework supplies the Windows Runtime projection. It references only the Application library and the core.
 
 ## The Store updater
 

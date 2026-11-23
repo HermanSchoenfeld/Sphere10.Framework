@@ -21,7 +21,7 @@ A **Theme** is an ordered selection of named template/resource definitions. A **
 
 For example, LocalNotion's `@HideEmbeddedPages` Tag projects to `DocumentBlock.HideEmbeddedPages`. The document still selects ordinary presentation Themes such as `default`. A template that styles an embedded-page reference is a separate presentation concern. Categories, keywords, publication status and access policy also remain source/application concerns; hiding a reference does not make its destination private.
 
-The renderer targets .NET 10 and is independently packaged under the MIT License. It has no Sphere10 Framework, Notion SDK, LocalNotion repository or AngleSharp runtime dependency. Tests may use an HTML parser without adding it to the library's runtime boundary.
+The renderer targets .NET 8, 9 and 10 (and .NET 11 with its SDK) and is independently packaged under the MIT License. It has no Sphere10 Framework, Notion SDK, LocalNotion repository or AngleSharp runtime dependency. Tests may use an HTML parser without adding it to the library's runtime boundary.
 
 ## Repository map
 

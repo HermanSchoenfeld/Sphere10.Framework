@@ -4,7 +4,7 @@ A bundled copy of the CommandLineParser library, which maps command-line argumen
 
 This folder bundles the MIT-licensed [CommandLineParser](https://github.com/commandlineparser/commandline) library by Giacomo Stelluti Scala and contributors, under the licence in [License.md](License.md). The [upstream README](#upstream-readme) section below reproduces the upstream project's README, so its badges, NuGet commands, platform list and contribution notes describe the upstream project. The bundled copy differs as follows:
 
-- It is compiled into `Sphere10.Framework.Application` and ships in that package for `net10.0`, plus `net11.0` when a .NET 11 SDK builds it. Do not also reference the `CommandLineParser` package, because both define the same `CommandLine` types.
+- It is compiled into `Sphere10.Framework.Application` and ships in that package for `net8.0`, `net9.0` and `net10.0`, plus `net11.0` when a .NET 11 SDK builds it. Do not also reference the `CommandLineParser` package, because both define the same `CommandLine` types.
 - The types keep their upstream namespaces. Import `CommandLine` for `Parser`, `ParserSettings` and the `[Option]`, `[Value]` and `[Verb]` attributes, and `CommandLine.Text` for `HelpText`.
 - F# `option<'a>` support is compiled out, so `option` properties are not supported and the `CommandLineParser.FSharp` notes do not apply.
 - Enum arguments are parsed by `Tools.Enums.TryParseEnum`, which also accepts a member's `[EnumMember]` value. The help screen shows that value when one is declared.

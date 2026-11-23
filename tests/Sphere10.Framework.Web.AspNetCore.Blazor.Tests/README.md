@@ -6,7 +6,7 @@ The default suite runs without a browser driver, external service, database or W
 
 ## Run the tests
 
-Install the .NET 10 SDK and run these commands **from the repository root**. A machine with a .NET 11 SDK also builds and runs the `net11.0` target. `dotnet test` restores and builds the required projects before running NUnit. `BuildRevision=0` supplies an explicit local build revision.
+Install the .NET 10 SDK and run these commands **from the repository root**. The project targets `net10.0`, like the Blazor library it tests, and a machine with a .NET 11 SDK also builds and runs `net11.0`. `dotnet test` restores and builds the required projects before running NUnit. `BuildRevision=0` supplies an explicit local build revision.
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj -c Release -p:BuildRevision=0
@@ -226,7 +226,7 @@ dotnet build tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Frame
 Start that tester build in a **separate terminal**, using a free port:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0 --no-build --no-launch-profile -- --urls http://127.0.0.1:5187
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -f net10.0 -p:BuildRevision=0 --no-build --no-launch-profile -- --urls http://127.0.0.1:5187
 ```
 
 Run the explicit fixture against that build. `BlazorTesterUrl` is required and must identify the local running tester. `BrowserExecutablePath` is optional. When it is omitted, Playwright uses its separately installed Chromium. To use an existing Edge installation without downloading a browser, create a local runsettings file and set its actual executable path:

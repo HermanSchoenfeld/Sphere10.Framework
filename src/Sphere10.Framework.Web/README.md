@@ -17,7 +17,7 @@ This library provides web models and formatting helpers that need no ASP.NET Cor
 
 ## Installation
 
-Reference the package from a project that targets .NET 10 or later:
+Reference the package from a project that targets .NET 8 or later:
 
 ```powershell
 dotnet add package Sphere10.Framework.Web
@@ -148,7 +148,7 @@ The attribute lives in `Sphere10.Framework.Web.Processing` rather than `Sphere10
 | `ExternalLibs/JQuery/` | The obsolete DataTables models. |
 | `HtmlTool.cs` | `Tools.Web.Html`. |
 
-The project targets `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. Its only project reference is [Sphere10.Framework](../Sphere10.Framework/README.md), and it has no ASP.NET Core framework reference. The [MVC](../Sphere10.Framework.Web.AspNetCore.MVC/README.md) and [Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) libraries build on the shared ASP.NET Core layer above it.
+The project targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. Its only project reference is [Sphere10.Framework](../Sphere10.Framework/README.md), and it has no ASP.NET Core framework reference. The [MVC](../Sphere10.Framework.Web.AspNetCore.MVC/README.md) and [Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) libraries build on the shared ASP.NET Core layer above it.
 
 ## Upgrading from the combined library
 

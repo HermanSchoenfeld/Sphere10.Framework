@@ -25,8 +25,8 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 - **50+ string, enumerable, task, stream, and type extension methods**
 
 **Key Attributes**
-- **Language**: C# targeting .NET 10
-- **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
+- **Language**: C# targeting .NET 8, 9 and 10, plus .NET 11 when built with a .NET 11 SDK
+- **Dependencies**: No package dependencies, and only an allowlisted set of .NET assemblies (see [Allowed .NET assemblies](#allowed-net-assemblies))
 - **Platform Support**: Windows, Linux, macOS, iOS, Android
 - **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
 - **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
@@ -45,7 +45,7 @@ Every folder of `Sphere10.Framework` is a domain with its own README, which list
 
 | Domain | What it provides | Source |
 |---|---|---|
-| [Attributes](Attributes/README.md) | Declarative attributes for default dates, encrypted string members, enum error messages and metadata, and file extensions. | [source](Attributes/) |
+| [Attributes](Attributes/README.md) | Declarative attributes for default dates, enum error messages and metadata, and file extensions. | [source](Attributes/) |
 | [Cache](Cache/README.md) | Synchronized in-memory caches that fetch values on a miss and evict them under expiration, staleness and capacity policies. | [source](Cache/) |
 | [Calendar](Calendar/README.md) | A recurrence rule, events with occurrences, and a calendar contract that a person's calendar, a job schedule or an operating system's tasks can each implement. | [source](Calendar/) |
 | [ClusteredStreams](ClusteredStreams/README.md) | Multiplexes any number of resizable logical streams onto one root `Stream` through linked chains of fixed-size clusters, with pluggable attachments for indexes and other reserved data. | [source](ClusteredStreams/) |
@@ -58,7 +58,7 @@ Every folder of `Sphere10.Framework` is a domain with its own README, which list
 | [Disposables](Disposables/README.md) | Base classes and small adapters that implement `IDisposable` and `IAsyncDisposable` together, with a single cleanup hook in the direction the resource needs. | [source](Disposables/) |
 | [Drawing](Drawing/README.md) | Platform-neutral enumerations that describe how an image is resized into a requested size. | [source](Drawing/) |
 | [Encoding](Encoding/README.md) | Text encodings of binary data in hexadecimal, Base32 and Base62. | [source](Encoding/) |
-| [Environment](Environment/README.md) | Runtime and process facilities: external command execution, single-instance enforcement, running-process data, runtime queries and debugging scratch state. | [source](Environment/) |
+| [Environment](Environment/README.md) | Runtime and process facilities: external command execution, single-instance enforcement, the machine identifier contract, runtime queries and debugging scratch state. | [source](Environment/) |
 | [Events](Events/README.md) | Sender-free event delegates, call-argument payloads and before and after event arguments for intercepted operations. | [source](Events/) |
 | [Exceptions](Exceptions/README.md) | Argument and invariant guards, the `SoftwareException` hierarchy and helpers that run actions while capturing or ignoring their exceptions. | [source](Exceptions/) |
 | [Extensions](Extensions/README.md) | Extension methods over BCL and Framework types, from strings, dates, sequences and streams to the decorator activators that wrap collections, comparers and serializers. | [source](Extensions/) |
@@ -75,13 +75,12 @@ Every folder of `Sphere10.Framework` is a domain with its own README, which list
 | [Memory](Memory/README.md) | Memory-size units and conversions, readable byte counts, primitive sizes and a union that reinterprets one array reference as another element type. | [source](Memory/) |
 | [Merkle](Merkle/README.md) | Dynamic merkle trees that hash leaf digests into a root and generate and verify existence, consistency, contains, update, append and delete proofs, with merkleized lists, sets, dictionaries and paged buffers. | [source](Merkle/) |
 | [Misc](Misc/README.md) | Small shared policies, sort options, authentication results, a cycle detector, a decaying gauge, recursive data, UI target references and obfuscated URL identifiers. | [source](Misc/) |
-| [Network](Network/README.md) | URL parsing and building, MIME types, SMTP mail, file download, host diagnostics such as DNS, ping, traceroute, WHOIS and a TCP port probe, passive DNS and TLS ClientHello decoding, and a polling data source for probe sessions. | [source](Network/) |
+| [Network](Network/README.md) | URL parsing and building, query strings, the MIME type table and video-sharing link detection, without any networking. | [source](Network/) |
 | [ObjectSpaces](ObjectSpaces/README.md) | An embedded, indexed store of typed CLR objects over clustered streams, in memory or in a transactional file. | [source](ObjectSpaces/) |
 | [ObjectStream](ObjectStream/README.md) | A list-like store of serialized objects over clustered streams, with observer hooks and projection indexes kept in attachments of the same storage. | [source](ObjectStream/) |
-| [Objects](Objects/README.md) | Reflection-based object cloning, deep comparison, attribute-driven defaults and encryption, and the `Tools.Object` helpers that front them. | [source](Objects/) |
+| [Objects](Objects/README.md) | Reflection-based object cloning, deep comparison, attribute-driven defaults, and the `Tools.Object` helpers that front them. | [source](Objects/) |
 | [Peripherals](Peripherals/README.md) | Platform-neutral keyboard and mouse event models, key and scan codes, and the device-hook contracts that native hooks implement. | [source](Peripherals/) |
 | [Persistable](Persistable/README.md) | The `IPersistable` contract for objects that both load and save their state, with sync, async and decorator bases. | [source](Persistable/) |
-| [Protocol](Protocol/README.md) | Message protocols of typed commands, request and response exchanges, two- and three-way handshakes and numbered modes, run by a `ProtocolOrchestrator` over a `ProtocolChannel` byte transport. | [source](Protocol/) |
 | [Repository](Repository/README.md) | The `IRepository<TEntity, TIdentity>` CRUD contract with paired synchronous and asynchronous members, base classes, a dictionary adapter and decorators. | [source](Repository/) |
 | [Saveable](Saveable/README.md) | The `ISaveable` contract for objects that write their state on demand, with base classes that pair synchronous and asynchronous saving. | [source](Saveable/) |
 | [Scheduler](Scheduler/README.md) | Timer-driven scheduling of one-shot and recurring jobs, with fluent job builders and XML-serializable job surrogates. | [source](Scheduler/) |
@@ -106,12 +105,28 @@ Types declared in the project folder itself:
 | [`Sphere10FrameworkDefaults`](Sphere10Defaults.cs) | static class | Library-wide default constants for buffer and page sizes, cluster sizes, container policies, endianness, hash function, B-tree orders, ObjectSpace settings, cache reap level and attachment names. |
 <!-- domains:end -->
 
+Networking (`Tools.Network`, `Tools.Mail`, `Tools.Web.Downloader`, `NetworkProbeDataSource` and the `Protocol` types) is in [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/README.md). Member encryption (`EncryptedStringAttribute`, `ObjectEncryptor`), `ProcessDataSource` and `ProcessExtensions` are in [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md).
+
+## Allowed .NET assemblies
+
+The core library compiles against an allowlist of .NET assemblies, so it stays free of UI, drawing and platform libraries. [Sphere10.Framework.csproj](Sphere10.Framework.csproj) lists them as `AllowedFrameworkAssembly` items, and the `RestrictFrameworkAssemblies` target in [Directory.Build.targets](../../Directory.Build.targets) removes every other `Microsoft.NETCore.App` reference before compiling. Using a type from an assembly that is not listed, such as `System.Drawing.Color` or `System.Net.Http.HttpClient`, is a compile error.
+
+```xml
+<ItemGroup>
+	<AllowedFrameworkAssembly Include="System.Collections" />
+	<AllowedFrameworkAssembly Include="System.Net.Primitives" />
+	<!-- ... -->
+</ItemGroup>
+```
+
+Two entries are deliberately narrow. `System.Diagnostics.Process` serves the current process's identity in `Tools.Runtime` and `SoftwareException`, and `ProcessSentry`. `System.Net.Primitives` supplies only the `IPAddress` and `IPEndPoint` value types that `DeepObjectComparer` compares. Add an assembly only when the core genuinely needs it; otherwise put the code in the project that owns the dependency. Any other project can opt in by listing its own `AllowedFrameworkAssembly` items.
+
 ## Typed interface adapters
 
 Generic contracts supply default implementations for their inherited non-generic
 members. Implement the typed operations when creating an
 `IStreamMappedCollection<T>`,
-typed protocol handler, `IDigitalSignatureScheme<TPrivateKey, TPublicKey>`,
+typed protocol handler (in Sphere10.Framework.Communications), `IDigitalSignatureScheme<TPrivateKey, TPublicKey>`,
 `IOTSAlgorithm<TConfig>` or `ICloneable<T>`; the interface supplies the conversion
 to the base contract. Protocol implementations continue to provide their own
 `MessageType`, `RequestType` and `ResponseType` properties. Extended collection,
@@ -167,10 +182,8 @@ The **Tools namespace** is a defining feature of Sphere10 Framework, providing a
 - **Tools.Expressions** – Compiled unary and binary operation factories
 - **Tools.FileSystem** – File I/O, directory operations, temp file management
 - **Tools.Lambda** – Delegate wrappers and setter expressions
-- **Tools.Mail** – Email composition and sending utilities
 - **Tools.Maths** / **Tools.MathPlus** – Mathematical operations and numeric calculations
 - **Tools.Memory** – Memory metrics, primitive sizing and byte formatting
-- **Tools.Network** – Network utilities, IP operations, connectivity
 - **Tools.Object** – Object cloning, copying, inspection
 - **Tools.OperatorTool** – Generic operator invocation (Add, Subtract, etc.)
 - **Tools.Parser** – String parsing, type conversion
@@ -193,7 +206,9 @@ The **Tools namespace** is a defining feature of Sphere10 Framework, providing a
 **Web & Networking**
 - **Tools.Web.Html** – HTML helpers (`Sphere10.Framework.Web`)
 - **Tools.Web.AspNetCore** – ASP.NET Core helpers (`Sphere10.Framework.Web.AspNetCore`)
-- **Tools.Web.Downloader** – HTTP downloads (core `Sphere10.Framework`)
+- **Tools.Network** – Local addresses, DNS, ping, traceroute, WHOIS, TCP port probes and DNS or TLS decoding (`Sphere10.Framework.Communications`)
+- **Tools.Mail** – SMTP mail sending and address helpers (`Sphere10.Framework.Communications`)
+- **Tools.Web.Downloader** – HTTP downloads (`Sphere10.Framework.Communications`)
 
 **Database Access**
 - **Tools.Data** – Generic database helpers (`Sphere10.Framework.Data`)
@@ -277,7 +292,6 @@ Windows Forms assembly and requires `using Tools;` for extension lookup.
 
 **Cryptography & Security**
 - 🔐 [Crypto/](Crypto/) – Hashing, signatures, key derivation, VRF algorithms
-- 🔑 [Protocol/](Protocol/) – Protocol abstractions and messaging
 
 **Streams & I/O**
 - 📝 [Streams/](Streams/) – Stream decorators, bounded, fragmented, extended memory
@@ -306,7 +320,7 @@ Windows Forms assembly and requires `using Tools;` for extension lookup.
 **Data & Resources**
 - 🌍 [DataSource/](DataSource/) – Data source abstractions
 - 🔌 [Peripherals/](Peripherals/) – Hardware peripherals access
-- 🌐 [Network/](Network/) – Network utilities
+- 🌐 [Network/](Network/) – URL, query-string and MIME type utilities
 - 🎯 [Environment/](Environment/) – Environment and system information
 - ⚙️ [Misc/](Misc/) – Miscellaneous utilities
 - 📦 [Objects/](Objects/) – Object utilities
@@ -336,7 +350,7 @@ Windows Forms assembly and requires `using Tools;` for extension lookup.
 - [Sphere10.Framework.Windows.LevelDB](../Sphere10.Framework.Windows.LevelDB/) – High-performance embedded key-value store
 
 **Networking & Communications**
-- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/) – Multi-protocol networking (RPC, TCP, UDP, WebSockets)
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/) – Typed message protocols, channels (pipes, TCP, UDP, WebSockets), JSON-RPC, and the network, mail and download tools
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore/) – ASP.NET Core integration and middleware
 
 **Cryptography & Consensus**
@@ -505,13 +519,7 @@ The generic engine stores keys and values directly; nongeneric `CacheBase` speci
 
 ### 📡 Protocol and Communication
 
-The protocol subsystem facilitates structured, bidirectional communication between peers:
-
-- **Protocol Definition**: Define protocols with typed messages, commands, requests, responses, and handshakes.
-- **Orchestration**: `ProtocolOrchestrator` manages message dispatch, handshake workflows, and request/response correlation.
-- **Extensibility**: Handlers for commands, requests, responses, and handshakes can be implemented via interfaces or delegates.
-
-This framework is suitable for building custom RPC mechanisms, control protocols, or peer-to-peer communication layers.
+Typed message protocols (`Protocol`, `ProtocolBuilder`, `ProtocolOrchestrator` and `ProtocolChannel`) are in [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/Protocol/README.md), together with the pipe, TCP, UDP and WebSocket channels that carry them. The core library has no networking.
 
 ### 📲 Streams and I/O
 
@@ -677,7 +685,7 @@ reads. Choose the synchronous (`SyncDataSourceBase<T>`) or asynchronous (`AsyncD
 its item-first or batch-first base according to the source's actual primitive; every `Sync*` base has an `Async*`
 dual. See the [data-source practice](../../docs/guidelines/patterns/data-sources.md).
 
-- [NetworkProbeDataSource](Network/NetworkProbeDataSource.cs) is a `PollingDataSource` over a nested `RefreshableDataSourceBase` whose fresh capture runs one probe round, for explicit, optionally repeating DNS/ping/trace/WHOIS probes with bounded observations. [DataSourceFormatting](DataSource/DataSourceFormatting.cs) is the shared search/sort text of inventory values.
+- [DataSourceFormatting](DataSource/DataSourceFormatting.cs) is the shared search/sort text of inventory values. Sources built on these bases elsewhere include `NetworkProbeDataSource` in [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/Network/README.md) and `ProcessDataSource` in [Sphere10.Framework.Application](../Sphere10.Framework.Application/Environment/README.md).
 - [ListDataSource<T>](DataSource/ListDataSource.cs) is the loadable list storage on the synchronous lineage (`ILoadableDataSource<T>`: `RequiresLoad`, `Load`, `LoadAsync(token)`): it wraps an existing list or, derived, fetches one through `Fetch()`; its dual on the asynchronous lineage, [AsyncListDataSource<T>](DataSource/AsyncListDataSource.cs), fetches through `FetchAsync(token)`; both search and sort before paging, notify committed CRUD and refresh rows through `RefreshMethod`/`RefreshMethodAsync`. `ActionListDataSource<T>`/`ActionAsyncListDataSource<T>` compose a leaf from a callback.
 - `ProjectedDataSource<TFrom,TTo>` adapts representations using forward/inverse maps.
 - [ArrayDataSource<T>](DataSource/ArrayDataSource.cs) is the read-only store over one array a screen or control pushes (`ReplaceData`), with property-based search, raw-value sorting, clamped paging and `FormatValue`/`CopyItemForRead` hooks, without a Windows or visual dependency.
@@ -685,7 +693,9 @@ dual. See the [data-source practice](../../docs/guidelines/patterns/data-sources
 - [DebugExtensions](Extensions/DebugExtensions.cs) adds `Debug.AssertNotMainThread()` and message/detail overloads. Set `Debug.MainThread` at the application entry point; the Debug-only check compares that captured thread with the executing thread. See [foreground-thread assertions](../../docs/guidelines/patterns/data-sources.md#debugging-foreground-thread-data-work).
 
 ```csharp
+using System.Diagnostics;
 using Sphere10.Framework;
+using Sphere10.Framework.Application; // ProcessDataSource, from the Sphere10.Framework.Application package
 
 var rows = new ArrayDataSource<Row>();
 rows.ReplaceData(new[] { new Row(2, "Alpha"), new Row(1, "ALPHA") });
@@ -731,11 +741,13 @@ Utilities for hardware and peripheral interaction:
 
 ### 🌐 Network Utilities
 
-Low-level network helpers:
+The core's [Network](Network/README.md) domain covers addresses as text only:
 
-- **Address Resolution**: DNS and IP address utilities.
-- **Port Scanning**: Network connectivity testing.
-- **Socket Wrappers**: Extended socket abstractions with timeout support.
+- **URLs**: `Tools.Url` parses, combines and encodes URLs and makes slugs.
+- **Query strings**: `QueryStringBuilder` renders typed name and value pairs.
+- **MIME types**: `Tools.FileSystem.GetMimeType` and `TryGetMimeType` take a file path, a file name or an extension (`"report.pdf"`, `"png"` or `".png"`) and look the extension up in the `MimeHelper` table, generated from mime-db and loaded on first use.
+
+DNS, ping, traceroute, WHOIS, port probes, mail and downloads are in [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/Network/README.md).
 
 ### 🎯 Environment & System Information
 
@@ -744,7 +756,7 @@ Query system and runtime information:
 - **Runtime Detection**: Detect .NET version, platform, architecture.
 - **Resource Availability**: Check available memory, processor count, disk space.
 - **Configuration**: Access environment variables, system settings.
-- **Process Information**: Query process details, threading, memory usage.
+- **External Processes**: `ProcessSentry` runs a command and collects its output. The running-process data source and process-tree helpers are in [Sphere10.Framework.Application](../Sphere10.Framework.Application/Environment/README.md).
 
 ### ⚙️ Miscellaneous Utilities
 
@@ -925,7 +937,7 @@ Adapters convert between related interfaces (e.g., `IList<T>` to `IExtendedList<
 - **High-Volume Data Processing**: Stream-backed collections and batch-optimized operations enable processing datasets larger than available memory.
 - **Custom Persistence Layers**: Fine-grained control over serialization, storage layout, and transactional semantics.
 - **Cryptographic Applications**: Post-quantum signature schemes and VRF implementations support advanced security requirements.
-- **Protocol Implementations**: Structured communication frameworks for RPC, control protocols, or peer-to-peer messaging.
+- **Protocol Implementations**: Structured communication for RPC, control protocols, or peer-to-peer messaging, with the protocol types from `Sphere10.Framework.Communications`.
 - **LevelDB Integration**: Native Windows LevelDB wrapper for high-performance key-value storage.
 
 ### 📊 Less-Suited Scenarios
@@ -1938,7 +1950,7 @@ Sphere10 Framework is a mature library that has evolved over multiple years. Cor
 
 ### Compatibility
 
-- **Target Framework**: .NET 10.0
+- **Target Frameworks**: `net8.0`, `net9.0` and `net10.0`, plus `net11.0` when a .NET 11 SDK builds the library. Only the `net11.0` build compiles with runtime async.
 - **Backward Compatibility**: The library does not guarantee API stability across major versions. Serialization formats may evolve, requiring migration strategies for persistent data.
 - **Platform Support**: Windows, Linux, macOS, iOS (via Xamarin/MAUI), Android (via Xamarin/MAUI)
 
@@ -1959,11 +1971,9 @@ Sphere10 Framework is a mature library that has evolved over multiple years. Cor
 
 ##  Dependencies
 
-- **.NET 10.0** or higher
-- **No external dependencies** for core functionality
-- **Optional**: BouncyCastle for advanced cryptography
-- **Optional**: Newtonsoft.Json for JSON support
-- **Optional**: Microsoft.Extensions.DependencyInjection for DI integration
+- **.NET 8.0** or higher
+- **No package dependencies**, and only the allowlisted .NET assemblies described in [Allowed .NET assemblies](#allowed-net-assemblies)
+- **Separate packages**: BouncyCastle-based cryptography is in `Sphere10.Framework.CryptoEx`, Newtonsoft.Json support in `Sphere10.Framework.Data` and `Sphere10.Framework.Communications`, and Microsoft.Extensions.DependencyInjection integration in `Sphere10.Framework.Application`
 
 ## ⚖️ License
 
@@ -1986,21 +1996,12 @@ More information: [MIT License](https://opensource.org/license/mit)
 
 `BaseDeviceHook.Dispose()` retains its public virtual signature and now delegates to `Dispose(true)` before suppressing finalization. The finalizer calls the protected virtual `Dispose(false)` cleanup hook directly, so public disposal overrides and their managed event callbacks are not invoked by finalization. Derived hooks that require cleanup during finalization should override `Dispose(bool disposing)`, restrict managed-resource work to `disposing == true`, and call the base implementation. Base hook cleanup is idempotent.
 
-## Default encryption and network compatibility
+## Default encryption compatibility
 
 Default text/file compression and the non-generic `Tools.Streams.Encrypt` / `Decrypt` overloads use `Aes.Create()`. The generic algorithm overloads remain available. AES key/block sizes, CBC/PKCS7 defaults, existing password derivation and the IV-prefixed encrypted format are retained; historical compressed data remains readable. `SystemCRNG` uses the platform cryptographic random-number factory.
 
-`Tools.Mail.SendEmail` and `SendEmailAsync` enable SMTP TLS when requested and use normal certificate validation. They no longer install a process-wide callback that accepts every certificate. With the default application policy, SMTP servers must present a certificate trusted by the host and valid for the server name. The helpers preserve any certificate policy installed by the application.
+SMTP TLS behaviour of `Tools.Mail` and the status of the `UrlShortner` providers are described with those tools in [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/Network/README.md).
 
-`UrlShortner` uses `HttpClient` for its existing sync/async HTTP operations. Provider URLs and response parsing are retained; this transport update does not guarantee that a legacy external provider is still available.
-
-### SMTP and URL provider verification
-
-The SMTP sync and async helpers were exercised against a local SMTP server, including real STARTTLS negotiation, synthetic message delivery under an explicitly pinned test certificate, rejection of an untrusted certificate under the default policy, and rejection when a server does not offer STARTTLS. The test certificate is trusted only inside the isolated test process; no operating-system trust store is changed. This does not verify delivery through a particular external mail provider or its authentication requirements.
-
-`requiresSSL: true` uses STARTTLS, not implicit TLS. Supply the provider's STARTTLS port explicitly (typically `port: Tools.Mail.SMTPSubmissionPort`, 587). The existing omitted-port default remains 465, which is normally used for implicit TLS and is incompatible with `System.Net.Mail.SmtpClient`. See [Microsoft's supported SMTP TLS modes](https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.enablessl?view=net-10.0).
-
-`UrlShortner.Google` and `GoogleAsync` target an API that [Google discontinued on March 30, 2019](https://developers.googleblog.com/transitioning-google-url-shortener-to-firebase-dynamic-links/). Updating the HTTP client cannot restore that service. `TinyUrl` and `TinyUrlAsync` target the third-party `tiny-url.info` service, not `tinyurl.com`; live shortening remains unverified without a supported service and credentials.
 ## Length-preserving encrypted streams
 
 `EncryptedStream` (and `EncryptedStream<TStream>`) uses AES-CTR. It takes the backing stream, key, initial counter and optional `leaveOpen` flag (default `false`). Writes encrypt immediately and reads decrypt; 10 plaintext bytes produce exactly 10 ciphertext bytes. The mode is fixed to preserve arbitrary byte lengths and independent random access, including overwrites that touch only the requested bytes. There is no separate cipher interface, factory or inheritance hierarchy.

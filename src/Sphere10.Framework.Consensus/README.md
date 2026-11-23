@@ -14,7 +14,7 @@ Your application supplies block validation, identity rules, fork selection, pers
 dotnet add package Sphere10.Framework.Consensus
 ```
 
-The package references [Sphere10.Framework](../Sphere10.Framework/README.md). It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Consensus/Sphere10.Framework.Consensus.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
+The package references [Sphere10.Framework](../Sphere10.Framework/README.md). It targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Consensus/Sphere10.Framework.Consensus.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
 
 Public types in this project use the `Sphere10.Framework.Consensus` namespace, including types in the `Blockchain/` directory.
 

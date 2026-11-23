@@ -4,7 +4,7 @@ Extension methods over BCL and Framework types, from strings, dates, sequences a
 
 Each class extends one target type or family, and its name says which. The members become available through the `Sphere10.Framework` namespace, except `ObjectExtensions`, which is in the `ExtensionProperties` namespace. Before writing a new helper, look for the target type's class here and for a matching static family in the `Tools` namespace.
 
-`DecoratorExtensions` is the most connected class. Its `As*` and `With*` methods wrap a list, dictionary, set, comparer, stream or serializer in the matching decorator, for example `AsSynchronized`, `AsObservable`, `AsMerkleized`, `AsProjection`, `AsInverted`, `AsNullableSerializer` and `AsTransactional`. The decorators themselves are in [Collections](../Collections/README.md), [Comparers](../Comparers/README.md), [Streams](../Streams/README.md) and [Serialization](../Serialization/README.md). `ToHexString` on `byte[]` adds a `0x` prefix unless `ommit_0x` is `true`. `MemberInfoExtensions` and `TimeSpanExtensions` are currently empty.
+`DecoratorExtensions` is the most connected class. Its `As*` and `With*` methods wrap a list, dictionary, set, comparer, stream or serializer in the matching decorator, for example `AsSynchronized`, `AsObservable`, `AsMerkleized`, `AsProjection`, `AsInverted`, `AsNullableSerializer` and `AsTransactional`. The decorators themselves are in [Collections](../Collections/README.md), [Comparers](../Comparers/README.md), [Streams](../Streams/README.md) and [Serialization](../Serialization/README.md). `ToHexString` on `byte[]` adds a `0x` prefix unless `ommit_0x` is `true`. `MemberInfoExtensions` and `TimeSpanExtensions` are currently empty. The `Process` extensions (`KillTree`) are in [Sphere10.Framework.Application](../../Sphere10.Framework.Application/Extensions/README.md).
 
 ## Contents
 
@@ -25,7 +25,7 @@ Each class extends one target type or family, and its name says which. The membe
 | [`EnumExtensions`](EnumExtensions.cs) | static class | Enum attributes and descriptions, display text (`GetDisplayText`), default values and flag set, clear, test and combine operations. |
 | [`ExceptionExtensions`](ExceptionExtensions.cs) | static class | Flattens inner and aggregate exceptions, finds the innermost one and formats display and diagnostic text. |
 | [`ExpressionExtensions`](ExpressionExtensions.cs) | static class | Resolves the member that a lambda expression accesses. |
-| [`FileInfoExtensions`](FileInfoExtensions.cs) | static class | Determines the MIME type of a `FileInfo`. |
+| [`FileInfoExtensions`](FileInfoExtensions.cs) | static class | `GetMimeType` returns the file's MIME type from its extension, through `Tools.FileSystem.GetMimeType`. |
 | [`GuidExtensions`](GuidExtensions.cs) | static class | Formats a `Guid` as its hexadecimal digits without dashes or braces. |
 | [`HashSetExtensions`](HashSetExtensions.cs) | static class | Adds a range of items to a `HashSet<T>`. |
 | [`IAsyncEnumerableExtensions`](IAsyncEnumerableExtensions.cs) | static class | Materializes an `IAsyncEnumerable<T>` into an array or list. |
@@ -44,7 +44,6 @@ Each class extends one target type or family, and its name says which. The membe
 | [`NumericExtensions`](NumericExtensions.cs) | static class | Clamps numbers, dates and time spans to a range, rounds floating values and sums unsigned sequences. |
 | [`ObjectExtensions`](ExtensionProperties.cs) | static class | Attaches dynamic extension properties to any object for the object's lifetime. |
 | [`PagedListExtensions`](PagedListExtensions.cs) | static class | Shuffling insert and remove operations across the pages of an `IPagedList<T>`. |
-| [`ProcessExtensions`](ProcessExtensions.cs) | static class | Kills a process tree and waits for exit with a `TimeSpan` timeout. |
 | [`ProducerConsumerQueueExtensions`](ProducerConsumerQueueExtensions.cs) | static class | Put and take helpers, including asynchronous batch and size-limited takes, for `ProducerConsumerQueue<T>`. |
 | [`RandomExtensions`](RandomExtensions.cs) | static class | Random booleans, bytes, integers, ranges, decimals, characters and strings from `Random`. |
 | [`SemaphoreSlimExtensions`](SemaphoreSlimExtensions.cs) | static class | Waits on a `SemaphoreSlim` and returns a scope that releases it on disposal. |

@@ -132,7 +132,7 @@ On Unix the two default directories are therefore the same. A user record and a 
 
 ## Encryption
 
-Mark sensitive strings with `[EncryptedString]`. A provider whose `EncryptSettings` is `true`, such as `DirectoryFileSettingsProvider`, encrypts these members with AES when it saves and decrypts them when it loads. `BlazorSettingsProvider` returns `false`, so browser storage holds them as plain text.
+Mark sensitive strings with `[EncryptedString]`. A provider whose `EncryptSettings` is `true`, such as `DirectoryFileSettingsProvider`, encrypts these members with AES through `ObjectEncryptor.EncryptMembers` when it saves and decrypts them through `ObjectEncryptor.DecryptMembers` when it loads. Both types are in this package's [Encryption](../Encryption/README.md) folder. `BlazorSettingsProvider` returns `false`, so browser storage holds them as plain text.
 
 The secret comes from the static `EncryptedStringAttribute.ApplicationSharedSecret` field. The Application module sets it from the entry assembly's `AssemblyApplicationSecret` attribute, the application's one secret, when it initializes:
 

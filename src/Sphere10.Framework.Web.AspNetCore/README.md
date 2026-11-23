@@ -17,7 +17,7 @@ This library is the shared ASP.NET Core integration for Sphere10 Framework. Use 
 
 ## Installation
 
-Reference the package from an ASP.NET Core project that targets .NET 10 or later:
+Reference the package from an ASP.NET Core project that targets .NET 8 or later:
 
 ```powershell
 dotnet add package Sphere10.Framework.Web.AspNetCore
@@ -252,7 +252,7 @@ The hosting, service and session extensions live in the Microsoft namespaces of 
 | `Middleware/` | `CloudflareConnectingIPMiddleware`. |
 | `AspNetCoreTool.cs` | `Tools.Web.AspNetCore`. |
 
-The project targets `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. It has a `Microsoft.AspNetCore.App` framework reference and project references to [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) and the host-independent [Sphere10.Framework.Web](../Sphere10.Framework.Web/README.md). It does not reference MVC, Blazor, Windows Forms or Drawing. The framework reference flows to referencing projects, so a plain `Microsoft.NET.Sdk` project such as the web test project can use these APIs.
+The project targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. It has a `Microsoft.AspNetCore.App` framework reference and project references to [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) and the host-independent [Sphere10.Framework.Web](../Sphere10.Framework.Web/README.md). It does not reference MVC, Blazor, Windows Forms or Drawing. The framework reference flows to referencing projects, so a plain `Microsoft.NET.Sdk` project such as the web test project can use these APIs.
 
 ## Upgrading from the combined library
 

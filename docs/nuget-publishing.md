@@ -83,11 +83,14 @@ git push <remote-for-HermanSchoenfeld/Sphere10.Framework> refs/tags/v3.2.0-alpha
 Use `v3.2.0` for the stable release. Do not move a published tag. Advance
 `VersionPrefix` to the next intended version, such as `3.2.1`, in a separate
 reviewed change after the stable release. Review third-party prerelease dependencies
-in `Directory.Packages.props` before announcing a stable release.
+in `Directory.Packages.props` before announcing a stable release. For 3.2.0 the
+packed libraries depend only on stable releases, including Newtonsoft.Json 13.0.4
+and FirebirdSql.Data.FirebirdClient 10.3.4. The remaining previews, AutoFixture
+and BenchmarkDotNet, are referenced only by test and profiling projects.
 
 ## Checks and package provenance
 
-Publication waits for the build, both .NET 10/11 NUnit jobs, wizard browser tests,
+Publication waits for the build, the .NET 8, 9, 10 and 11 NUnit jobs, wizard browser tests,
 release-contract tests and full Windows package validation. Pull requests, forks,
 feature branches and manual workflow dispatches cannot enter the publishing job.
 Their package checks use local `0.0.0-validation.*` artifacts, which are never
@@ -105,7 +108,11 @@ The validator checks the evaluated package set, versions, internal dependencies,
 license/readme/icon files, portable symbols and source-commit links. The established
 consumer checks restore from an isolated local feed and empty cache, build the
 desktop and library consumers, execute the renderer with its embedded themes and
-copied notices, and exercise the published web host on both .NET 10 and .NET 11.
+copied notices, and exercise the published web host on .NET 10 and 11. They run
+once for each of `net8.0`, `net9.0`, `net10.0` and `net11.0`; the WinForms and
+web host consumers, whose UI packages target only .NET 10 and later, run for
+`net10.0` and `net11.0`, and a separate Windows consumer covers the non-UI
+Windows packages on every target.
 
 The `nuget-<run-id>-<attempt>` artifact contains the validated CI batch. Tag runs use
 `nuget-<run-id>-tag`, retained for 90 days and reused on complete reruns. Keep a

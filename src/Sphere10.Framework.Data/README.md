@@ -10,7 +10,7 @@
 dotnet add package Sphere10.Framework.Data
 ```
 
-Targets **.NET 10** (`net10.0`). For database-specific support, also install the appropriate provider package:
+Targets **.NET 8, 9 and 10** (`net8.0`, `net9.0`, `net10.0`), plus `net11.0` when built with a .NET 11 SDK. For database-specific support, also install the appropriate provider package:
 
 ```bash
 dotnet add package Sphere10.Framework.Data.Sqlite    # SQLite

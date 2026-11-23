@@ -1,6 +1,6 @@
 # Use Sphere10.Framework.Web.VisualRenderer independently
 
-`Sphere10.Framework.Web.VisualRenderer` targets .NET 10 and has no reference to LocalNotion.Core or Notion.Client. Install the `Sphere10.Framework.Web.VisualRenderer` NuGet package or use a project reference and construct a visual document directly. The [package README](../../src/Sphere10.Framework.Web.VisualRenderer/README.md) includes a complete CDN-backed example for embedded browsers. If distributing built assemblies, include the renderer's runtime dependencies; copying its DLL alone is insufficient:
+`Sphere10.Framework.Web.VisualRenderer` targets .NET 8, 9 and 10 (and .NET 11 with its SDK) and has no reference to LocalNotion.Core or Notion.Client. Install the `Sphere10.Framework.Web.VisualRenderer` NuGet package or use a project reference and construct a visual document directly. The [package README](../../src/Sphere10.Framework.Web.VisualRenderer/README.md) includes a complete CDN-backed example for embedded browsers. If distributing built assemblies, include the renderer's runtime dependencies; copying its DLL alone is insufficient:
 
 ```csharp
 using Sphere10.Framework.Web.VisualRenderer;

@@ -12,7 +12,7 @@ The package supplies `MSSQLDAC`, the `Tools.MSSQL` connection and administration
 dotnet add package Sphere10.Framework.Data.MSSQL
 ```
 
-The package depends on `Microsoft.Data.SqlClient`, `Microsoft.Data.SqlClient.Extensions.Azure`, `System.Data.SqlClient`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.MSSQL/Sphere10.Framework.Data.MSSQL.csproj` with a `ProjectReference`.
+The package depends on `Microsoft.Data.SqlClient`, `Microsoft.Data.SqlClient.Extensions.Azure`, `System.Data.SqlClient`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net8.0`, `net9.0` and `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.MSSQL/Sphere10.Framework.Data.MSSQL.csproj` with a `ProjectReference`.
 
 - `Microsoft.Data.SqlClient.Extensions.Azure` supplies the Microsoft Entra authentication providers that SqlClient 7 ships separately, so connection strings with `Authentication=Active Directory ...` keep a built-in provider. See [Microsoft Entra authentication in SqlClient](https://learn.microsoft.com/en-us/sql/connect/ado-net/sql/azure-active-directory-authentication?view=sql-server-ver17).
 - `System.Data.SqlClient` remains only because `Tools.MSSQL` still accepts its obsolete `ApplicationIntent` enum.

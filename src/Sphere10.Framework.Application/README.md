@@ -12,6 +12,8 @@ Sphere10.Framework.Application enables **rapid application development** by prov
 dotnet add package Sphere10.Framework.Application
 ```
 
+The package depends on [Sphere10.Framework](../Sphere10.Framework/README.md), [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md), [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/README.md) and Microsoft.Extensions.DependencyInjection. It targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK.
+
 <!-- domains:begin -->
 ## Domains
 
@@ -22,7 +24,9 @@ Every folder of `Sphere10.Framework.Application` is a domain with its own README
 | [Attributes](Attributes/README.md) | Assembly attributes that declare a product's identity, links, distribution, help resources and settings secret, and class attributes that declare screen settings and user-editable values. | [source](Attributes/) |
 | [CommandLine](CommandLine/README.md) | A bundled copy of the CommandLineParser library, which maps command-line arguments onto attributed option classes, reports parse errors and builds help screens. | [source](CommandLine/) |
 | [Core](Core/README.md) | Running-instance detection, the automatic-start scope enumeration and the default product-services aggregate. | [source](Core/) |
-| [Extensions](Extensions/README.md) | Extension methods for service collections and service providers, JSON HTTP responses and configuration connection strings. | [source](Extensions/) |
+| [Encryption](Encryption/README.md) | Attribute-driven encryption of string fields and properties with the application secret, used by encrypted settings. | [source](Encryption/) |
+| [Environment](Environment/README.md) | The running processes as a read-only, searchable and sortable data source. | [source](Environment/) |
+| [Extensions](Extensions/README.md) | Extension methods for service collections and service providers, processes, JSON HTTP responses and configuration connection strings. | [source](Extensions/) |
 | [Framework](Framework/README.md) | The module contract that lets a library register its services before the framework builds the service provider. | [source](Framework/) |
 | [IoC](IoC/README.md) | Registration and lookup of several implementations of one service type by name, on top of Microsoft.Extensions.DependencyInjection. | [source](IoC/) |
 | [Lifecycle](Lifecycle/README.md) | Startup and shutdown task contracts with synchronous and asynchronous bases, the `Tools.Application` task runners, progress reporting, automatic-start helpers and the application version type. | [source](Lifecycle/) |
@@ -48,7 +52,7 @@ Types declared in the project folder itself:
 
 ## Shared UI framework
 
-`Sphere10.Framework.Application.UI` contains the common application-block model used by the WinForms and Blazor adapters. The Application package targets `net10.0` and has no ASP.NET Core, Windows desktop or other UI framework dependency. The `UI` folder also contains the existing help, website launcher and user-interface services, which retain their `Sphere10.Framework.Application` namespace.
+`Sphere10.Framework.Application.UI` contains the common application-block model used by the WinForms and Blazor adapters. The Application package targets `net8.0`, `net9.0` and `net10.0` (plus `net11.0` with a .NET 11 SDK) and has no ASP.NET Core, Windows desktop or other UI framework dependency. The `UI` folder also contains the existing help, website launcher and user-interface services, which retain their `Sphere10.Framework.Application` namespace.
 
 | Shared responsibility | Types |
 |---|---|
@@ -905,7 +909,7 @@ Application licensing is no longer part of Framework. License-specific DTOs, ass
 - [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - Windows Forms integration
 - [Sphere10.Framework.Web.AspNetCore.Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor) - Blazor application integration
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core integration
-- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - RPC services with DI
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Protocols, channels, RPC and the network tools; this package references it for the MAC address salt of encrypted members
 
 ## 🌍 Demo applications
 
@@ -918,7 +922,7 @@ The repository testers exercise the current application root, plugin loading, mu
 
 - **Core Framework**: Production-tested, stable
 - **DI Integration**: Full support for Microsoft.Extensions.DependencyInjection
-- **.NET Target**: .NET 10 (`net10.0`)
+- **.NET Targets**: `net8.0`, `net9.0` and `net10.0`, plus `net11.0` when built with a .NET 11 SDK
 - **Thread Safety**: Application lifecycle operations coordinate their own state; services remain responsible for their own concurrency and platform thread affinity.
 
 ## ⚖️ License

@@ -35,7 +35,7 @@ Every folder of `Sphere10.Framework.Windows.Forms` is a domain with its own READ
 |---|---|---|
 | [Attachment](Attachment/README.md) | Compact file/clipboard attachment selection with a modal editor and immutable content snapshots. | [source](Attachment/) |
 | [Application](Application/README.md) | Native WinForms application shell with plugins, blocks, menus, hosted screens, main forms, Options dialogs and startup integration. | [source](Application/) |
-| [VisualCalendar](VisualCalendar/README.md) | Scheduling grid control that shows appointments in named columns over a day, a week or a month, with selection, drag-and-drop rescheduling and resizing, a data source that shows `ICalendar` objects and an editor for recurrence rules. | [source](VisualCalendar/) |
+| [VisualCalendar](VisualCalendar/README.md) | Scheduling grid control that shows appointments in named columns over a day, a week or a month, with selection, drag-and-drop rescheduling and resizing, a data source that shows `ICalendar<string, Color, string>` objects and an editor for recurrence rules. | [source](VisualCalendar/) |
 | [Authentication](Authentication/README.md) | Modal logon and password-entry dialogs that delegate credential checks and password policy to caller-supplied callbacks. | [source](Authentication/) |
 | [Charts](Charts/README.md) | Designer-editable numeric and telemetry chart controls over captured data, with a shared Log Output workflow for chart observations. | [source](Charts/) |
 | [ComboBoxes](ComboBoxes/README.md) | Combo box controls with placeholders and validation, custom drop-down content, enum binding and image tile choices. | [source](ComboBoxes/) |
@@ -95,10 +95,10 @@ fork's runtime fixes. Its licenses and third-party notices are retained.
 Source builds reference the project within Framework; NuGet builds use its matching
 Framework package. A separate charting checkout is not required.
 
-The library builds for .NET 10 and .NET 11 RC 2 with the .NET 11 SDK. Its .NET 10
-target is used by Framework, WinForms Tester and System Expert. A .NET 10 SDK
-consumer builds only that compatible target. Build and pack the absorbed project
-within Framework to check both targets. Runtime code, enums, helpers and resources
+The library builds for `net10.0-windows`, and also for `net11.0-windows` with the
+.NET 11 SDK, the same targets as this project. A .NET 10 SDK builds only
+`net10.0-windows`. Build and pack the absorbed project within Framework to check
+both targets. Runtime code, enums, helpers and resources
 are consolidated into one assembly; the legacy designer pipeline was removed.
 
 ## Local CHM help
@@ -2059,7 +2059,7 @@ its content again when it opens on a display with another DPI.
 ## ✅ Status & Compatibility
 
 - **Maturity**: Production-tested for Windows desktop applications
-- **.NET Target**: .NET 10.0 (Windows)
+- **.NET Targets**: `net10.0-windows`, plus `net11.0-windows` when built with a .NET 11 SDK. The library builds on .NET 10 Windows Forms APIs such as `Form.ShowDialogAsync`, which its `IApplicationDialog` dialogs use, so it has no .NET 8 or 9 build; the non-UI `Sphere10.Framework.Windows` and core packages it uses also target .NET 8 and 9
 - **Platform**: Windows only (Windows Forms)
 
 ## ⚖️ License

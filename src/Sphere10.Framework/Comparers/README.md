@@ -4,7 +4,7 @@ Reusable `IComparer<T>` and `IEqualityComparer<T>` implementations for sequences
 
 Use these types when a collection, dictionary, sort or lookup needs an ordering or equality rule that the BCL defaults do not provide. `ComparerBuilder.For<T>()` and `EqualityComparerBuilder.For<T>()` start a fluent chain from a neutral comparer, and the comparer extensions in [Extensions](../Extensions/README.md) (`ThenBy`, `ThenByDescending`, `AsInverted`, `AsProjection`, `AsPacked`, `AsNegation`, `AsEqualityComparer`) wrap any existing comparer in the matching decorator from this folder. `ComparerFactory.Default` is a per-type registry of comparers for primitives, their nullable forms and other registered types. Object spaces, object streams and several collection helpers resolve their comparers from it.
 
-Most types live in the `Sphere10.Framework` namespace. `ArrayEqualityComparer<T>` and `EnumerableContainsSameComparer<T>` are in `Sphere10.Framework.Collections`, `EnumerableComparer<T>` is in `Sphere10.Framework.Misc`, and `MemberInfoComparer<T>` is in `Sphere10.Framework.FastReflection`. `ComparerToEqualityComparerAdapter<T>` hashes with `GetHashCode()` of the item, so the hash agrees with the comparer only when the item's own equality does.
+Most types live in the `Sphere10.Framework` namespace. `MemberInfoComparer<T>` is in the opt-in `Sphere10.Framework.FastReflection` namespace. `ComparerToEqualityComparerAdapter<T>` hashes with `GetHashCode()` of the item, so the hash agrees with the comparer only when the item's own equality does.
 
 ```csharp
 IComparer<Person> order = ComparerBuilder.For<Person>()

@@ -6,14 +6,14 @@ Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 
 ## What is Sphere10 Framework?
 
-**Sphere10 Framework** is a .NET 10 framework providing:
+**Sphere10 Framework** is a .NET framework for .NET 8, 9 and 10 (and .NET 11 when built with its SDK; the UI packages need .NET 10 or later) providing:
 
 - **Collection types** — Lists, sets, dictionaries with advanced features (stream-backed, paged, merkle-aware)
 - **Advanced serialization** — Binary, JSON, XML with polymorphism and versioning support
 - **Data access abstraction** — Multi-database support (SQLite, SQL Server, MySQL, PostgreSQL, Oracle, Firebird and NHibernate)
 - **Cryptography** — Hashing, signatures, key derivation, post-quantum algorithms
-- **Networking** — TCP, UDP, WebSockets, JSON-RPC frameworks
-- **Cross-platform** — .NET 10 libraries with platform-specific adapters
+- **Networking** — Typed protocols over TCP, UDP, WebSockets and pipes, JSON-RPC, and network diagnostics, mail and downloads, all in Sphere10.Framework.Communications
+- **Cross-platform** — `net8.0` to `net10.0` libraries (`net10.0` for the WinForms and Blazor UI packages) with platform-specific adapters; the core library allows no UI, drawing or networking assemblies
 - **Tools.* utilities** — Global IntelliSense-discoverable helpers
 - **Testing** — NUnit test suites and NUnit utilities
 
@@ -49,7 +49,7 @@ src/                              # 35 framework projects
 ├── Sphere10.Framework.Data/      # Database abstraction
 ├── Sphere10.Framework.Data.Sqlite/  # SQLite provider
 ├── Sphere10.Framework.Data.MSSQL/   # SQL Server provider
-├── Sphere10.Framework.Communications/  # Networking & RPC
+├── Sphere10.Framework.Communications/  # Protocols, networking, mail & RPC
 ├── Sphere10.Framework.CryptoEx/  # Advanced cryptography
 ├── Sphere10.Framework.Windows/   # Windows integration
 ├── Sphere10.Framework.Web/             # ASP.NET-independent web utilities
@@ -138,8 +138,12 @@ using Sphere10.Framework;
 Tools.Text       // String manipulation
 Tools.Crypto     // Random bytes, key derivation helpers
 Tools.Collection // Collection generation and partitioning
-Tools.FileSystem // File I/O
-Tools.Mail       // E-mail address validation
+Tools.FileSystem // File I/O and MIME types
+Tools.Url        // URL parsing and slugs
+
+// Networking tools (Sphere10.Framework.Communications)
+Tools.Network    // DNS, ping, traceroute, WHOIS, port probes
+Tools.Mail       // E-mail sending and address validation
 
 // Database tools
 Tools.Sqlite     // SQLite databases (Sphere10.Framework.Data.Sqlite)
@@ -162,6 +166,8 @@ Hashing lives in `Hashers`, which takes a `CHF` value such as `CHF.SHA2_256`.
 │  DATA — Database abstraction, SQLite, MSSQL, Firebird       │
 ├─────────────────────────────────────────────────────────────┤
 │  APPLICATION — DI, settings, lifecycle, CLI                 │
+├─────────────────────────────────────────────────────────────┤
+│  COMMUNICATIONS — Protocols, channels, RPC, network tools   │
 ├─────────────────────────────────────────────────────────────┤
 │  CORE — Collections, serialization, crypto, streams         │
 └─────────────────────────────────────────────────────────────┘
@@ -240,7 +246,7 @@ string clean = text.RemoveWhitespace();
 // Generate random string
 string random = Tools.Text.GenerateRandomString(32);
 
-// Validate email
+// Validate email (Tools.Mail is in the Sphere10.Framework.Communications package)
 bool valid = Tools.Mail.IsValidEmail(email);
 
 // Shorten for display (string extension)

@@ -14,7 +14,7 @@ dotnet add package Sphere10.Framework.Windows.Forms.MSSQL
 
 The package depends on `Sphere10.Framework.Data.MSSQL`, which supplies `MSSQLDAC` and the `Microsoft.Data.SqlClient` driver, and on `Sphere10.Framework.Windows.Forms`. To build against source instead, reference `src/Sphere10.Framework.Windows.Forms.MSSQL/Sphere10.Framework.Windows.Forms.MSSQL.csproj` with a `ProjectReference`.
 
-The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. A consuming project needs a Windows target framework with Windows Forms enabled:
+The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. Like the other WinForms packages it needs the .NET 10 UI APIs, although the data provider underneath targets `net8.0` and later. A consuming project needs a Windows target framework with Windows Forms enabled:
 
 ```xml
 <PropertyGroup>
@@ -268,7 +268,7 @@ using (dac.EnterScope()) {
 The [WinForms Tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) hosts both editors. Run it from the repository root on Windows:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -f net10.0-windows -p:BuildRevision=0
 ```
 
 - **Controls > Input > All controls by class name** opens the control catalog. Search for `MSSQLConnection` to edit sample settings, which never connect on their own.

@@ -24,7 +24,7 @@ var signature = Signers.Sign(DSS.PQC_WAMS, privateKey, message, signerNonce: 0);
 var valid = Signers.Verify(DSS.PQC_WAMS, signature, message, publicKey);
 ```
 
-Most types are in the `Sphere10.Framework` namespace. `HashRandom`, `Mersenne32`, `IRandomNumberGenerator` and `RandomNumberGeneratorDecorator` are in `Sphere10.Framework.Maths`, and `Tools.Crypto` is in the `Tools` namespace. In `SecureBytes`, `Protected` currently reports `true` while an unprotected scope is open, so reading `Item` inside `EnterUnprotectedScope()` throws.
+The types are in the `Sphere10.Framework` namespace, and `Tools.Crypto` is in the `Tools` namespace. The salt policy of `[EncryptedString]` members (`EncryptionSaltPolicy`) is in [Sphere10.Framework.Application](../../Sphere10.Framework.Application/Encryption/README.md). In `SecureBytes`, `Protected` currently reports `true` while an unprotected scope is open, so reading `Item` inside `EnterUnprotectedScope()` throws.
 
 ## Contents
 
@@ -66,7 +66,6 @@ Most types are in the `Sphere10.Framework` namespace. `HashRandom`, `Mersenne32`
 |---|---|---|
 | [`Encrypted`](Encryption/Encrypted.cs) | class | Factory `For<T>` and the default key-derivation iteration count for `Encrypted<TObject>`. |
 | [`Encrypted<TObject>`](Encryption/Encrypted.cs) | class | Stores serialized ciphertext with separate salt, counter and authentication metadata. |
-| [`EncryptionSaltPolicy`](Encryption/EncryptionSaltPolicy.cs) | enum | Machine and process properties that `EncryptedStringAttribute` mixes into its salt. |
 | [`Encryptor`](Encryption/Encryptor.cs) | static class | DES and AES encryption of strings and streams, and preparation of a password-keyed `SymmetricAlgorithm`. |
 | [`IEncrypted<TObject>`](Encryption/Encrypted.cs) | interface | Encrypted object contract with `TryDecrypt` by secret. |
 

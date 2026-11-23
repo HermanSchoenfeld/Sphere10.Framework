@@ -2,7 +2,7 @@
 
 Provides client and server WebSocket `ProtocolChannel`s, a hub that tracks the server's connections, and an older combined channel.
 
-`ClientWebSocketsChannel` connects to a WebSocket URI and receives its channel `Id` from the server after the upgrade handshake. `ServerWebSocketsChannel` listens on a local endpoint and performs the upgrade itself. When it is created with `hub: true` it owns a `ServerWebSocketsChannelHub`, which creates a new channel for each accepted connection and routes [`WebSocketsPacket`](../Protocols/README.md)s by channel id. The hub can send to one channel or all of them, and `Report()` lists their states. The hub's channel dictionary is not synchronized, so drive it from one thread.
+The channels derive from [`ProtocolChannel`](../Protocol/README.md), so they can carry typed protocols. `ClientWebSocketsChannel` connects to a WebSocket URI and receives its channel `Id` from the server after the upgrade handshake. `ServerWebSocketsChannel` listens on a local endpoint and performs the upgrade itself. When it is created with `hub: true` it owns a `ServerWebSocketsChannelHub`, which creates a new channel for each accepted connection and routes [`WebSocketsPacket`](../Protocols/README.md)s by channel id. The hub can send to one channel or all of them, and `Report()` lists their states. The hub's channel dictionary is not synchronized, so drive it from one thread.
 
 Only unencrypted WebSockets work. Passing `secure: true` throws `NotImplementedException`. `WebSocketsChannel` is the older combined design that supports the server role only, and its client role throws `NotImplementedException`. The [WebSocket data sources](../DataSource/README.md) build on the client channel and the hub.
 

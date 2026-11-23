@@ -2,7 +2,7 @@
 
 Data-binding lists, type converters and value validators for editors that convert between display strings and typed values.
 
-These types sit in the `Sphere10.Framework.ComponentModel` namespace and follow the `System.ComponentModel` model. `BoundListBase<T>` and `BoundList<T>` expose an `IList<T>` to a list or grid control through `IBoundList`, track added, removed and edited items, and raise list-change events. `ValidatorBase` and `TypeConverterValidator` convert an editor's raw object or string into a typed value, check it against nulls, limits and standard values, and format it back for display. The converters (`NumberTypeConverter`, `CurrencyTypeConverter`, `PercentTypeConverter`, `DateTimeTypeConverter`) supply the culture-aware string formats that a validator uses.
+These types sit in the `Sphere10.Framework` namespace and follow the `System.ComponentModel` model. `BoundListBase<T>` and `BoundList<T>` expose an `IList<T>` to a list or grid control through `IBoundList`, track added, removed and edited items, and raise list-change events. `ValidatorBase` and `TypeConverterValidator` convert an editor's raw object or string into a typed value, check it against nulls, limits and standard values, and format it back for display. The converters (`NumberTypeConverter`, `CurrencyTypeConverter`, `PercentTypeConverter`, `DateTimeTypeConverter`) supply the culture-aware string formats that a validator uses.
 
 The WinForms SourceGrid editors and validated text boxes consume this model, and `Sphere10.Framework.Data` adds a `BoundDataView` over `DataView`. New data-bound screens normally use the `IDataSource<TItem>` contract in [DataSource](../DataSource/README.md) instead.
 

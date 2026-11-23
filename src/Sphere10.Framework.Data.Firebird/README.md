@@ -12,7 +12,7 @@ The package supplies `FirebirdDAC` and `FirebirdCorrectingReader`, and SQL text 
 dotnet add package Sphere10.Framework.Data.Firebird
 ```
 
-The package depends on `FirebirdSql.Data.FirebirdClient`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.Firebird/Sphere10.Framework.Data.Firebird.csproj` with a `ProjectReference`.
+The package depends on `FirebirdSql.Data.FirebirdClient`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net8.0`, `net9.0` and `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.Firebird/Sphere10.Framework.Data.Firebird.csproj` with a `ProjectReference`.
 
 The examples need an existing database and credentials. The FirebirdClient package contains no native libraries, so an embedded database also needs Firebird's native client library on the machine.
 

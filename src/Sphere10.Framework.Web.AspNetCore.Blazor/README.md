@@ -20,7 +20,7 @@ Start with [hosting](#current-blazor-hosting-and-assets), then the [complete gri
 
 ## Installation
 
-Requires the .NET 10 SDK and a Blazor Web App host. This package references the shared ASP.NET Core layer and `Microsoft.AspNetCore.App`; it is not a standalone WebAssembly package. See the [project dependency guide](../Sphere10.Framework.Web.AspNetCore/README.md) for the other web layers.
+Requires the .NET 10 SDK and a Blazor Web App host. The package targets `net10.0`, plus `net11.0` when a .NET 11 SDK builds it, because it builds on the .NET 10 ASP.NET Core static web asset support; the `Web`, `Web.AspNetCore` and `Web.AspNetCore.MVC` packages also target `net8.0` and `net9.0`. This package references the shared ASP.NET Core layer and `Microsoft.AspNetCore.App`; it is not a standalone WebAssembly package. See the [project dependency guide](../Sphere10.Framework.Web.AspNetCore/README.md) for the other web layers.
 
 From the directory where you want to create the sample host:
 

@@ -15,8 +15,9 @@ they exercise.
 ## Run the tests
 
 Run the commands from the repository root. The project targets
-`$(FrameworkTargetFrameworks)`, which is `net10.0`, plus `net11.0` when the
-building SDK supports .NET 11.
+`$(FrameworkTargetFrameworks)`, which is `net8.0`, `net9.0` and `net10.0`, plus
+`net11.0` when the building SDK supports .NET 11. `dotnet test` runs every
+target, so install the .NET 8 and 9 runtimes as well, or add `-f` to run one.
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0
@@ -29,10 +30,10 @@ dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Re
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter "FullyQualifiedName~CacheReapingTests|FullyQualifiedName~PooledCacheReaperTests"
 ```
 
-Leave out the loopback SMTP and packaging-script categories:
+Leave out the packaging-script category:
 
 ```powershell
-dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter "TestCategory!=Integration&TestCategory!=Packaging"
+dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter "TestCategory!=Packaging"
 ```
 
 Run the explicit file-backed `BufferedStream` measurements on one target:
@@ -47,18 +48,15 @@ Quote filter expressions so the shell does not interpret `|` or `&`. Add
 | Group | Selection | Notes |
 |---|---|---|
 | Ordinary fixtures | Run by default | Most fixtures run their children in parallel. |
-| `Integration` category | Run by default | `MailTlsIntegrationTests` only. It talks to an in-process loopback SMTP listener. |
 | `Packaging` category | Run by default | `PackageScriptTests` only. It needs PowerShell, as described in [Requirements](#requirements). |
 | `Performance` category | `[Explicit]`, so a filter must select it | `BufferedStreamPerformanceTests` only. It writes JSON and CSV results to a new folder under the temporary directory, or to the `BufferedStreamPerformanceDirectory` test parameter. |
 | Ignored | Never run | `FastMarshalStructSerializerTests`, one `StringFormatterTests` case and one `ScopeAllocationDiagnostics` case. |
 
 ## Requirements
 
-- A .NET 10 SDK. The tests need no interactive desktop, browser or database server.
+- A .NET 10 SDK, with the .NET 8 and 9 runtimes for those targets. The tests need no interactive desktop, browser or database server.
 - Many fixtures create files and folders under the operating system's temporary directory and delete them afterwards.
 - `PackageScriptTests` runs `scripts/pack.ps1` and `scripts/publish.ps1`, which the project copies to `Packaging/` in the output folder. It needs `pwsh` on `PATH`, and some cases also run Windows PowerShell (`powershell`). A case whose executable is missing is ignored. A stub replaces `dotnet`, so no package is built or pushed.
-- `MailTlsIntegrationTests` temporarily changes the process-wide SMTP certificate policy, so the fixture is non-parallel.
-- `NetworkDiagnosticsTests` resolves `localhost` and traces the route to `127.0.0.1`. `MacAddressTests` reads the local network interfaces. `NetworkToolProbeTests` connects to listeners it opens on the loopback address, and its closed-port case waits about two seconds for Windows to refuse the connection. None of them sends public network traffic.
 - `ProcessSentryTests` starts `cmd.exe` on Windows and `/bin/sh` elsewhere.
 - `TextFileCacheTests`, `SchedulerTest` and `SchedulerJobLifecycleTests` are skipped on GitHub Actions.
 - `UrlIDTests` permutes ten million identifiers and takes longer than other fixtures.
@@ -67,12 +65,10 @@ Quote filter expressions so the shell does not interpret `|` or `&`. Add
 
 ### Project root
 
-The root holds a protocol queue fixture and an internal NUnit values attribute
-(`StandardSphere10CHFValues`) that supplies the standard hash functions to other fixtures.
-
-| Fixture | Purpose |
-|---|---|
-| [ProtocolOrchestratorQueueTests](ProtocolOrchestratorQueueTests.cs) | Outgoing messages wait for orchestrator startup and keep their order, and a failing message reports its envelope while the queue continues. |
+The root holds no fixture, only an internal NUnit values attribute
+([`StandardSphere10CHFValues`](StandardSphere10CHFValues.cs)) that supplies the standard hash functions to other fixtures.
+The network, protocol and mail fixtures are in
+[Sphere10.Framework.Communications.Tests](../Sphere10.Framework.Communications.Tests/README.md).
 
 ### Cache
 
@@ -506,7 +502,6 @@ Tests for the [miscellaneous domain](../../src/Sphere10.Framework/Misc) and for 
 |---|---|
 | [BitsTests](Misc/BitsTests.cs) | `Bits` copy, set, read and number encoding. |
 | [CompressionFactoryCompatibilityTests](Misc/CompressionFactoryCompatibilityTests.cs) | Default and legacy text and file compression pipelines interoperate, a historical compressed fixture still decrypts, and the default AES parameters are unchanged. |
-| [MailTlsIntegrationTests](Misc/MailTlsIntegrationTests.cs) | `Tools.Mail` plain and STARTTLS delivery to a loopback server, certificate trust and borrowed content. |
 | [MiscellaneousTests](Misc/MiscellaneousTests.cs) | Assorted Framework helpers and .NET stream, list, file and task behaviour. |
 | [NetFrameworkStandardBehaviour](Misc/NetFrameworkStandardBehaviour.cs) | .NET type, stream, delegate, dictionary, file-mode and task behaviour the Framework assumes. |
 | [RandomTests](Misc/RandomTests.cs) | `Random.NextRange` bounds. |
@@ -522,11 +517,7 @@ Tests for the [network domain](../../src/Sphere10.Framework/Network).
 
 | Fixture | Purpose |
 |---|---|
-| [MacAddressTests](Network/MacAddressTests.cs) | MAC address listing and the default salted address. |
-| [NetworkDiagnosticsTests](Network/NetworkDiagnosticsTests.cs) | Whois against a loopback server, host resolution and a loopback trace route. |
-| [NetworkProbeDataSourceTests](Network/NetworkProbeDataSourceTests.cs) | `NetworkProbeDataSource` commands, repetition, cancellation, stop and retained-data bounds. |
-| [NetworkToolProbeTests](Network/NetworkToolProbeTests.cs) | The server a WHOIS answer refers to, and the TCP port probe against open and released loopback ports, invalid arguments and cancellation. |
-| [NetworkProtocolTests](Network/NetworkProtocolTests.cs) | DNS response and TLS ClientHello decoding, including malformed input. |
+| [UrlSlugTests](Network/UrlSlugTests.cs) | `Tools.Url.ToUrlSlug` keeps `C#` as `c-sharp`, retains Unicode text and removes reserved syntax with `allowUnicode`, and stays ASCII by default. |
 
 ### ObjectSpaces
 
@@ -560,14 +551,6 @@ Tests for the repository's [pack and publish scripts](../../scripts).
 | Fixture | Purpose |
 |---|---|
 | [PackageScriptTests](Packaging/PackageScriptTests.cs) | `pack.ps1` and `publish.ps1` validation, package selection, symbols, API keys and failure handling. |
-
-### Protocol
-
-Tests for the [protocol domain](../../src/Sphere10.Framework/Protocol).
-
-| Fixture | Purpose |
-|---|---|
-| [TypedProtocolAdapterTests](Protocol/TypedProtocolAdapterTests.cs) | Typed command, request, response, handshake and generator dispatch, and `ProtocolBuilder` composition. |
 
 ### Repository
 

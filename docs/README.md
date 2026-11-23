@@ -2,7 +2,7 @@
 
 **Copyright © 2018-Present Herman Schoenfeld. All rights reserved.**
 
-This index links every guide under `docs/` and the Framework project READMEs. Sphere10 Framework is a family of MIT-licensed .NET 10 libraries for application shells, data access, embedded object storage, collections, serialization and cryptography. Begin with the entry points below, or look up a task in [By Use Case](#-by-use-case).
+This index links every guide under `docs/` and the Framework project READMEs. Sphere10 Framework is a family of MIT-licensed libraries for .NET 8, 9, 10 and 11 (.NET 10 and 11 for the WinForms and Blazor UI packages) for application shells, data access, embedded object storage, collections, serialization and cryptography. Begin with the entry points below, or look up a task in [By Use Case](#-by-use-case).
 
 ---
 
@@ -176,7 +176,7 @@ Folder guides inside these projects:
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.Communications** | TCP, UDP, WebSocket and anonymous-pipe channels, and JSON-RPC clients and servers | [View](../src/Sphere10.Framework.Communications/README.md) |
+| **Sphere10.Framework.Communications** | Typed message protocols, TCP, UDP, WebSocket and anonymous-pipe channels, JSON-RPC clients and servers, and the network, mail and download tools | [View](../src/Sphere10.Framework.Communications/README.md) |
 
 ### Cryptography & Blockchain
 

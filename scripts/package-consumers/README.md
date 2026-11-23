@@ -4,7 +4,7 @@ This folder holds the consumer fixtures for [validate-packages.ps1](../validate-
 
 ## Run the validation
 
-Run the script from the Framework repository root with PowerShell and the .NET 10 and 11 SDKs:
+Run the script from the Framework repository root with PowerShell and the .NET 11 SDK, plus the .NET 8, 9 and 10 SDKs or runtimes for the consumer frameworks you validate:
 
 ```powershell
 ./scripts/validate-packages.ps1
@@ -13,9 +13,9 @@ Run the script from the Framework repository root with PowerShell and the .NET 1
 
 | Parameter | Default | Purpose |
 |---|---|---|
-| `-solutionPath` | `src/Sphere10.Framework (Win).sln` | The solution whose packable projects under `src/` are packed. The Windows solution covers every active library and needs the Windows desktop targeting pack. The cross-platform solution leaves out the Windows libraries, so the `Desktop` and `Store` consumers are skipped. |
+| `-solutionPath` | `src/Sphere10.Framework (Win).sln` | The solution whose packable projects under `src/` are packed. The Windows solution covers every active library and needs the Windows desktop targeting pack. The cross-platform solution leaves out the Windows libraries, so the `Windows`, `Desktop` and `Store` consumers are skipped. |
 | `-configuration` | `Release` | The configuration, `Debug` or `Release`, used for packing and for building the consumers. |
-| `-consumerFramework` | `net10.0` | Select `net10.0` or `net11.0`. The `Desktop` consumer adds the Windows suffix and the `Store` consumer the `windows10.0.19041.0` suffix. CI checks both. |
+| `-consumerFramework` | `net10.0` | Select `net8.0`, `net9.0`, `net10.0` or `net11.0`. The `Windows` and `Desktop` consumers add the Windows suffix and the `Store` consumer the `windows10.0.19041.0` suffix. The UI packages target only .NET 10 and later, so `net8.0` and `net9.0` skip the `Desktop` and `Web` consumers. CI checks all four. |
 | `-packagesDirectory` | Not set | Validate an existing package batch instead of rebuilding it. Requires `-packageVersion`. |
 | `-packageVersion` | Generated validation version | Exact version of the supplied package batch. |
 | `-workspaceDirectory` | New temporary folder | Optional new workspace for isolated consumers, cache and reports. Existing directories are rejected. |
@@ -23,6 +23,8 @@ Run the script from the Framework repository root with PowerShell and the .NET 1
 To validate the exact artifacts that will be published, run once for each target with a distinct workspace:
 
 ```powershell
+./scripts/validate-packages.ps1 -packagesDirectory <batch> -packageVersion <exact-version> -consumerFramework net8.0
+./scripts/validate-packages.ps1 -packagesDirectory <batch> -packageVersion <exact-version> -consumerFramework net9.0
 ./scripts/validate-packages.ps1 -packagesDirectory <batch> -packageVersion <exact-version> -consumerFramework net10.0
 ./scripts/validate-packages.ps1 -packagesDirectory <batch> -packageVersion <exact-version> -consumerFramework net11.0
 ```
@@ -38,17 +40,29 @@ After a successful run, create the release packages with `./scripts/pack.ps1`, a
 1. **Packing.** The script reads `IsPackable` and `PackageId` from every project under `src/` in the solution. It adds the packable projects to a temporary `Packages.sln` and packs them with the version `0.0.0-validation.<UTC timestamp>.<id>` and `BuildRevision=0`, which leaves the local build counter unchanged.
 2. **Package contents.** Every package must declare authors, description, license, readme, icon and repository metadata, contain its readme, icon and `LICENSE` files, and have a matching `.snupkg`. Every dependency on `Sphere10.Framework*` or `Sphere10.HashLib4CSharp` must name a package from the same run at the same version. `Sphere10.Framework.Generators` must contain `analyzers/dotnet/cs/Sphere10.Framework.Generators.dll` and no `lib/` assets. The Blazor package must contain `app.css`, `themes.css`, `functions.js`, `BlazorGrid.js`, the grid and reference-picker modules and a `buildTransitive` props file.
 3. **Isolated consumers.** The script copies each fixture folder into the workspace beside a generated `PackageConsumer.<name>.csproj`, whose only references are exact-version `PackageReference` items. Because the workspace is outside the repository, the consumers cannot see its project references, build properties or central package versions. The workspace's own `Directory.Build.props`, `Directory.Build.targets` and `Directory.Packages.props` also block customizations from parent folders. The generated `NuGet.Config` maps `Sphere10.Framework*` and `Sphere10.HashLib4CSharp` to the local feed and every other package to nuget.org. Together with the empty cache and the exact versions, this mapping stops a package already on nuget.org from hiding a missing local package.
-4. **Published web host.** The script publishes the `Web` consumer, checks its static web assets and requests its pages over HTTP, as [The Web consumer](#the-web-consumer) describes.
+4. **Published web host.** For `net10.0` and `net11.0`, the script publishes the `Web` consumer, checks its static web assets and requests its pages over HTTP, as [The Web consumer](#the-web-consumer) describes.
+
+The consumers that run depend on `-consumerFramework`:
+
+| Consumer | `net8.0`, `net9.0` | `net10.0`, `net11.0` |
+|---|---|---|
+| `Core`, `Application`, `Libraries`, `Renderer` | Yes | Yes |
+| `Windows`, `Store` | Yes, when the Windows packages were packed | Yes, when the Windows packages were packed |
+| `Desktop` | No | Yes, when the Windows packages were packed |
+| `Web` | No | Yes |
+
+`validation.json` lists the consumers that ran.
 
 | Fixture | Package references | What it must compile or pass |
 |---|---|---|
 | `Core` | `Sphere10.Framework.Web` | Creates a `SitemapXml`. Its restore graph and framework references must contain no ASP.NET Core, JS interop, MAUI, Windows desktop, WinForms, WPF or `System.Drawing.Common` assemblies, and no `Sphere10.Framework.Windows*`, `Sphere10.Framework.Web.AspNetCore*` or `Sphere10.Framework.Drawing` package. |
 | `Application` | `Sphere10.Framework.Application` | Uses the UI-independent application model in `Sphere10.Framework.Application.UI`. It derives a block, a menu and a menu item from `ApplicationBlockBase`, `ApplicationMenuBase<T>` and `ApplicationMenuItemBase`, and it uses screen definitions, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>`, `IApplication.LoadedPlugins` and `Blocks`, the screen-host contracts and `Wizard<TModel, TStep>`. Its restore graph passes the same UI-free check as `Core`. |
-| `Libraries` | Every package except `Sphere10.Framework.Windows*` and `Sphere10.Framework.Web.AspNetCore*` | A partial property compiles through the packed `[AutoDirty]` generator, and `AssertEx` and `UnitTestDAC` resolve from the NUnit packages. |
-| `Desktop` | Every `Sphere10.Framework.Windows*` package except `Sphere10.Framework.Windows.Store`, for the selected plain Windows target | Derives the WinForms `ApplicationScreen` and builds a plugin and its block with the WinForms `ApplicationPluginBuilder`. |
-| `Store` | `Sphere10.Framework.Windows.Store`, for the selected target with the `windows10.0.19041.0` platform its Store APIs require | Creates a `WindowsStoreProductUpdater` as a `ProductUpdaterBase` and the Store `ModuleConfiguration`. |
+| `Libraries` | Every package except `Sphere10.Framework.Windows*` and `Sphere10.Framework.Web.AspNetCore.Blazor`, so `Web.AspNetCore` and `Web.AspNetCore.MVC` are also checked on .NET 8 and 9 | A partial property compiles through the packed `[AutoDirty]` generator, and `AssertEx` and `UnitTestDAC` resolve from the NUnit packages. |
+| `Windows` | The non-UI Windows packages, every `Sphere10.Framework.Windows*` package except `Sphere10.Framework.Windows.Forms*` and `Sphere10.Framework.Windows.Store`, for the selected plain Windows target | Resolves `Sphere10.Framework.Windows.WinAPI`, so the packages restore and compile on every target, including `net8.0` and `net9.0`. Fixture: [Windows/PackageUsage.cs](Windows/PackageUsage.cs). |
+| `Desktop` | Every `Sphere10.Framework.Windows*` package except `Sphere10.Framework.Windows.Store`, for the selected plain Windows target, `net10.0` and `net11.0` only | Derives the WinForms `ApplicationScreen` and builds a plugin and its block with the WinForms `ApplicationPluginBuilder`. |
+| `Store` | `Sphere10.Framework.Windows.Store`, for the selected target with the `windows10.0.19041.0` platform its Store APIs require, on every target | Creates a `WindowsStoreProductUpdater` as a `ProductUpdaterBase` and the Store `ModuleConfiguration`. |
 | `Renderer` | `Sphere10.Framework.Web.VisualRenderer` | Executes HTML rendering, opens the embedded theme archive and verifies that license notices reach the consumer output. |
-| `Web` | `Sphere10.Framework.Web.AspNetCore.MVC` and `Sphere10.Framework.Web.AspNetCore.Blazor` | Builds, publishes and serves the Blazor host that [The Web consumer](#the-web-consumer) describes. |
+| `Web` | `Sphere10.Framework.Web.AspNetCore.MVC` and `Sphere10.Framework.Web.AspNetCore.Blazor`, `net10.0` and `net11.0` only | Builds, publishes and serves the Blazor host that [The Web consumer](#the-web-consumer) describes. |
 
 The workspace keeps the packages in `feed`, the generated consumer projects, the published host in `published-web`, a log for each restore, build, pack and publish step, and a `validation.json` summary of the run.
 

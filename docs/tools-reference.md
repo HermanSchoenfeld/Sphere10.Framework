@@ -24,8 +24,11 @@ not add another assembly or introduce a missing helper.
 
 ## Core Framework Tools
 
-These facades are declared in `Sphere10.Framework`, including
-`Tools.Web.Downloader`.
+These facades are declared in `Sphere10.Framework`, except `Tools.Network`,
+`Tools.Mail` and `Tools.Web.Downloader`, which keep their `Tools` and
+`Tools.Web` namespaces but are declared in `Sphere10.Framework.Communications`.
+The core library compiles against an allowlist of .NET assemblies, so a new
+core facade cannot use networking, drawing or UI assemblies.
 
 ### Collection & Data Structure Tools
 
@@ -107,11 +110,17 @@ an existing activation API.
 
 | Facade | Existing entrypoints | Implementation |
 |---|---|---|
-| `Tools.FileSystem` | `GenerateTempFilename`, `CopyFile`, `DeleteFile`, `GetFiles`, `WriteAllBytes` | [FileSystemTool.cs](../src/Sphere10.Framework/IO/FileSystemTool.cs) |
-| `Tools.Network` | `GetMimeType`, `GetNetworkAddress`, `GetMacAddresses` | [NetworkTool.cs](../src/Sphere10.Framework/Network/NetworkTool.cs) |
+| `Tools.FileSystem` | `GenerateTempFilename`, `CopyFile`, `DeleteFile`, `GetFiles`, `WriteAllBytes`, `GetMimeType`, `TryGetMimeType` | [FileSystemTool.cs](../src/Sphere10.Framework/IO/FileSystemTool.cs) |
 | `Tools.Url` | `EncodeUrl`, `DecodeUrl`, `ToUrlSlug`, `ParseQueryString`, `ToQueryString` | [UrlTool.cs](../src/Sphere10.Framework/Network/UrlTool.cs) |
-| `Tools.Mail` | `IsValidEmail`, `ParseEmailsFromCommaSeparatedList`, SMTP send helpers | [MailTool.cs](../src/Sphere10.Framework/Network/MailTool.cs) |
-| `Tools.Web.Downloader` | `DownloadFile`, `DownloadFileAsync`, filename parsing | [Downloader.cs](../src/Sphere10.Framework/Network/Downloader.cs) |
+| `Tools.Network` (Communications) | `GetNetworkAddress`, `GetMacAddresses`, `ResolveHostAsync`, `PingAsync`, `TraceRouteAsync`, `ReadWhoisAsync`, `ProbeTcpPortAsync` | [NetworkTool.cs](../src/Sphere10.Framework.Communications/Network/NetworkTool.cs) |
+| `Tools.Mail` (Communications) | `IsValidEmail`, `ParseEmailsFromCommaSeparatedList`, SMTP send helpers | [MailTool.cs](../src/Sphere10.Framework.Communications/Network/MailTool.cs) |
+| `Tools.Web.Downloader` (Communications) | `DownloadFile`, `DownloadFileAsync`, filename parsing | [Downloader.cs](../src/Sphere10.Framework.Communications/Network/Downloader.cs) |
+
+MIME lookup is `Tools.FileSystem.GetMimeType` and `TryGetMimeType`; `Tools.Network`
+has no MIME members. Both take a file path, a file name or an extension alone, such
+as `"report.pdf"`, `"png"` or `".png"`, and look the extension up in `MimeHelper`,
+whose table is generated from mime-db and answers `application/octet-stream` for an
+extension it does not know. `FileInfo.GetMimeType()` uses the file's extension.
 
 `Tools.FileSystem` has no `ReadAllBytes`, `ReadAllText` or `WriteAllText`
 method. Do not infer a wrapper exists from a BCL method's name. Network and mail
@@ -367,6 +376,10 @@ Read [Code Styling](guidelines/code-styling.md) and the
   in the global `Tools` namespace. Extend `Tools.Web` for the existing web family.
   A conventional source filename is `DomainTool.cs`; the public class name is the
   API consumers actually discover.
+- Put a facade in the project that owns its dependencies. The core
+  `Sphere10.Framework` project compiles only against its `AllowedFrameworkAssembly`
+  list, so a tool that needs sockets, HTTP, mail or drawing belongs in
+  Communications, Drawing or a platform project instead.
 - Reuse framework validation, ownership and utility contracts. Preserve existing
   public names, including historical names such as `OperatorTool` and `iOSTool`.
 - Keep examples aligned with current signatures, reference the actual owning

@@ -16,7 +16,7 @@ This library extends ASP.NET Core MVC applications that use Sphere10 Framework w
 
 ## Installation
 
-Reference the package from an ASP.NET Core project that targets .NET 10 or later:
+Reference the package from an ASP.NET Core project that targets .NET 8 or later:
 
 ```powershell
 dotnet add package Sphere10.Framework.Web.AspNetCore.MVC
@@ -452,7 +452,7 @@ CustomRouteAttribute.RegisterCustomRoutesFromAssembly(app, typeof(MvcDemo.Contro
 | `Processing/` | `ImageResult`. |
 | `MvcTool.cs` | `Tools.Web.Mvc.ToSelectList`. |
 
-The project targets `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. It has a `Microsoft.AspNetCore.App` framework reference, project references to the shared [Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore/README.md) layer and to [Drawing](../Sphere10.Framework.Drawing/README.md), and a Newtonsoft.Json package reference for the form types. The Drawing reference serves only `ImageResult`. The host-independent [Web](../Sphere10.Framework.Web/README.md) library suffices when an application needs only the web models.
+The project targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. It has a `Microsoft.AspNetCore.App` framework reference, project references to the shared [Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore/README.md) layer and to [Drawing](../Sphere10.Framework.Drawing/README.md), and a Newtonsoft.Json package reference for the form types. The Drawing reference serves only `ImageResult`. The host-independent [Web](../Sphere10.Framework.Web/README.md) library suffices when an application needs only the web models.
 
 ## Upgrading from the combined library
 

@@ -14,7 +14,7 @@ dotnet add package Sphere10.Framework.Windows.Forms.Sqlite
 
 The package depends on `Sphere10.Framework.Data.Sqlite`, which supplies `SqliteDAC`, `Tools.Sqlite`, the `System.Data.SQLite` driver and the `SourceGear.sqlite3` package of native SQLite libraries, and on `Sphere10.Framework.Windows.Forms`. To build against source instead, reference `src/Sphere10.Framework.Windows.Forms.Sqlite/Sphere10.Framework.Windows.Forms.Sqlite.csproj` with a `ProjectReference`.
 
-The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. The SQLite data provider itself targets `net10.0`, but these editors need Windows. A consuming project needs a Windows target framework with Windows Forms enabled:
+The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. The SQLite data provider itself targets the plain `net8.0` and later frameworks, but these editors need Windows and the .NET 10 UI APIs of the other WinForms packages. A consuming project needs a Windows target framework with Windows Forms enabled:
 
 ```xml
 <PropertyGroup>
@@ -286,7 +286,7 @@ using (dac.EnterScope()) {
 The [WinForms Tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) hosts both editors. Run it from the repository root on Windows:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -f net10.0-windows -p:BuildRevision=0
 ```
 
 - **Controls > Input > All controls by class name** opens the control catalog. Search for `SqliteConnection` to edit sample settings, which never open a database on their own.

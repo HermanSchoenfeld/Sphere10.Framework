@@ -2,7 +2,7 @@
 
 An embedded, indexed store of typed CLR objects over clustered streams, in memory or in a transactional file.
 
-`Sphere10.Framework.ObjectSpaces` is an embedded object store for typed CLR objects, built on clustered streams. Each registered type has a dimension with recyclable object slots, a serializer and member indexes, and the space tracks loaded objects so that each saved slot maps to one live instance. Use it when an application needs indexed, persistent objects without an external database. [ObjectSpaceBuilder](Builder/ObjectSpaceBuilder.cs) builds a [MemoryObjectSpace](MemoryObjectSpace.cs) or a transactional [FileObjectSpace](FileObjectSpace.cs), and both derive from `ObjectSpace`. The subsystem ships in the `Sphere10.Framework` package.
+ObjectSpaces is an embedded object store for typed CLR objects, built on clustered streams. Each registered type has a dimension with recyclable object slots, a serializer and member indexes, and the space tracks loaded objects so that each saved slot maps to one live instance. Use it when an application needs indexed, persistent objects without an external database. [ObjectSpaceBuilder](Builder/ObjectSpaceBuilder.cs) builds a [MemoryObjectSpace](MemoryObjectSpace.cs) or a transactional [FileObjectSpace](FileObjectSpace.cs), and both derive from `ObjectSpace`. The subsystem ships in the `Sphere10.Framework` package, and its types are in the `Sphere10.Framework` namespace.
 
 The [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) demonstrates a self-describing store on its **ObjectSpace** screen, which is in the **Data And Collections** block and under **Data Editing > ObjectSpace**. The screen creates, edits and deletes accounts and reloads the store through `ObjectSpace.TryOpenFromStream`. The general profiler's [ObjectSpace suite](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) holds repeatable measurements, and its [lab](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md) supplies the models, configuration and factory used for profiling and correctness fixtures.
 
@@ -12,7 +12,6 @@ The [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/REA
 
 ```csharp
 using Sphere10.Framework;
-using Sphere10.Framework.ObjectSpaces;
 
 using var space = new ObjectSpaceBuilder()
 	.UseMemoryStream()
@@ -60,7 +59,6 @@ This file-backed example declares its indexes explicitly and uses a dirty flag f
 using System;
 using System.Linq;
 using Sphere10.Framework;
-using Sphere10.Framework.ObjectSpaces;
 
 public class Purchase {
 	private decimal _total;
@@ -135,7 +133,7 @@ For a nonunique index, resolve the matching slots under the space's access scope
 
 ```csharp
 using System.Linq;
-using Sphere10.Framework.ObjectSpaces;
+using Sphere10.Framework;
 
 public static class PurchaseQueries {
 	public static Purchase[] InRegion(ObjectSpace space, int region) {

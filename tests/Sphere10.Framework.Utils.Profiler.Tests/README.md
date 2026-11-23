@@ -17,8 +17,9 @@ dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRev
 
 An ordinary run executes the correctness fixtures and needs no interactive
 desktop, browser or capture files. The project targets
-`$(FrameworkTargetFrameworks)`, which is `net10.0`, plus `net11.0` when the
-building SDK supports .NET 11. Add `-f net10.0` to run one target only.
+`$(FrameworkTargetFrameworks)`, which is `net8.0`, `net9.0` and `net10.0`, plus
+`net11.0` when the building SDK supports .NET 11. Add `-f net10.0` to run one
+target only.
 
 | Group | Selection | Needs |
 |---|---|---|

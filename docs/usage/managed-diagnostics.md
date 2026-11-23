@@ -8,9 +8,16 @@ management: ICSharpCode.Decompiler and ICSharpCode.BamlDecompiler
 upstream code has not been copied or relicensed. See the
 [engine notices](../../src/Sphere10.Framework.Windows/THIRD-PARTY-NOTICES.md).
 
+The decompiler packages support only .NET 10 and later, so the library
+references them only on `net10.0` and `net11.0`. `ManagedAssemblyUtil` and the
+`Tools.Windows.Assemblies` property are compiled only under
+`NET10_0_OR_GREATER`: the `net8.0` and `net9.0` builds of
+`Sphere10.Framework.Windows` have no assembly inspection or decompilation, while
+the ClrMD runtime, heap and dump analysis below is available on every target.
+
 ## Managed assembly inspection
 
-Use `Tools.Windows.Assemblies.InspectAsync(path, token)` to capture metadata.
+On `net10.0` and later, use `Tools.Windows.Assemblies.InspectAsync(path, token)` to capture metadata.
 The detached result includes definition/reference/resource tokens, parent tokens,
 names and attributes. A UI can build a hierarchy without reopening the file.
 

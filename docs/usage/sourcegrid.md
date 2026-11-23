@@ -39,7 +39,7 @@ their own owners rather than requiring a dependency on a grid implementation.
 | Capability | Current API or owner |
 |---|---|
 | Type conversion, including custom converters | `TypeChanger.ChangeTypeUsingTypeConverter` |
-| Validators and generic binding lists | `Sphere10.Framework.ComponentModel` |
+| Validators and generic binding lists | Core [ComponentModel](../../src/Sphere10.Framework/ComponentModel/README.md) domain, in the `Sphere10.Framework` namespace |
 | DataView binding | `Sphere10.Framework.Data.BoundDataView` |
 | Calendar month/year differences | `Tools.Time` |
 | DataSet expressions, sampling and XML/binary persistence | `Tools.Data` |

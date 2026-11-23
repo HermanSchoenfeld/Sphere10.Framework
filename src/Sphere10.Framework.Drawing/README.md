@@ -14,7 +14,7 @@ The `ResizeMethod` and `ResizeAlignment` enums live in the core `Sphere10.Framew
 dotnet add package Sphere10.Framework.Drawing
 ```
 
-The package targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. Projects inside this repository reference `src/Sphere10.Framework.Drawing/Sphere10.Framework.Drawing.csproj` instead.
+The package targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. Projects inside this repository reference `src/Sphere10.Framework.Drawing/Sphere10.Framework.Drawing.csproj` instead.
 
 ## ⚡ 10-Second Example
 

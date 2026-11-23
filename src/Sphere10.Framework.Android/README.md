@@ -12,7 +12,7 @@ Sphere10.Framework.Android is a legacy Xamarin.Android class library whose only 
 | CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
 | Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
 | Project format | `Sphere10.Framework.Android.csproj` is a legacy (non-SDK) Xamarin.Android project. It imports `$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets` and targets Android 8.1 (`TargetFrameworkVersion` `v8.1`). |
-| Framework references | Its project references point at `Sphere10.Framework` and `Sphere10.Framework.Application`, which now target `net10.0`. |
+| Framework references | Its project references point at `Sphere10.Framework` and `Sphere10.Framework.Application`, which now target `net8.0` to `net10.0` (plus `net11.0` with a .NET 11 SDK). |
 | Source | `AndroidSettingsProvider` derives from `DirectoryFileSettingsProvider` in `Sphere10.Framework.Application`. No build verifies the source against the current Framework. |
 | Tests | No test project covers it. |
 

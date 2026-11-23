@@ -24,10 +24,10 @@ Decorators do not concern themselves with synchronous and asynchronous direction
 
 ### Compositions assemble the usable source
 
-The source an application activates is a composition. The simple case is storage whose load fetches; the Framework's own `ProcessDataSource` over the BCL `Process` type is the reference:
+The source an application activates is a composition. The simple case is storage whose load fetches; the Framework's own `ProcessDataSource` over the BCL `Process` type, in [Sphere10.Framework.Application](../../../src/Sphere10.Framework.Application/Environment/README.md), is the reference:
 
 ```csharp
-// Framework: storage whose load fetches the processes and whose reads scan that list.
+// Framework (Sphere10.Framework.Application): storage whose load fetches the processes and whose reads scan that list.
 public class ProcessDataSource : ListDataSource<Process> {
 	protected override IEnumerable<Process> Fetch() {
 		return Process.GetProcesses();
@@ -75,7 +75,7 @@ public sealed class Captures : RefreshableDataSourceBase<Observation, Capture> {
 public sealed class Probe : PollingDataSource<Observation, Captures> { … }
 ```
 
-`NetworkProbeDataSource` (core) and Framework.Windows' `ProcessWorkingSetDataSource` and editable inventories follow this shape. A product derives `PollingDataSource` when it owns policy (settings, owned enrichment dependencies, stop ordering) and `RefreshableDataSourceBase` when it owns creation, retargeting or formatting (`CreateDataSource`, `CanPublish`, `Publish`). The storage leaf stays minimal. Template hooks live in the hierarchy types; `Action*` variants exist only so clients can compose without deriving. Hierarchy types do not take `Func`/`Action` constructor parameters or delegate properties.
+`NetworkProbeDataSource` (Framework.Communications) and Framework.Windows' `ProcessWorkingSetDataSource` and editable inventories follow this shape. A product derives `PollingDataSource` when it owns policy (settings, owned enrichment dependencies, stop ordering) and `RefreshableDataSourceBase` when it owns creation, retargeting or formatting (`CreateDataSource`, `CanPublish`, `Publish`). The storage leaf stays minimal. Template hooks live in the hierarchy types; `Action*` variants exist only so clients can compose without deriving. Hierarchy types do not take `Func`/`Action` constructor parameters or delegate properties.
 
 **The rule:** a capability is a `DataSourceDecorator`, never a base-lineage commitment; storage holds data and loads itself; a refresh is a new source swapped in; compositions assemble usable sources; decorators are direction-agnostic and call the matching direction of their inner; only the storage leaf adapts one direction to the other, through `SyncDataSourceBase`/`AsyncDataSourceBase` and their batch and item specializations. Every `Sync*` type has an `Async*` dual. Nothing in this family is called a snapshot.
 

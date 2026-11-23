@@ -8,16 +8,16 @@ provider and refreshes the mounted screen; Cancel keeps earlier successful
 Applies and discards subsequent edits. Reload the same browser origin to verify
 persistence. A conflicting builder settings type is rejected during registration.
 
-A .NET 10 Blazor Web App that presents every component demo through one full-page ApplicationBlock shell. It uses prerendered Interactive Server rendering and local sample data. No WebAssembly workload, database, backend node or WebSocket server is required.
+A Blazor Web App, targeting `net10.0` (and `net11.0` with a .NET 11 SDK), that presents every component demo through one full-page ApplicationBlock shell. It uses prerendered Interactive Server rendering and local sample data. No WebAssembly workload, database, backend node or WebSocket server is required.
 
 Open `/` for the organized tour or `/components/grid` for the editable Visual grid. The **Application patterns** block adds complete card, menu, workflow and theme examples alongside the component reference and preserved legacy examples. Every entry uses the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
 
 ## Run the tester
 
-Install the .NET 10 SDK and run these commands **from the repository root**. The first run restores the project references and NuGet dependencies.
+Install the .NET 10 SDK and run these commands **from the repository root**. The first run restores the project references and NuGet dependencies. A .NET 11 SDK builds both `net10.0` and `net11.0`, and `dotnet run` then needs `-f` to choose one; the commands pass `-f net10.0` so they work with either SDK.
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -f net10.0 -p:BuildRevision=0
 ```
 
 Wait for `Now listening on: http://localhost:5187`, then open [the grid demo](http://localhost:5187/components/grid) or [the ApplicationBlock workspace](http://localhost:5187/application). The command keeps the server running; stop it with **Ctrl+C**. `BuildRevision=0` supplies an explicit local build revision.
@@ -27,7 +27,7 @@ Wait for `Now listening on: http://localhost:5187`, then open [the grid demo](ht
 For an explicit HTTP address independent of the launch profile:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0 --no-launch-profile -- --urls http://127.0.0.1:5188
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -f net10.0 -p:BuildRevision=0 --no-launch-profile -- --urls http://127.0.0.1:5188
 ```
 
 Open `http://127.0.0.1:5188/components/grid`. To let the server choose an available port, replace `5188` with `0` and use the actual address printed in the terminal. Use `127.0.0.1` for dynamic port binding.
@@ -83,7 +83,7 @@ Three named launch profiles make the policies visible:
 | `Permanent singleton` | `Demo:PermanentScreen=true` | A Permanent screen tab opens automatically, has no close button, and retains its note across Close all and View layout changes. |
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester -c Release -p:BuildRevision=0 --launch-profile "Empty instance"
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester -c Release -f net10.0 -p:BuildRevision=0 --launch-profile "Empty instance"
 ```
 
 With `--no-launch-profile`, the same settings can be supplied as `Demo__EmptyScreenLifetime` or `Demo__PermanentScreen` environment variables, or application arguments `--Demo:EmptyScreenLifetime=MultiInstance` / `--Demo:PermanentScreen=true`. The permanent profile intentionally never displays Empty workspace while its normal permanent screen is registered.

@@ -4,7 +4,7 @@ NUnit tests for [Sphere10.Framework.Windows](../../src/Sphere10.Framework.Window
 
 ## Run the tests
 
-Run these commands from the repository root on Windows with the .NET 10 SDK. A machine with a .NET 11 SDK also builds and runs the `net11.0` target.
+Run these commands from the repository root on Windows with the .NET 10 SDK and the .NET 8 and 9 runtimes. The project targets `net8.0`, `net9.0` and `net10.0`, and a machine with a .NET 11 SDK also builds and runs `net11.0`. The library's `Tools.Windows.Assemblies` decompiler exists only in its `net10.0` and later builds, so `ManagedAssemblyTests` (assembly inspection, decompilation and BAML) is compiled only for those targets.
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Windows.Tests/Sphere10.Framework.Windows.Tests.csproj -c Release -p:BuildRevision=0

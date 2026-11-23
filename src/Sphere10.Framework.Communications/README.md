@@ -2,7 +2,7 @@
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-Sphere10.Framework.Communications adds network transports and a JSON-RPC layer to Sphere10 Framework. It implements the core `ProtocolChannel` over anonymous pipes, UDP, TCP and WebSockets, and it provides an attribute-based JSON-RPC server and client over TCP. Use the channels as transports for typed protocols built with the core `ProtocolBuilder` and `ProtocolOrchestrator`, and use the RPC types to let remote callers invoke object methods by name.
+Sphere10.Framework.Communications holds the networking of Sphere10 Framework. It defines typed message protocols (`ProtocolBuilder`, `ProtocolOrchestrator`) and the `ProtocolChannel` transport, implements that channel over anonymous pipes, UDP, TCP and WebSockets, and provides an attribute-based JSON-RPC server and client over TCP. It also owns the network tools: `Tools.Network` diagnostics, `Tools.Mail`, `Tools.Web.Downloader` and `NetworkProbeDataSource`. Use the channels as transports for typed protocols, and use the RPC types to let remote callers invoke object methods by name.
 
 ## 📦 Installation
 
@@ -10,9 +10,9 @@ Sphere10.Framework.Communications adds network transports and a JSON-RPC layer t
 dotnet add package Sphere10.Framework.Communications
 ```
 
-The package depends on [Sphere10.Framework](../Sphere10.Framework/README.md) and Newtonsoft.Json. It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Communications/Sphere10.Framework.Communications.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
+The package depends on [Sphere10.Framework](../Sphere10.Framework/README.md) and Newtonsoft.Json. It targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Communications/Sphere10.Framework.Communications.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
 
-The channel types use the `Sphere10.Framework.Communications` namespace. The JSON-RPC and TCP endpoint types use `Sphere10.Framework.Communications.RPC`.
+The protocol, channel and network types use the `Sphere10.Framework.Communications` namespace, and the `Tools.Network`, `Tools.Mail` and `Tools.Web.Downloader` facades stay in `Tools` and `Tools.Web`. The JSON-RPC and TCP endpoint types use `Sphere10.Framework.Communications.RPC`.
 
 <!-- domains:begin -->
 ## Domains
@@ -24,7 +24,9 @@ Every folder of `Sphere10.Framework.Communications` is a domain with its own REA
 | [DataSource](DataSource/README.md) | Provides experimental CRUD data sources that exchange items with a remote peer over a `ProtocolChannel`. | [source](DataSource/) |
 | [EndPoint](EndPoint/README.md) | Provides the whole-message TCP endpoints and connection policies that the JSON-RPC layer runs on. | [source](EndPoint/) |
 | [JSON](JSON/README.md) | Provides Newtonsoft.Json converters for hexadecimal byte arrays and for integers written in decimal or `0x` hexadecimal. | [source](JSON/) |
+| [Network](Network/README.md) | Host diagnostics such as DNS, ping, traceroute, WHOIS and a TCP port probe, passive DNS and TLS ClientHello decoding, a polling data source for probe sessions, SMTP mail, file download and URL shortening. | [source](Network/) |
 | [Pipes](Pipes/README.md) | Provides a `ProtocolChannel` over a pair of anonymous pipes between a parent process and a child process it starts. | [source](Pipes/) |
+| [Protocol](Protocol/README.md) | Message protocols of typed commands, request and response exchanges, two- and three-way handshakes and numbered modes, run by a `ProtocolOrchestrator` over a `ProtocolChannel` byte transport. | [source](Protocol/) |
 | [Protocols](Protocols/README.md) | Provides `WebSocketsPacket`, the JSON envelope that the WebSocket channel hub and data sources exchange. | [source](Protocols/) |
 | [RPC](RPC/README.md) | Provides an attribute-driven JSON-RPC 2.0 server, client and service registry that run over the TCP message endpoints. | [source](RPC/) |
 | [TCP](TCP/README.md) | Provides `TCPChannel`, a `ProtocolChannel` that sends over a new TCP connection per message and receives from connections accepted on a local listener. | [source](TCP/) |
@@ -39,7 +41,9 @@ Every folder of `Sphere10.Framework.Communications` is a domain with its own REA
 | JSON-RPC | `JsonRpcServer`, `JsonRpcClient`, `ApiServiceManager`, `JsonRpcConfig` | Expose attributed methods over TCP and call them by name |
 | RPC attributes | `[RpcAPIService]`, `[RpcAPIMethod]`, `[RpcAPIArgument]` | Declare service, method and argument names |
 | Message endpoints | `IEndPoint`, `TcpEndPoint`, `TcpEndPointListener`, `EndpointMessage` | Carry whole text messages for the RPC layer |
-| Protocol channels | `AnonymousPipe`, `UDPChannel`, `TCPChannel`, `ClientWebSocketsChannel`, `ServerWebSocketsChannel` | Byte transports derived from the core `ProtocolChannel` |
+| Typed protocols | `Protocol`, `ProtocolBuilder`, `ProtocolOrchestrator`, `ProtocolChannel` | Commands, requests, responses and handshakes dispatched over any channel |
+| Protocol channels | `AnonymousPipe`, `UDPChannel`, `TCPChannel`, `ClientWebSocketsChannel`, `ServerWebSocketsChannel` | Byte transports derived from `ProtocolChannel` |
+| Network tools | `Tools.Network`, `Tools.Mail`, `Tools.Web.Downloader`, `NetworkProbeDataSource` | DNS, ping, traceroute, WHOIS, port probes, protocol decoding, SMTP mail and downloads |
 | JSON converters | `ByteArrayHexConverter`, `HexadecimalValueConverterReader` | Hexadecimal byte arrays and integers for Newtonsoft.Json |
 | Data sources | `ProtocolChannelDataSource<TItem>`, `ClientWebSocketsDataSource<TItem>`, `ServerWebSocketsDataSource<TItem>` | Experimental CRUD data sources over protocol channels, whose WebSocket versions throw `NotImplementedException` from several members. The constructor starts opening the channel, and `OpenTask` completes or faults with that open |
 
@@ -342,7 +346,7 @@ public interface IEndPoint {
 
 ## 🔗 Protocol Channels
 
-`ProtocolChannel` is defined in the core Sphere10.Framework package, in the `Sphere10.Framework.Communications` namespace. `Open` or `TryOpen` opens a channel and starts its receive loop, and `Close` stops it. Data is sent with `TrySendBytes` and arrives through the `ReceivedBytes` event. `State` moves through `Closed`, `Opening`, `Open` and `Closing`, and the `Opening`, `Opened`, `Closing` and `Closed` events report each change. The channel raises its events asynchronously.
+`ProtocolChannel` is defined in this package's [Protocol](Protocol/README.md) folder, in the `Sphere10.Framework.Communications` namespace. `Open` or `TryOpen` opens a channel and starts its receive loop, and `Close` stops it. Data is sent with `TrySendBytes` and arrives through the `ReceivedBytes` event. `State` moves through `Closed`, `Opening`, `Open` and `Closing`, and the `Opening`, `Opened`, `Closing` and `Closed` events report each change. The channel raises its events asynchronously.
 
 | Channel | Transport | State of the implementation |
 |---|---|---|
@@ -422,7 +426,7 @@ await channel.TrySendBytes(new byte[] { 1, 2, 3 });
 await channel.Close();
 ```
 
-For typed messages, pass any channel to the core `ProtocolOrchestrator` together with a `Protocol` that `ProtocolBuilder` builds. The orchestrator opens the channel, runs the handshake and dispatches requests, responses and commands, as the core library's [protocol overview](../Sphere10.Framework/README.md#-protocol-and-communication) describes. The [UDP protocol recipe](../../recipes/AbstractProtocol.UPDSimple/Program.cs) runs a client and a server over `UDPChannel` with a three-way handshake. It belongs to the Windows solution and binds UDP ports 100 and 101 on the loopback address:
+For typed messages, pass any channel to a `ProtocolOrchestrator` together with a `Protocol` that `ProtocolBuilder` builds. The orchestrator opens the channel, runs the handshake and dispatches requests, responses and commands, as the [Protocol](Protocol/README.md) domain describes. The [UDP protocol recipe](../../recipes/AbstractProtocol.UPDSimple/Program.cs) runs a client and a server over `UDPChannel` with a three-way handshake. It belongs to the Windows solution and binds UDP ports 100 and 101 on the loopback address:
 
 ```powershell
 dotnet run --project ./recipes/AbstractProtocol.UPDSimple/AbstractProtocol.UDPSimple.csproj
@@ -514,6 +518,20 @@ await b.Close();
 
 `TrySendBytes` returns `false` when `IsConnectionAlive` is `false` or the transport rejects the bytes. `Close` cancels a pending `ReceiveBytesInternal` after 150 milliseconds if the receive loop has not ended by then, and the channel raises `Closed` when the loop ends.
 
+## 🌐 Network Tools
+
+`Tools.Network` resolves hosts, pings, traces routes, reads WHOIS records and probes TCP ports, each with an explicit timeout. `Tools.Mail` sends SMTP mail and `Tools.Web.Downloader` saves a URL to a file. The [Network](Network/README.md) domain describes them and `NetworkProbeDataSource`:
+
+```csharp
+using System;
+using System.Net;
+using Sphere10.Framework.Communications;
+
+var host = await Tools.Network.ResolveHostAsync("localhost", TimeSpan.FromSeconds(2));
+var probe = await Tools.Network.ProbeTcpPortAsync(IPAddress.Loopback, 443, TimeSpan.FromSeconds(3));
+Console.WriteLine($"{host.HostName}: port 443 is {probe.State}"); // Open, Closed or NoReply
+```
+
 ## 🛡️ Security Policies
 
 `TcpSecurityPolicies` holds process-wide settings for the JSON-RPC server, and two of its checks are active:
@@ -565,7 +583,7 @@ try {
 
 ## 🧪 Tests
 
-The [Communications tests](../../tests/Sphere10.Framework.Communications.Tests/) exercise protocol-channel and anonymous-pipe disposal in `ProtocolChannelDisposalTests`. `ChannelAndRpcTests` covers anonymous-pipe line decoding, accepted TCP endpoint sizes, the connection limit, `EndpointMessage.ToSafeString`, service dispatch errors, the JSON-RPC response members and `UDPServer` start and stop. The networked JSON-RPC fixtures in `RPCSimpleTests.cs` and `RPCComplexTests.cs` are commented out, so no active test runs a client against a server. Run the project from the repository root:
+The [Communications tests](../../tests/Sphere10.Framework.Communications.Tests/README.md) exercise protocol-channel and anonymous-pipe disposal in `ProtocolChannelDisposalTests`. `ChannelAndRpcTests` covers anonymous-pipe line decoding, accepted TCP endpoint sizes, the connection limit, `EndpointMessage.ToSafeString`, service dispatch errors, the JSON-RPC response members and `UDPServer` start and stop. The `Protocol` fixtures cover typed dispatch, `ProtocolBuilder` and the orchestrator queue, the `Network` fixtures cover the diagnostics, decoders and `NetworkProbeDataSource` on the loopback address, and `MailTlsIntegrationTests` delivers mail to a loopback SMTP server. The networked JSON-RPC fixtures in `RPCSimpleTests.cs` and `RPCComplexTests.cs` are commented out, so no active test runs a client against a server. Run the project from the repository root:
 
 ```powershell
 dotnet test ./tests/Sphere10.Framework.Communications.Tests/Sphere10.Framework.Communications.Tests.csproj --configuration Release
@@ -580,7 +598,9 @@ GitHub Actions runs this test assembly in its test job.
 | `RPC/` | JSON-RPC server, client and client handler, the service registry, attributes and wire types |
 | `EndPoint/` | `IEndPoint`, `EndpointMessage`, `TcpEndPoint`, `TcpEndPointListener` and `TcpSecurityPolicies` |
 | `JSON/` | `ByteArrayHexConverter`, and `HexadecimalValueConverterReader`, which reads integers written in decimal or `0x` hexadecimal |
+| `Network/` | `Tools.Network`, `Tools.Mail`, `Tools.Web.Downloader`, `NetworkProbeDataSource`, the DNS and TLS records and `UrlShortner` |
 | `Pipes/` | `AnonymousPipe`, its server and client sides, and `AnonymousPipeEndpoint` |
+| `Protocol/` | `Protocol`, `ProtocolBuilder`, `ProtocolOrchestrator`, `ProtocolChannel`, handshakes and the handler bases |
 | `TCP/` | `TCPChannel` |
 | `UDP/` | `UDPChannel` and `UDPServer` |
 | `WebSockets/` | Client, server and hub WebSocket channels, and the older `WebSocketsChannel` |

@@ -1,12 +1,12 @@
 # Sphere10.Framework.Utils.MvcTester
 
-A minimal .NET 10 ASP.NET Core MVC host referencing [Sphere10.Framework.Web.AspNetCore.MVC](../../src/Sphere10.Framework.Web.AspNetCore.MVC/README.md). Use it to verify host startup and add controller/view demonstrations for the MVC library. The current landing page displays **Sphere10 Framework MVC Tester** and a message that the application is ready for demonstrations.
+A minimal .NET 11 ASP.NET Core MVC host referencing [Sphere10.Framework.Web.AspNetCore.MVC](../../src/Sphere10.Framework.Web.AspNetCore.MVC/README.md). Use it to verify host startup and add controller/view demonstrations for the MVC library. The current landing page displays **Sphere10 Framework MVC Tester** and a message that the application is ready for demonstrations.
 
 This utility is not a NuGet package. It has no configured database, external service or application credentials.
 
 ## Run the tester
 
-Install the .NET 10 SDK. Run commands **from the repository root**; the first run restores the project references and NuGet dependencies.
+Install the .NET 11 SDK. Run commands **from the repository root**; the first run restores the project references and NuGet dependencies.
 
 For a terminal session with an explicit HTTP address:
 
@@ -44,7 +44,7 @@ Every folder of `Sphere10.Framework.Utils.MvcTester` is a domain with its own RE
 | [Program.cs](Program.cs) | Registers controllers/views and Sphere10 Framework with the ASP.NET Core module that ends the framework when the host stops, starts the framework, and maps conventional MVC routing. |
 | [Controllers/HomeController.cs](Controllers/HomeController.cs) | Returns the landing view from `Index`. |
 | [Views/Home/Index.cshtml](Views/Home/Index.cshtml) | Complete HTML landing page with `Layout = null`. |
-| [Sphere10.Framework.Utils.MvcTester.csproj](Sphere10.Framework.Utils.MvcTester.csproj) | Web SDK host targeting `net10.0`, with a reference to the MVC library and packaging disabled. |
+| [Sphere10.Framework.Utils.MvcTester.csproj](Sphere10.Framework.Utils.MvcTester.csproj) | Web SDK host targeting `net11.0`, with a reference to the MVC library and packaging disabled. |
 
 The route pattern is `{controller=Home}/{action=Index}/{id?}`. Both `/` and `/Home/Index` reach the landing page. The current host does not define a shared layout or an interactive Blazor circuit. Use the [Blazor tester](../Sphere10.Framework.Utils.BlazorTester/README.md) for grids, component dialogs and ApplicationBlock demonstrations.
 
@@ -115,5 +115,5 @@ This is a startup/view smoke test, not broad MVC feature coverage. Put reusable 
 | Address already in use | Stop the previous host, choose another port, or run with `--no-launch-profile -- --urls http://127.0.0.1:0`. Open the assigned port printed by the server. |
 | HTTPS certificate error | Use the explicit HTTP command for local testing, or configure/trust your ASP.NET Core development certificate before using the HTTPS profile. |
 | Controller or view returns 404/not found | Check conventional route names and that the view is under `Views/<ControllerName>/<ActionName>.cshtml`. |
-| SDK or restore failure | Check `dotnet --info` for a .NET 10 SDK and read the first restore/build error. |
+| SDK or restore failure | Check `dotnet --info` for a .NET 11 SDK and read the first restore/build error. |
 | Build cannot replace a running executable | Stop the host with Ctrl+C before rebuilding that configuration. |

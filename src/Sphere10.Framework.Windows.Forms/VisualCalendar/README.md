@@ -1,6 +1,6 @@
 # Visual Calendar
 
-Scheduling grid control that shows appointments in named columns over a day, a week or a month, with selection, drag-and-drop rescheduling and resizing, a data source that shows `ICalendar` objects and an editor for recurrence rules.
+Scheduling grid control that shows appointments in named columns over a day, a week or a month, with selection, drag-and-drop rescheduling and resizing, a data source that shows `ICalendar<string, Color, string>` objects and an editor for recurrence rules.
 
 `VisualCalendar` is a [SourceGrid](../SourceGrid/README.md) based user control. Assign an `IVisualCalendarDataSource`, usually `VisualCalendarDataSource`, and choose the period with `SetView(view, date)` or `SetTimePeriod`. The `View` property is a `VisualCalendarView`. `Day` has a column for each of the data source's columns and a row for each time slot, `Week` has a column for each day and `Month` has a column for each of the data source's columns and a row for each day. A week is shown from its first day (`FirstDayOfWeek`, the current culture's by default), whichever of its days was asked for. `SetTimePeriod` and `SetTimePeriodType` choose the row size (`TimePeriodType`), where the monthly size shows the month view and the other sizes keep the day or week in view. A `DataSourceToViewModelConverter` turns the data source's columns and `Appointment` records into an `VisualCalendarViewModel` of `ColumnViewModel`, `AppointmentViewModel` and `CellViewModel` rows. The control then paints those cells.
 
@@ -16,11 +16,19 @@ The book draws with the same SourceGrid cells, views and borders as the SourceGr
 
 ## Calendars of recurring events
 
-`CalendarViewDataSource` shows the occurrences of one or more [`ICalendar`](../../Sphere10.Framework/Calendar/README.md) objects, such as a person's calendars, a job schedule or an operating system's tasks, with a column for each calendar. The control's Day, Week and Month views apply as they do to any data source. Occurrences of one calendar that overlap are placed side by side in extra columns, so nothing hides anything else. Call `LoadAsync` to read the calendars, then `SetView` or `RefreshFromDataSource` on the control, or `SetViewAsync` or `RefreshFromDataSourceAsync` when the calendars hold many recurring events, since every occurrence in the period becomes a block. A layout computed while the period changed or the calendars loaded again is not kept. Set `SlotDuration` to the view's row size so that blocks start and end on rows. A moment without duration is drawn one row high so that it can be seen and dragged.
+`CalendarViewDataSource` shows the occurrences of one or more [`ICalendar<string, Color, string>`](../../Sphere10.Framework/Calendar/README.md) objects, such as a person's calendars, a job schedule or an operating system's tasks, with a column for each calendar. Their events carry a text `Location`, a `System.Drawing.Color` `Decoration` and a text `Tag`. A calendar of other event types reaches the view through a `CalendarAdapterBase` subclass that converts its events to these types and back. The control's Day, Week and Month views apply as they do to any data source. Occurrences of one calendar that overlap are placed side by side in extra columns, so nothing hides anything else. Call `LoadAsync` to read the calendars, then `SetView` or `RefreshFromDataSource` on the control, or `SetViewAsync` or `RefreshFromDataSourceAsync` when the calendars hold many recurring events, since every occurrence in the period becomes a block. A layout computed while the period changed or the calendars loaded again is not kept. Set `SlotDuration` to the view's row size so that blocks start and end on rows. A moment without duration is drawn one row high so that it can be seen and dragged.
 
-The source never changes a calendar itself. A drag or resize in the view raises `RescheduleRequested` with a `CalendarRescheduleRequest`, which names the calendar, the calendar the occurrence was dropped on, the occurrence as it stands and its real new times. The handler applies the change to the calendar, with any confirmation it wants, and loads the source again. `GetItem(appointment)` returns the `CalendarViewItem` behind a displayed block. `NewAppointment` and `DeleteAppointment` throw `NotSupportedException`, because events are added and removed through their calendar. Override `Includes` to hide events and `GetColor` to colour them. By default an event without a colour takes its calendar's, and a disabled event is drawn in gray.
+The source never changes a calendar itself. A drag or resize in the view raises `RescheduleRequested` with a `CalendarRescheduleRequest`, which names the calendar, the calendar the occurrence was dropped on, the occurrence as it stands and its real new times. The handler applies the change to the calendar, with any confirmation it wants, and loads the source again. `GetItem(appointment)` returns the `CalendarViewItem` behind a displayed block. `NewAppointment` and `DeleteAppointment` throw `NotSupportedException`, because events are added and removed through their calendar. Override `Includes` to hide events and `GetColor` to colour them. By default a disabled event is drawn in gray, an enabled one in its `Decoration`, and one whose `Decoration` is `Color.Empty` in its calendar's colour from a fixed palette.
 
 ```csharp
+var personalCalendar = new MemoryCalendar<string, Color, string>("Personal", new CalendarEvent<string, Color, string> {
+	Title = "Stand-up",
+	Location = "Room 4",
+	Decoration = Color.CornflowerBlue,
+	Recurrence = CalendarRecurrence.Weekly(DateTime.Today.AddHours(9), CalendarDaysOfWeek.Weekdays),
+	Duration = TimeSpan.FromMinutes(15)
+});
+// systemCalendar is any other ICalendar<string, Color, string>, such as a CalendarAdapterBase over a calendar of other types.
 var source = new CalendarViewDataSource(personalCalendar, systemCalendar) { SlotDuration = TimeSpan.FromMinutes(30) };
 source.RescheduleRequested += async request => {
 	// The view only asks. Move the event in its calendar and show the calendars again.
@@ -84,9 +92,9 @@ if (validation.IsSuccess)
 | [`Appointment`](DataSources/Appointment.cs) | class | Appointment record with ID, subject, two location lines, notes, start and end times, color and user object |
 | [`VisualCalendarDataSource`](DataSources/VisualCalendarDataSource.cs) | class | In-memory data source that stores columns and appointments and checks time availability |
 | [`AppointmentColumn`](DataSources/AppointmentColumn.cs) | class | Named book column with an application user object and an optional `Date` for a column that shows its own day |
-| [`CalendarRescheduleRequest`](DataSources/CalendarRescheduleRequest.cs) | record | The user's request, made by dragging or resizing, to give an occurrence new times, with its calendar and the calendar it was dropped on |
-| [`CalendarViewDataSource`](DataSources/CalendarViewDataSource.cs) | class | Data source that shows the occurrences of `ICalendar` objects, one column per calendar with overlapping occurrences side by side, and raises `RescheduleRequested` |
-| [`CalendarViewItem`](DataSources/CalendarViewItem.cs) | record | One displayed occurrence and the calendar it came from |
+| [`CalendarRescheduleRequest`](DataSources/CalendarRescheduleRequest.cs) | record | The user's request, made by dragging or resizing, to give a `CalendarOccurrence<string, Color, string>` new times, with its calendar and the calendar it was dropped on |
+| [`CalendarViewDataSource`](DataSources/CalendarViewDataSource.cs) | class | Data source that shows the occurrences of `ICalendar<string, Color, string>` objects, one column per calendar with overlapping occurrences side by side, and raises `RescheduleRequested` |
+| [`CalendarViewItem`](DataSources/CalendarViewItem.cs) | record | One displayed `CalendarOccurrence<string, Color, string>` and the calendar it came from |
 | [`DayColumn`](DataSources/DayColumn.cs) | class | Column of the week view that stands for a day instead of a column of the data source |
 | [`IVisualCalendarDataSource`](DataSources/IVisualCalendarDataSource.cs) | interface | Data source contract for time range, columns, appointments, create, delete, reschedule and availability |
 | [`UnallocatedColumn`](DataSources/UnallocatedColumn.cs) | class | Column named "Unallocated" used by `UnallocatedCalendar` |

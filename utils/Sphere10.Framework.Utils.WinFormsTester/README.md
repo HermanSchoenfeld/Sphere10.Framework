@@ -46,10 +46,10 @@ The runner starts the framework, installs the blocks, and awaits `application.In
 
 Startup registration also rejects recursive attempts to load the same plugin name. If registration fails, newly added lifecycle task descriptors under that name are discarded so a later successful plugin cannot inherit abandoned tasks; ordinary `AddServices` side effects retain their existing behavior.
 
-Run from the repository root:
+Run from the repository root. The tester targets `net10.0-windows`, and also `net11.0-windows` with a .NET 11 SDK, when `dotnet run` needs `-f` to pick one; `-f net10.0-windows` works with either SDK:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -f net10.0-windows -p:BuildRevision=0
 ```
 
 ## Product updates and the Windows Store distribution
@@ -87,7 +87,7 @@ Select the **Notes** block and choose **Remove Notes Block**. This uses the fram
 The alternative profile starts directly on a multi-instance empty screen and omits the Notes block:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0 -- --empty-multi
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -f net10.0-windows -p:BuildRevision=0 -- --empty-multi
 ```
 
 Open Settings, then choose **Workspace > Screen Hosting > Close Ordinary Screens**. The returned placeholder has a new instance number and fresh notes because the previous instance was disposed on navigation. Both profiles use the same host and shared policies; `WinFormsDemoPlugin.Configure` sets the Workspace default, hidden placeholder lifetime, and optional Notes block together.
@@ -345,8 +345,10 @@ Outline or Minimal, applied to both calendars). **Resource Schedule** shows
 generated appointments for ten resources over the current month with unallocated
 work in the tray, and **Generate sample schedule** replaces them. **Recurring
 Calendars** shows two in-memory calendars of repeating events, a personal one and a
-system one, through `CalendarViewDataSource`, with a column for each calendar.
-Dragging or resizing an occurrence there moves its whole event, and the log shows
+system one, through `CalendarViewDataSource`, with a column for each calendar. They
+are `MemoryCalendar<string, Color, string>` objects, and the dentist appointment's
+`Decoration` gives it its own colour while the other events take their calendar's.
+Disabled events are drawn in gray. Dragging or resizing an occurrence there moves its whole event, and the log shows
 the changed rule in words. The column filter and the tray are disabled while the
 recurring calendars are shown. The control catalog has samples for
 `CalendarRecurrenceEditor` under Appointments and for `ToolStripTrackBar`,

@@ -9,7 +9,8 @@ Reads TCP and UDP endpoint tables, network interfaces and interface counters, re
 ```csharp
 var neighbours = await Tools.Windows.Network.GetNeighborsAsync();
 foreach (var neighbour in neighbours.Where(item => item.PhysicalAddress.Length > 0))
-	Console.WriteLine($"{neighbour.Address} {Tools.Network.ToMacAddressString(neighbour.PhysicalAddress)} {neighbour.State}");
+	Console.WriteLine($"{neighbour.Address} {Convert.ToHexString(neighbour.PhysicalAddress)} {neighbour.State}");
+// Tools.Network.ToMacAddressString, from Sphere10.Framework.Communications, writes the hyphenated form such as 00-1A-2B-3C-4D-5E.
 
 // Sends an ARP request. The result is null when no device answers.
 var hardware = await Tools.Windows.Network.ResolvePhysicalAddressAsync(IPAddress.Parse("192.168.1.1"));

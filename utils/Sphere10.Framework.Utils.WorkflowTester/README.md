@@ -8,7 +8,7 @@ The **Workflow Error Source** group makes step 1, 2 or 3 throw an `InvalidOperat
 
 ## Build and run
 
-The project targets `net10.0-windows` and references `Sphere10.Framework`, `Sphere10.Framework.Application`, `Sphere10.Framework.Windows` and `Sphere10.Framework.Windows.Forms`. Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes it, so no solution build checks that it still compiles. To try it, run the project file directly from the repository root:
+The project targets `net11.0-windows`, so it needs the .NET 11 SDK, and references `Sphere10.Framework`, `Sphere10.Framework.Application`, `Sphere10.Framework.Windows` and `Sphere10.Framework.Windows.Forms`. Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes it, so no solution build checks that it still compiles. To try it, run the project file directly from the repository root:
 
 ```powershell
 dotnet run --project utils/Sphere10.Framework.Utils.WorkflowTester -c Release -p:BuildRevision=0

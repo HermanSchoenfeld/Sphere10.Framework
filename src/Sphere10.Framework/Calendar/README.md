@@ -15,13 +15,15 @@ Console.WriteLine(rule.Describe());   // Monthly on the last Friday at 17:00, re
 var next = rule.GetNextRunTime(DateTime.Now);
 ```
 
-A `CalendarEvent` is something that happens at set times. It has an `Id`, a `Title`, a `Recurrence`, a `Duration` for each occurrence, an `Enabled` flag, an optional `Color` and a `Tag` that carries the calendar's own record. `GetOccurrences(from, to)` returns a `CalendarOccurrence` for every occurrence that overlaps a period, where an occurrence that repeats within itself spans from its first to its last repetition. `Reschedule(occurrence, newStart, newEnd)` returns the event with one occurrence given new times, as when a user drags it in a calendar view. A recurring event moves as a whole. The rule's start shifts by the same amount, and when the move crosses days a weekly or monthly-by-weekday rule turns its weekdays and a monthly rule replaces the moved day of the month with the new one.
+A `CalendarEvent<TLocation, TDecoration, TTag>` is something that happens at set times. It has an `Id`, a `Title`, a `Description`, a `Recurrence`, a `Duration` for each occurrence and an `Enabled` flag. Its other parts are typed by the calendar that holds it: `Location` (`TLocation`), where it takes place or what it acts on; `Decoration` (`TDecoration`), how a view may present it, such as a color; and `Tag` (`TTag`), the calendar's own record of it. The core library defines no presentation types, so a WinForms calendar can decorate its events with `System.Drawing.Color` while a job schedule uses its own types. `GetOccurrences(from, to)` returns a `CalendarOccurrence` for every occurrence that overlaps a period, where an occurrence that repeats within itself spans from its first to its last repetition. `Reschedule(occurrence, newStart, newEnd)` returns the event with one occurrence given new times, as when a user drags it in a calendar view. A recurring event moves as a whole. The rule's start shifts by the same amount, and when the move crosses days a weekly or monthly-by-weekday rule turns its weekdays and a monthly rule replaces the moved day of the month with the new one.
 
-`ICalendar` is a named collection of events with `ReadEventsAsync`, `AddAsync`, `UpdateAsync`, `RemoveAsync`, an `IsReadOnly` flag and a `Changed` event. `UpdateAsync` and `RemoveAsync` take the event as the caller read it and fail when the calendar no longer holds it in that state, so a change made meanwhile is never overwritten. Derive from `CalendarBase` to put a store behind the contract. It checks arguments, validates the event's rule, refuses changes to a read-only calendar and raises `Changed`, and the subclass implements the `*CoreAsync` hooks. `MemoryCalendar` keeps its events in memory and gives an added event an identity when it has none.
+`ICalendar<TLocation, TDecoration, TTag>` is a named collection of events with `ReadEventsAsync`, `AddAsync`, `UpdateAsync`, `RemoveAsync`, an `IsReadOnly` flag and a `Changed` event. `UpdateAsync` and `RemoveAsync` take the event as the caller read it and fail when the calendar no longer holds it in that state, so a change made meanwhile is never overwritten. Derive from `CalendarBase<TLocation, TDecoration, TTag>` to put a store behind the contract, choosing the three types for that calendar. It checks arguments, validates the event's rule, refuses changes to a read-only calendar and raises `Changed`, and the subclass implements the `*CoreAsync` hooks. `MemoryCalendar<TLocation, TDecoration, TTag>` keeps its events in memory and gives an added event an identity when it has none.
 
 ```csharp
-var calendar = new MemoryCalendar("Team", new CalendarEvent {
+var calendar = new MemoryCalendar<string, ConsoleColor, object>("Team", new CalendarEvent<string, ConsoleColor, object> {
 	Title = "Stand-up",
+	Location = "Room 4",
+	Decoration = ConsoleColor.Cyan,
 	Recurrence = CalendarRecurrence.Weekly(new DateTime(2026, 1, 5, 9, 30, 0), CalendarDaysOfWeek.Weekdays),
 	Duration = TimeSpan.FromMinutes(15)
 });
@@ -35,19 +37,57 @@ var first = standUp.GetOccurrences(new DateTime(2026, 1, 5), new DateTime(2026, 
 await calendar.UpdateAsync(standUp, standUp.Reschedule(first, first.Start.AddHours(1), first.End.AddHours(1)));
 ```
 
-The same rule drives other parts of the Framework. [`OnRecurrenceSchedule<T>`](../Scheduler/README.md) runs a scheduler job whenever a rule fires, [Windows scheduled tasks](../../Sphere10.Framework.Windows/ScheduledTasks/README.md) convert their clock triggers to and from a rule, and the WinForms [VisualCalendar](../../Sphere10.Framework.Windows.Forms/VisualCalendar/README.md) shows `ICalendar` objects and edits a rule.
+`CalendarEvent.Project(location, decoration, tag)` returns the same event (identity, title, description, rule, duration and state) as an event of another calendar type. Two bases wrap an existing calendar. `CalendarDecorator<TLocation, TDecoration, TTag>` forwards every member to an inner calendar of the same types, so a subclass overrides only what it changes, such as hiding events or refusing edits. `CalendarAdapterBase<TLocation, TDecoration, TTag, TInnerLocation, TInnerDecoration, TInnerTag>` presents a calendar of one event type as a calendar of another, such as a scheduled-task calendar as the text-and-color calendar a view draws. A subclass implements `ToOuter` and `ToInner`. The base remembers the inner event behind each outer one it returned, so `UpdateAsync` and `RemoveAsync` reach the inner event as last read through the adapter, and `GetInnerEvent` returns it. Read the events through the adapter before changing them, and keep the inner `Id` in `ToOuter`, which `Project` does.
+
+```csharp
+// Presents a calendar whose events carry a ConsoleColor and an int tag as a calendar of string tags.
+public sealed class LabelledCalendar : CalendarAdapterBase<string, ConsoleColor, string, string, ConsoleColor, int> {
+	public LabelledCalendar(ICalendar<string, ConsoleColor, int> inner) : base(inner) {
+	}
+
+	protected override CalendarEvent<string, ConsoleColor, string> ToOuter(CalendarEvent<string, ConsoleColor, int> innerEvent)
+		=> innerEvent.Project(innerEvent.Location, innerEvent.Decoration, $"#{innerEvent.Tag}");
+
+	protected override CalendarEvent<string, ConsoleColor, int> ToInner(CalendarEvent<string, ConsoleColor, string> calendarEvent, CalendarEvent<string, ConsoleColor, int> innerOriginal)
+		=> calendarEvent.Project(calendarEvent.Location, calendarEvent.Decoration, innerOriginal?.Tag ?? 0);
+}
+
+// Reads through to the inner calendar and refuses every change.
+public sealed class ReadOnlyCalendar<TLocation, TDecoration, TTag> : CalendarDecorator<TLocation, TDecoration, TTag> {
+	public ReadOnlyCalendar(ICalendar<TLocation, TDecoration, TTag> inner) : base(inner) {
+	}
+
+	public override bool IsReadOnly => true;
+
+	public override Task<CalendarEvent<TLocation, TDecoration, TTag>> AddAsync(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, CancellationToken cancellationToken = default)
+		=> throw new InvalidOperationException($"The calendar '{Name}' is read-only.");
+
+	public override Task<CalendarEvent<TLocation, TDecoration, TTag>> UpdateAsync(CalendarEvent<TLocation, TDecoration, TTag> original, CalendarEvent<TLocation, TDecoration, TTag> changed, CancellationToken cancellationToken = default)
+		=> throw new InvalidOperationException($"The calendar '{Name}' is read-only.");
+
+	public override Task RemoveAsync(CalendarEvent<TLocation, TDecoration, TTag> calendarEvent, CancellationToken cancellationToken = default)
+		=> throw new InvalidOperationException($"The calendar '{Name}' is read-only.");
+}
+```
+
+A decorator's `IsReadOnly` only tells callers such as a calendar view not to offer edits. The base still forwards `AddAsync`, `UpdateAsync` and `RemoveAsync`, so a decorator that must refuse changes overrides them, as above.
+
+The same rule drives other parts of the Framework. [`OnRecurrenceSchedule<T>`](../Scheduler/README.md) runs a scheduler job whenever a rule fires, [Windows scheduled tasks](../../Sphere10.Framework.Windows/ScheduledTasks/README.md) convert their clock triggers to and from a rule, and the WinForms [VisualCalendar](../../Sphere10.Framework.Windows.Forms/VisualCalendar/README.md) shows `ICalendar<string, Color, string>` objects, reaching calendars of other types through a `CalendarAdapterBase` subclass, and edits a rule.
 
 ## Contents
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`CalendarBase`](CalendarBase.cs) | abstract class | Template `ICalendar` that checks arguments, validates the event's rule, refuses changes to a read-only calendar and raises `Changed`, with `*CoreAsync` hooks for the store. |
+| [`CalendarAdapterBase<TLocation, TDecoration, TTag, TInnerLocation, TInnerDecoration, TInnerTag>`](CalendarAdapterBase.cs) | abstract class | Presents a calendar of one event type as another through `ToOuter` and `ToInner` hooks, remembering the inner event behind each outer one (`GetInnerEvent`). |
+| [`CalendarBase<TLocation, TDecoration, TTag>`](CalendarBase.cs) | abstract class | Template `ICalendar` that checks arguments, validates the event's rule, refuses changes to a read-only calendar and raises `Changed`, with `*CoreAsync` hooks for the store. |
 | [`CalendarDaysOfWeek`](CalendarDaysOfWeek.cs) | enum | Flag set of weekdays from `Sunday` (1) to `Saturday` (64), with `Weekdays`, `Weekend` and `EveryDay`. |
-| [`CalendarEvent`](CalendarEvent.cs) | record | Event with identity, title, description, location, recurrence, duration, enabled flag, color and tag, with `GetOccurrences` and `Reschedule`. |
+| [`CalendarDecorator<TLocation, TDecoration, TTag>`](CalendarDecorator.cs) | abstract class | Forwards every member to an inner calendar of the same event types, so a subclass overrides only what it changes. |
+| [`CalendarDecorator<TLocation, TDecoration, TTag, TConcrete>`](CalendarDecorator.cs) | abstract class | The same decorator with the inner calendar's concrete type exposed as `InternalCalendar`. |
+| [`CalendarEvent<TLocation, TDecoration, TTag>`](CalendarEvent.cs) | record | Event with identity, title, description, location, recurrence, duration, enabled flag, decoration and tag, with `GetOccurrences`, `Reschedule` and `Project`. |
 | [`CalendarFrequency`](CalendarFrequency.cs) | enum | How a rule repeats: `Once`, `Daily`, `Weekly`, `Monthly` or `MonthlyDayOfWeek`. |
 | [`CalendarMonths`](CalendarMonths.cs) | enum | Flag set of months from `January` (1) to `December` (2048), with `EveryMonth`. |
-| [`CalendarOccurrence`](CalendarOccurrence.cs) | record | One time an event takes place, with the event, the start and end of the occurrence and `IsRecurring`. |
+| [`CalendarOccurrence<TLocation, TDecoration, TTag>`](CalendarOccurrence.cs) | record | One time an event takes place, with the event, the start and end of the occurrence and `IsRecurring`. |
 | [`CalendarRecurrence`](CalendarRecurrence.cs) | record | Recurrence rule with factory methods, `Validate`, `OccursOn`, `GetOccurrences`, `GetNextOccurrence`, `GetRunTimes`, `GetNextRunTime`, `GetRepetitionEnd` and `Describe`. |
 | [`CalendarWeeksOfMonth`](CalendarWeeksOfMonth.cs) | enum | Flag set of weeks within a month, `First` to `Fourth` counted from its first day and `Last` for its final seven days. |
-| [`ICalendar`](ICalendar.cs) | interface | Named collection of `CalendarEvent` records that can be read and, unless read-only, added to, updated and removed from, with a `Changed` event. |
-| [`MemoryCalendar`](MemoryCalendar.cs) | class | `CalendarBase` that keeps its events in memory, for a user's own entries, samples and tests. |
+| [`ICalendar<TLocation, TDecoration, TTag>`](ICalendar.cs) | interface | Named collection of `CalendarEvent` records that can be read and, unless read-only, added to, updated and removed from, with a `Changed` event. |
+| [`MemoryCalendar<TLocation, TDecoration, TTag>`](MemoryCalendar.cs) | class | `CalendarBase` that keeps its events in memory, for a user's own entries, samples and tests. |

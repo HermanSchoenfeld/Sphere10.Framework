@@ -27,7 +27,7 @@ Core utilities usable across any .NET application (desktop, web, mobile, server,
 | **Logging** | Multi-target logging framework with filtering and formatting | SystemLog, ILogger |
 | **Math** | Mathematical utilities: RNG, bloom filters, fixed-point math | Tools.Maths |
 | **Memory** | Buffer operations, memory allocation, unit conversion | Tools.Memory |
-| **Networking** | URL parsing, MIME types, socket utilities, P2P abstractions | Tools.Network |
+| **Network** | URL parsing, query strings and MIME types, with no networking | Tools.Url, Tools.FileSystem.GetMimeType |
 | **Objects** | Clone, compare, merge, introspection tools | Tools.Objects |
 | **ObjectSpaces** | Typed dimensions, tracked identity, indexes and transactional file storage | ObjectSpaceBuilder |
 | **Serialization** | Object serialization across binary, JSON, XML formats | Tools.Serialization |
@@ -39,6 +39,19 @@ Core utilities usable across any .NET application (desktop, web, mobile, server,
 | **Values** | Futures, GUIDs, enums, results, value ranges | Tools.Values |
 | **XML** | Deep XML serialization, XPath support | Tools.XML |
 
+The core compiles against an allowlist of .NET assemblies (no drawing, HTTP, mail or sockets), as the [core README](../../src/Sphere10.Framework/README.md#allowed-net-assemblies) describes. Its domains share the `Sphere10.Framework` namespace, apart from the `Tools` facades and the opt-in `Sphere10.Framework.FastReflection` and `ExtensionProperties` extension namespaces.
+
+### Communications Tier Domains (Sphere10.Framework.Communications)
+
+Networking that the core library leaves out.
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **Protocol** | Typed commands, requests, responses and handshakes over a `ProtocolChannel` | ProtocolBuilder, ProtocolOrchestrator |
+| **Channels** | Anonymous pipes, TCP, UDP and WebSockets | AnonymousPipe, UDPChannel, TCPChannel, ClientWebSocketsChannel |
+| **RPC** | Attribute-driven JSON-RPC server and client over TCP | JsonRpcServer, JsonRpcClient |
+| **Network** | DNS, ping, traceroute, WHOIS, port probes, protocol decoding, SMTP mail and downloads | Tools.Network, Tools.Mail, Tools.Web.Downloader, NetworkProbeDataSource |
+
 ### Processing Tier Domains (Sphere10.Framework.Application)
 
 Application lifecycle, DI, configuration, plugin management, and UI-independent presentation logic.
@@ -49,6 +62,8 @@ Application lifecycle, DI, configuration, plugin management, and UI-independent 
 | **Configuration** | Settings management, environment-aware configuration | Tools.Config / SettingsObject |
 | **Plugin System** | Named startup contributors, block contributions and application lifecycle tasks | ApplicationPluginBuilderBase |
 | **Command-Line** | CLI argument parsing, command execution, help text generation | CommandLineParser |
+| **Encryption** | `[EncryptedString]` members encrypted with the application secret | ObjectEncryptor |
+| **Environment** | Running processes as a data source, and process-tree helpers | ProcessDataSource, ProcessExtensions |
 | **UI** | Application ownership, menus, definition-owned activation, screen hosts, lifecycle and guarded exit | ApplicationBase / IApplicationScreenHost |
 
 The [shared UI framework](../../src/Sphere10.Framework.Application/README.md#shared-ui-framework) has no UI framework dependencies. WinForms and Blazor supply their control/component types, rendering, UI dispatch and resource ownership through platform adapters.
@@ -116,12 +131,16 @@ Native integration for mobile and alternative platforms.
 
 ```
 System Tier (Sphere10.Framework)
-├── Collections, Crypto, Serialization, Networking, etc.
+├── Collections, Crypto, Serialization, URLs, etc.
 │   ↑ (all depend on core utilities)
+│
+Communications Tier (Sphere10.Framework.Communications)
+├── Protocols, channels, RPC, network tools
+│   ↑ (depends on System Tier)
 │
 Processing Tier (Sphere10.Framework.Application)
 ├── Component Registry, Configuration, Plugins
-│   ↑ (depends on System Tier)
+│   ↑ (depends on System, Data and Communications Tiers)
 │
 Data Tier (Sphere10.Framework.Data.*)
 ├── Database Abstraction, Providers (SQLite, MSSQL, etc.)
@@ -144,7 +163,7 @@ Consensus Tier (Sphere10.Framework.Consensus)
 | **Caching** | System.Cache domain | Tools.Cache |
 | **Configuration** | Application.Configuration domain | Tools.Config / SettingsObject |
 | **Dependency Injection** | Service registration and application scopes | Microsoft.Extensions.DependencyInjection |
-| **Persistence** | Core Sphere10.Framework.ObjectSpaces namespace | ObjectSpaceBuilder |
+| **Persistence** | Core ObjectSpaces domain, in the `Sphere10.Framework` namespace | ObjectSpaceBuilder |
 | **Cryptography** | System.Cryptography domain | Tools.Crypto |
 
 ---
@@ -167,7 +186,7 @@ Consensus Tier (Sphere10.Framework.Consensus)
 
 ### Building a Blockchain DApp
 
-1. **System Tier**: All core utilities (Collections, Crypto, Networking, Serialization)
+1. **System Tier**: All core utilities (Collections, Crypto, Serialization), with Communications for networking
 2. **Processing Tier**: Component Registry, Configuration, Plugins
 3. **Data Tier**: Database Abstraction, ObjectSpaces
 4. **Presentation Tier**: Blazor components, Drawing

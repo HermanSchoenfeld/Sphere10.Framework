@@ -78,7 +78,7 @@ Types declared in the project folder itself:
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`Tools.Windows`](WindowsTool.cs) | tools | Static partial facade in the `Tools` namespace. Each domain utility is a nested static class declared in its own folder, such as `Files`, `Processes`, `Services`, `Shell` and `TraceSessions`. `Assemblies`, `Registry` and `UiAutomation` own state and are per-thread instances returned by properties |
+| [`Tools.Windows`](WindowsTool.cs) | tools | Static partial facade in the `Tools` namespace. Each domain utility is a nested static class declared in its own folder, such as `Files`, `Processes`, `Services`, `Shell` and `TraceSessions`. `Assemblies` (`net10.0` and later only), `Registry` and `UiAutomation` own state and are per-thread instances returned by properties |
 <!-- domains:end -->
 
 ## 🏗️ Core Concepts
@@ -182,7 +182,8 @@ the native [SHSetKnownFolderPath contract](https://learn.microsoft.com/en-us/win
 Windows utilities are static classes nested in the partial `Tools.Windows`
 facade, each declared in its domain folder. [WindowsTool.cs](WindowsTool.cs)
 holds the three utilities that own state (`Assemblies`, `Registry` and
-`UiAutomation`) as per-thread instances. Use
+`UiAutomation`) as per-thread instances; `Assemblies` exists only in the
+`net10.0` and later builds. Use
 Tools.Windows.Registry, Services, Processes, Threads, PerformanceCounters, Network, Drives, Startup, EventLogs,
 Environment, SecurityDescriptors, Pipes, TraceSessions, Sessions and Shell for their domains. Implementations live in
 domain folders; Misc holds general helpers without a better domain. New utility
@@ -954,7 +955,7 @@ For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-ref
 ## ✅ Status & Compatibility
 
 - **Maturity**: Production-tested for Windows system integration
-- **.NET Target**: .NET 10 (`net10.0`)
+- **.NET Targets**: `net8.0`, `net9.0` and `net10.0`, plus `net11.0` when built with a .NET 11 SDK. The ILSpy decompiler packages (11.2.0.10050) are referenced only on `net10.0` and later, so `Tools.Windows.Assemblies` exists only in those builds. On `net8.0` the COM wrappers use stand-ins for `ComVariant` and `ComVariantMarshaller` backed by the classic COM marshaller, so every COM feature works but is Native AOT safe only on `net9.0` and later
 - **Platform**: Windows only (uses Windows-specific APIs)
 - **Privileges**: Most operations require administrative elevation
 

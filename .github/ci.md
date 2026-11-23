@@ -1,10 +1,10 @@
 # GitHub Actions tests
 
-The [Build workflow](workflows/main.yml) compiles the cross-platform solution on Windows with the .NET 11 SDK and both .NET 10/11 targets. **Test (net10.0)** and **Test (net11.0)** download the compiled assemblies and run them directly with `dotnet vstest`. Test does not rebuild or restore. **Wizard browser tests** runs independently.
+The [Build workflow](workflows/main.yml) compiles the cross-platform solution on Windows with the .NET 11 SDK and the `net8.0`, `net9.0`, `net10.0` and `net11.0` targets, after installing the .NET 8, 9, 10 and 11 SDKs. **Test (net8.0)**, **Test (net9.0)**, **Test (net10.0)** and **Test (net11.0)** download the compiled assemblies and run, with `dotnet vstest`, every listed suite that was built for that target. The UI suite (`Sphere10.Framework.Web.AspNetCore.Blazor.Tests`) targets only .NET 10 and later, so the `net8.0` and `net9.0` jobs run the seven non-UI suites, and a job fails when fewer than six suites were built for its target. Test does not rebuild or restore. **Wizard browser tests** runs independently.
 
-**Validate release identity** checks the publishing contract and selects an exact version. **Pack and validate public packages** builds all packable Windows-solution libraries and exercises isolated .NET 10/11 consumers. **Publish NuGet** requires all of these checks to succeed, and runs only for eligible pushes in the intended repository. See [NuGet publishing](../docs/nuget-publishing.md) for artifact recovery and Trusted Publishing setup.
+**Validate release identity** checks the publishing contract and selects an exact version. **Pack and validate public packages** builds all packable Windows-solution libraries and runs the package consumer checks once for each of `net8.0`, `net9.0`, `net10.0` and `net11.0`. The WinForms (`Desktop`) and published web host (`Web`) consumers run only for `net10.0` and `net11.0`, as the [consumer validation guide](../scripts/package-consumers/README.md) describes. **Publish NuGet** requires all of these checks to succeed, and runs only for eligible pushes in the intended repository. See [NuGet publishing](../docs/nuget-publishing.md) for artifact recovery and Trusted Publishing setup.
 
-There are no discovery, partitioning, or reporting scripts and no per-test watchdog. The workflow uses GitHub's default job timeout. Test failures and test-host crashes fail the job through the test runner's exit code.
+There are no discovery, partitioning, or reporting scripts and no per-test watchdog. Each Test job has a 60-minute timeout. Test failures and test-host crashes fail the job through the test runner's exit code.
 
 ## Build versions
 
@@ -16,11 +16,11 @@ The next release base is `VersionPrefix` in `Directory.Build.props`, currently `
 
 Open the workflow run, select **Test**, then expand **Run unit tests**. The detailed console logger shows test names, failure messages, expected/actual values, stack traces, and test output directly in the GitHub log. NUnit standard output is enabled. Nothing redirects this output to a server-side log file.
 
-The **test-results-net10.0** and **test-results-net11.0** artifacts contain TRX reports even when tests fail. Use **Re-run failed jobs** to retry using the existing compiled-tests artifact. Test artifacts are retained for 14 days. After that, rerun all jobs to rebuild. Required branch checks should include the build, both test targets, browser tests, release identity and package validation.
+The **test-results-net8.0**, **test-results-net9.0**, **test-results-net10.0** and **test-results-net11.0** artifacts contain TRX reports even when tests fail. Use **Re-run failed jobs** to retry using the existing compiled-tests artifact. Test artifacts are retained for 14 days. After that, rerun all jobs to rebuild. Required branch checks should include the build, all four test targets, browser tests, release identity and package validation.
 
 ## Adding and running tests
 
-Add fixtures and test cases normally; NUnit discovers them automatically. For a new test project, add it to `src/Sphere10.Framework (CrossPlatform).sln` and add its compiled DLL path to the Test command in the workflow. Individual test methods and fixtures need no YAML changes. Windows-only projects outside that solution retain their existing exclusion. Explicit tests remain opt-in, and existing `GITHUB_ACTIONS` skips remain in effect.
+Add fixtures and test cases normally; NUnit discovers them automatically. For a new test project, add it to `src/Sphere10.Framework (CrossPlatform).sln` and add its project name to the `$suites` list of the Test command in the workflow. A suite that a target does not build is skipped for that target. Individual test methods and fixtures need no YAML changes. Windows-only projects outside that solution retain their existing exclusion. Explicit tests remain opt-in, and existing `GITHUB_ACTIONS` skips remain in effect.
 
 For local development, build and run tests from the repository root:
 

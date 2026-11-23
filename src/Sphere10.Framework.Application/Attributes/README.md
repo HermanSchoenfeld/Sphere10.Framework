@@ -22,7 +22,7 @@ The Application module reads `AssemblyApplicationSecretAttribute` (the applicati
 | [`AssemblyProductLinkAttribute`](AssemblyProductLinkAttribute.cs) | class | Product website URL, read into `ProductInformation.ProductUrl` |
 | [`AssemblyProductPublisherAttribute`](AssemblyProductPublisherAttribute.cs) | class | Publisher `Name` and named `IsCompany`, read into `ProductInformation.PublisherName` and `PublisherIsCompany` |
 | [`AssemblyProductPurchaseLinkAttribute`](AssemblyProductPurchaseLinkAttribute.cs) | class | Product purchase URL, read into `ProductInformation.ProductPurchaseUrl` |
-| [`AssemblyApplicationSecretAttribute`](AssemblyApplicationSecretAttribute.cs) | class | Application secret that the module assigns to `EncryptedStringAttribute.ApplicationSharedSecret` |
+| [`AssemblyApplicationSecretAttribute`](AssemblyApplicationSecretAttribute.cs) | class | Application secret that the module assigns to `EncryptedStringAttribute.ApplicationSharedSecret` (in [Encryption](../Encryption/README.md)) |
 | [`ContextHelpAttribute`](ContextHelpAttribute.cs) | class | Numeric context-help topic `ID`, declared in the `Sphere10.Framework.Application.Help` namespace |
 | [`ProductDistribution`](ProductDistribution.cs) | enum | Release stage: `Alpha`, `Beta`, `ReleaseCandidate` or `InternalRelease`, serialized as `Alpha`, `Beta`, `RC` and `Internal` |
 | [`SettingsAttribute`](SettingsAttribute.cs) | class | Declares the `SettingsObject` type of a screen without constructing the screen |

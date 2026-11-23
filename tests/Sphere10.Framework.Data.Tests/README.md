@@ -4,7 +4,7 @@ NUnit tests for the data-access library: `IDAC` scopes and transactions, the SQL
 
 ## Run the tests
 
-Run these commands from the repository root with the .NET 10 SDK. A machine with a .NET 11 SDK also builds and runs the `net11.0` target.
+Run these commands from the repository root with the .NET 10 SDK and the .NET 8 and 9 runtimes. The project targets `net8.0`, `net9.0` and `net10.0`, and a machine with a .NET 11 SDK also builds and runs `net11.0`. Add `-f net10.0` to run one target.
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Data.Tests/Sphere10.Framework.Data.Tests.csproj -c Release -p:BuildRevision=0

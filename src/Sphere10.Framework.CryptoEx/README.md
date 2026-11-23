@@ -10,7 +10,7 @@ Sphere10.Framework.CryptoEx adds elliptic-curve cryptography, PascalCoin compati
 dotnet add package Sphere10.Framework.CryptoEx
 ```
 
-The package depends on Sphere10.Framework, Sphere10.HashLib4CSharp, BouncyCastle.Cryptography and SauceControl.Blake2Fast. It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.CryptoEx/Sphere10.Framework.CryptoEx.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
+The package depends on Sphere10.Framework, Sphere10.HashLib4CSharp, BouncyCastle.Cryptography and SauceControl.Blake2Fast. It targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.CryptoEx/Sphere10.Framework.CryptoEx.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
 
 ### Register the module
 

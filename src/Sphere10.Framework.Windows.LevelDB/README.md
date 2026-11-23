@@ -10,7 +10,7 @@ Sphere10.Framework.Windows.LevelDB is a .NET wrapper for Google's LevelDB, an em
 dotnet add package Sphere10.Framework.Windows.LevelDB
 ```
 
-The package targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. It belongs to the Windows solution, `src/Sphere10.Framework (Win).sln`, whose projects reference `src/Sphere10.Framework.Windows.LevelDB/Sphere10.Framework.Windows.LevelDB.csproj` directly.
+The package targets `net8.0`, `net9.0` and `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. It belongs to the Windows solution, `src/Sphere10.Framework (Win).sln`, whose projects reference `src/Sphere10.Framework.Windows.LevelDB/Sphere10.Framework.Windows.LevelDB.csproj` directly.
 
 ## 📋 Overview
 
