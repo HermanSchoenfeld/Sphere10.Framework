@@ -233,10 +233,8 @@ jobs:
             'Sphere10.Framework.Web.VisualRenderer.Tests')
           $assemblies = @($suites | ForEach-Object { "compiled-tests/$_/bin/Debug/${{ matrix.framework }}/$_.dll" } | Where-Object { Test-Path -LiteralPath $_ })
           if ($assemblies.Count -lt 6) { throw "Only $($assemblies.Count) test assemblies were built for ${{ matrix.framework }}." }
-          # The storage-backed collection fixtures take most of the run, so only the .NET 11 leg runs them.
-          $filter = @()
-          if ('${{ matrix.framework }}' -ne 'net11.0') { $filter = @('/TestCaseFilter:TestCategory!=CollectionIntegration') }
-          dotnet vstest @assemblies @filter /Logger:"console;verbosity=detailed" /Logger:trx /ResultsDirectory:TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+          # The storage-backed collection fixtures take most of the run, so CI leaves them to local runs.
+          dotnet vstest @assemblies /TestCaseFilter:TestCategory!=CollectionIntegration /Logger:"console;verbosity=detailed" /Logger:trx /ResultsDirectory:TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload test reports
         if: always()
