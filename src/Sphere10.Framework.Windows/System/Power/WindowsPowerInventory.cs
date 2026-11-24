@@ -51,7 +51,8 @@ internal static class WindowsPowerInventory {
 				var minStatus = WinAPI.POWRPROF.PowerReadValueMin(IntPtr.Zero, group, key, out var minimum);
 				var maxStatus = WinAPI.POWRPROF.PowerReadValueMax(IntPtr.Zero, group, key, out var maximum);
 				var stepStatus = WinAPI.POWRPROF.PowerReadValueIncrement(IntPtr.Zero, group, key, out var increment);
-				var choices = ReadChoices(group, key, cancellationToken);
+				// A ranged setting has no enumerated values: Windows answers every possible-value index for it with the setting's own name.
+				var choices = minStatus == 0 && maxStatus == 0 ? new Dictionary<uint, string>() : ReadChoices(group, key, cancellationToken);
 				var acPolicy = new List<string>();
 				var dcPolicy = new List<string>();
 				var provenance = new List<string>();
@@ -93,13 +94,13 @@ internal static class WindowsPowerInventory {
 		var group = new[] { subgroupId };
 		var key = new[] { settingId };
 		Guard.Argument(GetPlanIds(CancellationToken.None).Contains(planId), nameof(planId), "The power plan does not exist.");
-		var choices = ReadChoices(group, key, CancellationToken.None);
-		if (choices.Count > 0)
-			Guard.Argument(choices.ContainsKey(value), nameof(value), $"{value} is not one of the setting's values ({string.Join(", ", choices.Keys)}).");
-		else if (WinAPI.POWRPROF.PowerReadValueMin(IntPtr.Zero, group, key, out var minimum) == 0 && WinAPI.POWRPROF.PowerReadValueMax(IntPtr.Zero, group, key, out var maximum) == 0) {
+		if (WinAPI.POWRPROF.PowerReadValueMin(IntPtr.Zero, group, key, out var minimum) == 0 && WinAPI.POWRPROF.PowerReadValueMax(IntPtr.Zero, group, key, out var maximum) == 0) {
 			Guard.Argument(value >= minimum && value <= maximum, nameof(value), $"Choose a value from {minimum} to {maximum}.");
 			if (WinAPI.POWRPROF.PowerReadValueIncrement(IntPtr.Zero, group, key, out var increment) == 0 && increment > 1)
 				Guard.Argument((value - minimum) % increment == 0, nameof(value), $"Choose a value in steps of {increment} from {minimum}.");
+		} else {
+			var choices = ReadChoices(group, key, CancellationToken.None);
+			Guard.Argument(choices.ContainsKey(value), nameof(value), $"{value} is not one of the setting's values ({string.Join(", ", choices.Keys)}).");
 		}
 		Check(source == WindowsPowerSource.AC
 			? WinAPI.POWRPROF.PowerWriteACValueIndex(IntPtr.Zero, scheme, group, key, value)

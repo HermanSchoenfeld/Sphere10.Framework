@@ -73,7 +73,9 @@ public class WindowsPowerInventoryTests {
 			var plans = await Tools.Windows.Computer.GetPowerPlansAsync();
 			Assert.That(plans.Single(plan => plan.Id == copy).Name, Is.EqualTo(name));
 			var settings = await Tools.Windows.Computer.GetPowerSettingsAsync(copy);
-			var choice = settings.First(setting => setting.Choices.Length >= 2 && setting.AcValue.HasValue);
+			Assert.That(settings.Where(setting => setting.Minimum.HasValue && setting.Maximum.HasValue), Has.All.Matches<WindowsPowerSettingInfo>(setting => setting.Choices.Length == 0),
+				"A ranged setting is a number, not a list of its own name.");
+			var choice =settings.First(setting => setting.Choices.Length >= 2 && setting.AcValue.HasValue);
 			var ranged = settings.First(setting => setting.Choices.Length == 0 && setting.AcValue.HasValue && setting.Minimum.HasValue && setting.Maximum > setting.Minimum
 				&& setting.DcValue.HasValue && (setting.Increment ?? 1) <= 1);
 			var chosen = choice.Choices.First(option => option.Value != choice.AcValue).Value;
