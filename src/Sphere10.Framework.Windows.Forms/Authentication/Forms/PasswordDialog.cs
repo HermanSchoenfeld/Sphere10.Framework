@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -66,11 +67,30 @@ public partial class PasswordDialog : Form {
 	#region Static Methods
 
 	/// <summary>Awaitably shows the password dialog, returning the result and entered password.</summary>
-	public static async Task<(DialogResult Result, string Password)> ShowAsync(IWin32Window owner, string title, string text, Func<string, IEnumerable<string>> policyValidator = null) {
+	public static Task<(DialogResult Result, string Password)> ShowAsync(IWin32Window owner, string title, string text, Func<string, IEnumerable<string>> policyValidator = null)
+		=> ShowAsync(owner, title, text, policyValidator, CancellationToken.None);
+
+	/// <summary>Awaitably shows the password dialog; cancelling <paramref name="cancellationToken"/> closes it and throws <see cref="OperationCanceledException"/>.</summary>
+	public static async Task<(DialogResult Result, string Password)> ShowAsync(IWin32Window owner, string title, string text, Func<string, IEnumerable<string>> policyValidator, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
 		using var dialog = new PasswordDialog(title, text, policyValidator);
 		var startPosition = owner != null ? FormStartPosition.CenterParent : FormStartPosition.WindowsDefaultLocation;
 		dialog.StartPosition = startPosition;
+		// An owner whose lifetime ends while the dialog is open closes the dialog too; the typed password is never returned.
+		using var cancellation = cancellationToken.Register(() => {
+			if (dialog.IsHandleCreated && !dialog.IsDisposed)
+				Tools.Exceptions.ExecuteCapturingException<InvalidOperationException>(() => dialog.BeginInvoke(new Action(() => {
+					dialog.Password = null;
+					dialog.DialogResult = DialogResult.Cancel;
+					dialog.Close();
+				})), out _);
+		});
+		dialog.Shown += (_, _) => {
+			if (cancellationToken.IsCancellationRequested)
+				dialog.Close();
+		};
 		var result = await dialog.ShowDialogAsync(owner);
+		cancellationToken.ThrowIfCancellationRequested();
 		return (result, dialog.Password);
 	}
 

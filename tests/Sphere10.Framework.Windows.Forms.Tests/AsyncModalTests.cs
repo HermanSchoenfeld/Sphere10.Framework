@@ -539,6 +539,24 @@ public class AsyncModalTests {
 	});
 
 	[Test]
+	public void CancellingAPasswordPromptsLifetimeClosesItWithoutReturningThePassword() => RunWithMessageLoop(async owner => {
+		using var lifetime = new CancellationTokenSource();
+		var pending = PasswordDialog.ShowAsync(owner, "Reset Password", "New password", null, lifetime.Token);
+		var dialog = await WaitForDialog<PasswordDialog>();
+		((TextBox)dialog.Controls.Find("_passwordTextBox", true).Single()).Text = "typed-secret";
+		lifetime.Cancel();
+		var cancelled = false;
+		try {
+			await pending;
+		} catch (OperationCanceledException) {
+			cancelled = true;
+		}
+		Assert.That(cancelled, Is.True, "A cancelled lifetime never reports an accepted password.");
+		Assert.That(dialog.IsDisposed, Is.True);
+		Assert.That(dialog.Password, Is.Null);
+	});
+
+	[Test]
 	public void ATextPromptsValidatorHoldsOkAndSaysWhyUntilTheTextIsAccepted() => RunWithMessageLoop(async owner => {
 		var pending = EnterTextDialog.ShowAsync(owner, "Key name", "Name the key:", false, "Bad\\Name", text => text.Contains('\\') ? "A Name Cannot Contain A Backslash." : null);
 		using var dialog = await WaitForDialog<EnterTextDialog>();
