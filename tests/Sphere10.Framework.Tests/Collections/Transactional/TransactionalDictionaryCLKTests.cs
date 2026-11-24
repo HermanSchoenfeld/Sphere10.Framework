@@ -11,7 +11,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTestsBase {
 
 	[Test]

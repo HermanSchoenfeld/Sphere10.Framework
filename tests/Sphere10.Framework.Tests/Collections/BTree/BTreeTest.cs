@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Tests;
 /// Abstract test harness for B-tree implementations.
 /// Inherits all common tests from <see cref="BTreeBaseTests"/> and adds B-tree specific tests.
 /// </summary>
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public abstract class BTreeTests : BTreeBaseTests {
 
 }

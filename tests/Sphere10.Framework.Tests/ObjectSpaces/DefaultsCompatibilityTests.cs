@@ -15,6 +15,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("StorageIntegration")]
 public class DefaultsCompatibilityTests {
 	/// <summary>Verifies ordinary reopening of default layouts using a complete default tree specification.</summary>
 	[TestCase(false, false, false)]

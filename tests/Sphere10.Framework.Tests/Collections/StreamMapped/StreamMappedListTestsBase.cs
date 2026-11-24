@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests;
 
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public abstract class StreamMappedListTestsBase : StreamPersistedCollectionTestsBase {
 
 	[Test]

@@ -23,7 +23,7 @@ namespace Sphere10.Framework.Tests;
 /// </remarks>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class ClusteredStreamsTests : StreamPersistedCollectionTestsBase {
 
 

@@ -17,6 +17,7 @@ namespace Sphere10.Framework.Tests;
 /// <summary>Verifies self-describing ObjectSpace reconstruction, compatibility and storage lifetime behavior.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("StorageIntegration")]
 public class FlatStorageObjectSpaceTests {
 	/// <summary>Verifies that direct opening restores garbage-collection traits and dimension root roles.</summary>
 	[Test]

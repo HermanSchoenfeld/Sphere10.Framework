@@ -15,6 +15,7 @@ using NUnit.Framework;
 namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
+[Category("StorageIntegration")]
 public class BuilderTests {
 
 	

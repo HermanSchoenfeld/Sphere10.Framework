@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class NestedClusteredStreamsTests {
 	private const string TestString1 = "Hello World! This is a string containing a bunch of text";
 	private const string TestString2 = "And this is another string containing a bunch of other text.";

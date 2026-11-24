@@ -13,6 +13,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("StorageIntegration")]
 public class DimensionBuilderInterfaceTests {
 	[Test]
 	public void BaseContractFluentAdaptersRetainBuilderAndDefinitions() {

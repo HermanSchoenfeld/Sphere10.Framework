@@ -233,8 +233,8 @@ jobs:
             'Sphere10.Framework.Web.VisualRenderer.Tests')
           $assemblies = @($suites | ForEach-Object { "compiled-tests/$_/bin/Debug/${{ matrix.framework }}/$_.dll" } | Where-Object { Test-Path -LiteralPath $_ })
           if ($assemblies.Count -lt 6) { throw "Only $($assemblies.Count) test assemblies were built for ${{ matrix.framework }}." }
-          # The slow storage-backed collection fixtures run on their own in the Integration tests workflow.
-          dotnet vstest @assemblies /TestCaseFilter:TestCategory!=CollectionIntegration /Logger:"console;verbosity=detailed" /Logger:trx /ResultsDirectory:TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+          # The slow storage-backed collection, clustered-stream and ObjectSpaces fixtures run on their own in the Integration tests workflow.
+          dotnet vstest @assemblies /TestCaseFilter:TestCategory!=StorageIntegration /Logger:"console;verbosity=detailed" /Logger:trx /ResultsDirectory:TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload test reports
         if: always()

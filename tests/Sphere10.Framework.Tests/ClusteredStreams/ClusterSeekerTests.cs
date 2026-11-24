@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class ClusterSeekerTests {
 	[TestCase(0, 3, ClusterTraits.None)]
 	[TestCase(1, 3, ClusterTraits.Start)]

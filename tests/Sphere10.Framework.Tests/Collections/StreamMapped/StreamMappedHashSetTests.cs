@@ -14,7 +14,7 @@ using NUnit.Framework;
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class StreamMappedHashSetTests : SetTestsBase {
 	private const int DefaultClusterDataSize = 32;
 

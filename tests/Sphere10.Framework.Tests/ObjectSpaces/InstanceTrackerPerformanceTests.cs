@@ -18,6 +18,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("StorageIntegration")]
 public class InstanceTrackerPerformanceTests {
 
 	[TestCase(false)]

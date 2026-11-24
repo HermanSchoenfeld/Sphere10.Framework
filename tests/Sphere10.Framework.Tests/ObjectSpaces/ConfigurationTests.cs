@@ -15,6 +15,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("StorageIntegration")]
 public class ConfigurationTests {
 	[Test]
 	public void FreshIndexOrderUsesObjectSpaceDefaults() {

@@ -16,6 +16,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Category("StorageIntegration")]
 public class IndexBTreeSpecTests {
 	/// <summary>Verifies repeated builds produce independent owners and definitions with or without metadata.</summary>
 	[Test]

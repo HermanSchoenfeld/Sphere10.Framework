@@ -16,6 +16,7 @@ using SB = Sphere10.Framework.Tests.SafeBox;
 namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
+[Category("StorageIntegration")]
 public class ObjectSpaceIntegrationTests {
 
 	private static void Save<T>(ObjectSpace os, TestTraits traits, T obj) {

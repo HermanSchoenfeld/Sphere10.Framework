@@ -1,6 +1,6 @@
 name: Integration tests
 
-# The storage-backed collection and clustered-stream fixtures (CollectionIntegration category) are slow, so they
+# The storage-backed collection, clustered-stream and ObjectSpaces fixtures (StorageIntegration category) are slow, so they
 # run here on their own instead of in the Build workflow: they never hold up or block package publication, and a
 # failure shows as a failed run of this workflow.
 on:
@@ -22,7 +22,7 @@ env:
 
 jobs:
   integration:
-    name: Collection integration tests (net11.0)
+    name: Storage integration tests (net11.0)
     runs-on: windows-latest
     timeout-minutes: 90
     steps:
@@ -37,12 +37,12 @@ jobs:
             11.0.x
       - name: Build the core test suite
         run: dotnet build tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj --configuration Debug --framework net11.0 --verbosity minimal -p:BuildRevision=0
-      - name: Run the collection integration tests
+      - name: Run the storage integration tests
         shell: pwsh
         run: |
-          dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj --configuration Debug --framework net11.0 --no-build --filter "TestCategory=CollectionIntegration" --logger "console;verbosity=normal" --logger trx --results-directory TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+          dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj --configuration Debug --framework net11.0 --no-build --filter "TestCategory=StorageIntegration" --logger "console;verbosity=normal" --logger trx --results-directory TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
           if ($LASTEXITCODE -ne 0) {
-            Write-Host '::error title=Collection integration tests failed::See the TRX report in the integration-test-results artifact.'
+            Write-Host '::error title=Storage integration tests failed::See the TRX report in the integration-test-results artifact.'
             exit $LASTEXITCODE
           }
       - name: Upload test report

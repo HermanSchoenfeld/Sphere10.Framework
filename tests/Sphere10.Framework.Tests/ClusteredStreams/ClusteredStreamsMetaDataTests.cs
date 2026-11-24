@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Tests;
 /// <summary>Verifies opaque metadata allocation, reopening and legacy compatibility in clustered storage.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class ClusteredStreamsMetaDataTests {
 	/// <summary>Verifies that the metadata flag selects the blob layout without changing the clustered-storage version.</summary>
 	[Test]

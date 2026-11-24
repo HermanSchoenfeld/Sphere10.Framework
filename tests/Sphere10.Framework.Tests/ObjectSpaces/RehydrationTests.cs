@@ -20,6 +20,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 /// flush and capture bytes, dispose A, reload as object space B, and assert on B to discover rehydration issues.
 /// </summary>
 [TestFixture]
+[Category("StorageIntegration")]
 public class RehydrationTests {
 
     #region Empty

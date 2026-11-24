@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class BTreeDefaultReopenTransitionsTests {
 	[TestCase("BTree", false, Endianness.LittleEndian)]
 	[TestCase("BTree", true, Endianness.LittleEndian)]

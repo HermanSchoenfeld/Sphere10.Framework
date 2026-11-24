@@ -15,6 +15,7 @@ using Sphere10.Framework;
 namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
+[Category("StorageIntegration")]
 public class MemoryMappedTests {
 
 	#region Load

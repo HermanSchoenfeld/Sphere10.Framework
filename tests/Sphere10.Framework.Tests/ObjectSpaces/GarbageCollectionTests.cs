@@ -20,6 +20,7 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 /// cyclic references, diamond references, and the full-scan CollectGarbage() safety net.
 /// </summary>
 [TestFixture]
+[Category("StorageIntegration")]
 public class GarbageCollectionTests {
 
 	#region Test Model Classes

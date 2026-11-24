@@ -13,7 +13,7 @@ using NUnit.Framework;
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public sealed class ClusteredStreamsReadOnlyMetaDataTests {
 	[Test]
 	public void BorrowedReadOnlyHeaderInspectionPreservesPositionAndMetadata([Values] Endianness endianness, [Values] bool hasMetadata) {

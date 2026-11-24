@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Category("CollectionIntegration")]
+[Category("StorageIntegration")]
 public class BTreeTypeTests {
 	[Test]
 	public void LookupDeletionCompactsGroupsAndSurvivesReopen([Values] BTreeType type, [Values] bool streamMapped) {
