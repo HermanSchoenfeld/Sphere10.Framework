@@ -80,6 +80,11 @@ public partial class VisualGrid {
 	[DefaultValue(true)]
 	public bool RightClickForContextMenu { get; set; }
 
+	[Description("The Up and Down keys select the previous and next row, scrolling it into view; with no row selected they select the first or last row.")]
+	[Category("Behavior")]
+	[DefaultValue(true)]
+	public bool EnableKeyNavigation { get; set; }
+
 	/// <summary>The optional native menu shown only for a right-click on a column header; its supplying container owns it.</summary>
 	[Category("Behavior")]
 	[DefaultValue(null)]
@@ -370,6 +375,10 @@ public partial class VisualGrid {
 	}
 
 	private async void Grid_KeyDown(object sender, KeyEventArgs args) {
+		if (EnableKeyNavigation && CanInteractWithCommittedRows && args.Modifiers == Keys.None && args.KeyCode is Keys.Up or Keys.Down) {
+			args.Handled = args.SuppressKeyPress = SelectAdjacentRow(args.KeyCode == Keys.Down) || args.Handled;
+			return;
+		}
 		if (IsOutlined && CanInteractWithCommittedRows && args.Modifiers == Keys.None && args.KeyCode is Keys.Left or Keys.Right && _selectedEntity != null
 			&& Outline.HasOutlineChildren(_selectedEntity) && Outline.IsOutlineExpanded(_selectedEntity) != (args.KeyCode == Keys.Right)) {
 			args.Handled = args.SuppressKeyPress = true;
@@ -408,6 +417,22 @@ public partial class VisualGrid {
 		}, out var error);
 		if (error != null)
 			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	// Row selection leaves no focused cell for SourceGrid's own arrow handling, so the keys move the selected row directly.
+	private bool SelectAdjacentRow(bool next) {
+		var rows = _rowToEntityMap.Keys.OrderBy(row => row).ToArray();
+		if (rows.Length == 0)
+			return false;
+		var current = _selectedEntity != null && _entityToRowLookup.Contains(_selectedEntity) ? _entityToRowLookup[_selectedEntity].First() : -1;
+		var index = Array.IndexOf(rows, current);
+		var target = index < 0 ? (next ? rows[0] : rows[^1]) : rows[Math.Clamp(index + (next ? 1 : -1), 0, rows.Length - 1)];
+		if (target == current)
+			return true;
+		_grid.Selection.ResetSelection(false);
+		_grid.Selection.SelectRow(target, true);
+		_grid.ShowCell(new Position(target, 0), true);
+		return true;
 	}
 
 	private void ToggleRowSelection(MouseEventArgs args) {
