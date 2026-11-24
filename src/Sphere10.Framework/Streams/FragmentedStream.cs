@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -219,6 +220,7 @@ public class FragmentedStream : Stream {
 			await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void EnsureOpen() => ObjectDisposedException.ThrowIf(_disposed, this);
 
 }
