@@ -38,6 +38,7 @@ public partial class MonitorLayoutControl : UserControlEx {
 	private string _selectedKey;
 	private string _hoveredKey;
 	private bool _placingHostedControls;
+	private bool _relayoutQueued;
 
 	public MonitorLayoutControl() {
 		InitializeComponent();
@@ -303,6 +304,13 @@ public partial class MonitorLayoutControl : UserControlEx {
 		InvalidateTileLayout();
 	}
 
+	/// <summary>Places the hosted controls again when the layout is shown: their windows, and with them their DPI scaling, can be created then.</summary>
+	protected override void OnVisibleChanged(EventArgs e) {
+		base.OnVisibleChanged(e);
+		if (Visible)
+			HostedControl_BoundsChanged(this, e);
+	}
+
 	/// <summary>Lays the tiles out again at the new DPI.</summary>
 	protected override void OnDpiChangedAfterParent(EventArgs e) {
 		base.OnDpiChangedAfterParent(e);
@@ -448,17 +456,30 @@ public partial class MonitorLayoutControl : UserControlEx {
 	private void TrackHostedControl(Control control) {
 		control.LocationChanged += HostedControl_BoundsChanged;
 		control.SizeChanged += HostedControl_BoundsChanged;
+		control.HandleCreated += HostedControl_BoundsChanged;
 	}
 
 	private void ReleaseHostedControl(Control control) {
 		control.LocationChanged -= HostedControl_BoundsChanged;
 		control.SizeChanged -= HostedControl_BoundsChanged;
+		control.HandleCreated -= HostedControl_BoundsChanged;
 	}
 
+	// Auto-scaling moves the controls while layout is suspended and resumes it without laying out, which would drop a layout asked
+	// for now; the layout runs once the message loop is reached again.
 	private void HostedControl_BoundsChanged(object sender, EventArgs e) {
-		if (_placingHostedControls || Disposing || IsDisposed)
+		if (_placingHostedControls || _relayoutQueued || Disposing || IsDisposed)
 			return;
-		InvalidateTileLayout();
+		if (!IsHandleCreated) {
+			InvalidateTileLayout();
+			return;
+		}
+		_relayoutQueued = true;
+		BeginInvoke(new Action(() => {
+			_relayoutQueued = false;
+			if (!Disposing && !IsDisposed)
+				InvalidateTileLayout();
+		}));
 	}
 
 	// A hosted control never becomes narrower than its minimum width or wider than its maximum.
@@ -468,12 +489,13 @@ public partial class MonitorLayoutControl : UserControlEx {
 		return Math.Max(Math.Max(1, width), control.MinimumSize.Width);
 	}
 
+	// Shown before its bounds are assigned: showing a control can create its window, which scales its bounds to the parent's DPI.
 	private static void PlaceHostedControl(Control control, Rectangle bounds, int tabIndex) {
+		SetHostedControlVisible(control, true);
 		if (control.Bounds != bounds)
 			control.Bounds = bounds;
 		if (control.TabIndex != tabIndex)
 			control.TabIndex = tabIndex;
-		SetHostedControlVisible(control, true);
 	}
 
 	// The control's own requested visibility is compared: its effective Visible also reflects hidden ancestors.
