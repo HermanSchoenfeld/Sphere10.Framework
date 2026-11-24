@@ -538,6 +538,22 @@ public class AsyncModalTests {
 		Assert.That(dialog.IsDisposed, Is.True);
 	});
 
+	[Test]
+	public void ATextPromptsValidatorHoldsOkAndSaysWhyUntilTheTextIsAccepted() => RunWithMessageLoop(async owner => {
+		var pending = EnterTextDialog.ShowAsync(owner, "Key name", "Name the key:", false, "Bad\\Name", text => text.Contains('\\') ? "A Name Cannot Contain A Backslash." : null);
+		using var dialog = await WaitForDialog<EnterTextDialog>();
+		var input = (TextBox)dialog.Controls.Find("_textBox", true).Single();
+		var ok = (Button)dialog.Controls.Find("button1", true).Single();
+		Assert.That(ok.Enabled, Is.False, "Prefilled text the validator refuses cannot be accepted.");
+		var tips = (ToolTip)typeof(EnterTextDialog).GetField("_validationTips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(dialog);
+		Assert.That(tips.GetToolTip(ok), Is.EqualTo("A Name Cannot Contain A Backslash."));
+		input.Text = "Good Name";
+		Assert.That(ok.Enabled, Is.True);
+		Assert.That(tips.GetToolTip(ok), Is.Empty);
+		ok.PerformClick();
+		Assert.That(await pending, Is.EqualTo((true, "Good Name")));
+	});
+
 	[TestCase("button1", DialogResult.No)]
 	[TestCase("button2", DialogResult.Yes)]
 	public void DialogExMapsButtonsAndDisposes(string ButtonName, DialogResult Expected) => RunWithMessageLoop(async Owner => {
