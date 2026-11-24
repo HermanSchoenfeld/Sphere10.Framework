@@ -26,6 +26,8 @@ public sealed record WindowsPowerSettingInfo {
 	public uint? Minimum { get; init; }
 	public uint? Maximum { get; init; }
 	public uint? Increment { get; init; }
+	/// <summary>The setting's enumerated values; empty for a ranged setting, which takes any value from Minimum to Maximum in Increment steps.</summary>
+	public WindowsPowerSettingChoice[] Choices { get; init; } = Array.Empty<WindowsPowerSettingChoice>();
 	public bool Hidden { get; init; }
 	public string AcPolicy { get; init; }
 	public string DcPolicy { get; init; }

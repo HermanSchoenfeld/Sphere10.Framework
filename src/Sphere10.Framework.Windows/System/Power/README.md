@@ -11,7 +11,17 @@ Machine/user `ACSettingIndex` and `DCSettingIndex` values found under
 separately with their registry provenance. Stored plan values and registry policy
 presence do not establish effective runtime precedence, MDM state or overlay
 power-mode behavior. Captures can race external plan or policy changes; reload
-for a new observation. These APIs perform no changes.
+for a new observation. These reads perform no changes.
+
+`SetPowerSettingValueAsync(planId, subgroupId, settingId, source, value)` writes the AC
+or DC value of one setting. It refuses a value that is not one of the setting's
+`Choices`, or for a ranged setting one outside `Minimum` to `Maximum` or off its
+`Increment`. Writing the active plan applies it again, so Windows uses the value at
+once. `SetActivePowerPlanAsync`, `DuplicatePowerPlanAsync(sourcePlanId, name)`,
+`RenamePowerPlanAsync` and `DeletePowerPlanAsync` manage plans; the active plan
+cannot be deleted. Group policy values still take precedence over plan values.
+Tests that write should work on a duplicated plan, delete it afterwards and restore
+the plan that was active.
 
 `GetPowerDiagnosticsAsync` reads current Windows sleep/wake capabilities, including
 S1–S5 and S0 low-power idle, hibernation-file/fast-startup support, wake capabilities

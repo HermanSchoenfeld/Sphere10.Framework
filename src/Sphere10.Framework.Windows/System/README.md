@@ -52,7 +52,7 @@ var firmwareId = new BIOSMachineIdentifier().Generate();
 
 ### Power
 
-The [Power README](Power/README.md) describes the power inventories in detail. `Tools.Windows.Computer` reads power plans, the settings of one plan with their AC and DC values and policy overrides, and sleep and wake diagnostics, all without changing anything. The three data sources capture once on load and then page the detached rows. `PowerCfgSentry` runs `powercfg.exe` for the read-only reports in `PowerCfgReport` and returns its localized output unparsed.
+The [Power README](Power/README.md) describes the power inventories in detail. `Tools.Windows.Computer` reads power plans, the settings of one plan with their AC and DC values and policy overrides, and sleep and wake diagnostics. It also changes plans: it writes a setting's AC or DC value after checking it against the setting's values or range, activates, duplicates, renames and deletes plans. The three data sources capture once on load and then page the detached rows. `PowerCfgSentry` runs `powercfg.exe` for the read-only reports in `PowerCfgReport` and returns its localized output unparsed.
 
 | Type | Kind | Purpose |
 |---|---|---|
@@ -63,4 +63,6 @@ The [Power README](Power/README.md) describes the power inventories in detail. `
 | [`WindowsPowerPlanDataSource`](Power/WindowsPowerPlanDataSource.cs) | class | Read-only data source over the installed power plans |
 | [`WindowsPowerPlanInfo`](Power/WindowsPowerPlanInfo.cs) | record | One power plan with GUID, name, description and active flag |
 | [`WindowsPowerSettingDataSource`](Power/WindowsPowerSettingDataSource.cs) | class | Read-only data source over the settings of one power plan |
-| [`WindowsPowerSettingInfo`](Power/WindowsPowerSettingInfo.cs) | record | One power setting with subgroup, AC and DC values and labels, units and range, hidden flag and policy overrides |
+| [`WindowsPowerSettingChoice`](Power/WindowsPowerSettingChoice.cs) | record | One enumerated value of a power setting with its localized name |
+| [`WindowsPowerSettingInfo`](Power/WindowsPowerSettingInfo.cs) | record | One power setting with subgroup, AC and DC values and labels, enumerated choices, units and range, hidden flag and policy overrides |
+| [`WindowsPowerSource`](Power/WindowsPowerSource.cs) | enum | The AC (plugged in) or DC (on battery) value of a power setting |

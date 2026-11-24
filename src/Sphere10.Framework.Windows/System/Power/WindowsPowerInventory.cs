@@ -26,10 +26,8 @@ internal static class WindowsPowerInventory {
 	internal static WindowsPowerPlanInfo[] GetPlans(CancellationToken cancellationToken) {
 		Debug.AssertNotMainThread();
 		cancellationToken.ThrowIfCancellationRequested();
-		Check(WinAPI.POWRPROF.PowerGetActiveScheme(IntPtr.Zero, out var pointer));
-		using var release = Tools.Scope.ExecuteOnDispose(() => WinAPI.KERNEL32.LocalFree(pointer));
-		var active = Marshal.PtrToStructure<Guid>(pointer);
-		return Enumerate(null, null, 16, cancellationToken).Select(id => new WindowsPowerPlanInfo(id,
+		var active = GetActivePlanId();
+		return GetPlanIds(cancellationToken).Select(id => new WindowsPowerPlanInfo(id,
 			Friendly(id, null, null, id.ToString()), Description(id, null, null), id == active))
 			.OrderByDescending(plan => plan.IsActive).ThenBy(plan => plan.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
 	}
@@ -75,13 +73,73 @@ internal static class WindowsPowerInventory {
 					AcValue = acStatus == 0 ? ac : null, DcValue = dcStatus == 0 ? dc : null,
 					AcText = acStatus == 0 ? ValueText(ac, choices) : "Unavailable", DcText = dcStatus == 0 ? ValueText(dc, choices) : "Unavailable",
 					Units = units, Minimum = minStatus == 0 ? minimum : null, Maximum = maxStatus == 0 ? maximum : null,
-					Increment = stepStatus == 0 ? increment : null, Hidden = (WinAPI.POWRPROF.PowerReadSettingAttributes(group, key) & 1) != 0,
+					Increment = stepStatus == 0 ? increment : null, Choices = choices.Select(choice => new WindowsPowerSettingChoice(choice.Key, choice.Value)).ToArray(), Hidden = (WinAPI.POWRPROF.PowerReadSettingAttributes(group, key) & 1) != 0,
 					AcPolicy = string.Join("; ", acPolicy), DcPolicy = string.Join("; ", dcPolicy), PolicySource = string.Join("; ", provenance),
 					ReadError = string.Join("; ", errors)
 				});
 			}
 		}
 		return rows.OrderBy(row => row.Subgroup, StringComparer.CurrentCultureIgnoreCase).ThenBy(row => row.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
+	}
+
+	/// <summary>
+	/// Writes one AC or DC value of a plan's setting after checking it against the setting's enumerated values or its range and increment.
+	/// Writing the active plan applies it again, so Windows uses the new value at once.
+	/// </summary>
+	internal static void SetValue(Guid planId, Guid subgroupId, Guid settingId, WindowsPowerSource source, uint value) {
+		Debug.AssertNotMainThread();
+		Guard.Argument(Enum.IsDefined(source), nameof(source), "Choose the AC or DC value.");
+		var scheme = new[] { planId };
+		var group = new[] { subgroupId };
+		var key = new[] { settingId };
+		Guard.Argument(GetPlanIds(CancellationToken.None).Contains(planId), nameof(planId), "The power plan does not exist.");
+		var choices = ReadChoices(group, key, CancellationToken.None);
+		if (choices.Count > 0)
+			Guard.Argument(choices.ContainsKey(value), nameof(value), $"{value} is not one of the setting's values ({string.Join(", ", choices.Keys)}).");
+		else if (WinAPI.POWRPROF.PowerReadValueMin(IntPtr.Zero, group, key, out var minimum) == 0 && WinAPI.POWRPROF.PowerReadValueMax(IntPtr.Zero, group, key, out var maximum) == 0) {
+			Guard.Argument(value >= minimum && value <= maximum, nameof(value), $"Choose a value from {minimum} to {maximum}.");
+			if (WinAPI.POWRPROF.PowerReadValueIncrement(IntPtr.Zero, group, key, out var increment) == 0 && increment > 1)
+				Guard.Argument((value - minimum) % increment == 0, nameof(value), $"Choose a value in steps of {increment} from {minimum}.");
+		}
+		Check(source == WindowsPowerSource.AC
+			? WinAPI.POWRPROF.PowerWriteACValueIndex(IntPtr.Zero, scheme, group, key, value)
+			: WinAPI.POWRPROF.PowerWriteDCValueIndex(IntPtr.Zero, scheme, group, key, value));
+		if (GetActivePlanId() == planId)
+			Check(WinAPI.POWRPROF.PowerSetActiveScheme(IntPtr.Zero, scheme));
+	}
+
+	internal static void SetActivePlan(Guid planId) {
+		Debug.AssertNotMainThread();
+		Guard.Argument(GetPlanIds(CancellationToken.None).Contains(planId), nameof(planId), "The power plan does not exist.");
+		Check(WinAPI.POWRPROF.PowerSetActiveScheme(IntPtr.Zero, new[] { planId }));
+	}
+
+	/// <summary>Copies a plan with all its settings; the copy is named <paramref name="name"/>, or keeps the source's name when it is empty.</summary>
+	internal static Guid DuplicatePlan(Guid sourcePlanId, string name) {
+		Debug.AssertNotMainThread();
+		Guard.Argument(GetPlanIds(CancellationToken.None).Contains(sourcePlanId), nameof(sourcePlanId), "The power plan does not exist.");
+		var pointer = IntPtr.Zero;
+		Check(WinAPI.POWRPROF.PowerDuplicateScheme(IntPtr.Zero, new[] { sourcePlanId }, ref pointer));
+		Guid copy;
+		using (Tools.Scope.ExecuteOnDispose(() => WinAPI.KERNEL32.LocalFree(pointer)))
+			copy = Marshal.PtrToStructure<Guid>(pointer);
+		if (!string.IsNullOrWhiteSpace(name))
+			RenamePlan(copy, name);
+		return copy;
+	}
+
+	internal static void RenamePlan(Guid planId, string name) {
+		Debug.AssertNotMainThread();
+		Guard.ArgumentNotNullOrWhitespace(name, nameof(name));
+		var text = Encoding.Unicode.GetBytes(name.Trim() + "\0");
+		Check(WinAPI.POWRPROF.PowerWriteFriendlyName(IntPtr.Zero, new[] { planId }, null, null, text, (uint)text.Length));
+	}
+
+	/// <summary>Deletes a plan that is not active; Windows keeps the active plan.</summary>
+	internal static void DeletePlan(Guid planId) {
+		Debug.AssertNotMainThread();
+		Guard.Argument(GetActivePlanId() != planId, nameof(planId), "Activate another power plan before deleting this one.");
+		Check(WinAPI.POWRPROF.PowerDeleteScheme(IntPtr.Zero, new[] { planId }));
 	}
 
 	internal static WindowsPowerDiagnosticInfo[] GetDiagnostics(CancellationToken cancellationToken) {
@@ -133,6 +191,14 @@ internal static class WindowsPowerInventory {
 		}
 		return rows.ToArray();
 	}
+
+	private static Guid GetActivePlanId() {
+		Check(WinAPI.POWRPROF.PowerGetActiveScheme(IntPtr.Zero, out var pointer));
+		using var release = Tools.Scope.ExecuteOnDispose(() => WinAPI.KERNEL32.LocalFree(pointer));
+		return Marshal.PtrToStructure<Guid>(pointer);
+	}
+
+	private static Guid[] GetPlanIds(CancellationToken cancellationToken) => Enumerate(null, null, 16, cancellationToken).ToArray();
 
 	private static IEnumerable<Guid> Enumerate(Guid? scheme, Guid? subgroup, uint access, CancellationToken cancellationToken) {
 		for (uint index = 0; ; index++) {
