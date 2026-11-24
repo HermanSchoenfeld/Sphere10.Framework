@@ -853,7 +853,9 @@ public class HtmlRenderer : RecursiveRendererBase<HtmlRenderResult> {
 						"image",
 						new RenderTokens(block) {
 							["url"] = GetFileUrl(block, out _),
-							["caption"] = Render(block.Caption)
+							["caption"] = Render(block.Caption),
+							// Plain text for attributes: the caption is rendered markup.
+							["alt_text"] = Encode(block.AltText, true, false, false)
 						}
 					);
 
@@ -1010,10 +1012,28 @@ public class HtmlRenderer : RecursiveRendererBase<HtmlRenderResult> {
 
 	protected string ToColorString(Color color) => VisualFormatting.Color(color);
 
+	// Only markup characters are encoded. Rendered pages are UTF-8, and WebUtility.HtmlEncode's numeric references for Latin-1 letters
+	// ("Caf&#233;") show literally wherever the text is encoded again, such as a caption reused in an attribute or a script.
+	internal static string HtmlEncodeText(string text) {
+		if (string.IsNullOrEmpty(text) || text.IndexOfAny(['&', '<', '>', '"', '\'']) < 0)
+			return text ?? string.Empty;
+		var builder = new StringBuilder(text.Length + 16);
+		foreach (var character in text)
+			builder.Append(character switch {
+				'&' => "&amp;",
+				'<' => "&lt;",
+				'>' => "&gt;",
+				'"' => "&quot;",
+				'\'' => "&#39;",
+				_ => character.ToString()
+			});
+		return builder.ToString();
+	}
+
 	protected string Encode(string text, bool htmlEncode, bool escapeBraces, bool convertNewlinesToBreaks) {
 		text ??= string.Empty;
 		if (htmlEncode)
-			text = WebUtility.HtmlEncode(text);
+			text = HtmlEncodeText(text);
 		// ThemeSession inserts render tokens literally; braces need no escaping.
 		if (convertNewlinesToBreaks)
 			text = text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "<br />");
@@ -1095,14 +1115,14 @@ public class HtmlRenderer : RecursiveRendererBase<HtmlRenderResult> {
 
 		public static IEnumerable<KeyValuePair<string, object>> ExtractTokens(VisualNode node) {
 			foreach (var token in ExtractTokens(node.Metadata))
-				yield return token.Key == "type" ? new("type", WebUtility.HtmlEncode(node.Metadata.Type ?? GetNodeType(node))) : token;
+				yield return token.Key == "type" ? new("type", HtmlEncodeText(node.Metadata.Type ?? GetNodeType(node))) : token;
 		}
 
 		public static IEnumerable<KeyValuePair<string, object>> ExtractTokens(Metadata metadata) {
-			yield return new("object_id", WebUtility.HtmlEncode(metadata.Anchor ?? metadata.SourceId ?? string.Empty));
-			yield return new("source_id", WebUtility.HtmlEncode(metadata.SourceId ?? string.Empty));
-			yield return new("object_type", WebUtility.HtmlEncode(metadata.ObjectType));
-			yield return new("type", WebUtility.HtmlEncode(metadata.Type ?? string.Empty));
+			yield return new("object_id", HtmlEncodeText(metadata.Anchor ?? metadata.SourceId ?? string.Empty));
+			yield return new("source_id", HtmlEncodeText(metadata.SourceId ?? string.Empty));
+			yield return new("object_type", HtmlEncodeText(metadata.ObjectType));
+			yield return new("type", HtmlEncodeText(metadata.Type ?? string.Empty));
 		}
 	}
 
