@@ -6,30 +6,19 @@ Windows libraries and `Sphere10.Framework.Web.VisualRenderer`. The public packag
 boundary is every distinct packable project under `src/` in the Windows solution.
 Legacy mobile projects, internal runtime code, tests and demos are not packages.
 
-## Private registry copy
+## Registries
 
-The `publish-private` job sends the same validated, sealed package and symbol
-archives to an additional NuGet V3 registry. It waits for the build, unit tests,
-browser tests and package validation, independently of the NuGet.org upload. PRs,
-feature branches and manual validation runs cannot publish. The public NuGet.org
-workflow and Trusted Publishing policy are unchanged.
+Framework packages are published only to NuGet.org, and consumers, including the
+company's private products, restore them from there. No other registry receives a
+copy of a Framework batch.
 
-Configure the `private-packages` GitHub environment with `NUGET_REGISTRY_URL` as
-a variable and `NUGET_REGISTRY_TOKEN` as a secret. Restrict that environment to
-`master` and `v*` tags. The `sphere10-gitea-publisher` runner must reach the registry
-and provide Git, Python 3 and the Node runtime used by Actions. It only receives
-the publishing job; the existing hosted jobs perform the builds and tests.
+[`nuget-registry.py`](../scripts/nuget-registry.py) is shared tooling for
+products that publish their own packages to a private NuGet V3 registry. It checks
+the complete existing batch before uploading anything, verifies downloaded archive
+hashes and resumes only identical partial batches. Conflicting versions fail, and
+credentials are never forwarded through redirects.
 
-[`nuget-registry.py`](../scripts/nuget-registry.py) checks the complete existing
-batch before uploading anything, verifies downloaded archive hashes and resumes
-only identical partial batches. Package and symbol files are both checked. Retry
-the failed publishing job to reuse its original artifact. Conflicting versions
-fail; expired tag artifacts must be recovered rather than replaced with a rebuild.
-Registry endpoints must share the service index's origin, and credentials are
-never forwarded through redirects.
-
-The script also supports other repositories' evaluated package manifests through
-its `seal` command. [`ci-package-common.ps1`](../scripts/ci-package-common.ps1)
+Its `seal` command seals other repositories' evaluated package manifests. [`ci-package-common.ps1`](../scripts/ci-package-common.ps1)
 provides package selection, isolated restore configuration, consumer archive-hash
 checks and Gitea tag-artifact recovery. Products own their build/test selection
 and pin these shared tools to a reviewed Framework commit.
@@ -240,5 +229,4 @@ operations in these tests use an in-memory fake or a local test HTTP server. Nev
 versions to NuGet.org.
 
 GitHub's repository sidebar **Packages** lists GitHub Packages, a separate registry.
-The public packages are on NuGet.org; an additional private registry can receive
-the same validated batches. The README badges link to the public feed.
+The public packages are on NuGet.org, and the README badges link to that feed.
