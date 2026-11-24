@@ -1,0 +1,55 @@
+name: Integration tests
+
+# The storage-backed collection and clustered-stream fixtures (CollectionIntegration category) are slow, so they
+# run here on their own instead of in the Build workflow: they never hold up or block package publication, and a
+# failure shows as a failed run of this workflow.
+on:
+  push:
+    branches: ['master']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_ACTIONS: 'true'
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+
+jobs:
+  integration:
+    name: Collection integration tests (net11.0)
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET 8, 9, 10 and 11 SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+            11.0.x
+      - name: Build the core test suite
+        run: dotnet build tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj --configuration Debug --framework net11.0 --verbosity minimal -p:BuildRevision=0
+      - name: Run the collection integration tests
+        shell: pwsh
+        run: |
+          dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj --configuration Debug --framework net11.0 --no-build --filter "TestCategory=CollectionIntegration" --logger "console;verbosity=normal" --logger trx --results-directory TestResults -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host '::error title=Collection integration tests failed::See the TRX report in the integration-test-results artifact.'
+            exit $LASTEXITCODE
+          }
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: warn
+          retention-days: 14

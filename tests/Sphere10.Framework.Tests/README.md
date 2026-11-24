@@ -36,7 +36,7 @@ Leave out the packaging-script category:
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter "TestCategory!=Packaging"
 ```
 
-Leave out the storage-backed collection fixtures, which take most of the run time, as CI always does. Run them without this filter before changing collection or clustered-stream code:
+Leave out the storage-backed collection fixtures, which take most of the run time, as the Build workflow does. GitHub runs them on their own in the Integration tests workflow, and `--filter "TestCategory=CollectionIntegration"` runs only them locally:
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 -f net8.0 --filter "TestCategory!=CollectionIntegration"
@@ -54,7 +54,7 @@ Quote filter expressions so the shell does not interpret `|` or `&`. Add
 | Group | Selection | Notes |
 |---|---|---|
 | Ordinary fixtures | Run by default | Most fixtures run their children in parallel. |
-| `CollectionIntegration` category | Run by default locally; CI filters it out | The B-tree, buffer, paged, stream-mapped, stream-mapped Merkle, stream-paged and transactional collection fixtures, and the clustered-stream fixtures. |
+| `CollectionIntegration` category | Run by default locally; in GitHub only the Integration tests workflow runs it | The B-tree, buffer, paged, stream-mapped, stream-mapped Merkle, stream-paged and transactional collection fixtures, and the clustered-stream fixtures. |
 | `Packaging` category | Run by default | `PackageScriptTests` only. It needs PowerShell, as described in [Requirements](#requirements). |
 | `Performance` category | `[Explicit]`, so a filter must select it | `BufferedStreamPerformanceTests` only. It writes JSON and CSV results to a new folder under the temporary directory, or to the `BufferedStreamPerformanceDirectory` test parameter. |
 | Ignored | Never run | `FastMarshalStructSerializerTests`, one `StringFormatterTests` case and one `ScopeAllocationDiagnostics` case. |
