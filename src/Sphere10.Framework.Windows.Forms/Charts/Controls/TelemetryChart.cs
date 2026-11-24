@@ -150,8 +150,9 @@ public partial class TelemetryChart : UserControlEx {
 	}
 
 	/// <summary>
-	/// The span of time the horizontal axis always shows, ending at the latest sample. A history that is still filling occupies the right of a
-	/// fixed axis, so the scale, its labels and the plot area stay put as samples arrive. Zero fits the axis to the captured span instead.
+	/// The span of time the horizontal axis shows at least, ending at the latest sample. A history that is still filling occupies the right of a
+	/// fixed axis, so the scale, its labels and the plot area stay put as samples arrive; a history covering more time widens the axis to show it
+	/// all. Zero fits the axis to the captured span instead.
 	/// </summary>
 	[Category("Behavior"), DefaultValue(typeof(TimeSpan), "00:00:00")]
 	public TimeSpan TimeWindow {
@@ -289,7 +290,8 @@ public partial class TelemetryChart : UserControlEx {
 		_plot.MinimumY = minimum;
 		_plot.MinimumX = null;
 		_plot.MaximumX = 0;
-		_plot.MinimumX = _timeWindow > TimeSpan.Zero ? -_timeWindow.TotalSeconds : values.Length < 2 ? -1 : Math.Min(-0.001, values[0].X);
+		var captured = values.Length < 2 ? -1 : Math.Min(-0.001, values[0].X);
+		_plot.MinimumX = _timeWindow > TimeSpan.Zero ? Math.Min(-_timeWindow.TotalSeconds, captured) : captured;
 		_plot.Style = PlotStyle == TelemetryChartStyle.Area ? GraphChartStyle.Area : GraphChartStyle.Line;
 		_plot.SetSeries(new[] { new GraphChartSeries("Metric", values, LineColor) });
 		foreach (var series in _plot.NativeChart.Series) {

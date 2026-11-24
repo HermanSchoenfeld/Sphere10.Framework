@@ -101,6 +101,7 @@ public class TelemetryChartTests {
 			var later = Render(samples);
 			Assert.That(later, Is.EqualTo(first), $"{samples} Samples Must Not Move The Time Scale, Its Labels Or The Plot Area");
 		}
+		Assert.That(Render(200).Minimum, Is.EqualTo(-199), "A history covering more than the window widens the axis rather than hiding samples.");
 		chart.TimeWindow = TimeSpan.Zero;
 		Assert.That(Render(10).Minimum, Is.EqualTo(-9), "Without a window the axis fits the captured span.");
 		Assert.That(() => chart.TimeWindow = TimeSpan.FromSeconds(-1), Throws.ArgumentException);
