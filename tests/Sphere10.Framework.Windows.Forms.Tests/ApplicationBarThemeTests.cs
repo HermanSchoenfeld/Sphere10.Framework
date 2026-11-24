@@ -111,7 +111,7 @@ public class ApplicationBarThemeTests {
 		theme.BlockSelector.Shape = BlockSelectorShape.Tags;
 		pane.UseCustomTheme(theme);
 		var buttons = Buttons(bar);
-		var height = bar.LogicalToDeviceUnits(28);
+		var height = bar.LogicalToDeviceUnits(32);
 		var pitch = height + bar.LogicalToDeviceUnits(4);
 		for (var index = 0; index < buttons.Length; index++) {
 			var button = buttons[index];
@@ -160,13 +160,14 @@ public class ApplicationBarThemeTests {
 		form.BlockSelectorShape = BlockSelectorShape.Tags;
 		Assert.That(bar.ColorStyle, Is.EqualTo(BlockSelectorColorStyle.SoftOffice));
 		Assert.That(bar.Shape, Is.EqualTo(BlockSelectorShape.Tags));
-		Assert.That(buttons[0].Height, Is.EqualTo(bar.LogicalToDeviceUnits(28)));
+		Assert.That(buttons[0].Height, Is.EqualTo(bar.LogicalToDeviceUnits(32)), "Tags are as tall as the block buttons always were.");
+		Assert.That(buttons[1].Top - buttons[0].Bottom, Is.EqualTo(bar.LogicalToDeviceUnits(4)), "Tags stand apart.");
 		using (var selected = Render(buttons[0]))
 			AssertNear(selected.GetPixel(selected.Width - 6, selected.Height / 2), Color.FromArgb(249, 190, 92), "Soft Office tags end in amber on the right.");
 		Capture(bar, "block-selector-tags-soft-office.png");
 
 		form.BlockSelectorShape = null;
-		Assert.That(buttons[0].Height, Is.EqualTo(bar.LogicalToDeviceUnits(32)), "Clearing the shape override returns to the theme's shape.");
+		Assert.That(buttons[1].Top - buttons[0].Bottom, Is.Zero, "Clearing the shape override returns to the theme's stacked buttons.");
 		using (var selected = Render(buttons[0]))
 			AssertNear(selected.GetPixel(selected.Width - 6, selected.Height - 2), Color.FromArgb(249, 190, 92), "Soft Office buttons end in amber at the bottom.");
 		Capture(bar, "block-selector-buttons-soft-office.png");
@@ -199,15 +200,16 @@ public class ApplicationBarThemeTests {
 		var surrogate = new ExplorerBarInfoSurrogate();
 		surrogate.Load(theme);
 		form.NavigationTheme = surrogate;
-		var tagHeight = bar.LogicalToDeviceUnits(28);
+		var tagGap = bar.LogicalToDeviceUnits(4);
+		int Gap() => Buttons(bar)[1].Top - Buttons(bar)[0].Bottom;
 		Assert.That(((TaskPane)bar.ApplicationBarControl).GradientEndColor.ToArgb(), Is.EqualTo(Color.Teal.ToArgb()));
-		Assert.That(bar.ButtonHeight, Is.EqualTo(tagHeight), "The navigation theme's tag shape reaches the block selector.");
+		Assert.That(Gap(), Is.EqualTo(tagGap), "The navigation theme's tag shape reaches the block selector.");
 		form.SelectedBlock = form.Blocks[2];
 		System.Windows.Forms.Application.DoEvents();
 		Assert.That(((TaskPane)bar.ApplicationBarControl).GradientEndColor.ToArgb(), Is.EqualTo(Color.Teal.ToArgb()), "A block selected later gets the navigation theme too.");
-		Assert.That(bar.ButtonHeight, Is.EqualTo(tagHeight));
+		Assert.That(Gap(), Is.EqualTo(tagGap));
 		form.NavigationTheme = null;
-		Assert.That(bar.ButtonHeight, Is.EqualTo(bar.LogicalToDeviceUnits(32)), "Clearing the navigation theme returns to the default theme's buttons.");
+		Assert.That(Gap(), Is.Zero, "Clearing the navigation theme returns to the default theme's stacked buttons.");
 	}
 
 	[Test]

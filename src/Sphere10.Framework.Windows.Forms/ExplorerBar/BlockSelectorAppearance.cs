@@ -74,7 +74,8 @@ internal sealed record BlockSelectorAppearance {
 		};
 		return new BlockSelectorAppearance {
 			Shape = resolvedShape,
-			ButtonHeight = selector.ButtonHeight ?? (tags ? 28 : 32),
+			// Tags keep the 32-pixel height block buttons always had; their spacing and corners set them apart.
+			ButtonHeight = selector.ButtonHeight ?? 32,
 			ButtonSpacing = selector.ButtonSpacing ?? (tags ? 4 : 0),
 			CornerRadius = selector.CornerRadius ?? (tags ? 4 : 0),
 			IconSize = selector.IconSize ?? (tags ? 16 : 20),
