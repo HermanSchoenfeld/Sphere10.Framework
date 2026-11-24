@@ -78,6 +78,35 @@ public class TelemetryChartTests {
 	}
 
 	[Test]
+	public void AFixedTimeWindowKeepsTheTimeScaleAndPlotAreaStillWhileTheHistoryFills() {
+		using var chart = new TelemetryChart { Size = new Size(480, 220), TimeWindow = TimeSpan.FromSeconds(120) };
+		chart.CreateControl();
+		var plot = chart.Controls.Find("chartPlot", true).OfType<GraphChart>().Single();
+		var area = plot.NativeChart.ChartAreas[0];
+		var start = DateTime.UtcNow;
+		var labels = string.Empty;
+		// The renderer creates the axis labels for each paint and formats them in this pass.
+		plot.NativeChart.Customize += (_, _) => labels = string.Join("|", area.AxisX.CustomLabels.Select(label => label.Text));
+		(double? Minimum, string Labels, RectangleF Plot) Render(int samples) {
+			chart.SetSamples(Enumerable.Range(0, samples).Select(index => new TelemetryChartPoint(start.AddSeconds(index), 50)).ToArray());
+			chart.PerformLayout();
+			using var image = new Bitmap(chart.Width, chart.Height);
+			chart.DrawToBitmap(image, chart.ClientRectangle);
+			return (plot.MinimumX, labels, area.InnerPlotPosition.ToRectangleF());
+		}
+		var first = Render(2);
+		Assert.That(first.Minimum, Is.EqualTo(-120));
+		Assert.That(first.Labels, Does.Contain("120s Ago").And.Contain("Now"), "The whole window is labelled from the first samples.");
+		foreach (var samples in new[] { 3, 10, 45, 90, 120 }) {
+			var later = Render(samples);
+			Assert.That(later, Is.EqualTo(first), $"{samples} Samples Must Not Move The Time Scale, Its Labels Or The Plot Area");
+		}
+		chart.TimeWindow = TimeSpan.Zero;
+		Assert.That(Render(10).Minimum, Is.EqualTo(-9), "Without a window the axis fits the captured span.");
+		Assert.That(() => chart.TimeWindow = TimeSpan.FromSeconds(-1), Throws.ArgumentException);
+	}
+
+	[Test]
 	public void OwnsSnapshotMembershipAndRejectedInputDoesNotReplaceTheDisplayedHistory() {
 		using var chart = new TelemetryChart();
 		var time = DateTime.UtcNow;

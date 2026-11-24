@@ -172,6 +172,11 @@ zero readings. Select `PlotStyle = TelemetryChartStyle.Area` for a filled histor
 and configure `LineColor`, `FillColor`, `PlotBackColor`, `GridColor` and
 `ShowVerticalGrid` to match its host. `Compact` hides scale labels and headers;
 `ShowHeader` independently hides the title/current-value header.
+Set `TimeWindow` to the span the caller's history covers (for example 120 seconds
+for 120 one-second samples). The time axis then always shows that span, ending at
+the latest sample, so a history that is still filling grows from the right while
+the scale, its labels and the plot area stay put. The default of zero fits the
+axis to the captured span.
 
 Hover displays the nearest captured value and local capture time, using elapsed
 time rather than sample index. `TryGetSampleAt` exposes the same lookup in control
@@ -194,7 +199,8 @@ var chart = new TelemetryChart {
 	Unit = TelemetryChartUnit.Celsius,
 	PlotStyle = TelemetryChartStyle.Area,
 	LineColor = Color.Firebrick,
-	ShowVerticalGrid = true
+	ShowVerticalGrid = true,
+	TimeWindow = TimeSpan.FromSeconds(120)
 };
 chart.SetSamples(new[] {
 	new TelemetryChartPoint(DateTime.UtcNow.AddSeconds(-1), 42),
