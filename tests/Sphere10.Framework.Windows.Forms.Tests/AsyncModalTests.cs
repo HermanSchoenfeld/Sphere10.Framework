@@ -604,6 +604,33 @@ public class AsyncModalTests {
 		Assert.That(await Pending, Is.EqualTo(DialogExResult.Button2));
 	});
 
+	[Test]
+	public void DialogExButtonsFitLongCaptionsInOneLineAndKeepTheDialogMargin() => RunWithMessageLoop(async owner => {
+		var pending = DialogEx.ShowAsync(owner, SystemIconType.Warning, "Enable Editing", "Editing writes directly to this file when you choose Save.", "&Enable Editing For This File", "Cancel");
+		using var dialog = await WaitForDialog<DialogEx>();
+		await Task.Yield();
+		var accept = (Button)dialog.Controls.Find("button1", true).Single();
+		var cancel = (Button)dialog.Controls.Find("button2", true).Single();
+		foreach (var button in new[] { accept, cancel }) {
+			var caption = TextRenderer.MeasureText(button.Text, button.Font, Size.Empty, TextFormatFlags.SingleLine);
+			Assert.That(button.Width, Is.GreaterThan(caption.Width), $"'{button.Text}' fits on one line instead of wrapping to its first word.");
+			Assert.That(button.Height, Is.GreaterThan(caption.Height));
+		}
+		Assert.That(accept.Top, Is.EqualTo(cancel.Top), "The buttons share one row.");
+		Assert.That(cancel.Right, Is.LessThan(accept.Left), "The first button is the rightmost and the buttons do not overlap.");
+		Assert.That(dialog.ClientSize.Height - accept.Bottom, Is.EqualTo(dialog.LogicalToDeviceUnits(12)), "The row keeps the dialog's margin from the bottom edge.");
+		Assert.That(dialog.ClientSize.Width - accept.Right, Is.EqualTo(dialog.LogicalToDeviceUnits(12)));
+		var screenshots = Environment.GetEnvironmentVariable("SPHERE10_DIALOG_SCREENSHOTS");
+		if (!string.IsNullOrWhiteSpace(screenshots)) {
+			System.IO.Directory.CreateDirectory(screenshots);
+			using var image = new Bitmap(dialog.Width, dialog.Height);
+			dialog.DrawToBitmap(image, new Rectangle(Point.Empty, dialog.Size));
+			image.Save(System.IO.Path.Combine(screenshots, "dialog-long-button.png"));
+		}
+		accept.PerformClick();
+		Assert.That(await pending, Is.EqualTo(DialogExResult.Button1));
+	});
+
 	[TestCase(SystemIconType.None)]
 	[TestCase(SystemIconType.Question)]
 	public void DialogExFitsMultilineConfirmationsByGrowingTheFormAndViewport(SystemIconType Icon) => RunWithMessageLoop(async Owner => {
