@@ -37,8 +37,6 @@ public partial class MonitorLayoutControl : UserControlEx {
 	private TileLayout[] _tileLayouts;
 	private string _selectedKey;
 	private string _hoveredKey;
-	private bool _placingHostedControls;
-	private bool _relayoutQueued;
 
 	public MonitorLayoutControl() {
 		InitializeComponent();
@@ -150,16 +148,10 @@ public partial class MonitorLayoutControl : UserControlEx {
 			Guard.Argument(value == null || !_tileControls.ContainsValue(value), nameof(value), "The control is already hosted beneath a tile.");
 			var previous = field;
 			field = value;
-			if (previous != null) {
-				ReleaseHostedControl(previous);
-				if (ReferenceEquals(previous.Parent, this))
-					Controls.Remove(previous);
-			}
-			if (value != null) {
-				TrackHostedControl(value);
-				if (!ReferenceEquals(value.Parent, this))
-					Controls.Add(value);
-			}
+			if (previous != null && ReferenceEquals(previous.Parent, this))
+				Controls.Remove(previous);
+			if (value != null && !ReferenceEquals(value.Parent, this))
+				Controls.Add(value);
 			InvalidateTileLayout();
 		}
 	}
@@ -193,13 +185,11 @@ public partial class MonitorLayoutControl : UserControlEx {
 		Guard.Argument(control == null || !IsHostedControl(control), nameof(control), "The control is already hosted by this layout.");
 		if (current != null) {
 			_tileControls.Remove(key);
-			ReleaseHostedControl(current);
 			if (ReferenceEquals(current.Parent, this))
 				Controls.Remove(current);
 		}
 		if (control != null) {
 			_tileControls.Add(key, control);
-			TrackHostedControl(control);
 			if (!ReferenceEquals(control.Parent, this))
 				Controls.Add(control);
 		}
@@ -290,8 +280,6 @@ public partial class MonitorLayoutControl : UserControlEx {
 		var keys = _tileControls.Where(pair => ReferenceEquals(pair.Value, e.Control)).Select(pair => pair.Key).ToArray();
 		foreach (var key in keys)
 			_tileControls.Remove(key);
-		if (keys.Length > 0)
-			ReleaseHostedControl(e.Control);
 		if (ReferenceEquals(SharedControl, e.Control))
 			SharedControl = null;
 		else if (keys.Length > 0)
@@ -302,13 +290,6 @@ public partial class MonitorLayoutControl : UserControlEx {
 	protected override void OnFontChanged(EventArgs e) {
 		base.OnFontChanged(e);
 		InvalidateTileLayout();
-	}
-
-	/// <summary>Places the hosted controls again when the layout is shown: their windows, and with them their DPI scaling, can be created then.</summary>
-	protected override void OnVisibleChanged(EventArgs e) {
-		base.OnVisibleChanged(e);
-		if (Visible)
-			HostedControl_BoundsChanged(this, e);
 	}
 
 	/// <summary>Lays the tiles out again at the new DPI.</summary>
@@ -410,11 +391,7 @@ public partial class MonitorLayoutControl : UserControlEx {
 		if (_tileControls.Count == 0 && SharedControl == null)
 			return;
 		SuspendLayout();
-		_placingHostedControls = true;
-		using var resumeLayout = Tools.Scope.ExecuteOnDispose(static layout => {
-			layout._placingHostedControls = false;
-			layout.ResumeLayout(false);
-		}, this);
+		using var resumeLayout = Tools.Scope.ExecuteOnDispose(static layout => layout.ResumeLayout(false), this);
 		var spacing = LogicalToDeviceUnits(HostedControlSpacing);
 		var sharedSpacing = LogicalToDeviceUnits(SharedControlSpacing);
 		var inset = LogicalToDeviceUnits(LogicalTileControlInset);
@@ -450,38 +427,6 @@ public partial class MonitorLayoutControl : UserControlEx {
 
 	private bool IsHostedControl(Control control) => ReferenceEquals(control, SharedControl) || _tileControls.ContainsValue(control);
 
-	// The layout owns its hosted controls' bounds. A hidden control gets its window when it is first shown, after it was placed, and
-	// creating the window scales its bounds from the DPI it was created at to its parent's (half as far again from the origin at 150 %,
-	// often outside the layout); a DPI change or the application can move it too. Any move the layout did not make places them again.
-	private void TrackHostedControl(Control control) {
-		control.LocationChanged += HostedControl_BoundsChanged;
-		control.SizeChanged += HostedControl_BoundsChanged;
-		control.HandleCreated += HostedControl_BoundsChanged;
-	}
-
-	private void ReleaseHostedControl(Control control) {
-		control.LocationChanged -= HostedControl_BoundsChanged;
-		control.SizeChanged -= HostedControl_BoundsChanged;
-		control.HandleCreated -= HostedControl_BoundsChanged;
-	}
-
-	// Auto-scaling moves the controls while layout is suspended and resumes it without laying out, which would drop a layout asked
-	// for now; the layout runs once the message loop is reached again.
-	private void HostedControl_BoundsChanged(object sender, EventArgs e) {
-		if (_placingHostedControls || _relayoutQueued || Disposing || IsDisposed)
-			return;
-		if (!IsHandleCreated) {
-			InvalidateTileLayout();
-			return;
-		}
-		_relayoutQueued = true;
-		BeginInvoke(new Action(() => {
-			_relayoutQueued = false;
-			if (!Disposing && !IsDisposed)
-				InvalidateTileLayout();
-		}));
-	}
-
 	// A hosted control never becomes narrower than its minimum width or wider than its maximum.
 	private static int FitWidth(Control control, int width) {
 		if (control.MaximumSize.Width > 0)
@@ -489,13 +434,12 @@ public partial class MonitorLayoutControl : UserControlEx {
 		return Math.Max(Math.Max(1, width), control.MinimumSize.Width);
 	}
 
-	// Shown before its bounds are assigned: showing a control can create its window, which scales its bounds to the parent's DPI.
 	private static void PlaceHostedControl(Control control, Rectangle bounds, int tabIndex) {
-		SetHostedControlVisible(control, true);
 		if (control.Bounds != bounds)
 			control.Bounds = bounds;
 		if (control.TabIndex != tabIndex)
 			control.TabIndex = tabIndex;
+		SetHostedControlVisible(control, true);
 	}
 
 	// The control's own requested visibility is compared: its effective Visible also reflects hidden ancestors.

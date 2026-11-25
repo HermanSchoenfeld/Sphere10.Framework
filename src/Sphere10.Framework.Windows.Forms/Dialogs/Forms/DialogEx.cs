@@ -8,7 +8,6 @@
 
 using System;
 using System.Drawing;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,9 +17,6 @@ namespace Sphere10.Framework.Windows.Forms;
 public partial class DialogEx : FormEx {
 
 	public const int MaxTextLength = 5000;
-	private const int ButtonEdge = 12;
-	private const int ButtonGap = 6;
-	private readonly Button[] _buttons;
 	
 	public DialogEx()
 		: this(SystemIconType.None, string.Empty, "OK", true) {
@@ -42,7 +38,6 @@ public partial class DialogEx : FormEx {
 			text = text.Substring(0, MaxTextLength);
 
 		InitializeComponent();
-		_buttons = new[] { button1, button2, button3, button4 }.Take(buttonNames.Length).ToArray();
 
 		// set color
 		//this._textLabelPanel.BackColor = Color.Cyan;
@@ -257,8 +252,7 @@ public partial class DialogEx : FormEx {
 		var baseline = ClientSize;
 		var horizontalInsets = baseline.Width - _textLabelPanel.Width + _textLabel.Left + _textLabelPanel.Padding.Right;
 		var verticalInsets = baseline.Height - _textLabelPanel.Height + _textLabel.Top + _textLabelPanel.Padding.Bottom;
-		// The dialog is at least as wide as its buttons need, so a long caption never wraps inside its button.
-		var width = Math.Min(Math.Max(baseline.Width, ButtonRowWidth()), maximumClient.Width);
+		var width = Math.Min(baseline.Width, maximumClient.Width);
 		var requiredHeight = MeasureMessageHeight(Math.Max(1, width - horizontalInsets)) + verticalInsets;
 		// Widen only while it reduces wrapping and avoids an unnecessarily tall confirmation.
 		while (width < maximumClient.Width && requiredHeight > Math.Max(baseline.Height, width * 0.7)) {
@@ -273,7 +267,6 @@ public partial class DialogEx : FormEx {
 		MaximumSize = maximum;
 		ClientSize = new Size(width, Math.Min(maximumClient.Height, Math.Max(baseline.Height, requiredHeight)));
 		PerformLayout();
-		LayoutButtons();
 		var textWidth = Math.Max(1, _textLabelPanel.ClientSize.Width - _textLabel.Left - _textLabelPanel.Padding.Right);
 		var textHeight = MeasureMessageHeight(textWidth);
 		var availableHeight = Math.Max(1, _textLabelPanel.ClientSize.Height - _textLabel.Top - _textLabelPanel.Padding.Bottom);
@@ -291,25 +284,6 @@ public partial class DialogEx : FormEx {
 			: Location;
 		Location = new Point(Math.Clamp(location.X, workingArea.Left, Math.Max(workingArea.Left, workingArea.Right - Width)),
 			Math.Clamp(location.Y, workingArea.Top, Math.Max(workingArea.Top, workingArea.Bottom - Height)));
-	}
-
-	// Each button fits its caption, at least the designer's 88 x 26, and the row keeps the dialog's margin from the right and bottom edges.
-	private Size ButtonSize(Button button) {
-		var caption = TextRenderer.MeasureText(button.Text, button.Font, Size.Empty, TextFormatFlags.SingleLine);
-		return new Size(Math.Max(LogicalToDeviceUnits(88), caption.Width + LogicalToDeviceUnits(24)), Math.Max(LogicalToDeviceUnits(26), caption.Height + LogicalToDeviceUnits(10)));
-	}
-
-	private int ButtonRowWidth() => _buttons.Sum(button => ButtonSize(button).Width) + LogicalToDeviceUnits(ButtonGap) * Math.Max(0, _buttons.Length - 1) + LogicalToDeviceUnits(ButtonEdge) * 2;
-
-	private void LayoutButtons() {
-		var right = ClientSize.Width - LogicalToDeviceUnits(ButtonEdge);
-		var bottom = ClientSize.Height - LogicalToDeviceUnits(ButtonEdge);
-		// The first button is the rightmost, as the designer places it.
-		foreach (var button in _buttons) {
-			var size = ButtonSize(button);
-			button.Bounds = new Rectangle(right - size.Width, bottom - size.Height, size.Width, size.Height);
-			right = button.Left - LogicalToDeviceUnits(ButtonGap);
-		}
 	}
 
 	private int MeasureMessageHeight(int width) => Math.Max(_textLabel.Font.Height, _textLabel.GetPreferredSize(new Size(width, 0)).Height) + 4;

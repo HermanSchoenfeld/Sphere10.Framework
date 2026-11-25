@@ -538,40 +538,6 @@ public class AsyncModalTests {
 		Assert.That(dialog.IsDisposed, Is.True);
 	});
 
-	[Test]
-	public void CancellingAPasswordPromptsLifetimeClosesItWithoutReturningThePassword() => RunWithMessageLoop(async owner => {
-		using var lifetime = new CancellationTokenSource();
-		var pending = PasswordDialog.ShowAsync(owner, "Reset Password", "New password", null, lifetime.Token);
-		var dialog = await WaitForDialog<PasswordDialog>();
-		((TextBox)dialog.Controls.Find("_passwordTextBox", true).Single()).Text = "typed-secret";
-		lifetime.Cancel();
-		var cancelled = false;
-		try {
-			await pending;
-		} catch (OperationCanceledException) {
-			cancelled = true;
-		}
-		Assert.That(cancelled, Is.True, "A cancelled lifetime never reports an accepted password.");
-		Assert.That(dialog.IsDisposed, Is.True);
-		Assert.That(dialog.Password, Is.Null);
-	});
-
-	[Test]
-	public void ATextPromptsValidatorHoldsOkAndSaysWhyUntilTheTextIsAccepted() => RunWithMessageLoop(async owner => {
-		var pending = EnterTextDialog.ShowAsync(owner, "Key name", "Name the key:", false, "Bad\\Name", text => text.Contains('\\') ? "A Name Cannot Contain A Backslash." : null);
-		using var dialog = await WaitForDialog<EnterTextDialog>();
-		var input = (TextBox)dialog.Controls.Find("_textBox", true).Single();
-		var ok = (Button)dialog.Controls.Find("button1", true).Single();
-		Assert.That(ok.Enabled, Is.False, "Prefilled text the validator refuses cannot be accepted.");
-		var tips = (ToolTip)typeof(EnterTextDialog).GetField("_validationTips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(dialog);
-		Assert.That(tips.GetToolTip(ok), Is.EqualTo("A Name Cannot Contain A Backslash."));
-		input.Text = "Good Name";
-		Assert.That(ok.Enabled, Is.True);
-		Assert.That(tips.GetToolTip(ok), Is.Empty);
-		ok.PerformClick();
-		Assert.That(await pending, Is.EqualTo((true, "Good Name")));
-	});
-
 	[TestCase("button1", DialogResult.No)]
 	[TestCase("button2", DialogResult.Yes)]
 	public void DialogExMapsButtonsAndDisposes(string ButtonName, DialogResult Expected) => RunWithMessageLoop(async Owner => {
@@ -602,33 +568,6 @@ public class AsyncModalTests {
 		Assert.That(Label.UseMnemonic, Is.False);
 		((Button)Dialog.Controls.Find("button2", true).Single()).PerformClick();
 		Assert.That(await Pending, Is.EqualTo(DialogExResult.Button2));
-	});
-
-	[Test]
-	public void DialogExButtonsFitLongCaptionsInOneLineAndKeepTheDialogMargin() => RunWithMessageLoop(async owner => {
-		var pending = DialogEx.ShowAsync(owner, SystemIconType.Warning, "Enable Editing", "Editing writes directly to this file when you choose Save.", "&Enable Editing For This File", "Cancel");
-		using var dialog = await WaitForDialog<DialogEx>();
-		await Task.Yield();
-		var accept = (Button)dialog.Controls.Find("button1", true).Single();
-		var cancel = (Button)dialog.Controls.Find("button2", true).Single();
-		foreach (var button in new[] { accept, cancel }) {
-			var caption = TextRenderer.MeasureText(button.Text, button.Font, Size.Empty, TextFormatFlags.SingleLine);
-			Assert.That(button.Width, Is.GreaterThan(caption.Width), $"'{button.Text}' fits on one line instead of wrapping to its first word.");
-			Assert.That(button.Height, Is.GreaterThan(caption.Height));
-		}
-		Assert.That(accept.Top, Is.EqualTo(cancel.Top), "The buttons share one row.");
-		Assert.That(cancel.Right, Is.LessThan(accept.Left), "The first button is the rightmost and the buttons do not overlap.");
-		Assert.That(dialog.ClientSize.Height - accept.Bottom, Is.EqualTo(dialog.LogicalToDeviceUnits(12)), "The row keeps the dialog's margin from the bottom edge.");
-		Assert.That(dialog.ClientSize.Width - accept.Right, Is.EqualTo(dialog.LogicalToDeviceUnits(12)));
-		var screenshots = Environment.GetEnvironmentVariable("SPHERE10_DIALOG_SCREENSHOTS");
-		if (!string.IsNullOrWhiteSpace(screenshots)) {
-			System.IO.Directory.CreateDirectory(screenshots);
-			using var image = new Bitmap(dialog.Width, dialog.Height);
-			dialog.DrawToBitmap(image, new Rectangle(Point.Empty, dialog.Size));
-			image.Save(System.IO.Path.Combine(screenshots, "dialog-long-button.png"));
-		}
-		accept.PerformClick();
-		Assert.That(await pending, Is.EqualTo(DialogExResult.Button1));
 	});
 
 	[TestCase(SystemIconType.None)]

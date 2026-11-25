@@ -78,51 +78,6 @@ public class MonitorLayoutControlTests {
 	}
 
 	[Test]
-	public void PerTileControlsStayBeneathTheirTilesAfterScaling() {
-		// Auto-scaling (a DPI change, or a form scaling its children) scales the hosted controls' bounds as well as the layout's own;
-		// unless the layout places them again they drift by the scale factor, off their tiles and out of the client area.
-		using var form = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-30000, -30000), ClientSize = new Size(700, 400) };
-		var layout = new MonitorLayoutControl { Dock = DockStyle.Fill, HostedControlMode = MonitorLayoutHostedControlMode.PerTile };
-		form.Controls.Add(layout);
-		var controls = new[] { new Panel { Height = 24 }, new Panel { Height = 24 }, new Panel { Height = 24 } };
-		layout.SetTileControl("A", controls[0]);
-		layout.SetTileControl("B", controls[1]);
-		layout.SetTileControl("C", controls[2]);
-		layout.Items = new[] { Display("A", -1920, 574), new MonitorLayoutItem { Key = "B", Label = "2", Bounds = new Rectangle(0, 0, 3840, 2160) }, Display("C", 3840, 592) };
-		form.Show();
-
-		form.Scale(new SizeF(1.5f, 1.5f));
-
-		foreach (var (control, key) in controls.Zip(new[] { "A", "B", "C" }))
-			AssertCentredBeneath(control, layout.GetTileBounds(key), layout);
-	}
-
-	[Test]
-	public void HostedControlsMovedFromOutsideTheLayoutArePlacedAgain() {
-		// A hidden hosted control gets its window when it is first shown, after the layout placed it, and creating the window scales its
-		// bounds from the DPI it was created at to its parent's: at 150 % it lands half as far again from the origin, often outside the
-		// layout. A move or resize the layout did not make is undone.
-		using var layout = new MonitorLayoutControl { Size = new Size(600, 300), HostedControlMode = MonitorLayoutHostedControlMode.PerTile };
-		var left = new Panel { Height = 24 };
-		var right = new Panel { Height = 24 };
-		layout.SetTileControl("A", left);
-		layout.SetTileControl("B", right);
-		layout.Items = new[] { Display("A", 0, 0), Display("B", 1920, 0) };
-		var placed = right.Bounds;
-
-		right.Bounds = new Rectangle(placed.X * 3 / 2, placed.Y * 3 / 2, placed.Width * 3 / 2, placed.Height);
-		left.Location = new Point(left.Left + 7, left.Top + 9);
-
-		Assert.That(right.Bounds, Is.EqualTo(placed));
-		AssertCentredBeneath(left, layout.GetTileBounds("A"), layout);
-
-		// A control the layout no longer hosts is left where its new parent puts it.
-		layout.SetTileControl("B", null);
-		right.Location = new Point(1, 1);
-		Assert.That(right.Location, Is.EqualTo(new Point(1, 1)));
-	}
-
-	[Test]
 	public void StackedDisplaysKeepTheUpperControlClearOfTheLowerTile() {
 		using var layout = new MonitorLayoutControl { Size = new Size(500, 400), HostedControlMode = MonitorLayoutHostedControlMode.PerTile };
 		var upper = new Panel { Height = 28 };

@@ -63,7 +63,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 			_gridContainerPanel.Resize += GridContainerPanel_Resize;
 			LeftClickToDeselect = true;
 			RightClickForContextMenu = true;
-			EnableKeyNavigation = true;
 			UseEntityReferenceForLookup = false;
 			AutoSelectOnCreate = false;
 			_refreshThrottle = new Throttle(TimeSpan.FromMilliseconds(250));

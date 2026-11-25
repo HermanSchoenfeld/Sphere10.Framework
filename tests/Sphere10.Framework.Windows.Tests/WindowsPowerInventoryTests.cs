@@ -63,48 +63,6 @@ public class WindowsPowerInventoryTests {
 		TestContext.Out.WriteLine($"{plans.Length} Plans; {settings.Length} Settings; Active {active.Name} ({active.Id:D})");
 	}
 
-	// Changes only a duplicate of the active plan: the copy is deleted and the original plan is active again afterwards.
-	[Test, Category("WindowsIntegration"), NonParallelizable]
-	public async Task ADuplicatedPlanTakesCheckedValuesAndIsDeletedWhileTheOriginalPlanIsRestored() {
-		var original = (await Tools.Windows.Computer.GetPowerPlansAsync()).Single(plan => plan.IsActive);
-		var name = "Framework Test Plan " + Guid.NewGuid().ToString("N").Substring(0, 8);
-		var copy = await Tools.Windows.Computer.DuplicatePowerPlanAsync(original.Id, name);
-		try {
-			var plans = await Tools.Windows.Computer.GetPowerPlansAsync();
-			Assert.That(plans.Single(plan => plan.Id == copy).Name, Is.EqualTo(name));
-			var settings = await Tools.Windows.Computer.GetPowerSettingsAsync(copy);
-			Assert.That(settings.Where(setting => setting.Minimum.HasValue && setting.Maximum.HasValue), Has.All.Matches<WindowsPowerSettingInfo>(setting => setting.Choices.Length == 0),
-				"A ranged setting is a number, not a list of its own name.");
-			var choice =settings.First(setting => setting.Choices.Length >= 2 && setting.AcValue.HasValue);
-			var ranged = settings.First(setting => setting.Choices.Length == 0 && setting.AcValue.HasValue && setting.Minimum.HasValue && setting.Maximum > setting.Minimum
-				&& setting.DcValue.HasValue && (setting.Increment ?? 1) <= 1);
-			var chosen = choice.Choices.First(option => option.Value != choice.AcValue).Value;
-			var rangedValue = ranged.DcValue == ranged.Minimum ? ranged.Minimum.Value + 1 : ranged.Minimum.Value;
-			await Tools.Windows.Computer.SetPowerSettingValueAsync(copy, choice.SubgroupId, choice.Id, WindowsPowerSource.AC, chosen);
-			await Tools.Windows.Computer.SetPowerSettingValueAsync(copy, ranged.SubgroupId, ranged.Id, WindowsPowerSource.DC, rangedValue);
-			var written = await Tools.Windows.Computer.GetPowerSettingsAsync(copy);
-			Assert.That(written.Single(setting => setting.Id == choice.Id).AcValue, Is.EqualTo(chosen));
-			Assert.That(written.Single(setting => setting.Id == choice.Id).DcValue, Is.EqualTo(choice.DcValue), "Only the chosen power source changes.");
-			Assert.That(written.Single(setting => setting.Id == ranged.Id).DcValue, Is.EqualTo(rangedValue));
-			var invalid = Enumerable.Range(0, 1000).Select(value => (uint)value).First(value => choice.Choices.All(option => option.Value != value));
-			Assert.That(() => Tools.Windows.Computer.SetPowerSettingValueAsync(copy, choice.SubgroupId, choice.Id, WindowsPowerSource.AC, invalid), Throws.ArgumentException);
-			if (ranged.Maximum < uint.MaxValue)
-				Assert.That(() => Tools.Windows.Computer.SetPowerSettingValueAsync(copy, ranged.SubgroupId, ranged.Id, WindowsPowerSource.DC, ranged.Maximum.Value + 1), Throws.ArgumentException);
-			var unchanged = await Tools.Windows.Computer.GetPowerSettingsAsync(original.Id);
-			Assert.That(unchanged.Single(setting => setting.Id == choice.Id).AcValue, Is.EqualTo(choice.AcValue), "The original plan keeps its values.");
-
-			await Tools.Windows.Computer.SetActivePowerPlanAsync(copy);
-			Assert.That((await Tools.Windows.Computer.GetPowerPlansAsync()).Single(plan => plan.IsActive).Id, Is.EqualTo(copy));
-			Assert.That(() => Tools.Windows.Computer.DeletePowerPlanAsync(copy), Throws.ArgumentException, "The active plan cannot be deleted.");
-		} finally {
-			await Tools.Windows.Computer.SetActivePowerPlanAsync(original.Id);
-			await Tools.Windows.Computer.DeletePowerPlanAsync(copy);
-		}
-		var remaining = await Tools.Windows.Computer.GetPowerPlansAsync();
-		Assert.That(remaining.Any(plan => plan.Id == copy), Is.False);
-		Assert.That(remaining.Single(plan => plan.IsActive).Id, Is.EqualTo(original.Id));
-	}
-
 	[Test, Category("WindowsIntegration")]
 	public async Task NativeSleepDiagnosticsDistinguishCapabilitiesFromInterruptTimes() {
 		var rows = await Tools.Windows.Computer.GetPowerDiagnosticsAsync();

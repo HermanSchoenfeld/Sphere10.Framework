@@ -32,25 +32,6 @@ public static partial class WinAPI {
 		public static extern uint PowerReadDCValueIndex(IntPtr root, [In] Guid[] scheme, [In] Guid[] subgroup, [In] Guid[] setting, out uint value);
 
 		[DllImport("powrprof.dll", ExactSpelling = true)]
-		public static extern uint PowerWriteACValueIndex(IntPtr root, [In] Guid[] scheme, [In] Guid[] subgroup, [In] Guid[] setting, uint value);
-
-		[DllImport("powrprof.dll", ExactSpelling = true)]
-		public static extern uint PowerWriteDCValueIndex(IntPtr root, [In] Guid[] scheme, [In] Guid[] subgroup, [In] Guid[] setting, uint value);
-
-		[DllImport("powrprof.dll", ExactSpelling = true)]
-		public static extern uint PowerSetActiveScheme(IntPtr root, [In] Guid[] scheme);
-
-		/// <summary>With <paramref name="destination"/> set to zero, Windows allocates the new plan's GUID; release it with LocalFree.</summary>
-		[DllImport("powrprof.dll", ExactSpelling = true)]
-		public static extern uint PowerDuplicateScheme(IntPtr root, [In] Guid[] source, ref IntPtr destination);
-
-		[DllImport("powrprof.dll", ExactSpelling = true)]
-		public static extern uint PowerDeleteScheme(IntPtr root, [In] Guid[] scheme);
-
-		[DllImport("powrprof.dll", ExactSpelling = true)]
-		public static extern uint PowerWriteFriendlyName(IntPtr root, [In] Guid[] scheme, [In] Guid[] subgroup, [In] Guid[] setting, [In] byte[] buffer, uint size);
-
-		[DllImport("powrprof.dll", ExactSpelling = true)]
 		public static extern uint PowerReadValueUnitsSpecifier(IntPtr root, [In] Guid[] subgroup, [In] Guid[] setting, [Out] byte[] buffer, ref uint size);
 
 		[DllImport("powrprof.dll", ExactSpelling = true)]

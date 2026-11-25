@@ -415,30 +415,6 @@ public class VisualGridInteractionTests {
 		Assert.That(crud.SelectedEntity, Is.SameAs(records[0]));
 	});
 
-	[Test]
-	public void UpAndDownKeysMoveTheSelectedRowUnlessKeyNavigationIsDisabled() => RunWithMessageLoop(async owner => {
-		using var crud = new VisualGrid { Dock = DockStyle.Fill };
-		owner.Controls.Add(crud);
-		Assert.That(crud.EnableKeyNavigation, Is.True, "Key navigation is on by default.");
-		var records = await BindRecords(crud);
-		var grid = FindControl<Grid>(crud, "_grid");
-		RaiseKeyDown(grid, Keys.Down);
-		Assert.That(crud.SelectedEntity, Is.SameAs(records[0]), "With no row selected, Down selects the first row.");
-		RaiseKeyDown(grid, Keys.Down);
-		Assert.That(crud.SelectedEntity, Is.SameAs(records[1]));
-		RaiseKeyDown(grid, Keys.Down);
-		Assert.That(crud.SelectedEntity, Is.SameAs(records[1]), "The last row stays selected.");
-		RaiseKeyDown(grid, Keys.Up);
-		Assert.That(crud.SelectedEntity, Is.SameAs(records[0]));
-		await ClickCell(grid, 2);
-		RaiseKeyDown(grid, Keys.Up);
-		Assert.That(crud.SelectedEntity, Is.SameAs(records[0]), "A clicked row moves by exactly one row.");
-		crud.EnableKeyNavigation = false;
-		crud.SelectedEntity = records[1];
-		RaiseKeyDown(grid, Keys.Up);
-		Assert.That(crud.SelectedEntity, Is.Not.SameAs(records[0]), "Disabled key navigation leaves the selection to SourceGrid's own keys.");
-	});
-
 	private static void SendRightMouseDown(Grid grid, Point point) {
 		var coordinates = (IntPtr)((point.Y << 16) | (point.X & ushort.MaxValue));
 		Sphere10.Framework.Windows.WinAPI.USER32.SendMessage(grid.Handle, Sphere10.Framework.Windows.WinAPI.WindowMessageFlags.WM_RBUTTONDOWN, (IntPtr)2, coordinates);

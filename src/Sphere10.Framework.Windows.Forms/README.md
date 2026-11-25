@@ -172,12 +172,6 @@ zero readings. Select `PlotStyle = TelemetryChartStyle.Area` for a filled histor
 and configure `LineColor`, `FillColor`, `PlotBackColor`, `GridColor` and
 `ShowVerticalGrid` to match its host. `Compact` hides scale labels and headers;
 `ShowHeader` independently hides the title/current-value header.
-Set `TimeWindow` to the span the caller's history covers (for example 120 seconds
-for 120 one-second samples). The time axis then always shows that span, ending at
-the latest sample, so a history that is still filling grows from the right while
-the scale, its labels and the plot area stay put. A history covering more time
-widens the axis to show it all. The default of zero fits the axis to the captured
-span.
 
 Hover displays the nearest captured value and local capture time, using elapsed
 time rather than sample index. `TryGetSampleAt` exposes the same lookup in control
@@ -200,8 +194,7 @@ var chart = new TelemetryChart {
 	Unit = TelemetryChartUnit.Celsius,
 	PlotStyle = TelemetryChartStyle.Area,
 	LineColor = Color.Firebrick,
-	ShowVerticalGrid = true,
-	TimeWindow = TimeSpan.FromSeconds(120)
+	ShowVerticalGrid = true
 };
 chart.SetSamples(new[] {
 	new TelemetryChartPoint(DateTime.UtcNow.AddSeconds(-1), 42),
@@ -614,7 +607,7 @@ refresh is reading and after the refresh completes.
 
 `VisualGrid` hides the create and delete buttons when their respective capabilities are unavailable. Delete is also hidden unless a visible row is selected. Toolbar and paging controls size to their contents, including scaled fonts and DPI.
 
-Set `AllowCellEditing = true` to edit columns with `CanEditCell = true` and a `SetPropertyValue` binding; `CanUpdate` must also be enabled. Changing the editing setting updates existing cells immediately. `LeftClickToDeselect` defaults to `true` and toggles a row on successive single clicks, including Ctrl-clicks. When both settings are enabled, double-click an editable cell or press **F2** to edit while keeping its row selected; checkbox values also change only through that explicit edit gesture. Set `LeftClickToDeselect = false` to retain selection on repeated clicks and enable single-click editing. These selection modes also support `SelectOnMouseUp`. `EnableKeyNavigation` (default `true`) lets **Up** and **Down** select the previous and next row and scroll it into view; with no row selected they select the first or last row.
+Set `AllowCellEditing = true` to edit columns with `CanEditCell = true` and a `SetPropertyValue` binding; `CanUpdate` must also be enabled. Changing the editing setting updates existing cells immediately. `LeftClickToDeselect` defaults to `true` and toggles a row on successive single clicks, including Ctrl-clicks. When both settings are enabled, double-click an editable cell or press **F2** to edit while keeping its row selected; checkbox values also change only through that explicit edit gesture. Set `LeftClickToDeselect = false` to retain selection on repeated clicks and enable single-click editing. These selection modes also support `SelectOnMouseUp`.
 
 Read-only text cells retain type conversion through SourceGrid's nonvisual
 `EditorBase`, without constructing a WinForms editor control or attaching a

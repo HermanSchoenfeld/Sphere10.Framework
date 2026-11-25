@@ -110,30 +110,6 @@ public static partial class Windows {
 
 		public static Task<WindowsPowerSettingInfo[]> GetPowerSettingsAsync(Guid planId, CancellationToken cancellationToken = default) => Task.Run(() => GetPowerSettings(planId, cancellationToken), cancellationToken);
 
-		/// <summary>Writes one AC or DC value of a plan's setting, checked against the setting's values or range. Writing the active plan applies it at once.</summary>
-		public static void SetPowerSettingValue(Guid planId, Guid subgroupId, Guid settingId, WindowsPowerSource source, uint value) => WindowsPowerInventory.SetValue(planId, subgroupId, settingId, source, value);
-
-		public static Task SetPowerSettingValueAsync(Guid planId, Guid subgroupId, Guid settingId, WindowsPowerSource source, uint value, CancellationToken cancellationToken = default)
-			=> Task.Run(() => SetPowerSettingValue(planId, subgroupId, settingId, source, value), cancellationToken);
-
-		public static void SetActivePowerPlan(Guid planId) => WindowsPowerInventory.SetActivePlan(planId);
-
-		public static Task SetActivePowerPlanAsync(Guid planId, CancellationToken cancellationToken = default) => Task.Run(() => SetActivePowerPlan(planId), cancellationToken);
-
-		/// <summary>Copies a plan with all its settings and returns the copy's id; an empty name keeps the source plan's name.</summary>
-		public static Guid DuplicatePowerPlan(Guid sourcePlanId, string name = null) => WindowsPowerInventory.DuplicatePlan(sourcePlanId, name);
-
-		public static Task<Guid> DuplicatePowerPlanAsync(Guid sourcePlanId, string name = null, CancellationToken cancellationToken = default) => Task.Run(() => DuplicatePowerPlan(sourcePlanId, name), cancellationToken);
-
-		public static void RenamePowerPlan(Guid planId, string name) => WindowsPowerInventory.RenamePlan(planId, name);
-
-		public static Task RenamePowerPlanAsync(Guid planId, string name, CancellationToken cancellationToken = default) => Task.Run(() => RenamePowerPlan(planId, name), cancellationToken);
-
-		/// <summary>Deletes a power plan other than the active one.</summary>
-		public static void DeletePowerPlan(Guid planId) => WindowsPowerInventory.DeletePlan(planId);
-
-		public static Task DeletePowerPlanAsync(Guid planId, CancellationToken cancellationToken = default) => Task.Run(() => DeletePowerPlan(planId), cancellationToken);
-
 		public static WindowsPowerDiagnosticInfo[] GetPowerDiagnostics(CancellationToken cancellationToken = default) => WindowsPowerInventory.GetDiagnostics(cancellationToken);
 
 		public static Task<WindowsPowerDiagnosticInfo[]> GetPowerDiagnosticsAsync(CancellationToken cancellationToken = default) => Task.Run(() => GetPowerDiagnostics(cancellationToken), cancellationToken);
